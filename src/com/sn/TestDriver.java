@@ -16,9 +16,9 @@ public class TestDriver {
     public static void main(String[] args) {
         // TODO Auto-generated method stub
 
-        //testReadingURL();
         try {
-            testDB();
+//            testDB();
+            testReadingURL();
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -71,12 +71,26 @@ public class TestDriver {
                 BufferedReader br = new BufferedReader(isr);
                 while ((str = br.readLine()) != null)
                 {
-                    System.out.println("haha");
                     System.out.println(str);
+                    createStockData(str);
                 }
                 br.close();
             } catch(IOException e) {
                 System.out.println(e);
             }
+     }
+     
+     /*
+      * var hq_str_sh601318="中国平安,86.30,86.31,84.41,86.30,83.70,84.38,84.40,156070902,13235768984,2200,84.38,20300,84.37,12800,84.36,24100,84.35,3000,84.33,40750,84.40,54800,84.42,400,84.44,3300,84.45,2500,84.46,2015-05-15,15:04:06,00";
+      */
+     static void createStockData(String stkDat)
+     {
+    	 String dts[] = stkDat.split(",");
+    	 for(int i=0; i<dts.length; i++) {
+    		 System.out.println(i + ":" + dts[i]);
+    	 }
+    	 String stkID = dts[0].substring(11, 19);
+    	 String stkName = dts[0].substring(21, 25);
+    	 System.out.println("stkID:" + stkID + " stkName:" + stkName);
      }
 }
