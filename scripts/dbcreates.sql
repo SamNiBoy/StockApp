@@ -106,7 +106,8 @@ create index ft_idd_idx on stkDat (ft_id, id);
   /*View of cur_pri 2nd diff */
 create view curpri_df2_vw as 
 (select t1.id,
-        t2.cur_pri_df- t1.cur_pri_df cur_pri_df2
+        t2.cur_pri_df- t1.cur_pri_df cur_pri_df2,
+        t2.ft_id
    from curpri_df_vw t1,
         curpri_df_vw t2
   where t1.id  = t2.id

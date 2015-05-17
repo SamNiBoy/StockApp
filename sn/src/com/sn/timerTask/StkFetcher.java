@@ -15,14 +15,18 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.sn.db.DBManager;
+import com.sn.reporter.WeChatReporter;
 
 public class StkFetcher extends TimerTask {
 
+    private String lstStkDat[] = new String[100];
     @Override
     public void run() {
         // TODO Auto-generated method stub
         String str;
         Connection con = DBManager.getConnection();
+        int cnt = 0;
+        boolean hasDiff = false;
         
         try {
             con.setAutoCommit(false);
@@ -33,6 +37,26 @@ public class StkFetcher extends TimerTask {
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
             while ((str = br.readLine()) != null) {
+                
+                if (cnt == 100 && !hasDiff)
+                {
+                    System.out.println("Stock data is 100 times same, skip fetching...");
+                    break;
+                }
+                if (!hasDiff && str.equals(lstStkDat[cnt]))
+                {
+                    cnt++;
+                    System.out.println(cnt + " Stock data is same, skip fetching...");
+                    continue;
+                }
+                else
+                {
+                    hasDiff = true;
+                    if (cnt < 100)
+                    {
+                        lstStkDat[cnt++] = str;                        
+                    }
+                }
                 System.out.println(str);
                 cs = createStockData(str);
                 

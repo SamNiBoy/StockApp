@@ -1,4 +1,4 @@
-<%@ page language="java" import="java.io.*,java.util.*" pageEncoding="UTF-8"%>
+<%@ page language="java" import="java.io.*,java.util.*, com.sn.reporter.*" pageEncoding="UTF-8"%>
     <%
                String path = request.getContextPath();
     %>
@@ -40,29 +40,12 @@ String xmlS = sb.toString();
 </xml>
 */
 System.out.println(xmlS);
-
-if(xmlS !=null && !xmlS.equals("")){
-
-int fromuser_s = xmlS.indexOf("<FromUserName><![CDATA[");
-int fromuser_e = xmlS.indexOf("]]></FromUserName>");
-String fromuser = xmlS.substring(fromuser_s + 23, fromuser_e);
-
-int touser_s = xmlS.indexOf("<ToUserName><![CDATA[");
-int touser_e = xmlS.indexOf("]]></ToUserName>");
-String touser = xmlS.substring(touser_s + 21, touser_e);
-
-int content_s = xmlS.indexOf("<Content><![CDATA[");
-int content_e = xmlS.indexOf("]]></Content>");
-
-String content = xmlS.substring(content_s + 18, content_e);
-
-out.print("<xml>");
-out.print("    <ToUserName><![CDATA["+fromuser+"]]></ToUserName>");
-out.print("    <FromUserName><![CDATA["+touser+"]]></FromUserName>");
-out.print("    <CreateTime>"+new Date().getTime()+"</CreateTime>");
-out.print("    <MsgType><![CDATA[text]]></MsgType>");
-out.print("    <Content><![CDATA[Welcome" + fromuser + " to " + touser + " your msg is " + content + "!]]></Content>");
-out.print("    <FuncFlag>0</FuncFlag>");
-out.print("</xml>"); 
-}
 %>
+
+<%
+WeChatReporter wcr = new WeChatReporter();
+wcr.setWcMsg(xmlS);
+out.print(wcr.getResponse());
+System.out.println(wcr.getResponse());
+%>
+
