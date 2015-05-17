@@ -169,7 +169,7 @@ public class WeChatReporter {
                 + "                                                   and sd2.ft_id > stkDat.ft_id)) std "
                 + " where df.id = stk.id "
                 + "   and df.id = std.id "
-                + "   and not exists (select 'x' from curpri_df_vw dfv where dfv.id = df.id and dfv.ft_id < df.ft_id) "
+                + "   and not exists (select 'x' from curpri_df_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
                 + "  order by df.cur_pri_df desc ";
         try {
             Statement stm = con.createStatement();
@@ -203,7 +203,7 @@ public class WeChatReporter {
                 + "                                                   and sd2.ft_id > stkDat.ft_id)) std "
                 + " where df.id = stk.id "
                 + "   and df.id = std.id "
-                + "   and not exists (select 'x' from curpri_df_vw dfv where dfv.id = df.id and dfv.ft_id < df.ft_id) "
+                + "   and not exists (select 'x' from curpri_df_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
                 + "  order by df.cur_pri_df ";
         try {
             Statement stm = con.createStatement();
@@ -227,8 +227,10 @@ public class WeChatReporter {
         // //////////////////Menu 3/////////////////////////////////////////////
         msg = "";
         sql = "select stk.area || df.id id, df.cur_pri_df2, stk.name"
-                + "  from curpri_df2_vw df, stk " + " where df.id = stk.id "
-                + "  order by df.ft_id desc, df.cur_pri_df2 desc ";
+                + "  from curpri_df2_vw df, stk "
+                + " where df.id = stk.id "
+                + "   and not exists (select 'x' from curpri_df2_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
+                + "  order by df.cur_pri_df2 desc ";
         try {
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery(sql);
@@ -257,8 +259,10 @@ public class WeChatReporter {
         // //////////////////Menu 4/////////////////////////////////////////////
         msg = "";
         sql = "select stk.area || df.id id, df.cur_pri_df2, stk.name"
-                + "  from curpri_df2_vw df, stk " + " where df.id = stk.id "
-                + "  order by df.ft_id desc, df.cur_pri_df2 ";
+                + "  from curpri_df2_vw df, stk "
+                + " where df.id = stk.id "
+                + "   and not exists (select 'x' from curpri_df2_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
+                + "  order by df.cur_pri_df2 ";
         try {
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery(sql);
