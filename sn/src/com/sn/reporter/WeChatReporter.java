@@ -127,17 +127,14 @@ public class WeChatReporter {
 
         System.out.println("got input:[" + content + "]");
         /* Get top 10 df1 */
-        if (content.equals("1") || content.equals("2") || content.equals("3")
-                || content.equals("4")) {
+        if (content.equals("1") || content.equals("2")) {
             String opt = content;
             if (msgForMenu == null) {
-                refreshMsgMap();
-                resContent = msgForMenu.get(opt);
                 if (resContent == null) {
                     System.out.println("resContent is null");
-                    resContent = "";
+                    resContent = "Data is not ready!";
                 }
-                System.out.println("after refresh for resContent is:"
+                System.out.println("resContent is:"
                         + resContent);
             } else {
                 resContent = msgForMenu.get(opt);
@@ -183,7 +180,6 @@ public class WeChatReporter {
                         + "\n";
             }
             stm.close();
-            con.commit();
             System.out.println("putting msg:" + msg + " for opt 1");
             msgForMenu.put("1", msg);
         } catch (Exception e) {
@@ -217,76 +213,73 @@ public class WeChatReporter {
                         + "\n";
             }
             stm.close();
-            con.commit();
             System.out.println("putting msg:" + msg + " for opt 2");
             msgForMenu.put("2", msg);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // //////////////////Menu 3/////////////////////////////////////////////
-        msg = "";
-        sql = "select stk.area || df.id id, df.cur_pri_df2, stk.name"
-                + "  from curpri_df2_vw df, stk "
-                + " where df.id = stk.id "
-                + "   and not exists (select 'x' from curpri_df2_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
-                + "  order by df.cur_pri_df2 desc ";
-        try {
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery(sql);
-
-            String id = "";
-            for (int i = 0; i < 10 && rs.next(); i++) {
-                if (id.equals(rs.getString("id"))) {
-                    continue;
-                } else {
-                    id = rs.getString("id");
-                }
-                msg += (i + 1) + ": " + rs.getString("id") + " "
-                        + rs.getString("name") + "\n";
-                msg += "Current Price Diff2: " + rs.getString("cur_pri_df2")
-                        + "\n";
-            }
-            stm.close();
-            con.commit();
-            System.out.println("putting msg:" + msg + " for opt 3");
-            msgForMenu.put("3", msg);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // //////////////////Menu 4/////////////////////////////////////////////
-        msg = "";
-        sql = "select stk.area || df.id id, df.cur_pri_df2, stk.name"
-                + "  from curpri_df2_vw df, stk "
-                + " where df.id = stk.id "
-                + "   and not exists (select 'x' from curpri_df2_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
-                + "  order by df.cur_pri_df2 ";
-        try {
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery(sql);
-
-            String id = "";
-            for (int i = 0; i < 10 && rs.next(); i++) {
-                if (id.equals(rs.getString("id"))) {
-                    continue;
-                } else {
-                    id = rs.getString("id");
-                }
-                msg += (i + 1) + ": " + rs.getString("id") + " "
-                        + rs.getString("name") + "\n";
-                msg += "Current Price Diff2: " + rs.getString("cur_pri_df2")
-                        + "\n";
-            }
-            stm.close();
-            con.commit();
-            System.out.println("putting msg:" + msg + " for opt 4");
-            msgForMenu.put("4", msg);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        // //////////////////Menu 3/////////////////////////////////////////////
+//        msg = "";
+//        sql = "select stk.area || df.id id, df.cur_pri_df2, stk.name"
+//                + "  from curpri_df2_vw df, stk "
+//                + " where df.id = stk.id "
+//                + "   and not exists (select 'x' from curpri_df2_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
+//                + "  order by df.cur_pri_df2 desc ";
+//        try {
+//            Statement stm = con.createStatement();
+//            ResultSet rs = stm.executeQuery(sql);
+//
+//            String id = "";
+//            for (int i = 0; i < 10 && rs.next(); i++) {
+//                if (id.equals(rs.getString("id"))) {
+//                    continue;
+//                } else {
+//                    id = rs.getString("id");
+//                }
+//                msg += (i + 1) + ": " + rs.getString("id") + " "
+//                        + rs.getString("name") + "\n";
+//                msg += "Current Price Diff2: " + rs.getString("cur_pri_df2")
+//                        + "\n";
+//            }
+//            stm.close();
+//            System.out.println("putting msg:" + msg + " for opt 3");
+//            msgForMenu.put("3", msg);
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        // //////////////////Menu 4/////////////////////////////////////////////
+//        msg = "";
+//        sql = "select stk.area || df.id id, df.cur_pri_df2, stk.name"
+//                + "  from curpri_df2_vw df, stk "
+//                + " where df.id = stk.id "
+//                + "   and not exists (select 'x' from curpri_df2_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
+//                + "  order by df.cur_pri_df2 ";
+//        try {
+//            Statement stm = con.createStatement();
+//            ResultSet rs = stm.executeQuery(sql);
+//
+//            String id = "";
+//            for (int i = 0; i < 10 && rs.next(); i++) {
+//                if (id.equals(rs.getString("id"))) {
+//                    continue;
+//                } else {
+//                    id = rs.getString("id");
+//                }
+//                msg += (i + 1) + ": " + rs.getString("id") + " "
+//                        + rs.getString("name") + "\n";
+//                msg += "Current Price Diff2: " + rs.getString("cur_pri_df2")
+//                        + "\n";
+//            }
+//            stm.close();
+//            System.out.println("putting msg:" + msg + " for opt 4");
+//            msgForMenu.put("4", msg);
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         return true;
     }
 
