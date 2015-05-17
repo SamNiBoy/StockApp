@@ -219,7 +219,7 @@ public class StkFetcher extends TimerTask {
         // TODO Auto-generated method stub
 
         Timer timer = new Timer();  
-        timer.schedule(new StkFetcher(), 5000, 1000 * 60 * 1); 
+        timer.schedule(new StkFetcher(), 5000, 1000 * 60 * 5); 
     }
 
 }

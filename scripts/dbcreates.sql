@@ -81,3 +81,41 @@ dl_dt date not null,
 dl_tm varchar2(8 byte) not null,
 ft_dt date not null
 );
+
+/*View of cur_pri 1st diff */
+create view curpri_df_vw as 
+(select t1.id,
+        t2.cur_pri- t1.cur_pri cur_pri_df,
+        t2.ft_id
+   from stkdat t1,
+        stkdat t2
+  where t1.id  = t2.id
+    and t2.ft_id > t1.ft_id
+    and not exists
+        (select 'x'
+           from stkdat t3
+          where t3.id  = t1.id
+            and t3.ft_id > t1.ft_id
+            and t3.ft_id < t2.ft_id
+         ) 
+  );
+
+/* Need below index to improve performance of curpri_df2_vw*/
+create index ft_idd_idx on stkDat (ft_id, id);
+
+  /*View of cur_pri 2nd diff */
+create view curpri_df2_vw as 
+(select t1.id,
+        t2.cur_pri_df- t1.cur_pri_df cur_pri_df2
+   from curpri_df_vw t1,
+        curpri_df_vw t2
+  where t1.id  = t2.id
+    and t2.ft_id > t1.ft_id
+    and not exists
+        (select 'x'
+           from curpri_df_vw t3
+          where t3.id  = t1.id
+            and t3.ft_id > t1.ft_id
+            and t3.ft_id < t2.ft_id
+         ) 
+  );
