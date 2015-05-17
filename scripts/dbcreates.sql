@@ -2,7 +2,8 @@ create table stk(
 id varchar2(6 byte) not null primary key,
 area varchar2(2 byte) not null,
 name varchar2(8 byte) not null,
-py varchar2(4 byte)
+py varchar2(4 byte),
+bu varchar2(8 byte)
 );
 
 create sequence SEQ_STKDAT_PK
