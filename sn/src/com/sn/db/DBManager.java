@@ -16,8 +16,8 @@ public class DBManager {
     /**
      * ”√ªß √‹¬Î
      */
-    public static final String DBUSER = "samni";
-    public static final String password = "samni";
+    public static final String DBUSER = "sam";
+    public static final String password = "sam";
 
     // TODO Auto-generated method stub
     static Connection conn = null;
@@ -35,7 +35,7 @@ public class DBManager {
             System.out.println("Getting db connection...");
             try {
                 Class.forName(drive);
-                conn = DriverManager.getConnection(url2, DBUSER, password);
+                conn = DriverManager.getConnection(url1, DBUSER, password);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

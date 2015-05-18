@@ -37,7 +37,6 @@ public class StkFetcher extends TimerTask {
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
             while ((str = br.readLine()) != null) {
-                
                 if (cnt == 100 && !hasDiff)
                 {
                     System.out.println("Stock data is 100 times same, skip fetching...");
@@ -243,7 +242,7 @@ public class StkFetcher extends TimerTask {
         // TODO Auto-generated method stub
 
         Timer timer = new Timer();  
-        timer.schedule(new StkFetcher(), 5000, 1000 * 60 * 5); 
+        timer.schedule(new StkFetcher(), 5000, 1000 * 16); 
     }
 
 }

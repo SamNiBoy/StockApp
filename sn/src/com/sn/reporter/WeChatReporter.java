@@ -56,14 +56,25 @@ public class WeChatReporter {
 
     }
 
-    public WeChatReporter() {
+    private static Thread tskRuner;
 
+    public WeChatReporter() {
+        if (tskRuner == null) {
+        	tskRuner = new Thread(new Runnable() {
+                public void run()
+                {
+                    ReporterRefresher.DoRun();
+                }
+            });
+        	tskRuner.start();
+        }
     }
 
     public String printHelp() {
         resContent = "This is help for wechat:\n" + "Input:\n"
                 + "1. Get top df1.\n" + "2. Get top -df.\n"
-                + "3. Get top df2.\n" + "4. Get top -df2.";
+                + "3. Get top df2.\n" + "4. Get top -df2.\n"
+                + "5. Basic report\n";
         String msg = makeMsg();
         return msg;
     }
@@ -108,26 +119,14 @@ public class WeChatReporter {
         return rspMsg;
     }
 
-    private static Thread t;
-
     public String getResponse() {
         if (content == null || content.equals("")) {
             return printHelp();
         }
 
-        if (t == null) {
-            t = new Thread(new Runnable() {
-                public void run()
-                {
-                    ReporterRefresher.DoRun();
-                }
-            });
-            t.start();
-        }
-
         System.out.println("got input:[" + content + "]");
         /* Get top 10 df1 */
-        if (content.equals("1") || content.equals("2")) {
+        if (content.equals("1") || content.equals("2")|| content.equals("5")) {
             String opt = content;
             if (msgForMenu == null) {
                 if (resContent == null) {
@@ -175,8 +174,8 @@ public class WeChatReporter {
             for (int i = 0; i < 10 && rs.next(); i++) {
                 msg += (i + 1) + ": " + rs.getString("id") + " "
                         + rs.getString("name") + "\n";
-                msg += "Current Price: " + rs.getString("cur_pri") + "\n";
-                msg += "Current Price Diff: " + rs.getString("cur_pri_df")
+                msg += "CP: " + rs.getString("cur_pri") + "\n";
+                msg += "CPD: " + rs.getString("cur_pri_df")
                         + "\n";
             }
             stm.close();
@@ -208,8 +207,8 @@ public class WeChatReporter {
             for (int i = 0; i < 10 && rs.next(); i++) {
                 msg += (i + 1) + ": " + rs.getString("id") + " "
                         + rs.getString("name") + "\n";
-                msg += "Current Price: " + rs.getString("cur_pri") + "\n";
-                msg += "Current Price Diff: " + rs.getString("cur_pri_df")
+                msg += "CP: " + rs.getString("cur_pri") + "\n";
+                msg += "CPD: " + rs.getString("cur_pri_df")
                         + "\n";
             }
             stm.close();
@@ -219,6 +218,26 @@ public class WeChatReporter {
             e.printStackTrace();
         }
 
+        // //////////////////Menu
+        // 5///////////////////////////////////////////////////
+        msg = "";
+        con = DBManager.getConnection();
+        sql = "select count(*) totCnt, count(*)/count(distinct id) cntPerStk "
+                + "  from stkDat";
+        try {
+            Statement stm = con.createStatement();
+            ResultSet rs = stm.executeQuery(sql);
+
+            if (rs.next()){
+                msg += "Total stkDat:" + rs.getLong("totCnt") + "\n"
+                      +"CNT/STK:" + rs.getLong("cntPerStk") + "\n";
+            }
+            stm.close();
+            System.out.println("putting msg:" + msg + " for opt 5");
+            msgForMenu.put("5", msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 //        // //////////////////Menu 3/////////////////////////////////////////////
 //        msg = "";
 //        sql = "select stk.area || df.id id, df.cur_pri_df2, stk.name"
