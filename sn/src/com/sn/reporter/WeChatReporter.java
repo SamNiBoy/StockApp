@@ -1,15 +1,18 @@
 package com.sn.reporter;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.sn.db.DBManager;
 import com.sn.timerTask.ReporterRefresher;
+import com.sn.timerTask.StkFetcher;
 
 public class WeChatReporter {
     /*
@@ -56,25 +59,38 @@ public class WeChatReporter {
 
     }
 
-    private static Thread tskRuner;
+    private static Thread tskRuner1, tskRuner2;
 
     public WeChatReporter() {
-        if (tskRuner == null) {
-        	tskRuner = new Thread(new Runnable() {
+    	
+        if (tskRuner2 == null) {
+        	tskRuner2 = new Thread(new Runnable() {
                 public void run()
                 {
-                    ReporterRefresher.DoRun();
+                    Timer timer = new Timer();  
+                    timer.schedule(new StkFetcher(), 5000, 1000 * 60); 
                 }
             });
-        	tskRuner.start();
+            if (tskRuner1 == null) {
+            	tskRuner1 = new Thread(new Runnable() {
+                    public void run()
+                    {
+                        ReporterRefresher.DoRun();
+                    }
+                });
+            }
+        	tskRuner2.start();
+        	tskRuner1.start();
         }
+        
+
     }
 
     public String printHelp() {
         resContent = "This is help for wechat:\n" + "Input:\n"
                 + "1. Get top df1.\n" + "2. Get top -df.\n"
                 + "3. Get top df2.\n" + "4. Get top -df2.\n"
-                + "5. Basic report\n";
+                + "5. Basic report\n" + "6. GJ\n";
         String msg = makeMsg();
         return msg;
     }
@@ -126,7 +142,7 @@ public class WeChatReporter {
 
         System.out.println("got input:[" + content + "]");
         /* Get top 10 df1 */
-        if (content.equals("1") || content.equals("2")|| content.equals("5")) {
+        if (content.equals("1") || content.equals("2")|| content.equals("5")|| content.equals("6")) {
             String opt = content;
             if (msgForMenu == null) {
                 if (resContent == null) {
@@ -140,7 +156,20 @@ public class WeChatReporter {
             }
 
             System.out.println("returning:" + resContent);
-            return makeMsg();
+            if (resContent.contains("shuting down"))
+            {
+            	Runtime rt = Runtime.getRuntime();
+            	try {
+					rt.exec("shutdown -s -t 40");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            }
+            else
+            {
+                return makeMsg();
+            }
         }
         return printHelp();
     }
@@ -235,6 +264,16 @@ public class WeChatReporter {
             stm.close();
             System.out.println("putting msg:" + msg + " for opt 5");
             msgForMenu.put("5", msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // //////////////////Menu
+        // 6///////////////////////////////////////////////////
+        try {
+        	msg = "Your computer is in shuting down...\n";
+            System.out.println("putting msg:" + msg + " for opt 6");
+            msgForMenu.put("6", msg);
         } catch (Exception e) {
             e.printStackTrace();
         }

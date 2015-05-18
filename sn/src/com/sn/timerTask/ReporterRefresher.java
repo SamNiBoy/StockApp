@@ -26,7 +26,7 @@ public class ReporterRefresher extends TimerTask {
     {
     	System.out.println("Now beging timer task for ReporterRefersher...");
         Timer timer = new Timer();  
-        timer.schedule(new ReporterRefresher(), 5000, 1000 * 16); 
+        timer.schedule(new ReporterRefresher(), 5000, 1000 * 60); 
     }
 
 }
