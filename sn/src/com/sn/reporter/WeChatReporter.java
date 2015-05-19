@@ -13,6 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.sn.db.DBManager;
 import com.sn.timerTask.ReporterRefresher;
 import com.sn.timerTask.StkFetcher;
+import com.sn.work.CalFetchStat;
+import com.sn.work.FetchStockData;
+import com.sn.work.ShutDownPC;
+import com.sn.work.TopTenBst;
+import com.sn.work.TopTenWst;
+import com.sn.work.WorkManager;
 
 public class WeChatReporter {
     /*
@@ -59,37 +65,15 @@ public class WeChatReporter {
 
     }
 
-    private static Thread tskRuner1, tskRuner2;
 
     public WeChatReporter() {
-    	
-        if (tskRuner2 == null) {
-        	tskRuner2 = new Thread(new Runnable() {
-                public void run()
-                {
-                    Timer timer = new Timer();  
-                    timer.schedule(new StkFetcher(), 5000, 1000 * 60); 
-                }
-            });
-            if (tskRuner1 == null) {
-            	tskRuner1 = new Thread(new Runnable() {
-                    public void run()
-                    {
-                        ReporterRefresher.DoRun();
-                    }
-                });
-            }
-        	tskRuner2.start();
-        	tskRuner1.start();
-        }
         
-
     }
 
     public String printHelp() {
         resContent = "This is help for wechat:\n" + "Input:\n"
                 + "1. Get top df1.\n" + "2. Get top -df.\n"
-                + "3. Get top df2.\n" + "4. Get top -df2.\n"
+                + "3. Start fetch.\n" + "4. Stop fetch.\n"
                 + "5. Basic report\n" + "6. GJ\n";
         String msg = makeMsg();
         return msg;
@@ -142,203 +126,41 @@ public class WeChatReporter {
 
         System.out.println("got input:[" + content + "]");
         /* Get top 10 df1 */
-        if (content.equals("1") || content.equals("2")|| content.equals("5")|| content.equals("6")) {
-            String opt = content;
-            if (msgForMenu == null) {
-                if (resContent == null) {
-                    System.out.println("resContent is null");
-                    resContent = "Data is not ready!";
-                }
-                System.out.println("resContent is:"
-                        + resContent);
-            } else {
-                resContent = msgForMenu.get(opt);
+            
+            if (content.equals("1")) {
+                TopTenBst ttb = new TopTenBst(0, 3);
+                WorkManager.submitWork(ttb);
+                resContent = ttb.getWorkResult();
             }
-
-            System.out.println("returning:" + resContent);
-            if (resContent.contains("shuting down"))
-            {
-            	Runtime rt = Runtime.getRuntime();
-            	try {
-					rt.exec("shutdown -s -t 40");
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+            else if (content.equals("2")) {
+                TopTenWst ttw = new TopTenWst(0, 3);
+                WorkManager.submitWork(ttw);
+                resContent = ttw.getWorkResult();
             }
-            else
-            {
-                return makeMsg();
+            else if (content.equals("3")) {
+                FetchStockData fsd = new FetchStockData(0, 3);
+                WorkManager.submitWork(fsd);
+                resContent = fsd.getWorkResult();
             }
-        }
-        return printHelp();
-    }
-
-    static Map<String, String> msgForMenu;
-
-    static public boolean refreshMsgMap() {
-
-        if (msgForMenu == null) {
-            msgForMenu = new ConcurrentHashMap<String, String>();
-        }
-
-        // ///////////Menu 1///////////////
-        String msg = "";
-        Connection con = DBManager.getConnection();
-        String sql = "select stk.area || df.id id, df.cur_pri_df, stk.name, std.cur_pri "
-                + "  from curpri_df_vw df, stk, (select id, cur_pri"
-                + "                                from stkDat "
-                + "                               where not exists(select 'x' "
-                + "                                                  from stkDat sd2 "
-                + "                                                 where sd2.id = stkDat.id "
-                + "                                                   and sd2.ft_id > stkDat.ft_id)) std "
-                + " where df.id = stk.id "
-                + "   and df.id = std.id "
-                + "   and not exists (select 'x' from curpri_df_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
-                + "  order by df.cur_pri_df desc ";
-        try {
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery(sql);
-
-            for (int i = 0; i < 10 && rs.next(); i++) {
-                msg += (i + 1) + ": " + rs.getString("id") + " "
-                        + rs.getString("name") + "\n";
-                msg += "CP: " + rs.getString("cur_pri") + "\n";
-                msg += "CPD: " + rs.getString("cur_pri_df")
-                        + "\n";
+            else if (content.equals("4")) {
+                FetchStockData.stopFetch = false;
+                resContent = "Stoped fetching stokc data.";
             }
-            stm.close();
-            System.out.println("putting msg:" + msg + " for opt 1");
-            msgForMenu.put("1", msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // //////////////////Menu
-        // 2///////////////////////////////////////////////////
-        msg = "";
-        con = DBManager.getConnection();
-        sql = "select stk.area || df.id id, df.cur_pri_df, stk.name, std.cur_pri "
-                + "  from curpri_df_vw df, stk, (select id, cur_pri"
-                + "                                from stkDat "
-                + "                               where not exists(select 'x' "
-                + "                                                  from stkDat sd2 "
-                + "                                                 where sd2.id = stkDat.id "
-                + "                                                   and sd2.ft_id > stkDat.ft_id)) std "
-                + " where df.id = stk.id "
-                + "   and df.id = std.id "
-                + "   and not exists (select 'x' from curpri_df_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
-                + "  order by df.cur_pri_df ";
-        try {
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery(sql);
-
-            for (int i = 0; i < 10 && rs.next(); i++) {
-                msg += (i + 1) + ": " + rs.getString("id") + " "
-                        + rs.getString("name") + "\n";
-                msg += "CP: " + rs.getString("cur_pri") + "\n";
-                msg += "CPD: " + rs.getString("cur_pri_df")
-                        + "\n";
+            else if (content.equals("5")) {
+                CalFetchStat cfs = new CalFetchStat(0, 3);
+                WorkManager.submitWork(cfs);
+                resContent = cfs.getWorkResult();
             }
-            stm.close();
-            System.out.println("putting msg:" + msg + " for opt 2");
-            msgForMenu.put("2", msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // //////////////////Menu
-        // 5///////////////////////////////////////////////////
-        msg = "";
-        con = DBManager.getConnection();
-        sql = "select count(*) totCnt, count(*)/count(distinct id) cntPerStk "
-                + "  from stkDat";
-        try {
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery(sql);
-
-            if (rs.next()){
-                msg += "Total stkDat:" + rs.getLong("totCnt") + "\n"
-                      +"CNT/STK:" + rs.getLong("cntPerStk") + "\n";
+            else if (content.equals("6")) {
+                ShutDownPC sdp = new ShutDownPC(0, 3);
+                WorkManager.submitWork(sdp);
+                resContent = sdp.getWorkResult();
             }
-            stm.close();
-            System.out.println("putting msg:" + msg + " for opt 5");
-            msgForMenu.put("5", msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            else {
+                return printHelp();
+            }
+            
+            return makeMsg();
         
-        // //////////////////Menu
-        // 6///////////////////////////////////////////////////
-        try {
-        	msg = "Your computer is in shuting down...\n";
-            System.out.println("putting msg:" + msg + " for opt 6");
-            msgForMenu.put("6", msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-//        // //////////////////Menu 3/////////////////////////////////////////////
-//        msg = "";
-//        sql = "select stk.area || df.id id, df.cur_pri_df2, stk.name"
-//                + "  from curpri_df2_vw df, stk "
-//                + " where df.id = stk.id "
-//                + "   and not exists (select 'x' from curpri_df2_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
-//                + "  order by df.cur_pri_df2 desc ";
-//        try {
-//            Statement stm = con.createStatement();
-//            ResultSet rs = stm.executeQuery(sql);
-//
-//            String id = "";
-//            for (int i = 0; i < 10 && rs.next(); i++) {
-//                if (id.equals(rs.getString("id"))) {
-//                    continue;
-//                } else {
-//                    id = rs.getString("id");
-//                }
-//                msg += (i + 1) + ": " + rs.getString("id") + " "
-//                        + rs.getString("name") + "\n";
-//                msg += "Current Price Diff2: " + rs.getString("cur_pri_df2")
-//                        + "\n";
-//            }
-//            stm.close();
-//            System.out.println("putting msg:" + msg + " for opt 3");
-//            msgForMenu.put("3", msg);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        // //////////////////Menu 4/////////////////////////////////////////////
-//        msg = "";
-//        sql = "select stk.area || df.id id, df.cur_pri_df2, stk.name"
-//                + "  from curpri_df2_vw df, stk "
-//                + " where df.id = stk.id "
-//                + "   and not exists (select 'x' from curpri_df2_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
-//                + "  order by df.cur_pri_df2 ";
-//        try {
-//            Statement stm = con.createStatement();
-//            ResultSet rs = stm.executeQuery(sql);
-//
-//            String id = "";
-//            for (int i = 0; i < 10 && rs.next(); i++) {
-//                if (id.equals(rs.getString("id"))) {
-//                    continue;
-//                } else {
-//                    id = rs.getString("id");
-//                }
-//                msg += (i + 1) + ": " + rs.getString("id") + " "
-//                        + rs.getString("name") + "\n";
-//                msg += "Current Price Diff2: " + rs.getString("cur_pri_df2")
-//                        + "\n";
-//            }
-//            stm.close();
-//            System.out.println("putting msg:" + msg + " for opt 4");
-//            msgForMenu.put("4", msg);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-        return true;
     }
-
 }
