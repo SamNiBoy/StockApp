@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 import com.sn.db.DBManager;
+import com.sn.work.itf.IWork;
 
 public class ShutDownPC implements IWork {
 

@@ -6,12 +6,13 @@ import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 import com.sn.db.DBManager;
+import com.sn.work.itf.IWork;
 
 public class TopTenWst implements IWork {
 
     long initDelay = 0;
     long delayBeforNxtStart = 5;
-    static String res = "";
+    static String res = "Getting top 10 worse is schedulled, try again later.";
 
     TimeUnit tu = TimeUnit.MILLISECONDS;
     /**

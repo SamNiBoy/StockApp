@@ -6,6 +6,7 @@ import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 import com.sn.db.DBManager;
+import com.sn.work.itf.IWork;
 
 public class TopTenBst implements IWork {
 
@@ -20,7 +21,7 @@ public class TopTenBst implements IWork {
     TimeUnit tu = TimeUnit.MILLISECONDS;
     /* Result calcualted by this worker.
      */
-    static String res = "";
+    static String res = "Getting top 10 best is schedulled, try again later.";
     /**
      * @param args
      */

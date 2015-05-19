@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 import com.sn.db.DBManager;
+import com.sn.work.itf.IWork;
 
 public class FetchStockData implements IWork {
 
@@ -24,8 +25,6 @@ public class FetchStockData implements IWork {
     long delayBeforNxtStart = 5;
     
     TimeUnit tu = TimeUnit.MILLISECONDS;
-    
-    public static boolean stopFetch = false; 
     
     /**
      * @param args
@@ -58,6 +57,7 @@ public class FetchStockData implements IWork {
                 stkLst += stkLst.length() > 0 ? "," : "";
                 stkLst += rs.getString("area") + rs.getString("id");
             }
+            stm.close();
         }
         catch(Exception e)
         {
@@ -204,11 +204,6 @@ public class FetchStockData implements IWork {
     
     public void run()
     {
-        if (stopFetch)
-        {
-            System.out.println("stopFetch is true, skipping fetching...");
-            return;
-        }
         // TODO Auto-generated method stub
         String str;
         Connection con = DBManager.getConnection();
@@ -224,7 +219,7 @@ public class FetchStockData implements IWork {
             while ((str = br.readLine()) != null) {
                 if (str.equals(lstStkDat))
                 {
-                    System.out.println("Stock data is 100 times same, skip fetching...");
+                    System.out.println("Stock data is same, skip fetching...");
                     break;
                 }
                 

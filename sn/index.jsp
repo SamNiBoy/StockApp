@@ -1,4 +1,4 @@
-<%@ page language="java" import="java.io.*,java.util.*, com.sn.reporter.*" pageEncoding="UTF-8"%>
+<%@ page language="java" import="java.io.*,java.util.*, com.sn.reporter.WeChatReporter" pageEncoding="UTF-8"%>
     <%
                String path = request.getContextPath();
     %>

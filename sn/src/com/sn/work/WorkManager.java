@@ -1,12 +1,16 @@
 package com.sn.work;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import com.sn.work.itf.IWork;
 
 /* CycleWork Manager.
  */
@@ -16,10 +20,7 @@ public class WorkManager {
     static ScheduledExecutorService exec = Executors
             .newScheduledThreadPool(CW_THREAD_NUMBER);
 
-    /*
-     * workerSet stores the name of cycle work.
-     */
-    static Set<String> workerSet = new HashSet<String>();
+    static Map<String, ScheduledFuture<?>> SFM = new HashMap<String, ScheduledFuture<?>>();
 
     /**
      * @param args
@@ -31,7 +32,7 @@ public class WorkManager {
 
     public static boolean submitWork(IWork work) {
         if (work.isCycleWork()) {
-            if (workerSet.contains(work.getWorkName())) {
+            if (SFM.get(work.getWorkName()) != null) {
                 
                 System.out.println("worker:" + work.getWorkName()
                         + " already scheduled, skipp rescheduling.");
@@ -43,10 +44,10 @@ public class WorkManager {
                     + "delayBeforeNxt:" + work.getDelayBeforeNxt()
                     + " timeUnit:" + work.getTimeUnit());
 
-            exec.scheduleWithFixedDelay(work, work.getInitDelay(),
+            ScheduledFuture<?> sf = exec.scheduleWithFixedDelay(work, work.getInitDelay(),
                     work.getDelayBeforeNxt(), work.getTimeUnit());
 
-            workerSet.add(work.getWorkName());
+            SFM.put(work.getWorkName(), sf);
         }
         else
         {
@@ -54,15 +55,35 @@ public class WorkManager {
                     + " scheduled, with initdelay:" + work.getInitDelay()
                     + "delayBeforeNxt:" + work.getDelayBeforeNxt()
                     + " timeUnit:" + work.getTimeUnit());
-            exec.schedule(work, work.getInitDelay(), work.getTimeUnit());
+            ScheduledFuture<?> sf = exec.schedule(work, work.getInitDelay(), work.getTimeUnit());
+            SFM.put(work.getWorkName(), sf);
         }
 
         return true;
     }
 
-    static void shutdownWorks() {
+    public static void shutdownWorks() {
         exec.shutdown();
-        workerSet.clear();
+        SFM.clear();
     }
+    
+    public static boolean cancelWork(String name)
+    {
+    	ScheduledFuture<?> sf = SFM.get(name);
+    	
+    	System.out.println("cancelling work:" + name);
+    	if (sf != null)
+    	{
+    		if(sf.cancel(true))
+    		{
+    			SFM.remove(name);
+    			System.out.println("work is cancalled:" + name);
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    
 
 }

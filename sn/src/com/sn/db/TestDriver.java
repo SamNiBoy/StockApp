@@ -1,135 +1,96 @@
-package com.sn.timerTask;
+package com.sn.db;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.sql.*;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.io.BufferedReader;
+import java.io.IOException;
 
-import com.sn.db.DBManager;
-import com.sn.reporter.WeChatReporter;
+public class TestDriver {
 
-public class StkFetcher extends TimerTask {
-
-    private String lstStkDat[] = new String[100];
-    @Override
-    public void run() {
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
         // TODO Auto-generated method stub
-        String str;
-        Connection con = DBManager.getConnection();
-        int cnt = 0;
-        boolean hasDiff = false;
-        
+
         try {
-            con.setAutoCommit(false);
-            Statement stm = con.createStatement();
-            String fs = getFetchSql(), cs;
-            URL url = new URL(fs);
+            // testDB();
+            testReadingURL();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public static final String drive = "oracle.jdbc.driver.OracleDriver";
+    /**
+     * 连接地址，各个厂商提供单独记住 jdbc:oracle:thin:@localhost:1521:ORCL localhost 是ip地址。
+     */
+    public static final String url1 = "jdbc:oracle:thin:@192.168.0.100:1521:SO";
+    public static final String url2 = "jdbc:oracle:thin:@192.168.0.52:1521:ORCL";
+    /**
+     * 用户 密码
+     */
+    public static final String DBUSER = "samni";
+    public static final String password = "samni";
+
+    public static void testDB() throws Exception {
+        // TODO Auto-generated method stub
+        Connection conn = null;// 表示数据库连接
+        Statement stmt = null;// 表示数据库的更新
+        ResultSet result = null;// 查询数据库
+        Class.forName(drive);// 使用class类来加载程序
+        conn = DriverManager.getConnection(url2, DBUSER, password); // 连接数据库
+        // Statement接口要通过connection接口来进行实例化操作
+        stmt = conn.createStatement();
+        // 执行SQL语句来查询数据库
+        result = stmt.executeQuery("SELECT 'abc' name FROM dual");
+        while (result.next()) {// 判断有没有下一行
+            String name = result.getString(1);
+            System.out.print("name=" + name + ";");
+            System.out.println();
+        }
+
+        // System.out.println(conn);
+        result.close();// 数据库先开后关
+        stmt.close();
+        conn.close();// 关闭数据库
+
+    }
+
+    static void testReadingURL() {
+        String str;
+        try {
+            URL url = new URL("http://hq.sinajs.cn/list=sz000031");
             InputStream is = url.openStream();
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
             while ((str = br.readLine()) != null) {
-                if (cnt == 100 && !hasDiff)
-                {
-                    System.out.println("Stock data is 100 times same, skip fetching...");
-                    break;
-                }
-                if (!hasDiff && str.equals(lstStkDat[cnt]))
-                {
-                    cnt++;
-                    System.out.println(cnt + " Stock data is same, skip fetching...");
-                    continue;
-                }
-                else
-                {
-                    hasDiff = true;
-                    if (cnt < 100)
-                    {
-                        lstStkDat[cnt++] = str;                        
-                    }
-                }
                 System.out.println(str);
-                cs = createStockData(str);
-                
-                if (cs != null)
-                {
-                    stm.execute(cs);
-                }
+                createStockData(str);
             }
             br.close();
-            stm.close();
-            con.commit();
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                con.rollback();
-            } catch (SQLException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
+        } catch (IOException e) {
+            System.out.println(e);
         }
     }
-    
-    static String getFetchSql()
-    {
-        Connection con = DBManager.getConnection();
-        Statement stm = null;
-        ResultSet rs = null;
-        String sql = "select area, id from stk";
-        
-        String stkSql = "http://hq.sinajs.cn/list=";
-        String stkLst = "";
-        
-        try{
-            stm = con.createStatement();
-            rs = stm.executeQuery(sql);
-            while (rs.next()) {
-                stkLst += stkLst.length() > 0 ? "," : "";
-                stkLst += rs.getString("area") + rs.getString("id");
-            }
-        }
-        catch(Exception e)
-        {
-            try {
-                stm.close();
-            } catch (SQLException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-            e.printStackTrace();
-        }
-        System.out.println(stkSql + stkLst);
-        
-        return stkSql + stkLst;
-    }
+
     /*
      * var hq_str_sh601318=
      * "中国平安,86.30,86.31,84.41,86.30,83.70,84.38,84.40,156070902,13235768984,2200,84.38,20300,84.37,12800,84.36,24100,84.35,3000,84.33,40750,84.40,54800,84.42,400,84.44,3300,84.45,2500,84.46,2015-05-15,15:04:06,00"
      * ;
      */
-    static String createStockData(String stkDat) {
+    static void createStockData(String stkDat) {
         String dts[] = stkDat.split(",");
-        
-        if (dts.length < 32)
-        {
-            System.out.println("Exception stkDat(Less than 32 columns):" + stkDat);
-            return null;
-        }
         for (int i = 0; i < dts.length; i++) {
             System.out.println(i + ":" + dts[i]);
         }
-        
         String area = dts[0].substring(11, 13);
         String stkID = dts[0].substring(13, 19);
-        String stkName = dts[0].substring(21);
+        String stkName = dts[0].substring(21, 25);
         System.out.println("area:" + area + " stkID:" + stkID + " stkName:" + stkName);
         String py = "";
         double td_opn_pri = Double.valueOf(dts[1]);
@@ -231,18 +192,22 @@ public class StkFetcher extends TimerTask {
                                + "to_date('" + dl_dt.toString() +" " + dl_tm +"', 'yyyy-mm-dd hh24:mi:ss')" + ", '"
                                + dl_tm + "'," +"sysdate)";
         System.out.println("sql:" + sql);
-        
-        return sql;
 
+        Connection conn = null;// 表示数据库连接
+        Statement stmt = null;// 表示数据库的更新
+        ResultSet result = null;// 查询数据库
+        try {
+        Class.forName(drive);// 使用class类来加载程序
+        conn = DriverManager.getConnection(url2, DBUSER, password); // 连接数据库
+        // Statement接口要通过connection接口来进行实例化操作
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+        conn.close();// 关闭数据库
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
     }
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-        // TODO Auto-generated method stub
-
-        Timer timer = new Timer();  
-        timer.schedule(new StkFetcher(), 5000, 1000 * 60); 
-    }
-
 }

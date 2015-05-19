@@ -1,4 +1,4 @@
-package com.sn;
+package com.sn.basic;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

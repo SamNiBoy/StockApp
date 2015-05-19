@@ -1,4 +1,4 @@
-package com.sn.work;
+package com.sn.work.itf;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
