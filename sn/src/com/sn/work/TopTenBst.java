@@ -64,6 +64,10 @@ public class TopTenBst implements IWork {
                         + "\n";
             }
             stm.close();
+            if (msg.length() <= 0)
+            {
+            	msg = "No enough stock data available, use option 3 fetch first.";
+            }
             System.out.println("calculating top 10 bst:" + msg + " for opt 1");
             res = msg;
         } catch (Exception e) {
