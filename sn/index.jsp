@@ -45,7 +45,8 @@ System.out.println(xmlS);
 <%
 WeChatReporter wcr = new WeChatReporter();
 wcr.setWcMsg(xmlS);
-out.print(wcr.getResponse());
-System.out.println(wcr.getResponse());
+String msg = wcr.getResponse();
+out.print(msg);
+System.out.println(msg);
 %>
 

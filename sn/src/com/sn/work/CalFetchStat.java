@@ -51,6 +51,7 @@ public class CalFetchStat implements IWork {
                 msg += "Total stkDat:" + rs.getLong("totCnt") + "\n"
                       +"CNT/STK:" + rs.getLong("cntPerStk") + "\n";
             }
+            rs.close();
             stm.close();
             System.out.println("calculate fetch stat msg:" + msg + " for opt 5");
             res = msg;

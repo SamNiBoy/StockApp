@@ -57,17 +57,19 @@ public class FetchStockData implements IWork {
                 stkLst += stkLst.length() > 0 ? "," : "";
                 stkLst += rs.getString("area") + rs.getString("id");
             }
-            stm.close();
         }
         catch(Exception e)
         {
+            e.printStackTrace();
+        }
+        finally {
             try {
+                rs.close();
                 stm.close();
             } catch (SQLException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
-            }
-            e.printStackTrace();
+            }            
         }
         System.out.println(stkSql + stkLst);
         
@@ -232,7 +234,7 @@ public class FetchStockData implements IWork {
                 
                 if (cs != null)
                 {
-                    stm.execute(cs);
+                    stm.executeUpdate(cs);
                 }
             }
             br.close();
