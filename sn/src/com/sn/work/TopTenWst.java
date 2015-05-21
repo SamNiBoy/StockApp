@@ -59,7 +59,9 @@ public class TopTenWst implements IWork {
                 msg += "CP: " + rs.getString("cur_pri") + "\n";
                 msg += "CPD: " + rs.getString("cur_pri_df") + "\n";
             }
+            rs.close();
             stm.close();
+            con.close();
             if (msg.length() <= 0)
             {
             	msg = "No enough stock data available, use option 3 fetch first.";

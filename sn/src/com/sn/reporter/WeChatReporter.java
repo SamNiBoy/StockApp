@@ -69,7 +69,7 @@ public class WeChatReporter extends BaseWCReporter{
                 resContent = ttw.getWorkResult();
             }
             else if (content.equals("3")) {
-                FetchStockData fsd = new FetchStockData(0, 3);
+                FetchStockData fsd = new FetchStockData(0, 60);
                 WorkManager.submitWork(fsd);
                 resContent = "Started fetching stock data!";
             }

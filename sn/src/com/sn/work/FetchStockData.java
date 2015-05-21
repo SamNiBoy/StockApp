@@ -70,6 +70,7 @@ public class FetchStockData implements IWork {
             try {
                 rs.close();
                 stm.close();
+                con.close();
             } catch (SQLException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
@@ -244,6 +245,7 @@ public class FetchStockData implements IWork {
             br.close();
             stm.close();
             con.commit();
+            con.close();
         } catch (Exception e) {
             e.printStackTrace();
             try {

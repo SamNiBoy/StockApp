@@ -58,7 +58,9 @@ public class TopTenBst implements IWork {
                 + "  order by df.cur_pri_df desc ";
         try {
             Statement stm = con.createStatement();
+            log.info("before gettop10Bst...");
             ResultSet rs = stm.executeQuery(sql);
+            log.info("after gettop10Bst...");
 
             for (int i = 0; i < 10 && rs.next(); i++) {
                 msg += (i + 1) + ": " + rs.getString("id") + " "
@@ -67,7 +69,10 @@ public class TopTenBst implements IWork {
                 msg += "CPD: " + rs.getString("cur_pri_df")
                         + "\n";
             }
+            rs.close();
             stm.close();
+            con.close();
+            
             if (msg.length() <= 0)
             {
             	msg = "No enough stock data available, use option 3 fetch first.";

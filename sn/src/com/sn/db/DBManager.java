@@ -54,9 +54,9 @@ public class DBManager {
             log.info("Getting db connection...");
             try {
                 Class.forName(drive);
-                log.info("connecting db using:" + url3 + "\n Usr/pwd:" + DBUSER
+                log.info("connecting db using:" + url2 + "\n Usr/pwd:" + DBUSER
                         + "/" + password);
-                conn = DriverManager.getConnection(url3, DBUSER, password);
+                conn = DriverManager.getConnection(url2, DBUSER, password);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -80,7 +80,7 @@ public class DBManager {
     }
 
     static void initLog4j() {
-        PropertyConfigurator.configure(AppDir1
+        PropertyConfigurator.configure(AppDir2
                 + "/sn/WEB-INF/conf/log4j.properties");
     }
 
@@ -97,7 +97,7 @@ public class DBManager {
             e.printStackTrace();
             log.error("Can not load driver class:" + drive);
         }
-        ds.setJdbcUrl(url3);
+        ds.setJdbcUrl(url2);
         ds.setUser(DBUSER);
         ds.setPassword(password);
         ds.setMaxPoolSize(40);
