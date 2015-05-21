@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 import com.sn.db.DBManager;
 import com.sn.work.itf.IWork;
 
@@ -22,6 +24,8 @@ public class TopTenBst implements IWork {
     /* Result calcualted by this worker.
      */
     static String res = "Getting top 10 best is schedulled, try again later.";
+    
+    static Logger log = Logger.getLogger(DBManager.class);
     /**
      * @param args
      */
@@ -68,7 +72,7 @@ public class TopTenBst implements IWork {
             {
             	msg = "No enough stock data available, use option 3 fetch first.";
             }
-            System.out.println("calculating top 10 bst:" + msg + " for opt 1");
+            log.info("calculating top 10 bst:" + msg + " for opt 1");
             res = msg;
         } catch (Exception e) {
             e.printStackTrace();
@@ -128,7 +132,7 @@ public class TopTenBst implements IWork {
 //                  + "\n";
 //      }
 //      stm.close();
-//      System.out.println("putting msg:" + msg + " for opt 3");
+//      log.info("putting msg:" + msg + " for opt 3");
 //      msgForMenu.put("3", msg);
 //
 //  } catch (Exception e) {
@@ -159,7 +163,7 @@ public class TopTenBst implements IWork {
 //                  + "\n";
 //      }
 //      stm.close();
-//      System.out.println("putting msg:" + msg + " for opt 4");
+//      log.info("putting msg:" + msg + " for opt 4");
 //      msgForMenu.put("4", msg);
 //
 //  } catch (Exception e) {

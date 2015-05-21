@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 import com.sn.db.DBManager;
 import com.sn.work.itf.IWork;
 
@@ -23,6 +25,8 @@ public class ShutDownPC implements IWork {
     /* Result calcualted by this worker.
      */
     static String res = "PC is shuting Down.";
+    
+    static Logger log = Logger.getLogger(ShutDownPC.class);
     /**
      * @param args
      */
@@ -39,10 +43,10 @@ public class ShutDownPC implements IWork {
     
     public void run()
     {
-        System.out.println("PC shutdown invoked, shutdow works first.");
+        log.info("PC shutdown invoked, shutdow works first.");
         WorkManager.shutdownWorks();
         
-        System.out.println("Now PC shuting down.");
+        log.info("Now PC shuting down.");
         Runtime rt = Runtime.getRuntime();
         try {
             rt.exec("shutdown -s -t 40");

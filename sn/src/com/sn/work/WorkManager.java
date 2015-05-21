@@ -10,6 +10,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 import com.sn.work.itf.IWork;
 
 /* CycleWork Manager.
@@ -22,6 +24,7 @@ public class WorkManager {
 
     static Map<String, ScheduledFuture<?>> SFM = new HashMap<String, ScheduledFuture<?>>();
 
+    static Logger log = Logger.getLogger(WorkManager.class);
     /**
      * @param args
      */
@@ -34,12 +37,12 @@ public class WorkManager {
         if (work.isCycleWork()) {
             if (SFM.get(work.getWorkName()) != null) {
                 
-                System.out.println("worker:" + work.getWorkName()
+                log.info("worker:" + work.getWorkName()
                         + " already scheduled, skipp rescheduling.");
                 return false;
             }
 
-            System.out.println("worker:" + work.getWorkName()
+            log.info("worker:" + work.getWorkName()
                     + " scheduled, with initdelay:" + work.getInitDelay()
                     + "delayBeforeNxt:" + work.getDelayBeforeNxt()
                     + " timeUnit:" + work.getTimeUnit());
@@ -51,7 +54,7 @@ public class WorkManager {
         }
         else
         {
-            System.out.println("Non cycle worker:" + work.getWorkName()
+            log.info("Non cycle worker:" + work.getWorkName()
                     + " scheduled, with initdelay:" + work.getInitDelay()
                     + "delayBeforeNxt:" + work.getDelayBeforeNxt()
                     + " timeUnit:" + work.getTimeUnit());
@@ -71,13 +74,13 @@ public class WorkManager {
     {
     	ScheduledFuture<?> sf = SFM.get(name);
     	
-    	System.out.println("cancelling work:" + name);
+    	log.info("cancelling work:" + name);
     	if (sf != null)
     	{
     		if(sf.cancel(true))
     		{
     			SFM.remove(name);
-    			System.out.println("work is cancalled:" + name);
+    			log.info("work is cancalled:" + name);
     			return true;
     		}
     	}

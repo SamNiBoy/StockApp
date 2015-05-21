@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 import com.sn.db.DBManager;
 import com.sn.work.itf.IWork;
 
@@ -25,6 +27,8 @@ public class CalFetchStat implements IWork {
     /**
      * @param args
      */
+    static Logger log = Logger.getLogger(CalFetchStat.class);
+    
     public static void main(String[] args) {
         // TODO Auto-generated method stub
 
@@ -53,7 +57,7 @@ public class CalFetchStat implements IWork {
             }
             rs.close();
             stm.close();
-            System.out.println("calculate fetch stat msg:" + msg + " for opt 5");
+            log.info("calculate fetch stat msg:" + msg + " for opt 5");
             res = msg;
         } catch (Exception e) {
             e.printStackTrace();

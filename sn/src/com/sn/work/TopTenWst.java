@@ -13,6 +13,7 @@ import com.sn.work.itf.IWork;
 public class TopTenWst implements IWork {
 
     Logger log = Logger.getLogger(TopTenWst.class);
+
     long initDelay = 0;
     long delayBeforNxtStart = 5;
     static String res = "Getting top 10 worse is schedulled, try again later.";
@@ -63,7 +64,7 @@ public class TopTenWst implements IWork {
             {
             	msg = "No enough stock data available, use option 3 fetch first.";
             }
-            System.out.println("calculating top 10 bst:" + msg + " for opt 2");
+            log.info("calculating top 10 bst:" + msg + " for opt 2");
             res = msg;
         } catch (Exception e) {
             e.printStackTrace();

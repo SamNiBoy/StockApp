@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 import com.sn.db.DBManager;
 import com.sn.work.itf.IWork;
 
@@ -26,12 +28,15 @@ public class FetchStockData implements IWork {
     
     TimeUnit tu = TimeUnit.MILLISECONDS;
     
+    static Logger log = Logger.getLogger(FetchStockData.class);
     /**
      * @param args
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-
+        Logger.getRootLogger().shutdown();
+        FetchStockData fsd = new FetchStockData(1, 3);
+        fsd.run();
     }
     
     public FetchStockData(long id, long dbn)
@@ -71,7 +76,7 @@ public class FetchStockData implements IWork {
                 e1.printStackTrace();
             }            
         }
-        System.out.println(stkSql + stkLst);
+        log.info(stkSql + stkLst);
         
         return stkSql + stkLst;
     }
@@ -86,17 +91,17 @@ public class FetchStockData implements IWork {
         
         if (dts.length < 32)
         {
-            System.out.println("Exception stkDat(Less than 32 columns):" + stkDat);
+            log.info("Exception stkDat(Less than 32 columns):" + stkDat);
             return null;
         }
         for (int i = 0; i < dts.length; i++) {
-            System.out.println(i + ":" + dts[i]);
+            log.info(i + ":" + dts[i]);
         }
         
         String area = dts[0].substring(11, 13);
         String stkID = dts[0].substring(13, 19);
         String stkName = dts[0].substring(21);
-        System.out.println("area:" + area + " stkID:" + stkID + " stkName:" + stkName);
+        log.info("area:" + area + " stkID:" + stkID + " stkName:" + stkName);
         String py = "";
         double td_opn_pri = Double.valueOf(dts[1]);
         double yt_cls_pri = Double.valueOf(dts[2]);
@@ -196,7 +201,7 @@ public class FetchStockData implements IWork {
                                    + s5_pri + ","
                                + "to_date('" + dl_dt.toString() +" " + dl_tm +"', 'yyyy-mm-dd hh24:mi:ss')" + ", '"
                                + dl_tm + "'," +"sysdate)";
-        System.out.println("sql:" + sql);
+        log.info("sql:" + sql);
         
         return sql;
 
@@ -221,7 +226,7 @@ public class FetchStockData implements IWork {
             while ((str = br.readLine()) != null) {
                 if (str.equals(lstStkDat))
                 {
-                    System.out.println("Stock data is same, skip fetching...");
+                    log.info("Stock data is same, skip fetching...");
                     break;
                 }
                 
@@ -229,7 +234,7 @@ public class FetchStockData implements IWork {
                 {
                     lstStkDat = str;
                 }
-                System.out.println(str);
+                log.info(str);
                 cs = createStockData(str);
                 
                 if (cs != null)

@@ -8,6 +8,10 @@ import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
+
+import com.sn.work.WorkManager;
+
 public class TestDriver {
 
     /**
@@ -37,6 +41,7 @@ public class TestDriver {
     public static final String DBUSER = "samni";
     public static final String password = "samni";
 
+    static Logger log = Logger.getLogger(TestDriver.class);
     public static void testDB() throws Exception {
         // TODO Auto-generated method stub
         Connection conn = null;// 表示数据库连接
@@ -50,11 +55,10 @@ public class TestDriver {
         result = stmt.executeQuery("SELECT 'abc' name FROM dual");
         while (result.next()) {// 判断有没有下一行
             String name = result.getString(1);
-            System.out.print("name=" + name + ";");
-            System.out.println();
+            log.info("name=" + name + ";");
         }
 
-        // System.out.println(conn);
+        // log.info(conn);
         result.close();// 数据库先开后关
         stmt.close();
         conn.close();// 关闭数据库
@@ -69,12 +73,12 @@ public class TestDriver {
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
             while ((str = br.readLine()) != null) {
-                System.out.println(str);
+                log.info(str);
                 createStockData(str);
             }
             br.close();
         } catch (IOException e) {
-            System.out.println(e);
+            log.info(e);
         }
     }
 
@@ -86,12 +90,12 @@ public class TestDriver {
     static void createStockData(String stkDat) {
         String dts[] = stkDat.split(",");
         for (int i = 0; i < dts.length; i++) {
-            System.out.println(i + ":" + dts[i]);
+            log.info(i + ":" + dts[i]);
         }
         String area = dts[0].substring(11, 13);
         String stkID = dts[0].substring(13, 19);
         String stkName = dts[0].substring(21, 25);
-        System.out.println("area:" + area + " stkID:" + stkID + " stkName:" + stkName);
+        log.info("area:" + area + " stkID:" + stkID + " stkName:" + stkName);
         String py = "";
         double td_opn_pri = Double.valueOf(dts[1]);
         double yt_cls_pri = Double.valueOf(dts[2]);
@@ -191,7 +195,7 @@ public class TestDriver {
                                    + s5_pri + ","
                                + "to_date('" + dl_dt.toString() +" " + dl_tm +"', 'yyyy-mm-dd hh24:mi:ss')" + ", '"
                                + dl_tm + "'," +"sysdate)";
-        System.out.println("sql:" + sql);
+        log.info("sql:" + sql);
 
         Connection conn = null;// 表示数据库连接
         Statement stmt = null;// 表示数据库的更新

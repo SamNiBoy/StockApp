@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.log4j.Logger;
+
+import com.sn.basic.LoadStk;
 import com.sn.db.DBManager;
 import com.sn.work.CalFetchStat;
 import com.sn.work.FetchStockData;
@@ -19,6 +22,9 @@ import com.sn.work.TopTenWst;
 import com.sn.work.WorkManager;
 
 public class WeChatReporter extends BaseWCReporter{
+    
+    static Logger log = Logger.getLogger(WeChatReporter.class);
+    
     /**
      * @param args
      */
@@ -50,8 +56,7 @@ public class WeChatReporter extends BaseWCReporter{
             return printHelp();
         }
 
-        System.out.println("got input:[" + content + "]");
-        /* Get top 10 df1 */
+           log.info("got input:[" + content + "]");
             
             if (content.equals("1")) {
                 TopTenBst ttb = new TopTenBst(0, 3);

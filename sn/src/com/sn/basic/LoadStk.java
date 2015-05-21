@@ -6,10 +6,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.log4j.Logger;
+
 import com.sn.db.DBManager;
 
 public class LoadStk {
 
+    static Logger log = Logger.getLogger(LoadStk.class);
     /**
      * @param args
      */
@@ -29,7 +32,7 @@ public class LoadStk {
             
             String s = br.readLine();
             while (s != null) {
-                System.out.println(s);
+                log.info(s);
                 sql = CreateStk(s);
                 stm.execute(sql);
                 s = br.readLine();
@@ -70,7 +73,7 @@ public class LoadStk {
                 + "py" + "', '"
                 + values[3] + "')";
         
-        System.out.println(sql);
+        log.info(sql);
         return sql;
     }
 
