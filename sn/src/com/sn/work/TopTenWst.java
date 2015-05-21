@@ -49,6 +49,16 @@ public class TopTenWst implements IWork {
                 + "   and df.id = std.id "
                 + "   and not exists (select 'x' from curpri_df_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
                 + "  order by df.cur_pri_df ";
+        
+        sql = "select distinct stkdat.id, stk.name, stkdat.cur_pri - avt.avp pd from stkdat, "
+                + "(select id, avg(cur_pri) avp from stkdat where stkdat.cur_pri > 0 group by id) avt, "
+                + "stk "
+                + "where stkdat.id = avt.id "
+                + "and stkdat.cur_pri < avt.avp "
+                + "and stkdat.id = stk.id "
+                + "and not exists(select 'x' from stkdat sd1 where sd1.id = stkdat.id and sd1.ft_id > stkdat.ft_id having(count(sd1.ft_id)) > 0) "
+                + "order by stkdat.cur_pri - avt.avp";
+        
         try {
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery(sql);
@@ -56,8 +66,6 @@ public class TopTenWst implements IWork {
             for (int i = 0; i < 10 && rs.next(); i++) {
                 msg += (i + 1) + ": " + rs.getString("id") + " "
                         + rs.getString("name") + "\n";
-                msg += "CP: " + rs.getString("cur_pri") + "\n";
-                msg += "CPD: " + rs.getString("cur_pri_df") + "\n";
             }
             rs.close();
             stm.close();

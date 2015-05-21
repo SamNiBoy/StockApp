@@ -97,11 +97,13 @@ create view curpri_df_vw as
           where t3.id  = t1.id
             and t3.ft_id > t1.ft_id
             and t3.ft_id < t2.ft_id
-         ) 
+         )
+   and t1.cur_pri > 0
+   and t2.cur_pri > 0
   );
 
 /* Need below index to improve performance of curpri_df2_vw*/
-create index ft_idd_idx on stkDat (ft_id, id);
+create index ft_idd_idx on stkDat (id, ft_id, cur_pri);
 
   /*View of cur_pri 2nd diff */
 create view curpri_df2_vw as 
