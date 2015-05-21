@@ -1,5 +1,6 @@
 package com.sn.db;
 
+import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -8,10 +9,12 @@ import java.sql.Statement;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.sn.work.TopTenWst;
 
 public class DBManager {
 
+    static Logger log = Logger.getLogger(DBManager.class);
     public static final String drive = "oracle.jdbc.driver.OracleDriver";
     /**
      * 连接地址，各个厂商提供单独记住 jdbc:oracle:thin:@localhost:1521:ORCL localhost 是ip地址。
@@ -27,13 +30,15 @@ public class DBManager {
     private static final String AppDir1 = "D:/mfc/stockapp";
     private static final String AppDir2 = "E:/mfc/stockapp";
 
+    static ComboPooledDataSource  ds = null;
+    static Connection conn = null;
+
+
     static {
         initLog4j();
+        initDataSource();
     }
     // TODO Auto-generated method stub
-    static Connection conn = null;
-    
-    static Logger log = Logger.getLogger(DBManager.class);
 
     /**
      * @param args
@@ -44,12 +49,13 @@ public class DBManager {
 
     }
 
-    static public Connection getConnection() {
+    static public Connection getConnection0() {
         if (conn == null) {
             log.info("Getting db connection...");
             try {
                 Class.forName(drive);
-                log.info("connecting db using:" + url3 + "\n Usr/pwd:" + DBUSER + "/" + password);
+                log.info("connecting db using:" + url3 + "\n Usr/pwd:" + DBUSER
+                        + "/" + password);
                 conn = DriverManager.getConnection(url3, DBUSER, password);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
@@ -58,9 +64,45 @@ public class DBManager {
         }
         return conn;
     }
-    
-    static void initLog4j()
+
+    static public Connection getConnection() {
+        log.info("Getting db connection from pool...");
+        Connection conn = null;
+
+        try {
+            conn = ds.getConnection();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error("Can not get db connection!");
+        }
+        return conn;
+    }
+
+    static void initLog4j() {
+        PropertyConfigurator.configure(AppDir1
+                + "/sn/WEB-INF/conf/log4j.properties");
+    }
+
+    static void initDataSource()
     {
-        PropertyConfigurator.configure(AppDir1 + "/sn/WEB-INF/conf/log4j.properties"); 
+        log.info("connecting db using:" + url3 + "\n Usr/pwd:" + DBUSER
+                + "/" + password);
+        ds = new ComboPooledDataSource();
+
+        try {
+            ds.setDriverClass(drive);
+        } catch (PropertyVetoException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error("Can not load driver class:" + drive);
+        }
+        ds.setJdbcUrl(url3);
+        ds.setUser(DBUSER);
+        ds.setPassword(password);
+        ds.setMaxPoolSize(40);
+        ds.setMinPoolSize(10);
+        ds.setInitialPoolSize(10);
+        ds.setMaxStatements(180);
     }
 }

@@ -34,7 +34,6 @@ public class FetchStockData implements IWork {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        Logger.getRootLogger().shutdown();
         FetchStockData fsd = new FetchStockData(1, 3);
         fsd.run();
     }
