@@ -1,0 +1,40 @@
+load data
+infile 'C:\Users\sam.ni\Desktop\stkDat\table_export.csv'
+into table "STKDAT"
+fields terminated by ','
+(
+        ft_id,
+        id,
+        td_opn_pri,
+        yt_cls_pri,
+        cur_pri,
+        td_hst_pri,
+        td_lst_pri,
+        b1_bst_pri,
+        s1_bst_pri,
+        dl_stk_num,
+        dl_mny_num,
+        b1_num,
+        b1_pri,
+        b2_num,
+        b2_pri,
+        b3_num,
+        b3_pri,
+        b4_num,
+        b4_pri,
+        b5_num,
+        b5_pri,
+        s1_num,
+        s1_pri,
+        s2_num,
+        s2_pri,
+        s3_num,
+        s3_pri,
+        s4_num,
+        s4_pri,
+        s5_num,
+        s5_pri,
+        dl_dt DATE "DD/MM/YYYY HH24MISS",
+        dl_tm,
+        ft_dt DATE "DD/MM/YYYY HH24MISS"
+)
