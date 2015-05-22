@@ -47,7 +47,6 @@ public class FetchStockData implements IWork {
     
     static String getFetchSql()
     {
-        Connection con = DBManager.getConnection();
         Statement stm = null;
         ResultSet rs = null;
         String sql = "select area, id from stk";
@@ -71,7 +70,6 @@ public class FetchStockData implements IWork {
             try {
                 rs.close();
                 stm.close();
-                con.close();
             } catch (SQLException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
@@ -99,7 +97,6 @@ public class FetchStockData implements IWork {
         String area = dts[0].substring(11, 13);
         String stkID = dts[0].substring(13, 19);
         String stkName = dts[0].substring(21);
-        log.info("area:" + area + " stkID:" + stkID + " stkName:" + stkName);
         String py = "";
         double td_opn_pri = Double.valueOf(dts[1]);
         double yt_cls_pri = Double.valueOf(dts[2]);

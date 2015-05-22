@@ -57,6 +57,7 @@ public class CalFetchStat implements IWork {
             }
             rs.close();
             stm.close();
+            con.close();
             log.info("calculate fetch stat msg:" + msg + " for opt 5");
             res = msg;
         } catch (Exception e) {
