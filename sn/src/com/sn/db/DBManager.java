@@ -71,6 +71,7 @@ public class DBManager {
 
         try {
             conn = ds.getConnection();
+            log.info("problem connection number:" + ds.getNumUnclosedOrphanedConnections());
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -104,5 +105,6 @@ public class DBManager {
         ds.setMinPoolSize(10);
         ds.setInitialPoolSize(10);
         ds.setMaxStatements(180);
+        ds.setAutoCommitOnClose(true);
     }
 }

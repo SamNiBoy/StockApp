@@ -18,6 +18,7 @@ import com.sn.work.itf.IWork;
 
 public class FetchStockData implements IWork {
 
+    static Connection con = DBManager.getConnection();
     /* Initial delay before executing work.
      */
     long initDelay = 0;
@@ -93,9 +94,6 @@ public class FetchStockData implements IWork {
         {
             log.info("Exception stkDat(Less than 32 columns):" + stkDat);
             return null;
-        }
-        for (int i = 0; i < dts.length; i++) {
-            log.info(i + ":" + dts[i]);
         }
         
         String area = dts[0].substring(11, 13);
@@ -213,7 +211,6 @@ public class FetchStockData implements IWork {
     {
         // TODO Auto-generated method stub
         String str;
-        Connection con = DBManager.getConnection();
         
         try {
             con.setAutoCommit(false);
@@ -226,7 +223,8 @@ public class FetchStockData implements IWork {
             while ((str = br.readLine()) != null) {
                 if (str.equals(lstStkDat))
                 {
-                    log.info("Stock data is same, skip fetching...");
+                    log.info("Stock data is same, cancel current work...");
+                    WorkManager.cancelWork(this.getWorkName());
                     break;
                 }
                 
@@ -245,7 +243,6 @@ public class FetchStockData implements IWork {
             br.close();
             stm.close();
             con.commit();
-            con.close();
         } catch (Exception e) {
             e.printStackTrace();
             try {
