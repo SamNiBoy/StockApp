@@ -82,24 +82,93 @@ dl_tm varchar2(8 byte) not null,
 ft_dt date not null
 );
 
-/*View of cur_pri 1st diff */
-create view curpri_df_vw as 
+/* stkDat2 stores data converted from stkdat by removing duplicates*/
+create table stkDat2(
+ft_id number not null primary key,
+id varchar2(6 byte) not null,
+td_opn_pri number not null,
+yt_cls_pri number not null,
+cur_pri number not null,
+td_hst_pri number not null,
+td_lst_pri number not null,
+b1_bst_pri number not null,
+s1_bst_pri number not null,
+dl_stk_num number not null,
+dl_mny_num number not null,
+b1_num number not null,
+b1_pri number not null,
+b2_num number not null,
+b2_pri number not null,
+b3_num number not null,
+b3_pri number not null,
+b4_num number not null,
+b4_pri number not null,
+b5_num number not null,
+b5_pri number not null,
+s1_num number not null,
+s1_pri number not null,
+s2_num number not null,
+s2_pri number not null,
+s3_num number not null,
+s3_pri number not null,
+s4_num number not null,
+s4_pri number not null,
+s5_num number not null,
+s5_pri number not null,
+dl_dt date not null
+);
+
+/* stkDDF stores data diffs*/
+create table stkDDF(
+ft_id number not null primary key,
+id varchar2(6 byte) not null,
+td_opn_pri number not null,
+yt_cls_pri number not null,
+cur_pri number not null,
+td_hst_pri number not null,
+td_lst_pri number not null,
+b1_bst_pri number not null,
+s1_bst_pri number not null,
+dl_stk_num number not null,
+dl_mny_num number not null,
+b1_num number not null,
+b1_pri number not null,
+b2_num number not null,
+b2_pri number not null,
+b3_num number not null,
+b3_pri number not null,
+b4_num number not null,
+b4_pri number not null,
+b5_num number not null,
+b5_pri number not null,
+s1_num number not null,
+s1_pri number not null,
+s2_num number not null,
+s2_pri number not null,
+s3_num number not null,
+s3_pri number not null,
+s4_num number not null,
+s4_pri number not null,
+s5_num number not null,
+s5_pri number not null,
+dl_dt date not null
+);
+/*View of 1st diff */
+create view dfs_vw as 
 (select t1.id,
         t2.cur_pri- t1.cur_pri cur_pri_df,
         t2.ft_id
-   from stkdat t1,
-        stkdat t2
+   from stkdat2 t1,
+        stkdat2 t2
   where t1.id  = t2.id
     and t2.ft_id > t1.ft_id
     and not exists
         (select 'x'
-           from stkdat t3
+           from stkdat2 t3
           where t3.id  = t1.id
             and t3.ft_id > t1.ft_id
             and t3.ft_id < t2.ft_id
          )
-   and t1.cur_pri > 0
-   and t2.cur_pri > 0
   );
 
 /* Need below index to improve performance of curpri_df2_vw*/
