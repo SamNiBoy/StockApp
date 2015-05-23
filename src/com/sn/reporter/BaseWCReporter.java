@@ -1,23 +1,8 @@
 package com.sn.reporter;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Timer;
-import java.util.concurrent.ConcurrentHashMap;
 
-import com.sn.db.DBManager;
 import com.sn.wechat.msg.itf.IWCMsg;
-import com.sn.work.FetchStockData;
-import com.sn.work.TopTenBst;
-import com.sn.work.WorkManager;
-import com.sn.work.output.CalFetchStat;
-import com.sn.work.output.ShutDownPC;
-import com.sn.work.output.TopTenWst;
 
 public abstract class BaseWCReporter implements IWCMsg {
     /*

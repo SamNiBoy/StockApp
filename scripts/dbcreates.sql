@@ -117,6 +117,7 @@ s5_num number not null,
 s5_pri number not null,
 dl_dt date not null
 );
+create index stkdat2_id_dldt_idx on stkdat2 (id, dl_dt)
 
 /* stkDDF stores data diffs*/
 create table stkDDF(
@@ -149,6 +150,8 @@ s5_pri_df number not null,
 dl_dt date not null,
 CONSTRAINT "stkddf_PK" PRIMARY KEY (ft_id, gap, id)
 );
+
+create index stkdff_id_dldt_idx on stkddf (id, dl_dt)
 
 /*View of 1st diff */
 create view dfs_vw as 

@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 
 
 import com.sn.db.DBManager;
+import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
 public class FetchStockData implements IWork {

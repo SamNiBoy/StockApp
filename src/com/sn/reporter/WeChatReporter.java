@@ -1,24 +1,12 @@
 package com.sn.reporter;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Timer;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.log4j.Logger;
 
-import com.sn.basic.LoadStk;
-import com.sn.db.DBManager;
-import com.sn.work.FetchStockData;
-import com.sn.work.TopTenBst;
 import com.sn.work.WorkManager;
+import com.sn.work.fetcher.FetchStockData;
 import com.sn.work.output.CalFetchStat;
 import com.sn.work.output.ShutDownPC;
+import com.sn.work.output.TopTenBst;
 import com.sn.work.output.TopTenWst;
 
 public class WeChatReporter extends BaseWCReporter{
