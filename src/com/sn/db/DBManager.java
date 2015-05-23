@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.sn.work.TopTenWst;
+import com.sn.work.output.TopTenWst;
 
 public class DBManager {
 

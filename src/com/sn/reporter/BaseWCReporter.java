@@ -12,12 +12,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.sn.db.DBManager;
 import com.sn.wechat.msg.itf.IWCMsg;
-import com.sn.work.CalFetchStat;
 import com.sn.work.FetchStockData;
-import com.sn.work.ShutDownPC;
 import com.sn.work.TopTenBst;
-import com.sn.work.TopTenWst;
 import com.sn.work.WorkManager;
+import com.sn.work.output.CalFetchStat;
+import com.sn.work.output.ShutDownPC;
+import com.sn.work.output.TopTenWst;
 
 public abstract class BaseWCReporter implements IWCMsg {
     /*

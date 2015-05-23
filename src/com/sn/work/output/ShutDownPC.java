@@ -1,4 +1,4 @@
-package com.sn.work;
+package com.sn.work.output;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
 public class ShutDownPC implements IWork {

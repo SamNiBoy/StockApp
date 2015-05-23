@@ -1,4 +1,4 @@
-package com.sn.work;
+package com.sn.work.fetcher;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
