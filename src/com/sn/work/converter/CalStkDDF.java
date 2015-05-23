@@ -60,52 +60,79 @@ public class CalStkDDF implements IWork {
 		String str;
 
 		try {
-			Statement stm = con.createStatement();
-			ResultSet rs;
-			String sql = "select t1.ft_id, t1.id, "
-					+ "cur_pri,"
-					+ " dl_stk_num,"
-					+ " dl_mny_num,"
-					+ " b1_num,"
-					+ " b1_pri,"
-					+ " b2_num,"
-					+ " b2_pri,"
-					+ " b3_num,"
-					+ " b3_pri,"
-					+ " b4_num,"
-					+ " b4_pri,"
-					+ " b5_num,"
-					+ " b5_pri,"
-					+ " s1_num,"
-					+ " s1_pri,"
-					+ " s2_num,"
-					+ " s2_pri,"
-					+ " s3_num,"
-					+ " s3_pri,"
-					+ " s4_num,"
-					+ " s4_pri,"
-					+ " s5_num,"
-					+ " s5_pri,"
-					+ " dl_dt "
-					+ " from stkdat2 t1 "
-					+ " where t1.dl_dt > (select decode(max(dl_dt), null, t1.dl_dt - 1/24/60/60, max(dl_dt)) from stkddf t2 where t1.id = t2.id) "
-					+ " order by t1.id, t1.ft_id";
+			Statement mainStm = con.createStatement();
+			ResultSet mainRs;
+			String mainSql = "select id from stk order by id";
 
-			log.info(sql);
-			rs = stm.executeQuery(sql);
-			
-			CrtDDF(rs, 5);
-			
-			rs.beforeFirst();
-			CrtDDF(rs, 10);
-			
-			rs.beforeFirst();
-			CrtDDF(rs, 30);
-			
-			rs.beforeFirst();
-			CrtDDF(rs, 60);
+			mainRs = mainStm.executeQuery(mainSql);
+			while (mainRs.next()) {
+				
+				String id = mainRs.getString("id");
 
-			stm.close();
+				Statement stmLstDt = con.createStatement();
+				String sqlLstDt = "select decode(max(to_char(dl_dt,'yyyy-mm-dd HH24:MI:SS')), null, 'xxxx', max(to_char(dl_dt,'yyyy-mm-dd HH24:MI:SS'))) lst_dl_dt from stkddf where id = '"
+						+ id + "'";
+				ResultSet rsLstDt = stmLstDt.executeQuery(sqlLstDt);
+
+				String clause = " where t1.id ='" + id + "'";
+				rsLstDt.next();
+				String LstDt = rsLstDt.getString("lst_dl_dt");
+				
+				stmLstDt.close();
+
+				log.info("Processing id:" + id + " got LstDt:" + LstDt);
+				
+				if (!LstDt.equals("xxxx")) {
+					clause += " and t1.dl_dt > to_date('" + LstDt + "', 'yyyy-mm-dd HH24:MI:SS')";
+				}
+				
+				Statement stm = con.createStatement();
+				ResultSet rs;
+				String sql = "select t1.ft_id, t1.id, "
+						+ "cur_pri,"
+						+ " dl_stk_num,"
+						+ " dl_mny_num,"
+						+ " b1_num,"
+						+ " b1_pri,"
+						+ " b2_num,"
+						+ " b2_pri,"
+						+ " b3_num,"
+						+ " b3_pri,"
+						+ " b4_num,"
+						+ " b4_pri,"
+						+ " b5_num,"
+						+ " b5_pri,"
+						+ " s1_num,"
+						+ " s1_pri,"
+						+ " s2_num,"
+						+ " s2_pri,"
+						+ " s3_num,"
+						+ " s3_pri,"
+						+ " s4_num,"
+						+ " s4_pri,"
+						+ " s5_num,"
+						+ " s5_pri,"
+						+ " dl_dt "
+						+ " from stkdat2 t1 "
+						+ clause
+						+ " order by t1.id, t1.ft_id";
+
+				log.info(sql);
+				rs = stm.executeQuery(sql);
+
+				CrtDDF(rs, 5);
+
+				rs = stm.executeQuery(sql);
+				CrtDDF(rs, 10);
+
+				rs = stm.executeQuery(sql);
+				CrtDDF(rs, 30);
+
+				rs = stm.executeQuery(sql);
+				CrtDDF(rs, 60);
+
+				stm.close();
+			}
 		} catch (Exception e) {
 			log.error("Error: " + e.getMessage());
 			e.printStackTrace();
@@ -113,7 +140,7 @@ public class CalStkDDF implements IWork {
 	}
 
 	private static boolean CrtDDF(ResultSet rs, int gap) {
-		
+
 		String sql;
 		long ft_id;
 		String id;
@@ -179,8 +206,9 @@ public class CalStkDDF implements IWork {
 					if (!rs.next())
 						break;
 					else {
-						String datestr = dl_dt.substring(0, 9);
-						String datestr2 = rs.getString("dl_dt").substring(0, 9);
+						String datestr = dl_dt.substring(0, 10);
+						String datestr2 = rs.getString("dl_dt")
+								.substring(0, 10);
 						if (!id.equals(rs.getString("id"))
 								|| !datestr.equals(datestr2)) {
 							log.info("Not Equal id1:" + id + " id2:"
@@ -219,6 +247,9 @@ public class CalStkDDF implements IWork {
 					s4_pri = rs.getDouble("s4_pri") - s4_pri;
 					s5_num = rs.getLong("s5_num") - s5_num;
 					s5_pri = rs.getDouble("s5_pri") - s5_pri;
+					
+					ft_id = rs.getLong("ft_id");
+					dl_dt = rs.getString("dl_dt");
 
 					sql = "insert into stkddf values (" + ft_id + "," + gap
 							+ ",'" + id + "'," + cur_pri + "," + dl_stk_num
