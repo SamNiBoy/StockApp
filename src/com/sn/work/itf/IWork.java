@@ -12,15 +12,15 @@ public interface IWork extends Runnable{
     /**
      * @param args
      */
-    
+
     public String getWorkName();
-    
+
     public String getWorkResult();
-    
+
     public long getInitDelay();
     public long getDelayBeforeNxt();
 
     public TimeUnit getTimeUnit();
-    
+
     public boolean isCycleWork();
 }

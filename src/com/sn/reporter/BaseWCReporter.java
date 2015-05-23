@@ -7,31 +7,31 @@ import com.sn.wechat.msg.itf.IWCMsg;
 public abstract class BaseWCReporter implements IWCMsg {
     /*
      * <xml> <ToUserName> <![CDATA[gh_a9586d5aa590]]> </ToUserName>
-     * 
+     *
      * <FromUserName> <![CDATA[osCWfs-ZVQZfrjRK0ml-eEpzeop0]]> </FromUserName>
-     * 
+     *
      * <CreateTime> 1431827441 </CreateTime>
-     * 
+     *
      * <MsgType> <![CDATA[text]]> </MsgType>
-     * 
+     *
      * <Content> <![CDATA[Standard ]]> </Content>
-     * 
+     *
      * <MsgId> 6149652032815793242 </MsgId>
-     * 
+     *
      * </xml>
      */
-	String frmUsr;
-	String toUsr;
-	String content;
-	
-	String resContent;
+    String frmUsr;
+    String toUsr;
+    String content;
+
+    String resContent;
     private String wcMsg;
-    
+
     public void setWcMsg(String wcMsg) {
         this.wcMsg = wcMsg;
         parseMsg();
     }
-    
+
     private boolean parseMsg() {
         if (wcMsg != null && !wcMsg.equals("")) {
             int fromuser_s = wcMsg.indexOf("<FromUserName><![CDATA[");
@@ -51,8 +51,8 @@ public abstract class BaseWCReporter implements IWCMsg {
             return false;
         }
     }
-    
-	public String createWCMsg(){
+
+    public String createWCMsg(){
         String rspMsg = "";
         if (frmUsr != null && !frmUsr.equals("")) {
 
@@ -68,46 +68,46 @@ public abstract class BaseWCReporter implements IWCMsg {
             rspMsg += "</xml>";
         }
         return rspMsg;
-	}
-	
-	@Override
-	public String getContent() {
-		// TODO Auto-generated method stub
-		return content;
-	}
+    }
+
+    @Override
+    public String getContent() {
+        // TODO Auto-generated method stub
+        return content;
+    }
 
 
-	@Override
-	public String getCreateTime() {
-		// TODO Auto-generated method stub
-		return "";
-	}
+    @Override
+    public String getCreateTime() {
+        // TODO Auto-generated method stub
+        return "";
+    }
 
 
-	@Override
-	public String getFromUserName() {
-		// TODO Auto-generated method stub
-		return frmUsr;
-	}
+    @Override
+    public String getFromUserName() {
+        // TODO Auto-generated method stub
+        return frmUsr;
+    }
 
 
-	@Override
-	public String getMsgId() {
-		// TODO Auto-generated method stub
-		return "";
-	}
+    @Override
+    public String getMsgId() {
+        // TODO Auto-generated method stub
+        return "";
+    }
 
 
-	@Override
-	public String getMsgType() {
-		// TODO Auto-generated method stub
-		return "text";
-	}
+    @Override
+    public String getMsgType() {
+        // TODO Auto-generated method stub
+        return "text";
+    }
 
 
-	@Override
-	public String getToUserName() {
-		// TODO Auto-generated method stub
-		return toUsr;
-	}
+    @Override
+    public String getToUserName() {
+        // TODO Auto-generated method stub
+        return toUsr;
+    }
 }

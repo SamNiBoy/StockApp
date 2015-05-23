@@ -10,9 +10,9 @@ import com.sn.work.output.TopTenBst;
 import com.sn.work.output.TopTenWst;
 
 public class WeChatReporter extends BaseWCReporter{
-    
+
     static Logger log = Logger.getLogger(WeChatReporter.class);
-    
+
     /**
      * @param args
      */
@@ -26,7 +26,7 @@ public class WeChatReporter extends BaseWCReporter{
 
 
     public WeChatReporter() {
-        
+
     }
 
     public String printHelp() {
@@ -45,7 +45,7 @@ public class WeChatReporter extends BaseWCReporter{
         }
 
            log.info("got input:[" + content + "]");
-            
+
             if (content.equals("1")) {
                 TopTenBst ttb = new TopTenBst(0, 3);
                 WorkManager.submitWork(ttb);

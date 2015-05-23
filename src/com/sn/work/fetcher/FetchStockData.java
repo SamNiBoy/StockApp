@@ -28,9 +28,9 @@ public class FetchStockData implements IWork {
     /* Seconds delay befor executing next work.
      */
     long delayBeforNxtStart = 5;
-    
+
     TimeUnit tu = TimeUnit.MILLISECONDS;
-    
+
     static Logger log = Logger.getLogger(FetchStockData.class);
     /**
      * @param args
@@ -40,22 +40,22 @@ public class FetchStockData implements IWork {
         FetchStockData fsd = new FetchStockData(1, 3);
         fsd.run();
     }
-    
+
     public FetchStockData(long id, long dbn)
     {
         initDelay = id;
-        delayBeforNxtStart = dbn;        
+        delayBeforNxtStart = dbn;
     }
-    
+
     static String getFetchSql()
     {
         Statement stm = null;
         ResultSet rs = null;
         String sql = "select area, id from stk";
-        
+
         String stkSql = "http://hq.sinajs.cn/list=";
         String stkLst = "";
-        
+
         try{
             stm = con.createStatement();
             rs = stm.executeQuery(sql);
@@ -75,13 +75,13 @@ public class FetchStockData implements IWork {
             } catch (SQLException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
-            }            
+            }
         }
         log.info(stkSql + stkLst);
-        
+
         return stkSql + stkLst;
     }
-    
+
     /*
      * var hq_str_sh601318=
      * "中国平安,86.30,86.31,84.41,86.30,83.70,84.38,84.40,156070902,13235768984,2200,84.38,20300,84.37,12800,84.36,24100,84.35,3000,84.33,40750,84.40,54800,84.42,400,84.44,3300,84.45,2500,84.46,2015-05-15,15:04:06,00"
@@ -89,13 +89,13 @@ public class FetchStockData implements IWork {
      */
     static String createStockData(String stkDat) {
         String dts[] = stkDat.split(",");
-        
+
         if (dts.length < 32)
         {
             log.info("Exception stkDat(Less than 32 columns):" + stkDat);
             return null;
         }
-        
+
         String area = dts[0].substring(11, 13);
         String stkID = dts[0].substring(13, 19);
         String stkName = dts[0].substring(21);
@@ -129,8 +129,8 @@ public class FetchStockData implements IWork {
         double s4_pri = Double.valueOf(dts[27]);
         long s5_num = Integer.valueOf(dts[28]);
         double s5_pri = Double.valueOf(dts[29]);
-        Date dl_dt = Date.valueOf(dts[30]); 
-        String dl_tm = dts[31]; 
+        Date dl_dt = Date.valueOf(dts[30]);
+        String dl_tm = dts[31];
         String sql = "insert into stkDat (ft_id,"
                                + " id,"
                                + " td_opn_pri,"
@@ -199,19 +199,19 @@ public class FetchStockData implements IWork {
                                + "to_date('" + dl_dt.toString() +" " + dl_tm +"', 'yyyy-mm-dd hh24:mi:ss')" + ", '"
                                + dl_tm + "'," +"sysdate)";
         log.info("sql:" + sql);
-        
+
         return sql;
 
     }
 
     private String lstStkDat = "";
-    
+
     public void run()
     {
         // TODO Auto-generated method stub
         String str;
         boolean cancel_work = false;
-        
+
         try {
             con.setAutoCommit(false);
             Statement stm = con.createStatement();
@@ -226,14 +226,14 @@ public class FetchStockData implements IWork {
                     cancel_work = true;
                     break;
                 }
-                
+
                 if (lstStkDat.equals(""))
                 {
                     lstStkDat = str;
                 }
                 log.info(str);
                 cs = createStockData(str);
-                
+
                 if (cs != null)
                 {
                     stm.executeUpdate(cs);
@@ -241,11 +241,11 @@ public class FetchStockData implements IWork {
             }
             br.close();
             stm.close();
-            
+
             ExactDatForstkDat2();
-            
+
             con.commit();
-            
+
             if (cancel_work)
             {
                 log.info("Stock data is same, cancel current work...");
@@ -261,7 +261,7 @@ public class FetchStockData implements IWork {
             }
         }
     }
-    
+
     static void ExactDatForstkDat2()
     {
         Statement stm = null;
@@ -318,26 +318,26 @@ public class FetchStockData implements IWork {
             } catch (SQLException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
-            }            
+            }
         }
     }
-    
-    
+
+
     public String getWorkResult()
     {
         return "";
     }
-    
+
     public String getWorkName()
     {
         return "FetchStockData";
     }
-    
+
     public long getInitDelay()
     {
         return initDelay;
     }
-    
+
     public long getDelayBeforeNxt()
     {
         return delayBeforNxtStart;
@@ -347,7 +347,7 @@ public class FetchStockData implements IWork {
     {
         return tu;
     }
-    
+
     public boolean isCycleWork()
     {
         return true;

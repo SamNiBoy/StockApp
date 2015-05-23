@@ -19,7 +19,7 @@ public class CalFetchStat implements IWork {
     /* Seconds delay befor executing next work.
      */
     long delayBeforNxtStart = 5;
-    
+
     TimeUnit tu = TimeUnit.MILLISECONDS;
     /* Result calcualted by this worker.
      */
@@ -28,18 +28,18 @@ public class CalFetchStat implements IWork {
      * @param args
      */
     static Logger log = Logger.getLogger(CalFetchStat.class);
-    
+
     public static void main(String[] args) {
         // TODO Auto-generated method stub
 
     }
-    
+
     public CalFetchStat(long id, long dbn)
     {
         initDelay = id;
-        delayBeforNxtStart = dbn;        
+        delayBeforNxtStart = dbn;
     }
-    
+
     public void run()
     {        // //////////////////Menu
         // 5///////////////////////////////////////////////////
@@ -64,22 +64,22 @@ public class CalFetchStat implements IWork {
             e.printStackTrace();
         }
         }
-    
+
     public String getWorkResult()
     {
         return res;
     }
-    
+
     public long getInitDelay()
     {
         return initDelay;
     }
-    
+
     public long getDelayBeforeNxt()
     {
         return delayBeforNxtStart;
     }
-    
+
     public TimeUnit getTimeUnit()
     {
         return tu;

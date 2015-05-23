@@ -36,7 +36,7 @@ public class WorkManager {
     public static boolean submitWork(IWork work) {
         if (work.isCycleWork()) {
             if (SFM.get(work.getWorkName()) != null) {
-                
+
                 log.info("worker:" + work.getWorkName()
                         + " already scheduled, skipp rescheduling.");
                 return false;
@@ -69,24 +69,24 @@ public class WorkManager {
         exec.shutdown();
         SFM.clear();
     }
-    
+
     public static boolean cancelWork(String name)
     {
-    	ScheduledFuture<?> sf = SFM.get(name);
-    	
-    	log.info("cancelling work:" + name);
-    	if (sf != null)
-    	{
-    		if(sf.cancel(true))
-    		{
-    			SFM.remove(name);
-    			log.info("work is cancalled:" + name);
-    			return true;
-    		}
-    	}
-    	return false;
+        ScheduledFuture<?> sf = SFM.get(name);
+
+        log.info("cancelling work:" + name);
+        if (sf != null)
+        {
+            if(sf.cancel(true))
+            {
+                SFM.remove(name);
+                log.info("work is cancalled:" + name);
+                return true;
+            }
+        }
+        return false;
     }
-    
-    
+
+
 
 }

@@ -126,8 +126,8 @@ public class TestDriver {
         double s4_pri = Double.valueOf(dts[27]);
         long s5_num = Integer.valueOf(dts[28]);
         double s5_pri = Double.valueOf(dts[29]);
-        Date dl_dt = Date.valueOf(dts[30]); 
-        String dl_tm = dts[31]; 
+        Date dl_dt = Date.valueOf(dts[30]);
+        String dl_tm = dts[31];
         String sql = "insert into stkDat (ft_id,"
                                + " id,"
                                + " td_opn_pri,"

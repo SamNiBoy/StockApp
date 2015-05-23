@@ -26,10 +26,10 @@ public class LoadStk {
         try {
             con.setAutoCommit(false);
             stm = con.createStatement();
-            
+
             FileReader fr = new FileReader(".\\scripts\\stockcodes.txt");
             BufferedReader br = new BufferedReader(fr);
-            
+
             String s = br.readLine();
             while (s != null) {
                 log.info(s);
@@ -58,21 +58,21 @@ public class LoadStk {
         }
 
     }
-    
+
     static String CreateStk(String stk)
     {
         if (stk.length() <= 0)
             return "";
-        
+
         String values[] = stk.split(",");
-        
+
         String sql = "insert into stk (id, area, name, py, bu) values('"
                 + values[1] + "', '"
                 + values[0] + "', '"
                 + values[2] + "', '"
                 + "py" + "', '"
                 + values[3] + "')";
-        
+
         log.info(sql);
         return sql;
     }

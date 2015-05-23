@@ -49,7 +49,7 @@ public class TopTenWst implements IWork {
                 + "   and df.id = std.id "
                 + "   and not exists (select 'x' from curpri_df_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
                 + "  order by df.cur_pri_df ";
-        
+
         sql = "select distinct stkdat.id, stk.name, stkdat.cur_pri - avt.avp pd from stkdat, "
                 + "(select id, avg(cur_pri) avp from stkdat where stkdat.cur_pri > 0 group by id) avt, "
                 + "stk "
@@ -58,7 +58,7 @@ public class TopTenWst implements IWork {
                 + "and stkdat.id = stk.id "
                 + "and not exists(select 'x' from stkdat sd1 where sd1.id = stkdat.id and sd1.ft_id > stkdat.ft_id having(count(sd1.ft_id)) > 0) "
                 + "order by stkdat.cur_pri - avt.avp";
-        
+
         try {
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery(sql);
@@ -72,7 +72,7 @@ public class TopTenWst implements IWork {
             con.close();
             if (msg.length() <= 0)
             {
-            	msg = "No enough stock data available, use option 3 fetch first.";
+                msg = "No enough stock data available, use option 3 fetch first.";
             }
             log.info("calculating top 10 bst:" + msg + " for opt 2");
             res = msg;
@@ -80,27 +80,27 @@ public class TopTenWst implements IWork {
             e.printStackTrace();
         }
     }
-    
+
     public String getWorkResult()
     {
         return res;
     }
-    
+
     public long getInitDelay()
     {
         return initDelay;
     }
-    
+
     public long getDelayBeforeNxt()
     {
         return delayBeforNxtStart;
     }
-    
+
     public TimeUnit getTimeUnit()
     {
         return tu;
     }
-    
+
     public String getWorkName()
     {
         return "TopTenWst";
