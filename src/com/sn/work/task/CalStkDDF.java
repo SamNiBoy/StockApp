@@ -1,4 +1,4 @@
-package com.sn.work.converter;
+package com.sn.work.task;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -283,7 +283,7 @@ public class CalStkDDF implements IWork {
     }
 
     public String getWorkName() {
-        return "FetchStockData";
+        return "CalStkDDF";
     }
 
     public long getInitDelay() {

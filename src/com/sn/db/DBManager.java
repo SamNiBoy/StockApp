@@ -82,7 +82,7 @@ public class DBManager {
 
     static void initLog4j() {
         PropertyConfigurator.configure(AppDir2
-                + "/sn/WEB-INF/conf/log4j.properties");
+                + "/WEB-INF/conf/log4j.properties");
     }
 
     static void initDataSource()

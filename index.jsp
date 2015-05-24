@@ -18,4 +18,3 @@ wcr.setWcMsg(xmlS);
 String msg = wcr.getResponse();
 out.print(msg);
 %>
-

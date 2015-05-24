@@ -16,7 +16,6 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.work.WorkManager;
-import com.sn.work.converter.CalStkDDF;
 import com.sn.work.itf.IWork;
 
 public class FetchStockData implements IWork {
@@ -31,6 +30,8 @@ public class FetchStockData implements IWork {
     long delayBeforNxtStart = 5;
 
     TimeUnit tu = TimeUnit.MILLISECONDS;
+    
+    static int maxLstNum = 50;
 
     static Logger log = Logger.getLogger(FetchStockData.class);
     /**
@@ -48,21 +49,28 @@ public class FetchStockData implements IWork {
         delayBeforNxtStart = dbn;
     }
 
-    static String getFetchSql()
+    static String getFetchLst()
     {
         Statement stm = null;
         ResultSet rs = null;
         String sql = "select area, id from stk";
 
-        String stkSql = "http://hq.sinajs.cn/list=";
         String stkLst = "";
+        
+        int i = 0;
 
         try{
             stm = con.createStatement();
             rs = stm.executeQuery(sql);
             while (rs.next()) {
+                i++;
                 stkLst += stkLst.length() > 0 ? "," : "";
                 stkLst += rs.getString("area") + rs.getString("id");
+                if (i %  maxLstNum == 0)
+                {
+                    stkLst += "#";
+                    i = 0;
+                }
             }
         }
         catch(Exception e)
@@ -78,9 +86,9 @@ public class FetchStockData implements IWork {
                 e1.printStackTrace();
             }
         }
-        log.info(stkSql + stkLst);
+        log.info(stkLst);
 
-        return stkSql + stkLst;
+        return stkLst;
     }
 
     /*
@@ -108,27 +116,27 @@ public class FetchStockData implements IWork {
         double td_lst_pri = Double.valueOf(dts[5]);
         double b1_bst_pri = Double.valueOf(dts[6]);
         double s1_bst_pri = Double.valueOf(dts[7]);
-        long dl_stk= Integer.valueOf(dts[8]);
+        long dl_stk= Long.valueOf(dts[8]);
         double dl_mny = Double.valueOf(dts[9]);
-        long b1_num = Integer.valueOf(dts[10]);
+        long b1_num = Long.valueOf(dts[10]);
         double b1_pri = Double.valueOf(dts[11]);
-        long b2_num = Integer.valueOf(dts[12]);
+        long b2_num = Long.valueOf(dts[12]);
         double b2_pri = Double.valueOf(dts[13]);
-        long b3_num = Integer.valueOf(dts[14]);
+        long b3_num = Long.valueOf(dts[14]);
         double b3_pri = Double.valueOf(dts[15]);
-        long b4_num = Integer.valueOf(dts[16]);
+        long b4_num = Long.valueOf(dts[16]);
         double b4_pri = Double.valueOf(dts[17]);
-        long b5_num = Integer.valueOf(dts[18]);
+        long b5_num = Long.valueOf(dts[18]);
         double b5_pri = Double.valueOf(dts[19]);
-        long s1_num = Integer.valueOf(dts[20]);
+        long s1_num = Long.valueOf(dts[20]);
         double s1_pri = Double.valueOf(dts[21]);
-        long s2_num = Integer.valueOf(dts[22]);
+        long s2_num = Long.valueOf(dts[22]);
         double s2_pri = Double.valueOf(dts[23]);
-        long s3_num = Integer.valueOf(dts[24]);
+        long s3_num = Long.valueOf(dts[24]);
         double s3_pri = Double.valueOf(dts[25]);
-        long s4_num = Integer.valueOf(dts[26]);
+        long s4_num = Long.valueOf(dts[26]);
         double s4_pri = Double.valueOf(dts[27]);
-        long s5_num = Integer.valueOf(dts[28]);
+        long s5_num = Long.valueOf(dts[28]);
         double s5_pri = Double.valueOf(dts[29]);
         Date dl_dt = Date.valueOf(dts[30]);
         String dl_tm = dts[31];
@@ -216,42 +224,48 @@ public class FetchStockData implements IWork {
         try {
             con.setAutoCommit(false);
             Statement stm = con.createStatement();
-            String fs = getFetchSql(), cs;
-            URL url = new URL(fs);
-            InputStream is = url.openStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-            while ((str = br.readLine()) != null) {
-                if (str.equals(lstStkDat))
+            String fs [] = getFetchLst().split("#"), cs;
+            String stkSql = "http://hq.sinajs.cn/list=";
+            for (int i = 0; i < fs.length; i++)
+            {
+                log.info("Fetching..." + stkSql + fs[i]);
+                URL url = new URL(stkSql + fs[i]);
+                InputStream is = url.openStream();
+                InputStreamReader isr = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(isr);
+                while ((str = br.readLine()) != null) {
+                    if (str.equals(lstStkDat))
+                    {
+                        cancel_work = true;
+                        break;
+                    }
+                
+                    if (lstStkDat.equals(""))
+                    {
+                        lstStkDat = str;
+                    }
+                    log.info(str);
+                    cs = createStockData(str);
+                
+                    if (cs != null)
+                    {
+                        stm.executeUpdate(cs);
+                    }
+                }
+                br.close();
+                
+                ExactDatForstkDat2();
+                
+                con.commit();
+                
+                if (cancel_work)
                 {
-                    cancel_work = true;
+                    log.info("Stock data is same, cancel current work...");
+                    WorkManager.cancelWork(this.getWorkName());
                     break;
                 }
-
-                if (lstStkDat.equals(""))
-                {
-                    lstStkDat = str;
-                }
-                log.info(str);
-                cs = createStockData(str);
-
-                if (cs != null)
-                {
-                    stm.executeUpdate(cs);
-                }
             }
-            br.close();
             stm.close();
-
-            ExactDatForstkDat2();
-
-            con.commit();
-
-            if (cancel_work)
-            {
-                log.info("Stock data is same, cancel current work...");
-                WorkManager.cancelWork(this.getWorkName());
-            }
         } catch (Exception e) {
             e.printStackTrace();
             try {
@@ -308,8 +322,8 @@ public class FetchStockData implements IWork {
             int cnt = 0;
             stm = con.createStatement();
             cnt = stm.executeUpdate(sql);
-            CalStkDDF csd = new CalStkDDF(0,0);
-            csd.run();
+            //CalStkDDF csd = new CalStkDDF(0,0);
+            //csd.run();
         }
         catch(Exception e)
         {

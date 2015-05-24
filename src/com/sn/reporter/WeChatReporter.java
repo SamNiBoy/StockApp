@@ -8,6 +8,7 @@ import com.sn.work.output.CalFetchStat;
 import com.sn.work.output.ShutDownPC;
 import com.sn.work.output.TopTenBst;
 import com.sn.work.output.TopTenWst;
+import com.sn.work.task.TaskManager;
 
 public class WeChatReporter extends BaseWCReporter{
 
@@ -44,8 +45,12 @@ public class WeChatReporter extends BaseWCReporter{
         if (content == null || content.equals("")) {
             return printHelp();
         }
-
-           log.info("got input:[" + content + "]");
+        
+        log.info("got input:[" + content + "], firstly let's check tasks");
+        if (!TaskManager.isTasksStarted())
+        {
+            TaskManager.startTasks();
+        }
 
             if (content.equals("1")) {
                 TopTenBst ttb = new TopTenBst(0, 3);
@@ -58,7 +63,7 @@ public class WeChatReporter extends BaseWCReporter{
                 resContent = ttw.getWorkResult();
             }
             else if (content.equals("3")) {
-                FetchStockData fsd = new FetchStockData(0, 60);
+                FetchStockData fsd = new FetchStockData(0, 30000);
                 WorkManager.submitWork(fsd);
                 resContent = "Started fetching stock data!";
             }
