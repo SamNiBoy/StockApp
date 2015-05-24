@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.work.itf.IWork;
+import com.sn.work.task.EvaStocks;
 
 public class TopTenBst implements IWork {
 
@@ -44,50 +45,9 @@ public class TopTenBst implements IWork {
     {
         // ///////////Menu 1///////////////
         String msg = "";
-        Connection con = DBManager.getConnection();
-        String sql = "select stk.area || df.id id, df.cur_pri_df, stk.name, std.cur_pri "
-                + "  from curpri_df_vw df, stk, (select id, cur_pri"
-                + "                                from stkDat "
-                + "                               where not exists(select 'x' "
-                + "                                                  from stkDat sd2 "
-                + "                                                 where sd2.id = stkDat.id "
-                + "                                                   and sd2.ft_id > stkDat.ft_id)) std "
-                + " where df.id = stk.id "
-                + "   and df.id = std.id "
-                + "   and not exists (select 'x' from curpri_df_vw dfv where dfv.id = df.id and dfv.ft_id > df.ft_id) "
-                + "  order by df.cur_pri_df desc ";
-
-        sql = "select distinct stkdat.id, stk.name, stkdat.cur_pri - avt.avp pd from stkdat, "
-            + "(select id, avg(cur_pri) avp from stkdat where stkdat.cur_pri > 0 group by id) avt, "
-            + "stk "
-            + "where stkdat.id = avt.id "
-            + "and stkdat.cur_pri > avt.avp "
-            + "and stkdat.id = stk.id "
-            + "and not exists(select 'x' from stkdat sd1 where sd1.id = stkdat.id and sd1.ft_id > stkdat.ft_id having(count(sd1.ft_id)) > 0) "
-            + "order by stkdat.cur_pri - avt.avp";
-        try {
-            Statement stm = con.createStatement();
-            log.info("before gettop10Bst...");
-            ResultSet rs = stm.executeQuery(sql);
-            log.info("after gettop10Bst...");
-
-            for (int i = 0; i < 10 && rs.next(); i++) {
-                msg += (i + 1) + ": " + rs.getString("id") + " "
-                        + rs.getString("name") + "\n";
-            }
-            rs.close();
-            stm.close();
-            con.close();
-
-            if (msg.length() <= 0)
-            {
-                msg = "No enough stock data available, use option 3 fetch first.";
-            }
-            log.info("calculating top 10 bst:" + msg + " for opt 1");
-            res = msg;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        EvaStocks evs = new EvaStocks(0, 0);
+        log.info("calculating top 10 bst:" + evs.getBst10() + " for opt 1");
+        res = evs.getBst10();
     }
 
     public String getWorkResult()

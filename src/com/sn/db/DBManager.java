@@ -101,10 +101,9 @@ public class DBManager {
         ds.setJdbcUrl(url2);
         ds.setUser(DBUSER);
         ds.setPassword(password);
-        ds.setMaxPoolSize(40);
-        ds.setMinPoolSize(10);
-        ds.setInitialPoolSize(10);
+        ds.setMaxPoolSize(50);
+        ds.setMinPoolSize(20);
+        ds.setInitialPoolSize(20);
         ds.setMaxStatements(180);
-        ds.setAutoCommitOnClose(true);
     }
 }

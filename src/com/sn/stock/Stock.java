@@ -31,7 +31,7 @@ public class Stock {
     private int gapType;
     private int Days;
     
-    Stock(String id, int gaptyp, int ds)
+    public Stock(String id, int gaptyp, int ds)
     {
         ID = id;
         gapType = gaptyp;
@@ -49,7 +49,7 @@ public class Stock {
      * qty sharp increase,
      * inc/des pct so far
      */
-    private Map<String, Double> map;
+    public Map<String, Double> map;
     
     private void commonCreate()
     {
@@ -157,11 +157,28 @@ public class Stock {
                 map.put("qtyRatio", Double.valueOf(rs.getDouble("qtyRatio")));
             }
             rs.close();
+            con.close();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             log.error("Stock.CommonCreate errored:" + e.getMessage());
             e.printStackTrace();
         }
+    }
+    
+    public String dsc()
+    {
+        String dsc = "";
+        dsc += "ID:" + ID + "\n";
+        dsc += "Name:" + Name + "\n";
+        dsc += "incCnt:" + map.get("incCnt") + "\n";
+        dsc += "dscCnt:" + map.get("dscCnt") + "\n";
+        dsc += "ctnInc:" + map.get("ctnInc") + "\n";
+        dsc += "ctnDsc:" + map.get("ctnDsc") + "\n";
+        dsc += "incPct:" + map.get("incPct") + "\n";
+        dsc += "qtyRatio:" + map.get("qtyRatio") + "\n";
+        
+        return dsc;
+        
     }
 
 }

@@ -18,7 +18,7 @@ import com.sn.work.itf.IWork;
  */
 public class WorkManager {
 
-    static int CW_THREAD_NUMBER = 3;
+    static int CW_THREAD_NUMBER = 10;
     static ScheduledExecutorService exec = Executors
             .newScheduledThreadPool(CW_THREAD_NUMBER);
 

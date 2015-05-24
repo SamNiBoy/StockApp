@@ -1,8 +1,14 @@
 package com.sn.work.task;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.log4j.Logger;
 
 import com.sn.work.WorkManager;
+import com.sn.work.itf.IWork;
 
 public class TaskManager {
 
@@ -10,7 +16,7 @@ public class TaskManager {
     
     private static boolean tskStarted = false;
     
-    private static CalStkDDF tsk1 = null;
+    private static Map<String, IWork> tsks = new ConcurrentHashMap<String, IWork>();
     /**
      * @param args
      */
@@ -25,8 +31,10 @@ public class TaskManager {
         if (!tskStarted)
         {
             log.info("Starting tasks...");
-            tsk1 = new CalStkDDF(0, 65000);
-            WorkManager.submitWork(tsk1);
+
+            startCalStkDDF();
+            startEvaStocks();
+            
             tskStarted = true;
             return true;
         }
@@ -34,6 +42,22 @@ public class TaskManager {
             log.info("Tasks already started...");
         }
         return false;
+    }
+    
+    private static boolean startCalStkDDF()
+    {
+        CalStkDDF csd = new CalStkDDF(0, 65000);
+        WorkManager.submitWork(csd);
+        tsks.put(csd.getWorkName(), csd);
+        return true;
+    }
+    
+    private static boolean startEvaStocks()
+    {
+        EvaStocks evs = new EvaStocks(0, 65000);
+        WorkManager.submitWork(evs);
+        tsks.put(evs.getWorkName(), evs);
+        return true;
     }
     
     public static boolean stopTasks()
@@ -45,7 +69,15 @@ public class TaskManager {
         }
         else {
             log.info("Tasks is in stopping...");
-            WorkManager.cancelWork(tsk1.getWorkName());
+            Set<Map.Entry<String, IWork>> allSet=tsks.entrySet();
+            
+            Iterator<Map.Entry<String, IWork>> iter=allSet.iterator();
+            while(iter.hasNext()){
+                Map.Entry<String, IWork> tsk=iter.next();
+                System.out.println(tsk.getKey());
+                WorkManager.cancelWork(tsk.getValue().getWorkName());
+                tsks.remove(tsk.getValue().getWorkName());
+            }
             tskStarted = false;
         }
         return true;
