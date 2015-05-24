@@ -27,6 +27,7 @@ public class WeChatReporter extends BaseWCReporter{
 
     public WeChatReporter() {
 
+        log.info("WeChatReporter initilized...");
     }
 
     public String printHelp() {

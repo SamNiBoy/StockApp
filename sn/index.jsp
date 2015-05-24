@@ -11,39 +11,9 @@ while((line = br.readLine())!=null){
    sb.append(line);
 }
 String xmlS = sb.toString();
-/*
-<xml>
-<ToUserName>
-<![CDATA[gh_a9586d5aa590]]>
-</ToUserName>
-
-<FromUserName>
-<![CDATA[osCWfs-ZVQZfrjRK0ml-eEpzeop0]]>
-</FromUserName>
-
-<CreateTime>
-1431827441
-</CreateTime>
-
-<MsgType>
-<![CDATA[text]]>
-</MsgType>
-
-<Content>
-<![CDATA[Standard ]]>
-</Content>
-
-<MsgId>
-6149652032815793242
-</MsgId>
-
-</xml>
-*/
 System.out.println(xmlS);
-%>
-
-<%
 WeChatReporter wcr = new WeChatReporter();
+System.out.println("after wechat create");
 wcr.setWcMsg(xmlS);
 String msg = wcr.getResponse();
 out.print(msg);
