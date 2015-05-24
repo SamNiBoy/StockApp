@@ -65,6 +65,7 @@ public class EvaStocks implements IWork {
         // TODO Auto-generated method stub
 
         try {
+            log.info("Now start evaluating stocks...");
             Statement mainStm = con.createStatement();
             ResultSet mainRs;
             String mainSql = "select id from stk order by id";
@@ -211,11 +212,12 @@ public class EvaStocks implements IWork {
     
     public synchronized String getBst10()
     {
-        String msg = "";
+        String msg = "Top 10 as follows:\n";
         Collections.sort(stkLst, new SortBst());
-        for (int i=0; i< 10; i++)
+        log.info("EvaStocks getBst10, got:" + stkLst.size() + " stocks!");
+        for (int i=0; i< 10 && i < stkLst.size(); i++)
         {
-            msg += stkLst.get(i).dsc();
+            msg += (i + 1) + ":" + stkLst.get(i).dsc();
         }
         return msg;
     }

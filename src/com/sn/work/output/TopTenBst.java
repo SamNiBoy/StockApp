@@ -25,6 +25,8 @@ public class TopTenBst implements IWork {
     /* Result calcualted by this worker.
      */
     static String res = "Getting top 10 best is schedulled, try again later.";
+    
+    static EvaStocks evs = new EvaStocks(0, 0);
 
     static Logger log = Logger.getLogger(DBManager.class);
     /**
@@ -45,7 +47,6 @@ public class TopTenBst implements IWork {
     {
         // ///////////Menu 1///////////////
         String msg = "";
-        EvaStocks evs = new EvaStocks(0, 0);
         log.info("calculating top 10 bst:" + evs.getBst10() + " for opt 1");
         res = evs.getBst10();
     }
