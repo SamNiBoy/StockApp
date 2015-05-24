@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.work.WorkManager;
+import com.sn.work.converter.CalStkDDF;
 import com.sn.work.itf.IWork;
 
 public class FetchStockData implements IWork {
@@ -307,9 +308,12 @@ public class FetchStockData implements IWork {
             int cnt = 0;
             stm = con.createStatement();
             cnt = stm.executeUpdate(sql);
+            CalStkDDF csd = new CalStkDDF(0,0);
+            csd.run();
         }
         catch(Exception e)
         {
+        	log.error("FetchStockData errored:" + e.getMessage());
             e.printStackTrace();
         }
         finally {
