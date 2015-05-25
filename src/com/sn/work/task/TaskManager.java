@@ -54,7 +54,7 @@ public class TaskManager {
     
     private static boolean startEvaStocks()
     {
-        EvaStocks evs = new EvaStocks(0, 65000);
+        EvaStocks evs = new EvaStocks(0, 65000 * 2);
         WorkManager.submitWork(evs);
         tsks.put(evs.getWorkName(), evs);
         return true;

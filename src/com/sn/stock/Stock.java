@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -171,6 +172,7 @@ public class Stock {
     
     public String dsc()
     {
+        DecimalFormat df = new DecimalFormat("#0.##");
         String dsc = "";
         dsc += "ID:" + ID + "\n";
         dsc += "Name:" + Name + "\n";
@@ -178,8 +180,8 @@ public class Stock {
         dsc += "dscCnt:" + map.get("dscCnt") + "\n";
         dsc += "ctnInc:" + map.get("ctnInc") + "\n";
         dsc += "ctnDsc:" + map.get("ctnDsc") + "\n";
-        dsc += "incPct:" + map.get("incPct") + "\n";
-        dsc += "qtyRatio:" + map.get("qtyRatio") + "\n";
+        dsc += "incPct:" + df.format(map.get("incPct")) + "\n";
+        dsc += "qtyRatio:" + df.format(map.get("qtyRatio")) + "\n";
         
         return dsc;
         

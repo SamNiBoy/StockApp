@@ -47,7 +47,7 @@ public class TopTenBst implements IWork {
     {
         // ///////////Menu 1///////////////
         String msg = "";
-        log.info("calculating top 10 bst:" + evs.getBst10() + " for opt 1");
+        log.info("calculating top 10 bst:" + res + " for opt 1");
         res = evs.getBst10();
         log.info("return best top 10 to res for report:" + res);
     }

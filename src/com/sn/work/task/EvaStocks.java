@@ -161,19 +161,19 @@ public class EvaStocks implements IWork {
                 incPct1 = s1.map.get("incPct") / stkMaxs.get("incPctMax");
                 qtyRatio1 = s1.map.get("qtyRatio") / stkMaxs.get("qtyRatioMax");
             
-            log.info("incCnt:" + incCnt + " wgtIncCnt:" + wgtIncCnt + " incCnt*wgtIncCnt:" +(incCnt*wgtIncCnt));
-            log.info("dscCnt:" + dscCnt + " wgtDscCnt:" + wgtDscCnt + " dscCnt*wgtDscCnt:" +(dscCnt*wgtDscCnt));
-            log.info("ctnInc:" + ctnInc + " wgtCtnInc:" + wgtCtnInc + " ctnInc*wgtCtnInc:" +(incCnt*wgtCtnInc));
-            log.info("ctnDsc:" + ctnDsc + " wgtCtnDsc:" + wgtCtnDsc + " ctnDsc*wgtCtnDsc:" +(ctnDsc*wgtCtnDsc));
-            log.info("incPct:" + incPct + " wgtIncPct:" + wgtIncPct + " incPct*wgtIncPct:" +(incPct*wgtIncPct));
-            log.info("qtyRatio:" + qtyRatio + " wgtQtyRatio:" + wgtQtyRatio + " qtyRatio*wgtQtyRatio:" +(qtyRatio*wgtQtyRatio));
-            
-            log.info("incCnt1:" + incCnt1 + " wgtIncCnt:" + wgtIncCnt + " incCnt1*wgtIncCnt:" +(incCnt1*wgtIncCnt));
-            log.info("dscCnt1:" + dscCnt1 + " wgtDscCnt:" + wgtDscCnt + " dscCnt1*wgtDscCnt:" +(dscCnt1*wgtDscCnt));
-            log.info("ctnInc1:" + ctnInc1 + " wgtCtnInc:" + wgtCtnInc + " ctnInc1*wgtCtnInc:" +(incCnt1*wgtCtnInc));
-            log.info("ctnDsc1:" + ctnDsc1 + " wgtCtnDsc:" + wgtCtnDsc + " ctnDsc1*wgtCtnDsc:" +(ctnDsc1*wgtCtnDsc));
-            log.info("incPct1:" + incPct1 + " wgtIncPct:" + wgtIncPct + " incPct1*wgtIncPct:" +(incPct1*wgtIncPct));
-            log.info("qtyRatio1:" + qtyRatio1 + " wgtQtyRatio:" + wgtQtyRatio + " qtyRatio1*wgtQtyRatio:" +(qtyRatio1*wgtQtyRatio));
+//            log.info("incCnt:" + incCnt + " wgtIncCnt:" + wgtIncCnt + " incCnt*wgtIncCnt:" +(incCnt*wgtIncCnt));
+//            log.info("dscCnt:" + dscCnt + " wgtDscCnt:" + wgtDscCnt + " dscCnt*wgtDscCnt:" +(dscCnt*wgtDscCnt));
+//            log.info("ctnInc:" + ctnInc + " wgtCtnInc:" + wgtCtnInc + " ctnInc*wgtCtnInc:" +(incCnt*wgtCtnInc));
+//            log.info("ctnDsc:" + ctnDsc + " wgtCtnDsc:" + wgtCtnDsc + " ctnDsc*wgtCtnDsc:" +(ctnDsc*wgtCtnDsc));
+//            log.info("incPct:" + incPct + " wgtIncPct:" + wgtIncPct + " incPct*wgtIncPct:" +(incPct*wgtIncPct));
+//            log.info("qtyRatio:" + qtyRatio + " wgtQtyRatio:" + wgtQtyRatio + " qtyRatio*wgtQtyRatio:" +(qtyRatio*wgtQtyRatio));
+//            
+//            log.info("incCnt1:" + incCnt1 + " wgtIncCnt:" + wgtIncCnt + " incCnt1*wgtIncCnt:" +(incCnt1*wgtIncCnt));
+//            log.info("dscCnt1:" + dscCnt1 + " wgtDscCnt:" + wgtDscCnt + " dscCnt1*wgtDscCnt:" +(dscCnt1*wgtDscCnt));
+//            log.info("ctnInc1:" + ctnInc1 + " wgtCtnInc:" + wgtCtnInc + " ctnInc1*wgtCtnInc:" +(incCnt1*wgtCtnInc));
+//            log.info("ctnDsc1:" + ctnDsc1 + " wgtCtnDsc:" + wgtCtnDsc + " ctnDsc1*wgtCtnDsc:" +(ctnDsc1*wgtCtnDsc));
+//            log.info("incPct1:" + incPct1 + " wgtIncPct:" + wgtIncPct + " incPct1*wgtIncPct:" +(incPct1*wgtIncPct));
+//            log.info("qtyRatio1:" + qtyRatio1 + " wgtQtyRatio:" + wgtQtyRatio + " qtyRatio1*wgtQtyRatio:" +(qtyRatio1*wgtQtyRatio));
             
             if ((incCnt * wgtIncCnt + dscCnt * wgtDscCnt + ctnInc * wgtCtnInc + ctnDsc * wgtCtnDsc + incPct * wgtIncPct + qtyRatio * wgtQtyRatio) > 
                  (incCnt1 * wgtIncCnt + dscCnt1 * wgtDscCnt + ctnInc1 * wgtCtnInc + ctnDsc1 * wgtCtnDsc + incPct1 * wgtIncPct + qtyRatio1 * wgtQtyRatio))
