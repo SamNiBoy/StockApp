@@ -111,14 +111,18 @@ public class Stock {
                         ctnInc = 0;
                         ctnDsc = 1;
                     }
+                    fstRcd = false;
                 }
-                else if (pdf > 0)
+                else if (pdf > 0 && ctnInc > 0)
                 {
                     ctnInc++;
                 }
-                else if (pdf < 0)
+                else if (pdf < 0 && ctnDsc > 0)
                 {
                     ctnDsc++;
+                }
+                else {
+                    break;
                 }
             }
             log.info("Total continue increase ctnInc:" + ctnInc + " Total continue desrease ctnDsc:" + ctnDsc);
@@ -126,7 +130,7 @@ public class Stock {
             map.put("ctnDsc", Double.valueOf(ctnDsc));
             rs.close();
             
-            sql = "select sum(cur_pri_df) / fop.avg_td_opn_pri incPct" +
+            sql = "select sum(cur_pri_df) / decode(fop.avg_td_opn_pri, 0, 1, fop.avg_td_opn_pri) incPct" +
             "  from stkddf, (select avg(td_opn_pri) avg_td_opn_pri from stkdat2 where id ='" + ID +
             "'  and dl_dt > (select max(dl_dt) from stkdat2 where id = '" + ID + "') - " + Days + ") fop" +
             " where stkddf.id = '" + ID + 
@@ -138,12 +142,12 @@ public class Stock {
             rs = stm.executeQuery(sql);
             if (rs.next())
             {
-                log.info("Total incPct:" + rs.getDouble("incPct"));
-                map.put("incPct", Double.valueOf(rs.getDouble("incPct")));
+                log.info("Total incPct:" + rs.getDouble("incPct") + " for ID:" + ID);
+                map.put("incPct", rs.getDouble("incPct"));
             }
             rs.close();
             
-            sql = "select max(dl_stk_num_df) / avg(dl_stk_num_df) qtyRatio" +
+            sql = "select max(dl_stk_num_df) / decode(avg(dl_stk_num_df), 0, 1, avg(dl_stk_num_df)) qtyRatio" +
             "  from stkddf" +
             " where stkddf.id = '" + ID + 
             "' and gap =" + gapType +
@@ -154,7 +158,7 @@ public class Stock {
             if (rs.next())
             {
                 log.info("Total dl_stk_num_df(max/avg) ratio:" + rs.getDouble("qtyRatio"));
-                map.put("qtyRatio", Double.valueOf(rs.getDouble("qtyRatio")));
+                map.put("qtyRatio", rs.getDouble("qtyRatio"));
             }
             rs.close();
             con.close();
@@ -179,6 +183,16 @@ public class Stock {
         
         return dsc;
         
+    }
+    
+    public String getName()
+    {
+        return Name;
+    }
+    
+    public String getID()
+    {
+        return ID;
     }
 
 }
