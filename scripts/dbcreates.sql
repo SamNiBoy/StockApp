@@ -1,3 +1,28 @@
+create table usr(
+openID varchar2(100 byte) not null,
+host_flg number not null,
+add_dt date not null,
+CONSTRAINT "usr_PK" PRIMARY KEY (OpenID)
+);
+
+/* msg received/send*/
+create table msg(
+msgId number not null,
+frmUsrID varchar2(100 byte) not null,
+toUsrID varchar2(100 byte) not null,
+crtTime number not null,
+mstType varchar2(20 byte) not null,
+content varchar2(1000 byte) not null,
+CONSTRAINT "msg_PK" PRIMARY KEY (msgId)
+);
+
+/* monitor stock user id*/
+create table monStk(
+ID varchar2(6 byte) not null,
+openID varchar2 (100 byte) not null,
+CONSTRAINT "monStk_PK" PRIMARY KEY (ID, openID)
+);
+
 create table stk(
 id varchar2(6 byte) not null primary key,
 area varchar2(2 byte) not null,

@@ -20,8 +20,16 @@ public class WeChatReporter extends BaseWCReporter{
     public static void main(String[] args) {
         // TODO Auto-generated method stub
 
+        String wcMsg = "<xml><ToUserName><![CDATA[gh_a9586d5aa590]]></ToUserName>" +
+        "<FromUserName><![CDATA[osCWfs-ZVQZfrjRK0ml-eEpzeop0]]></FromUserName>" +
+        "<CreateTime>1431827441</CreateTime>" +
+        "<MsgType><![CDATA[text]]></MsgType>" +
+        "<Content><![CDATA[Standard]]></Content>" +
+        "<MsgId>6149652032815793242</MsgId>" +
+        "</xml>";
+
         WeChatReporter wcr = new WeChatReporter();
-        wcr.content = "1";
+        wcr.setWcMsg(wcMsg);
         wcr.getResponse();
     }
 
