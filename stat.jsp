@@ -30,7 +30,7 @@
               "       sum(case when cur_pri <= (td_opn_pri - 0.01) then 1 else 0 end) decNum," +
               "       sum(case when abs(cur_pri - td_opn_pri) < 0.01 then 1 else 0 end) equNum" +
               "  from stkdat2 " +
-              " where to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate-1, 'yyyy-mm-dd') " +
+              " where to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') " +
               "   and ft_id in (select max(ft_id) from stkdat2 group by ID)";
         
         System.out.println(sql);
