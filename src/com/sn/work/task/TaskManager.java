@@ -31,11 +31,9 @@ public class TaskManager {
         if (!tskStarted)
         {
             log.info("Starting tasks...");
-
+            tskStarted = true;
             startCalStkDDF();
             startEvaStocks();
-            
-            tskStarted = true;
             return true;
         }
         else {
@@ -46,7 +44,7 @@ public class TaskManager {
     
     private static boolean startCalStkDDF()
     {
-        CalStkDDF csd = new CalStkDDF(0, 65000);
+        CalStkDDF csd = new CalStkDDF(0, 0);
         WorkManager.submitWork(csd);
         tsks.put(csd.getWorkName(), csd);
         return true;
@@ -54,7 +52,8 @@ public class TaskManager {
     
     private static boolean startEvaStocks()
     {
-        EvaStocks evs = new EvaStocks(0, 65000 * 2);
+        EvaStocks evs = new EvaStocks(0, 0);
+        evs.run();
         WorkManager.submitWork(evs);
         tsks.put(evs.getWorkName(), evs);
         return true;

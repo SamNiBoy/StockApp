@@ -32,6 +32,8 @@ public class FetchStockData implements IWork {
     TimeUnit tu = TimeUnit.MILLISECONDS;
     
     static int maxLstNum = 50;
+    
+    static public String bellForWork = "This is bell for other waiting threads";
 
     static Logger log = Logger.getLogger(FetchStockData.class);
     /**
@@ -233,17 +235,20 @@ public class FetchStockData implements IWork {
                 InputStream is = url.openStream();
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(isr);
+                int j = 0;
                 while ((str = br.readLine()) != null) {
                     if (str.equals(lstStkDat))
                     {
                         cancel_work = true;
                         break;
                     }
-                
-                    if (lstStkDat.equals(""))
+                    if (i == j && i == 0)
                     {
+                        /* Make sure lstStkDat store the last value of first stock*/
                         lstStkDat = str;
                     }
+                    j++;
+                
                     log.info(str);
                     cs = createStockData(str);
                 
@@ -257,13 +262,18 @@ public class FetchStockData implements IWork {
                 ExactDatForstkDat2();
                 
                 con.commit();
-                
                 if (cancel_work)
                 {
                     log.info("Stock data is same, cancel current work...");
                     WorkManager.cancelWork(this.getWorkName());
                     break;
                 }
+            }
+            synchronized(bellForWork)
+            {
+               /*Tell CalStkDDF and EvaStock to start*/
+                log.info("Finished a round fetch, notify all to work.");
+                bellForWork.notifyAll();
             }
             stm.close();
         } catch (Exception e) {

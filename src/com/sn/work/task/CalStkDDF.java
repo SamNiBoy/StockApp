@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.work.fetcher.FetchStockData;
 import com.sn.work.itf.IWork;
 
 public class CalStkDDF implements IWork {
@@ -57,85 +58,80 @@ public class CalStkDDF implements IWork {
 
     public void run() {
         // TODO Auto-generated method stub
-        String str;
-
-        try {
-            Statement mainStm = con.createStatement();
-            ResultSet mainRs;
-            String mainSql = "select id from stk order by id";
-
-            mainRs = mainStm.executeQuery(mainSql);
-            while (mainRs.next()) {
-
-                String id = mainRs.getString("id");
-
-                Statement stmLstDt = con.createStatement();
-                String sqlLstDt = "select decode(max(to_char(dl_dt,'yyyy-mm-dd HH24:MI:SS')), null, 'xxxx', max(to_char(dl_dt,'yyyy-mm-dd HH24:MI:SS'))) lst_dl_dt from stkddf where id = '"
-                        + id + "'";
-                ResultSet rsLstDt = stmLstDt.executeQuery(sqlLstDt);
-
-                String clause = " where t1.id ='" + id + "'";
-                rsLstDt.next();
-                String LstDt = rsLstDt.getString("lst_dl_dt");
-
-                stmLstDt.close();
-
-                log.info("Processing id:" + id + " got LstDt:" + LstDt);
-
-                if (!LstDt.equals("xxxx")) {
-                    clause += " and t1.dl_dt > to_date('" + LstDt + "', 'yyyy-mm-dd HH24:MI:SS')";
+        while (true) {
+            synchronized (FetchStockData.bellForWork) {
+                try {
+                    log.info("Waiting before start CalStkDDF work...");
+                    FetchStockData.bellForWork.wait();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    log.info("CalStkDDF can not get wait on bellForWork"
+                            + e.getMessage());
+                    e.printStackTrace();
                 }
-
-                Statement stm = con.createStatement();
-                ResultSet rs;
-                String sql = "select t1.ft_id, t1.id, "
-                        + "cur_pri,"
-                        + " dl_stk_num,"
-                        + " dl_mny_num,"
-                        + " b1_num,"
-                        + " b1_pri,"
-                        + " b2_num,"
-                        + " b2_pri,"
-                        + " b3_num,"
-                        + " b3_pri,"
-                        + " b4_num,"
-                        + " b4_pri,"
-                        + " b5_num,"
-                        + " b5_pri,"
-                        + " s1_num,"
-                        + " s1_pri,"
-                        + " s2_num,"
-                        + " s2_pri,"
-                        + " s3_num,"
-                        + " s3_pri,"
-                        + " s4_num,"
-                        + " s4_pri,"
-                        + " s5_num,"
-                        + " s5_pri,"
-                        + " dl_dt "
-                        + " from stkdat2 t1 "
-                        + clause
-                        + " order by t1.id, t1.ft_id";
-
-                log.info(sql);
-                rs = stm.executeQuery(sql);
-
-                CrtDDF(rs, 5);
-
-                rs = stm.executeQuery(sql);
-                CrtDDF(rs, 10);
-
-                rs = stm.executeQuery(sql);
-                CrtDDF(rs, 30);
-
-                rs = stm.executeQuery(sql);
-                CrtDDF(rs, 60);
-
-                stm.close();
             }
-        } catch (Exception e) {
-            log.error("Error: " + e.getMessage());
-            e.printStackTrace();
+            try {
+                log.info("Now start CalStkDDF work...");
+
+                Statement mainStm = con.createStatement();
+                ResultSet mainRs;
+                String mainSql = "select id from stk order by id";
+
+                mainRs = mainStm.executeQuery(mainSql);
+                while (mainRs.next()) {
+
+                    String id = mainRs.getString("id");
+
+                    Statement stmLstDt = con.createStatement();
+                    String sqlLstDt = "select decode(max(to_char(dl_dt,'yyyy-mm-dd HH24:MI:SS')), null, 'xxxx', max(to_char(dl_dt,'yyyy-mm-dd HH24:MI:SS'))) lst_dl_dt from stkddf where id = '"
+                            + id + "'";
+                    ResultSet rsLstDt = stmLstDt.executeQuery(sqlLstDt);
+
+                    String clause = " where t1.id ='" + id + "'";
+                    rsLstDt.next();
+                    String LstDt = rsLstDt.getString("lst_dl_dt");
+
+                    stmLstDt.close();
+
+                    log.info("Processing id:" + id + " got LstDt:" + LstDt);
+
+                    if (!LstDt.equals("xxxx")) {
+                        clause += " and t1.dl_dt > to_date('" + LstDt
+                                + "', 'yyyy-mm-dd HH24:MI:SS')";
+                    }
+
+                    Statement stm = con.createStatement();
+                    ResultSet rs;
+                    String sql = "select t1.ft_id, t1.id, " + "cur_pri,"
+                            + " dl_stk_num," + " dl_mny_num," + " b1_num,"
+                            + " b1_pri," + " b2_num," + " b2_pri," + " b3_num,"
+                            + " b3_pri," + " b4_num," + " b4_pri," + " b5_num,"
+                            + " b5_pri," + " s1_num," + " s1_pri," + " s2_num,"
+                            + " s2_pri," + " s3_num," + " s3_pri," + " s4_num,"
+                            + " s4_pri," + " s5_num," + " s5_pri," + " dl_dt "
+                            + " from stkdat2 t1 " + clause
+                            + " order by t1.id, t1.ft_id";
+
+                    log.info(sql);
+                    rs = stm.executeQuery(sql);
+
+                    CrtDDF(rs, 5);
+
+                    rs = stm.executeQuery(sql);
+                    CrtDDF(rs, 10);
+
+                    rs = stm.executeQuery(sql);
+                    CrtDDF(rs, 30);
+
+                    rs = stm.executeQuery(sql);
+                    CrtDDF(rs, 60);
+
+                    stm.close();
+                }
+            } catch (Exception e) {
+                log.error("Error: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 
@@ -299,7 +295,7 @@ public class CalStkDDF implements IWork {
     }
 
     public boolean isCycleWork() {
-        return true;
+        return false;
     }
 
 }
