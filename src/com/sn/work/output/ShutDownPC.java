@@ -9,10 +9,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
+import com.sn.work.WorkManager;
 
-public class ShutDownPC implements IWork {
+public class ShutDownPC implements com.sn.work.itf.IWork {
 
     /* Initial delay before executing work.
      */

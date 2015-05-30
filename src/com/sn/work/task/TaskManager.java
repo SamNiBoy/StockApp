@@ -7,8 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
-import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
+import com.sn.work.WorkManager;
 
 public class TaskManager {
 
@@ -52,8 +52,7 @@ public class TaskManager {
     
     private static boolean startEvaStocks()
     {
-        EvaStocks evs = new EvaStocks(0, 0);
-        evs.run();
+        EvaStocks evs = new EvaStocks(0, 0, false);
         WorkManager.submitWork(evs);
         tsks.put(evs.getWorkName(), evs);
         return true;

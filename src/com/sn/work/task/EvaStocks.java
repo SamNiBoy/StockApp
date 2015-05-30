@@ -20,8 +20,8 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.stock.Stock;
-import com.sn.work.fetcher.FetchStockData;
 import com.sn.work.itf.IWork;
+import com.sn.work.fetcher.FetchStockData;
 
 public class EvaStocks implements IWork {
 
@@ -31,6 +31,8 @@ public class EvaStocks implements IWork {
      */
     long initDelay = 0;
 
+    boolean onTimeRun = false;
+
     /*
      * Seconds delay befor executing next work.
      */
@@ -38,8 +40,8 @@ public class EvaStocks implements IWork {
 
     TimeUnit tu = TimeUnit.MILLISECONDS;
 
-    static ArrayList<Stock> stkLst = new ArrayList<Stock>();
-    static Map<String, Double> stkMaxs = new ConcurrentHashMap<String, Double>();
+    public static ArrayList<Stock> stkLst = new ArrayList<Stock>();
+    public static Map<String, Double> stkMaxs = new ConcurrentHashMap<String, Double>();
 
     static Logger log = Logger.getLogger(EvaStocks.class);
 
@@ -48,33 +50,38 @@ public class EvaStocks implements IWork {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        EvaStocks fsd = new EvaStocks(1, 3);
+        EvaStocks fsd = new EvaStocks(1, 3, false);
         fsd.run();
     }
 
-    public EvaStocks(long id, long dbn) {
+    public EvaStocks(long id, long dbn, boolean otr) {
         initDelay = id;
         delayBeforNxtStart = dbn;
+        onTimeRun = otr;
     }
 
     /*
      * var hq_str_sh601318=
-     * "中国平安,86.30,86.31,84.41,86.30,83.70,84.38,84.40,156070902,13235768984,2200,84.38,20300,84.37,12800,84.36,24100,84.35,3000,84.33,40750,84.40,54800,84.42,400,84.44,3300,84.45,2500,84.46,2015-05-15,15:04:06,00"
+     * "锟叫癸拷平锟斤拷,86.30,86.31,84.41,86.30,83.70,84.38,84.40,156070902,13235768984,2200,84.38,20300,84.37,12800,84.36,24100,84.35,3000,84.33,40750,84.40,54800,84.42,400,84.44,3300,84.45,2500,84.46,2015-05-15,15:04:06,00"
      * ;
      */
 
-    public synchronized void run() {
+    public void run() {
         // TODO Auto-generated method stub
 
         while (true) {
-            synchronized (FetchStockData.bellForWork) {
-                try {
-                log.info("Waiting before start evaluating stocks...");
-                    FetchStockData.bellForWork.wait();
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    log.error("EvaStocks Can not wait on bellForWork:"+e.getMessage());
-                    e.printStackTrace();
+
+            if (!onTimeRun) {
+                synchronized (FetchStockData.bellForWork) {
+                    try {
+                        log.info("Waiting before start evaluating stocks...");
+                        FetchStockData.bellForWork.wait();
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        log.error("EvaStocks Can not wait on bellForWork:"
+                                + e.getMessage());
+                        e.printStackTrace();
+                    }
                 }
             }
 
@@ -85,17 +92,25 @@ public class EvaStocks implements IWork {
                 String mainSql = "select id from stk where id in (select id from stkddf having(count(*)) > 1 group by id) order by id";
 
                 mainRs = mainStm.executeQuery(mainSql);
-                stkLst.clear();
-                while (mainRs.next()) {
-                    String id = mainRs.getString("id");
-                    Stock stk = new Stock(id, 5, 1);
-                    stkLst.add(stk);
+                synchronized (stkLst) {
+                    stkLst.clear();
+                    while (mainRs.next()) {
+                        String id = mainRs.getString("id");
+                        Stock stk = new Stock(id, 5, 1);
+                        stkLst.add(stk);
+                    }
+                    mainStm.close();
+                    calMaxs();
                 }
-                mainStm.close();
-                calMaxs();
             } catch (Exception e) {
                 log.error("Error: " + e.getMessage());
                 e.printStackTrace();
+            }
+            
+            if (onTimeRun)
+            {
+                onTimeRun = false;
+                break;
             }
         }
         // getBst10();

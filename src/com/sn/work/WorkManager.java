@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.work.itf.IWork;
 
+
 /* CycleWork Manager.
  */
 public class WorkManager {

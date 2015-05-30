@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.work.fetcher.FetchStockData;
 import com.sn.work.itf.IWork;
+import com.sn.work.fetcher.FetchStockData;
 
 public class CalStkDDF implements IWork {
 
@@ -50,7 +50,7 @@ public class CalStkDDF implements IWork {
 
     /*
      * var hq_str_sh601318=
-     * "中国平安,86.30,86.31,84.41,86.30,83.70,84.38,84.40,156070902,13235768984,2200,84.38,20300,84.37,12800,84.36,24100,84.35,3000,84.33,40750,84.40,54800,84.42,400,84.44,3300,84.45,2500,84.46,2015-05-15,15:04:06,00"
+     * "锟叫癸拷平锟斤拷,86.30,86.31,84.41,86.30,83.70,84.38,84.40,156070902,13235768984,2200,84.38,20300,84.37,12800,84.36,24100,84.35,3000,84.33,40750,84.40,54800,84.42,400,84.44,3300,84.45,2500,84.46,2015-05-15,15:04:06,00"
      * ;
      */
 

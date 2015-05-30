@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.work.itf.IWork;
 
-public class CalFetchStat implements IWork {
+public class CalFetchStat implements com.sn.work.itf.IWork {
 
     /* Initial delay before executing work.
      */

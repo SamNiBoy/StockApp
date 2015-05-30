@@ -131,13 +131,15 @@ public class Stock {
             map.put("ctnDsc", Double.valueOf(ctnDsc));
             rs.close();
             
-            sql = "select sum(cur_pri_df) / decode(fop.avg_td_opn_pri, 0, 1, fop.avg_td_opn_pri) incPct" +
-            "  from stkddf, (select avg(td_opn_pri) avg_td_opn_pri from stkdat2 where id ='" + ID +
-            "'  and dl_dt > (select max(dl_dt) from stkdat2 where id = '" + ID + "') - " + Days + ") fop" +
-            " where stkddf.id = '" + ID + 
-            "' and gap =" + gapType +
-            "  and dl_dt > (select max(dl_dt) from stkddf where id ='" + ID + "') - " +Days +
-            " group by fop.avg_td_opn_pri";
+            sql = "select (t2.cur_pri - t1.cur_pri)/ decode(t1.td_opn_pri, 0, 1, t1.td_opn_pri) incPct " +
+                  " from stkdat2 t1, stkdat2 t2 " +
+                  "where t1.id = t2.id" +
+                  "  and t1.ft_id = (select min(ft_id) " +
+                  "                    from stkdat2 where id ='" + ID +
+                  "'                    and dl_dt > (select max(dl_dt) from stkdat2 where id ='" + ID + "') - " + Days + ")" +
+                  "  and t2.ft_id = (select max(ft_id) " +
+                  "                    from stkdat2 where id ='" + ID +
+                  "'                    and dl_dt > (select max(dl_dt) from stkdat2 where id ='" + ID + "') - " + Days + ")";
             
             log.info(sql);
             rs = stm.executeQuery(sql);

@@ -26,7 +26,7 @@ public class TopTenBst implements IWork {
      */
     static String res = "Getting top 10 best is schedulled, try again later.";
     
-    static EvaStocks evs = new EvaStocks(0, 0);
+    static EvaStocks evs = new EvaStocks(0, 0, false);
 
     static Logger log = Logger.getLogger(DBManager.class);
     /**
