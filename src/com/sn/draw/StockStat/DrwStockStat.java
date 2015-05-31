@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -46,24 +47,46 @@ public class DrwStockStat implements Draw{
             g.setColor(Color.WHITE);
             Collections.sort(EvaStocks.stkLst, new SortByIncPct());
             g.fillRect(0, 0, width + 100, height);
-            g.drawLine(50, 10, 50, 480);
-            g.drawLine(50, 240, width + 50, 240);
-            g.drawString(this.getXLabel(), width/2, 260 );
-            g.drawString(this.getYLabel(), 50, 240 );
+            g.drawLine(50, 10, 50, height);
+            g.drawLine(50, height/2, width + 50, height/2);
+            int incCnt = 0, dscCnt = 0, equCnt = 0;
+            double incPctSum = 0, dscPctSum = 0;
             for (int i = 0; i<EvaStocks.stkLst.size(); i++) {
                 Stock s = EvaStocks.stkLst.get(i);
                 double incPct = s.map.get("incPct");
                 log.info("DrwStockStat, Stock:" + s.getID() + " Increased:" + incPct);
                 if (incPct > 0)
                 {
+                    incCnt++;
+                    incPctSum += incPct;
                     g.setColor(Color.RED);
+                    log.info("incCnt stoks Number:"+incCnt + "set Red color.");
                 }
-                else
+                else if (incPct < 0)
                 {
+                    dscCnt++;
+                    dscPctSum+=incPct;
                     g.setColor(Color.GREEN);
+                    log.info("dscCnt stoks Number:"+dscCnt + "set Green color.");
                 }
-                g.drawLine(50 + (i+1), 240, 50 + (i+1), 240 - (int)( incPct * 240));
+                else {
+                    equCnt++;
+                    log.info("eqaCnt stoks Number:"+equCnt + "skip drawing.");
+                    continue;
+                }
+                int gd = (height/2 - 10);
+                g.drawLine(50 + (i+1), height/2, 50 + (i+1), gd - (int)( incPct * gd));
             }
+            double incp1 = EvaStocks.stkLst.get(0).map.get("incPct");
+            double incp2 = EvaStocks.stkLst.get(EvaStocks.stkLst.size()-1).map.get("incPct");
+            log.info("incPct Range is:[" + incp1 + ", " + incp2+ "]");
+            g.drawString(this.getXLabel(), width/2, height/2 + 20 );
+            g.drawString(this.getYLabel(), 50, height/2 );
+            DecimalFormat df = new DecimalFormat("##.##");
+            
+            g.setFont(new Font("方正粗宋简体", Font.PLAIN, 25));
+            String title = "IncCnt:" + incCnt + " avg:" + df.format(incPctSum/incCnt) + ", dscCnt:" + dscCnt + " avg:" + df.format(dscPctSum/dscCnt) + " equal:" + equCnt;
+            g.drawString(title, width/2, 50 );
         }
         //g.setFont(new Font("方正粗宋简体", Font.PLAIN, 25));
         //g.drawString("JSP Web图表的绘制", 45, 145);
@@ -108,11 +131,11 @@ public class DrwStockStat implements Draw{
             // TODO Auto-generated method stub
             Stock s0 = arg0;
             Stock s1 = arg1;
-            if (s0.map.get("incPct") < s1.map.get("incPct")) {
-                log.info("s0 ID:" + s0.getID() + " < s1 ID:" + s1.getID());
+            if (s0.map.get("incPct") > s1.map.get("incPct")) {
+                log.info("s0 ID:" + s0.getID() + " > s1 ID:" + s1.getID());
                 return -1;
             } else {
-                log.info("s0 ID:" + s0.getID() + " > s1 ID:" + s1.getID());
+                log.info("s0 ID:" + s0.getID() + " < s1 ID:" + s1.getID());
                 return 1;
             }
         }

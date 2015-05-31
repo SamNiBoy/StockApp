@@ -136,10 +136,10 @@ public class Stock {
                   "where t1.id = t2.id" +
                   "  and t1.ft_id = (select min(ft_id) " +
                   "                    from stkdat2 where id ='" + ID +
-                  "'                    and dl_dt > (select max(dl_dt) from stkdat2 where id ='" + ID + "') - " + Days + ")" +
+                  "'                    and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate - " + 0 + ", 'yyyy-mm-dd'))" +
                   "  and t2.ft_id = (select max(ft_id) " +
                   "                    from stkdat2 where id ='" + ID +
-                  "'                    and dl_dt > (select max(dl_dt) from stkdat2 where id ='" + ID + "') - " + Days + ")";
+                  "'                    and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate - " + 0 + ", 'yyyy-mm-dd'))";
             
             log.info(sql);
             rs = stm.executeQuery(sql);
@@ -147,6 +147,10 @@ public class Stock {
             {
                 log.info("Total incPct:" + rs.getDouble("incPct") + " for ID:" + ID);
                 map.put("incPct", rs.getDouble("incPct"));
+            }
+            else{
+                log.info("No date found for calculating incPct, set 0.");
+                map.put("incPct", 0.0);
             }
             rs.close();
             
