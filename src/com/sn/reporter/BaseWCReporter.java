@@ -135,6 +135,7 @@ public abstract class BaseWCReporter implements IWCMsg {
             sql = "insert into msg values ('" + msgId + "', '" + frmUsr
                     + "', '" + toUsr + "', " + crtTime + ", 'text', '"
                     + content + "')";
+            log.info("Creating msg:" + sql);
             int crted = stm.executeUpdate(sql);
             if (crted == 1) {
                 log.info("Msg from user:" + frmUsr + " already being added!");

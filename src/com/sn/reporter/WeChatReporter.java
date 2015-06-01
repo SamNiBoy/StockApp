@@ -9,6 +9,7 @@ import com.sn.work.output.ShutDownPC;
 import com.sn.work.output.TopTenBst;
 import com.sn.work.output.TopTenWst;
 import com.sn.work.task.TaskManager;
+import com.sn.work.task.usrStock;
 
 public class WeChatReporter extends BaseWCReporter{
 
@@ -24,7 +25,7 @@ public class WeChatReporter extends BaseWCReporter{
         "<FromUserName><![CDATA[osCWfs-ZVQZfrjRK0ml-eEpzeop0]]></FromUserName>" +
         "<CreateTime>1431827441</CreateTime>" +
         "<MsgType><![CDATA[text]]></MsgType>" +
-        "<Content><![CDATA[Standard]]></Content>" +
+        "<Content><![CDATA[603939]]></Content>" +
         "<MsgId>6149652032815793242</MsgId>" +
         "</xml>";
 
@@ -43,7 +44,7 @@ public class WeChatReporter extends BaseWCReporter{
         resContent = "This is help for wechat:\n" + "Input:\n"
                 + "1. Get top df1.\n" + "2. Get top -df.\n"
                 + "3. Start fetch.\n" + "4. Stop fetch.\n"
-                + "5. Basic report\n" + "6. GJ\n";
+                + "5. Basic report\n" + "6. GJ\n" + "7. xxxxxx stock infor";
         String msg = createWCMsg();
         return msg;
     }
@@ -91,7 +92,14 @@ public class WeChatReporter extends BaseWCReporter{
                 resContent = sdp.getWorkResult();
             }
             else {
-                return printHelp();
+                if (content.length() == 6) {
+                    usrStock us = new usrStock(0, 0, this.getFromUserName(), content);
+                    WorkManager.submitWork(us);
+                    resContent = us.getWorkResult();
+                }
+                else {
+                    return printHelp();
+                }
             }
             return createWCMsg();
     }

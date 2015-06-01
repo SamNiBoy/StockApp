@@ -38,15 +38,15 @@ create sequence SEQ_STKDAT_PK
   increment by 1
   cache 20;
 /*
-1:86.30 ½ñÈÕ¿ªÅÌ¼Û
-2:86.31 ×òÈÕÊÕÅÌ¼Û
-3:84.41 µ±Ç°¼Û¸ñ
-4:86.30 ½ñÈÕ×î¸ß¼Û
-5:83.70 ½ñÈÕ×îµÍ¼Û
-6:84.38 ÂòÒ»
-7:84.40 ÂôÒ»
-8:156070902 ³É½»Á¿
-9:13235768984 ³É½»¶î
+1:86.30 ï¿½ï¿½ï¿½Õ¿ï¿½ï¿½Ì¼ï¿½
+2:86.31 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¼ï¿½
+3:84.41 ï¿½ï¿½Ç°ï¿½Û¸ï¿½
+4:86.30 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½
+5:83.70 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½
+6:84.38 ï¿½ï¿½Ò»
+7:84.40 ï¿½ï¿½Ò»
+8:156070902 ï¿½É½ï¿½ï¿½ï¿½
+9:13235768984 ï¿½É½ï¿½ï¿½ï¿½
 10:2200
 11:84.38
 12:20300
@@ -144,6 +144,13 @@ dl_dt date not null
 );
 create index stkdat2_id_dldt_idx on stkdat2 (id, dl_dt)
 
+/*usrStk stores user intrested stocks */
+create table usrStk(
+id varchar2(6 byte) not null,
+usrID varchar2(100 byte) not null,
+actTyp varchar2(5 byte) not null,
+CONSTRAINT "usrStk_PK" PRIMARY KEY (id, usrID)
+);
 /* stkDDF stores data diffs*/
 create table stkDDF(
 ft_id number not null,
@@ -175,6 +182,8 @@ s5_pri_df number not null,
 dl_dt date not null,
 CONSTRAINT "stkddf_PK" PRIMARY KEY (ft_id, gap, id)
 );
+
+
 
 create index stkdff_id_dldt_idx on stkddf (id, dl_dt)
 
