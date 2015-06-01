@@ -99,21 +99,19 @@ public class usrStock implements IWork {
                     + "equNum:[" + mainRs.getString("equNum") + "]\n";
 
             mainRs.close();
-            sql = "select (cur_pri - td_opn_pri) / td_opn_pri stkIncPct," +
-            		"      cur_pri," +
-            		"      to_char(dl_dt, 'yyyy-mm-dd HH24:MI:SS') tm"
-                    + " from stkdat2 "
-                    + "where id = '"
-                    + stkID
-                    + "'"
-                    + "  and ft_id = (select max(ft_id) from stkdat2 where id ='"
-                    + stkID
-                    + "')"
-                    + "  and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') ";
+            sql = "select (sd.cur_pri - sd.td_opn_pri) / sd.td_opn_pri stkIncPct," +
+            		"      sd.cur_pri," +
+            		"      to_char(sd.dl_dt, 'yyyy-mm-dd HH24:MI:SS') tm, " +
+            		"      s.name "
+                    + " from stkdat2 sd, stk s "
+                    + "where sd.id = '" + stkID + "'"
+                    + "  and sd.id = s.id "
+                    + "  and sd.ft_id = (select max(ft_id) from stkdat2 where id ='" + stkID + "')"
+                    + "  and to_char(sd.dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') ";
             log.info("usrStock:" + sql);
             mainRs = mainStm.executeQuery(sql);
             if (mainRs.next()) {
-                resContent += "Stock:[" + stkID + ", incPct:"
+                resContent += "Stock:[" + stkID + mainRs.getString("name") + ", incPct:"
                         + df.format(mainRs.getDouble("stkIncPct"))
                         + "\nCurPri:" + df.format(mainRs.getDouble("cur_pri"))
                         + "\nTime:" + mainRs.getString("tm") + "]";
