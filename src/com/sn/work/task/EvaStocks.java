@@ -50,7 +50,7 @@ public class EvaStocks implements IWork {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        EvaStocks fsd = new EvaStocks(1, 3, false);
+        EvaStocks fsd = new EvaStocks(1, 3, true);
         fsd.run();
     }
 
@@ -91,7 +91,9 @@ public class EvaStocks implements IWork {
                 ResultSet mainRs;
                 String mainSql = "select id from stk where id in (select id from stkddf having(count(*)) > 1 group by id) order by id";
 
+                log.info(mainSql);
                 mainRs = mainStm.executeQuery(mainSql);
+                log.info("returned:" + mainRs.getRow() + " rows.");
                 synchronized (stkLst) {
                     stkLst.clear();
                     while (mainRs.next()) {
