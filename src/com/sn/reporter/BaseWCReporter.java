@@ -34,6 +34,7 @@ public abstract class BaseWCReporter implements IWCMsg {
     String content;
     String msgId;
     long crtTime;
+    static Connection con = DBManager.getConnection();
 
     String resContent;
     private String wcMsg;
@@ -94,25 +95,27 @@ public abstract class BaseWCReporter implements IWCMsg {
     }
 
     private boolean chkAndCrtUsr(String usr, boolean hst_flg) {
-        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        ResultSet rs = null;
         try {
-            Statement stm = con.createStatement();
+            stm = con.createStatement();
             String sql;
             sql = "select 'x' from usr where openID = '" + usr + "'";
-            ResultSet rs = stm.executeQuery(sql);
+            rs = stm.executeQuery(sql);
             if (rs.next()) {
                 log.info("User:" + frmUsr + " already being added!");
+                rs.close();
+                stm.close();
             } else {
                 sql = "insert into usr values ('" + usr + "',"
                         + (hst_flg == true ? 1 : 0) + "," + "sysdate)";
                 stm.executeUpdate(sql);
                 log.info("User:" + frmUsr + " added as "
                         + (hst_flg == true ? 1 : 0));
+                rs.close();
+                stm.close();
                 return true;
             }
-            rs.close();
-            stm.close();
-            con.close();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -122,9 +125,9 @@ public abstract class BaseWCReporter implements IWCMsg {
     }
 
     private void crtRcvMsg() {
-        Connection con = DBManager.getConnection();
+        Statement stm = null;
         try {
-            Statement stm = con.createStatement();
+            stm = con.createStatement();
             String sql;
             /*
              * msgId number not null, frmUsrID varchar2(100 byte) not null,
@@ -142,8 +145,6 @@ public abstract class BaseWCReporter implements IWCMsg {
             } else {
                 log.info("Msg from user:" + frmUsr + " NOT being added!");
             }
-            stm.close();
-            con.close();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

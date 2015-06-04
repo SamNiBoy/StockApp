@@ -98,7 +98,7 @@ public class EvaStocks implements IWork {
                     stkLst.clear();
                     while (mainRs.next()) {
                         String id = mainRs.getString("id");
-                        Stock stk = new Stock(id, 5, 1);
+                        Stock stk = new Stock(id, 5, 1, con);
                         stkLst.add(stk);
                     }
                     mainStm.close();

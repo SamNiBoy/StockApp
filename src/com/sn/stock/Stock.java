@@ -21,7 +21,7 @@ public class Stock {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        Stock s = new Stock("600863", 5, 5);
+        Stock s = new Stock("600863", 5, 5, DBManager.getConnection());
 
     }
     private String ID;
@@ -32,12 +32,15 @@ public class Stock {
     private int gapType;
     private int Days;
     
-    public Stock(String id, int gaptyp, int ds)
+    Connection con = null;
+    
+    public Stock(String id, int gaptyp, int ds, Connection cc)
     {
         ID = id;
         gapType = gaptyp;
         Days = ds;
         map = new HashMap<String, Double>();
+        con = cc;
         commonCreate();
     }
     /* This map stores:
@@ -55,8 +58,6 @@ public class Stock {
     private void commonCreate()
     {
         log.info("Start loading data for stock:" + ID);
-
-        Connection con = DBManager.getConnection();
 
         try {
             Statement stm = con.createStatement();
@@ -168,7 +169,7 @@ public class Stock {
                 map.put("qtyRatio", rs.getDouble("qtyRatio"));
             }
             rs.close();
-            con.close();
+            stm.close();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             log.error("Stock.CommonCreate errored:" + e.getMessage());
