@@ -142,7 +142,17 @@ s5_num number not null,
 s5_pri number not null,
 dl_dt date not null
 );
-create index stkdat2_id_dldt_idx on stkdat2 (id, dl_dt)
+create index stkdat2_id_dldt_idx on stkdat2 (id, ft_id, dl_dt)
+
+/* get day highest stock*/
+select lst.id from stkdat2 fst, stkdat2 lst
+   where to_char(lst.dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd')
+     and to_char(lst.dl_dt, 'yyyy-mm-dd') = to_char(fst.dl_dt, 'yyyy-mm-dd')
+     and fst.id = lst.id
+     and fst.ft_id = (select min(ft_id) from stkdat2 d1 where d1.id = lst.id and to_char(d1.dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd'))
+     and lst.ft_id = (select max(ft_id) from stkdat2 d2 where d2.id = lst.id and to_char(d2.dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd'))
+     and (lst.cur_pri - fst.td_opn_pri)/decode(lst.td_opn_pri, 0, 1, lst.td_opn_pri) > 0.08
+     and lst.td_opn_pri > 0
 
 /*usrStk stores user intrested stocks */
 create table usrStk(
