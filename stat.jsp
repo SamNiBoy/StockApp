@@ -296,12 +296,12 @@ StringBuffer sb = new StringBuffer();
 try {
     con = DBManager.getConnection();
     stmt = con.createStatement();
-    DecimalFormat df = new DecimalFormat("##.##");
+    DecimalFormat df = new DecimalFormat("##.###");
     String ID = id;
     String sql;
     
     sql = "select lst.id || stk.name ID, "
-       + "        (lst.cur_pri - fst.td_opn_pri)/lst.td_opn_pri pct, "
+       + "        (lst.cur_pri - fst.td_opn_pri)/lst.td_opn_pri*100 pct, "
        + "        rr.rz "
        + "   from stkdat2 fst, "
        + "        stkdat2 lst, "
@@ -321,6 +321,7 @@ try {
     rs = stmt.executeQuery(sql);
     sb.append("<table cellpadding=5 cellspacing=1 align=\"left\"> "
                     + "<tr>"
+                    + "<td>序号</td> "
                     + "<td>股票</td> "
                     + "<td>涨幅</td> "
                     + "<td>日期</td> " + "</tr>\n");
@@ -328,6 +329,7 @@ try {
 
     String id_clr, pct_clr;
     String id_val, pct_val;
+    int CNT = 0;
     while (rs.next()) {
         if (rs.getString("ID") == null) {
             id_clr = "AAAAAA\">";
@@ -349,7 +351,10 @@ try {
             pct_val = df.format(rs.getDouble("pct"));
         }
         
-        sb.append("<tr><td " + "bgcolor=\"#" + id_clr + id_val
+        CNT++;
+        sb.append("<tr><td " + "bgcolor=\"#AAAAAA\">" + CNT + "</td>");
+        
+        sb.append("<td " + "bgcolor=\"#" + id_clr + id_val
                 + "</td>");
         sb.append("<td " + "bgcolor=\"#" + pct_clr + pct_val
                 + "</td>");
