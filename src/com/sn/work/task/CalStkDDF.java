@@ -115,16 +115,7 @@ public class CalStkDDF implements IWork {
                     log.info(sql);
                     rs = stm.executeQuery(sql);
 
-                    CrtDDF(rs, 5);
-
-                    rs = stm.executeQuery(sql);
-                    CrtDDF(rs, 10);
-
-                    rs = stm.executeQuery(sql);
-                    CrtDDF(rs, 30);
-
-                    rs = stm.executeQuery(sql);
-                    CrtDDF(rs, 60);
+                    CrtDDF(rs, 1);
 
                     stm.close();
                 }

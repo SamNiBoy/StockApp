@@ -258,9 +258,6 @@ public class FetchStockData implements IWork {
                 }
                 br.close();
                 
-                ExactDatForstkDat2();
-                
-                con.commit();
                 if (cancel_work)
                 {
                     log.info("Stock data is same, cancel current work...");
@@ -268,6 +265,11 @@ public class FetchStockData implements IWork {
                     break;
                 }
             }
+            
+            if (!cancel_work) {
+                ExactDatForstkDat2();
+            }
+            con.commit();
             synchronized(bellForWork)
             {
                /*Tell CalStkDDF and EvaStock to start*/
