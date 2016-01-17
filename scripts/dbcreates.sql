@@ -26,9 +26,10 @@ CONSTRAINT "monStk_PK" PRIMARY KEY (ID, openID)
 create table stk(
 id varchar2(6 byte) not null primary key,
 area varchar2(2 byte) not null,
-name varchar2(12 byte) not null,
+name varchar2(20 byte) not null,
 py varchar2(4 byte),
-bu varchar2(12 byte)
+bu varchar2(12 byte),
+gz_flg number not null
 );
 
 create sequence SEQ_STKDAT_PK

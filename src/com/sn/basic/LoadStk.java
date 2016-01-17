@@ -33,13 +33,13 @@ public class LoadStk {
             FileReader fr = new FileReader(".\\scripts\\stockcodes.txt");
             BufferedReader br = new BufferedReader(fr);
 
-            String s = br.readLine();
-            while (s != null && false) {
-                log.info(s);
-                sql = CreateStk(s);
-                stm.execute(sql);
-                s = br.readLine();
-            }
+//            String s = br.readLine();
+//            while (s != null && false) {
+//                log.info(s);
+//                sql = CreateStk(s);
+//                stm.execute(sql);
+//                s = br.readLine();
+//            }
             LoadRest(stm, con);
             con.commit();
             br.close();
@@ -96,12 +96,12 @@ public class LoadStk {
                         log.info("Whats wrong here!");
                     }
                     
-                    String sql = "insert into stk (id, area, name, py, bu) values('"
+                    String sql = "insert into stk (id, area, name, py, bu, gz_flg) values('"
                             + stkID + "', '"
                             + area + "', '"
                             + stkName + "', '"
                             + "py" + "', '"
-                            + "NoDef" + "')";
+                            + "NoDef" + "',0)";
                     log.info(sql);
                     stm.executeUpdate(sql);
                     loadedCnt++;

@@ -5,6 +5,8 @@ import org.apache.log4j.Logger;
 import com.sn.work.WorkManager;
 import com.sn.work.fetcher.FetchStockData;
 import com.sn.work.output.CalFetchStat;
+import com.sn.work.output.GzStock;
+import com.sn.work.output.ListGzStock;
 import com.sn.work.output.ShutDownPC;
 import com.sn.work.output.TopTenBst;
 import com.sn.work.output.TopTenWst;
@@ -25,7 +27,7 @@ public class WeChatReporter extends BaseWCReporter{
         "<FromUserName><![CDATA[osCWfs-ZVQZfrjRK0ml-eEpzeop0]]></FromUserName>" +
         "<CreateTime>1431827441</CreateTime>" +
         "<MsgType><![CDATA[text]]></MsgType>" +
-        "<Content><![CDATA[603939]]></Content>" +
+        "<Content><![CDATA[0]]></Content>" +
         "<MsgId>6149652032815793242</MsgId>" +
         "</xml>";
 
@@ -41,15 +43,14 @@ public class WeChatReporter extends BaseWCReporter{
     }
 
     public String printHelp() {
-        resContent = "This is help for wechat:\n" + "Input:\n"
-                + "1. Get top df1.\n" + "2. Get top -df.\n"
-                + "3. Start fetch.\n" + "4. Stop fetch.\n"
-                + "5. Basic report\n" + "6. GJ\n" + "7. xxxxxx stock infor";
+        resContent = "你可以发送以下代码:\n"
+                + "1. 获取我关注的股票.\n" + "2.获取股票数据.\n"
+                + "3. 停止获取股票数据.\n" + "4.报告关注股票情况.\n" + "5. 关机\n"
+                + "gzxxxxxx 关注股票.\n" + " tzxxxxxx 停止关注股票.\n";
+
         String msg = createWCMsg();
         return msg;
     }
-
-
     public String getResponse() {
         if (content == null || content.equals("")) {
             return printHelp();
@@ -62,32 +63,33 @@ public class WeChatReporter extends BaseWCReporter{
         }
 
             if (content.equals("1")) {
-                TopTenBst ttb = new TopTenBst(0, 3);
+                ListGzStock ttb = new ListGzStock(0, 3);
                 WorkManager.submitWork(ttb);
                 resContent = ttb.getWorkResult();
             }
             else if (content.equals("2")) {
-                TopTenWst ttw = new TopTenWst(0, 3);
-                WorkManager.submitWork(ttw);
-                resContent = ttw.getWorkResult();
-            }
-            else if (content.equals("3")) {
                 FetchStockData fsd = new FetchStockData(0, 30000);
                 WorkManager.submitWork(fsd);
                 resContent = "Started fetching stock data!";
             }
-            else if (content.equals("4")) {
+            else if (content.equals("3")) {
                 FetchStockData sfd = new FetchStockData(0, 0);
                 WorkManager.cancelWork(sfd.getWorkName());
                 resContent = "Stoped fetching stock data.";
             }
-            else if (content.equals("5")) {
+            else if (content.equals("4")) {
                 CalFetchStat cfs = new CalFetchStat(0, 3);
                 WorkManager.submitWork(cfs);
                 resContent = cfs.getWorkResult();
             }
-            else if (content.equals("6")) {
+            else if (content.equals("5")) {
                 ShutDownPC sdp = new ShutDownPC(0, 3);
+                WorkManager.submitWork(sdp);
+                resContent = sdp.getWorkResult();
+            }
+            else if (content.length() > 2 && content.substring(0,2).equalsIgnoreCase("gz")) {
+                String stk = content.substring(2, 8);
+                GzStock sdp = new GzStock(0, 3, stk);
                 WorkManager.submitWork(sdp);
                 resContent = sdp.getWorkResult();
             }

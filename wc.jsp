@@ -8,7 +8,7 @@ import="java.awt.image.*"
 import="java.awt.*" 
 import="javax.imageio.*"
 import="javax.servlet.*"
-%> 
+%>
 
 <%
 response.reset(); 

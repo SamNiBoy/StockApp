@@ -31,37 +31,37 @@ public class TestDriver {
 
     public static final String drive = "oracle.jdbc.driver.OracleDriver";
     /**
-     * Á¬½ÓµØÖ·£¬¸÷¸ö³§ÉÌÌá¹©µ¥¶À¼Ç×¡ jdbc:oracle:thin:@localhost:1521:ORCL localhost ÊÇipµØÖ·¡£
+     * ï¿½ï¿½ï¿½Óµï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¡ jdbc:oracle:thin:@localhost:1521:ORCL localhost ï¿½ï¿½ipï¿½ï¿½Ö·ï¿½ï¿½
      */
-    public static final String url1 = "jdbc:oracle:thin:@192.168.0.100:1521:SO";
-    public static final String url2 = "jdbc:oracle:thin:@192.168.0.52:1521:ORCL";
+    public static final String url1 = "jdbc:oracle:thin:@localhost:1521:ORCL";
+    public static final String url2 = "jdbc:oracle:thin:@localhost:1521:ORCL";
     /**
-     * ÓÃ»§ ÃÜÂë
+     * ï¿½Ã»ï¿½ ï¿½ï¿½ï¿½ï¿½
      */
-    public static final String DBUSER = "samni";
-    public static final String password = "samni";
+    public static final String DBUSER = "sam";
+    public static final String password = "sam";
 
     static Logger log = Logger.getLogger(TestDriver.class);
     public static void testDB() throws Exception {
         // TODO Auto-generated method stub
-        Connection conn = null;// ±íÊ¾Êý¾Ý¿âÁ¬½Ó
-        Statement stmt = null;// ±íÊ¾Êý¾Ý¿âµÄ¸üÐÂ
-        ResultSet result = null;// ²éÑ¯Êý¾Ý¿â
-        Class.forName(drive);// Ê¹ÓÃclassÀàÀ´¼ÓÔØ³ÌÐò
-        conn = DriverManager.getConnection(url2, DBUSER, password); // Á¬½ÓÊý¾Ý¿â
-        // Statement½Ó¿ÚÒªÍ¨¹ýconnection½Ó¿ÚÀ´½øÐÐÊµÀý»¯²Ù×÷
+        Connection conn = null;// ï¿½ï¿½Ê¾ï¿½ï¿½Ý¿ï¿½ï¿½ï¿½ï¿½ï¿½
+        Statement stmt = null;// ï¿½ï¿½Ê¾ï¿½ï¿½Ý¿ï¿½Ä¸ï¿½ï¿½ï¿½
+        ResultSet result = null;// ï¿½ï¿½Ñ¯ï¿½ï¿½Ý¿ï¿½
+        Class.forName(drive);// Ê¹ï¿½ï¿½classï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø³ï¿½ï¿½ï¿½
+        conn = DriverManager.getConnection(url1, DBUSER, password); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¿ï¿½
+        // Statementï¿½Ó¿ï¿½ÒªÍ¨ï¿½ï¿½connectionï¿½Ó¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½
         stmt = conn.createStatement();
-        // Ö´ÐÐSQLÓï¾äÀ´²éÑ¯Êý¾Ý¿â
+        // Ö´ï¿½ï¿½SQLï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½Ý¿ï¿½
         result = stmt.executeQuery("SELECT 'abc' name FROM dual");
-        while (result.next()) {// ÅÐ¶ÏÓÐÃ»ÓÐÏÂÒ»ÐÐ
+        while (result.next()) {// ï¿½Ð¶ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
             String name = result.getString(1);
             log.info("name=" + name + ";");
         }
 
         // log.info(conn);
-        result.close();// Êý¾Ý¿âÏÈ¿ªºó¹Ø
+        result.close();// ï¿½ï¿½Ý¿ï¿½ï¿½È¿ï¿½ï¿½ï¿½ï¿½
         stmt.close();
-        conn.close();// ¹Ø±ÕÊý¾Ý¿â
+        conn.close();// ï¿½Ø±ï¿½ï¿½ï¿½Ý¿ï¿½
 
     }
 
@@ -84,7 +84,7 @@ public class TestDriver {
 
     /*
      * var hq_str_sh601318=
-     * "ÖÐ¹úÆ½°²,86.30,86.31,84.41,86.30,83.70,84.38,84.40,156070902,13235768984,2200,84.38,20300,84.37,12800,84.36,24100,84.35,3000,84.33,40750,84.40,54800,84.42,400,84.44,3300,84.45,2500,84.46,2015-05-15,15:04:06,00"
+     * "ï¿½Ð¹ï¿½Æ½ï¿½ï¿½,86.30,86.31,84.41,86.30,83.70,84.38,84.40,156070902,13235768984,2200,84.38,20300,84.37,12800,84.36,24100,84.35,3000,84.33,40750,84.40,54800,84.42,400,84.44,3300,84.45,2500,84.46,2015-05-15,15:04:06,00"
      * ;
      */
     static void createStockData(String stkDat) {
@@ -197,17 +197,17 @@ public class TestDriver {
                                + dl_tm + "'," +"sysdate)";
         log.info("sql:" + sql);
 
-        Connection conn = null;// ±íÊ¾Êý¾Ý¿âÁ¬½Ó
-        Statement stmt = null;// ±íÊ¾Êý¾Ý¿âµÄ¸üÐÂ
-        ResultSet result = null;// ²éÑ¯Êý¾Ý¿â
+        Connection conn = null;// ï¿½ï¿½Ê¾ï¿½ï¿½Ý¿ï¿½ï¿½ï¿½ï¿½ï¿½
+        Statement stmt = null;// ï¿½ï¿½Ê¾ï¿½ï¿½Ý¿ï¿½Ä¸ï¿½ï¿½ï¿½
+        ResultSet result = null;// ï¿½ï¿½Ñ¯ï¿½ï¿½Ý¿ï¿½
         try {
-        Class.forName(drive);// Ê¹ÓÃclassÀàÀ´¼ÓÔØ³ÌÐò
-        conn = DriverManager.getConnection(url2, DBUSER, password); // Á¬½ÓÊý¾Ý¿â
-        // Statement½Ó¿ÚÒªÍ¨¹ýconnection½Ó¿ÚÀ´½øÐÐÊµÀý»¯²Ù×÷
+        Class.forName(drive);// Ê¹ï¿½ï¿½classï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø³ï¿½ï¿½ï¿½
+        conn = DriverManager.getConnection(url2, DBUSER, password); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¿ï¿½
+        // Statementï¿½Ó¿ï¿½ÒªÍ¨ï¿½ï¿½connectionï¿½Ó¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½
         stmt = conn.createStatement();
         stmt.execute(sql);
         stmt.close();
-        conn.close();// ¹Ø±ÕÊý¾Ý¿â
+        conn.close();// ï¿½Ø±ï¿½ï¿½ï¿½Ý¿ï¿½
         }
         catch(Exception e)
         {

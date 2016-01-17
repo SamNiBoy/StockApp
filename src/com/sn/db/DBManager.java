@@ -17,13 +17,13 @@ public class DBManager {
     static Logger log = Logger.getLogger(DBManager.class);
     public static final String drive = "oracle.jdbc.driver.OracleDriver";
     /**
-     * Á¬½ÓµØÖ·£¬¸÷¸ö³§ÉÌÌá¹©µ¥¶À¼Ç×¡ jdbc:oracle:thin:@localhost:1521:ORCL localhost ÊÇipµØÖ·¡£
+     * ï¿½ï¿½ï¿½Óµï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¡ jdbc:oracle:thin:@localhost:1521:ORCL localhost ï¿½ï¿½ipï¿½ï¿½Ö·ï¿½ï¿½
      */
-    private static final String url1 = "jdbc:oracle:thin:@192.168.0.100:1521:SO";
-    private static final String url2 = "jdbc:oracle:thin:@192.168.0.59:1521:ORCL";
+    private static final String url1 = "jdbc:oracle:thin:@localhost:1521:ORCL";
+    private static final String url2 = "jdbc:oracle:thin:@192.168.0.106:1521:ORCL";
     private static final String url3 = "jdbc:oracle:thin:@localhost:1521:MAINT";
     /**
-     * ÓÃ»§ ÃÜÂë
+     * ï¿½Ã»ï¿½ ï¿½ï¿½ï¿½ï¿½
      */
     private static final String DBUSER = "sam";
     private static final String password = "sam";
@@ -81,7 +81,7 @@ public class DBManager {
     }
 
     static void initLog4j() {
-        PropertyConfigurator.configure(AppDir2
+        PropertyConfigurator.configure(AppDir1
                 + "/WEB-INF/conf/log4j.properties");
     }
 
@@ -98,7 +98,7 @@ public class DBManager {
             e.printStackTrace();
             log.error("Can not load driver class:" + drive);
         }
-        ds.setJdbcUrl(url2);
+        ds.setJdbcUrl(url1);
         ds.setUser(DBUSER);
         ds.setPassword(password);
         ds.setMaxPoolSize(50);
