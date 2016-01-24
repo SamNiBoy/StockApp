@@ -67,7 +67,7 @@ public class GzStockObserverable extends Observable {
             for (String stock : gzStocks) {
                 sql = "select cur_pri, dl_stk_num from stkdat2 where id ='"
                         + stock
-                        + "' and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate-5, 'yyyy-mm-dd') order by ft_id";
+                        + "' and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') order by ft_id";
                 log.info(sql);
                 System.out.println(sql);
                 rs = stm.executeQuery(sql);
@@ -108,7 +108,7 @@ public class GzStockObserverable extends Observable {
                     System.out.println("d0:" + d0 + "\nd1:" +d1);
                     
                     if (incPriCnt + eqlPriCnt + desPriCnt > 0 &&
-                            d0 < 0.5 && d1 > 0.04) {
+                            d0 < 0.3 && d1 > 0.1) {
                         if (subject.length() > 0) {
                             subject += ",";
                         }

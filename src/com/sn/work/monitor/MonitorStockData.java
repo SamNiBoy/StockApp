@@ -65,17 +65,17 @@ public class MonitorStockData implements IWork {
         // TODO Auto-generated method stub
         String str;
         try {
-//            synchronized (FetchStockData.bellForWork) {
-//                try {
-//                    log.info("Waiting before start mointor stocks...");
-//                    FetchStockData.bellForWork.wait();
-//                } catch (InterruptedException e) {
-//                    // TODO Auto-generated catch block
-//                    log.error("MonitorStockData Can not wait on bellForWork:"
-//                            + e.getMessage());
-//                    e.printStackTrace();
-//                }
-//            }
+            synchronized (FetchStockData.bellForWork) {
+                try {
+                    log.info("Waiting before start mointor stocks...");
+                    FetchStockData.bellForWork.wait();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    log.error("MonitorStockData Can not wait on bellForWork:"
+                            + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
             GzStockObserverable spo = new GzStockObserverable();
             spo.update();
             if (spo.hasSentMail()) {

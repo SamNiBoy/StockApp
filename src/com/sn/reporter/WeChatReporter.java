@@ -45,9 +45,10 @@ public class WeChatReporter extends BaseWCReporter{
 
     public String printHelp() {
         resContent = "你可以发送以下代码:\n"
-                + "1. 获取我关注的股票.\n" + "2.获取股票数据.\n"
-                + "3. 停止获取股票数据.\n" + "4.报告关注股票情况.\n" 
-                + "5. 监控关注股票\n" +"6. 关机\n"
+                + "1.获取我关注的股票.\n" + "2.获取股票数据.\n"
+                + "3.停止获取股票数据.\n" + "4.报告获取数据情况.\n" 
+                + "5.监控关注股票\n" + "6.停止监控关注股票\n"
+                + "7.关机\n"
                 + "gzxxxxxx 关注股票.\n" + " tzxxxxxx 停止关注股票.\n";
 
         String msg = createWCMsg();
@@ -90,6 +91,11 @@ public class WeChatReporter extends BaseWCReporter{
                 resContent = sdp.getWorkResult();
             }
             else if (content.equals("6")) {
+                MonitorStockData sdp = new MonitorStockData(0, 0);
+                WorkManager.cancelWork(sdp.getWorkName());
+                resContent = "Stoped monitoring stock data.";
+            }
+            else if (content.equals("7")) {
                 ShutDownPC sdp = new ShutDownPC(0, 3);
                 WorkManager.submitWork(sdp);
                 resContent = sdp.getWorkResult();
