@@ -27,7 +27,7 @@ public class DBManager {
      */
     private static final String DBUSER = "sam";
     private static final String password = "sam";
-    private static final String AppDir1 = "D:/mfc/stockapp";
+    private static final String AppDir1 = "D:/tomcat8/webapps/StockApp";
     private static final String AppDir2 = "E:/mfc/stockapp";
 
     static ComboPooledDataSource  ds = null;

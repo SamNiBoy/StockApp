@@ -19,7 +19,7 @@ import com.sn.work.fetcher.FetchStockData;
 
 public class CalStkDDF implements IWork {
 
-    static Connection con = DBManager.getConnection();
+    static Connection con = null;
     /*
      * Initial delay before executing work.
      */
@@ -70,6 +70,7 @@ public class CalStkDDF implements IWork {
                     e.printStackTrace();
                 }
             }
+            con = DBManager.getConnection();
             try {
                 log.info("Now start CalStkDDF work...");
 

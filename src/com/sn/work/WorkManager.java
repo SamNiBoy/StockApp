@@ -35,6 +35,7 @@ public class WorkManager {
     }
 
     public static boolean submitWork(IWork work) {
+        cleanupDoneWork();
         if (work.isCycleWork()) {
             if (SFM.get(work.getWorkName()) != null) {
 
@@ -55,6 +56,12 @@ public class WorkManager {
         }
         else
         {
+            if (SFM.get(work.getWorkName()) != null) {
+
+                log.info("Non cycle worker:" + work.getWorkName()
+                        + " already scheduled, skipp rescheduling.");
+                return false;
+            }
             log.info("Non cycle worker:" + work.getWorkName()
                     + " scheduled, with initdelay:" + work.getInitDelay()
                     + "delayBeforeNxt:" + work.getDelayBeforeNxt()
@@ -64,6 +71,18 @@ public class WorkManager {
         }
 
         return true;
+    }
+    
+    private static void cleanupDoneWork() {
+        log.info("Now let's cleanup finsihed work from SFM...");
+        for (String workName : SFM.keySet()) {
+            ScheduledFuture<?> sf = SFM.get(workName);
+            if (sf.isDone()) {
+                log.info("Work:" + workName + " is finished! removed it from SFM...");
+                SFM.remove(workName);
+            }
+        }
+        log.info("Now finished cleanup finished work!");
     }
 
     public static void shutdownWorks() {

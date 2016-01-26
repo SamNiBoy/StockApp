@@ -25,7 +25,7 @@ import com.sn.work.fetcher.FetchStockData;
 
 public class EvaStocks implements IWork {
 
-    static Connection con = DBManager.getConnection();
+    static Connection con = null;
     /*
      * Initial delay before executing work.
      */
@@ -84,6 +84,8 @@ public class EvaStocks implements IWork {
                     }
                 }
             }
+            
+            con = DBManager.getConnection();
 
             try {
                 log.info("Now start evaluating stocks...");

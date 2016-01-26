@@ -67,13 +67,21 @@ public class WeChatReporter extends BaseWCReporter{
 
             if (content.equals("1")) {
                 ListGzStock ttb = new ListGzStock(0, 3);
-                WorkManager.submitWork(ttb);
-                resContent = ttb.getWorkResult();
+                if (!WorkManager.submitWork(ttb)) {
+                    resContent = "Work already scheduled, can not do it again!";
+                }
+                else {
+                    resContent = ttb.getWorkResult();
+                }
             }
             else if (content.equals("2")) {
                 FetchStockData fsd = new FetchStockData(0, 30000);
-                WorkManager.submitWork(fsd);
-                resContent = "Started fetching stock data!";
+                if (!WorkManager.submitWork(fsd)) {
+                    resContent = "Work already scheduled, can not do it again!";
+                }
+                else {
+                    resContent = "Started fetching stock data!";
+                }
             }
             else if (content.equals("3")) {
                 FetchStockData sfd = new FetchStockData(0, 0);
@@ -82,13 +90,21 @@ public class WeChatReporter extends BaseWCReporter{
             }
             else if (content.equals("4")) {
                 CalFetchStat cfs = new CalFetchStat(0, 3);
-                WorkManager.submitWork(cfs);
-                resContent = cfs.getWorkResult();
+                if (!WorkManager.submitWork(cfs)) {
+                    resContent = "Work already scheduled, can not do it again!";
+                }
+                else {
+                    resContent = cfs.getWorkResult();
+                }
             }
             else if (content.equals("5")) {
                 MonitorStockData sdp = new MonitorStockData(0, 35000);
-                WorkManager.submitWork(sdp);
-                resContent = sdp.getWorkResult();
+                if (!WorkManager.submitWork(sdp)) {
+                    resContent = "Work already scheduled, can not do it again!";
+                }
+                else {
+                    resContent = sdp.getWorkResult();
+                }
             }
             else if (content.equals("6")) {
                 MonitorStockData sdp = new MonitorStockData(0, 0);
@@ -97,20 +113,33 @@ public class WeChatReporter extends BaseWCReporter{
             }
             else if (content.equals("7")) {
                 ShutDownPC sdp = new ShutDownPC(0, 3);
-                WorkManager.submitWork(sdp);
-                resContent = sdp.getWorkResult();
+                if (!WorkManager.submitWork(sdp)) {
+                    resContent = "Work already scheduled, can not do it again!";
+                }
+                else {
+                    resContent = sdp.getWorkResult();
+                }
             }
             else if (content.length() > 2 && content.substring(0,2).equalsIgnoreCase("gz")) {
                 String stk = content.substring(2, 8);
                 GzStock sdp = new GzStock(0, 3, stk);
-                WorkManager.submitWork(sdp);
-                resContent = sdp.getWorkResult();
+                if (!WorkManager.submitWork(sdp)) {
+                    resContent = "Work already scheduled, can not do it again!";
+                }
+                else {
+                    resContent = sdp.getWorkResult();
+                }
             }
             else {
                 if (content.length() == 6) {
                     usrStock us = new usrStock(0, 0, this.getFromUserName(), content);
                     WorkManager.submitWork(us);
-                    resContent = us.getWorkResult();
+                    if (!WorkManager.submitWork(us)) {
+                        resContent = "Work already scheduled, can not do it again!";
+                    }
+                    else {
+                        resContent = us.getWorkResult();
+                    }
                 }
                 else {
                     return printHelp();
