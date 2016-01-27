@@ -12,7 +12,7 @@ import com.sn.work.WorkManager;
 
 public class TaskManager {
 
-    static Logger log = Logger.getLogger(CalStkDDF.class);
+    static Logger log = Logger.getLogger(TaskManager.class);
     
     private static boolean tskStarted = false;
     

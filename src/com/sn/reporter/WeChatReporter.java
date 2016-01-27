@@ -60,10 +60,10 @@ public class WeChatReporter extends BaseWCReporter{
         }
         
         log.info("got input:[" + content + "], firstly let's check tasks");
-        if (!TaskManager.isTasksStarted())
-        {
-            TaskManager.startTasks();
-        }
+//        if (!TaskManager.isTasksStarted())
+//        {
+//            TaskManager.startTasks();
+//        }
 
             if (content.equals("1")) {
                 ListGzStock ttb = new ListGzStock(0, 3);

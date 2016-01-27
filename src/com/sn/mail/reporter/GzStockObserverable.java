@@ -23,21 +23,24 @@ public class GzStockObserverable extends Observable {
 
     static Logger log = Logger.getLogger(GzStockObserverable.class);
 
+    static Connection con = DBManager.getConnection();
     public String subject;
     public String content;
     private boolean hasSentMail = false;
+
     public String getSubject() {
         return subject;
     }
+
     public String getContent() {
         return content;
     }
-    public boolean hasSentMail()
-    {
+
+    public boolean hasSentMail() {
         return hasSentMail;
     }
-    public GzStockObserverable()
-    {
+
+    public GzStockObserverable() {
         this.addObserver(StockPriceObserver.globalObs);
     }
 
@@ -48,7 +51,6 @@ public class GzStockObserverable extends Observable {
 
     public void update() {
         log.info("GzStockObserverable update...");
-        Connection con = DBManager.getConnection();
         Statement stm = null;
         try {
             stm = con.createStatement();
@@ -101,20 +103,25 @@ public class GzStockObserverable extends Observable {
                     if (qtyCnt > 0) {
                         detQty = detQty / qtyCnt;
                     }
-                    
-                    double d0 = eqlPriCnt*1.0 /(incPriCnt + desPriCnt + eqlPriCnt);
-                    double d1 = Math.abs(incPriCnt - desPriCnt)*1.0 / Math.abs(Math.max(incPriCnt, desPriCnt));
-                    log.info("d0:" + d0 + "\nd1:" +d1);
-                    System.out.println("d0:" + d0 + "\nd1:" +d1);
-                    
-                    if (incPriCnt + eqlPriCnt + desPriCnt > 0 &&
-                            d0 < 0.3 && d1 > 0.1) {
-                        if (subject.length() > 0) {
-                            subject += ",";
+
+                    if (incPriCnt + eqlPriCnt + desPriCnt > 0) {
+                        double d0 = eqlPriCnt * 1.0
+                                / (incPriCnt + desPriCnt + eqlPriCnt);
+                        double d1 = Math.abs(incPriCnt - desPriCnt) * 1.0
+                                / Math.abs(Math.max(1,Math.max(incPriCnt, desPriCnt)));
+                        log.info("d0:" + d0 + "\nd1:" + d1);
+                        System.out.println("d0:" + d0 + "\nd1:" + d1);
+
+                        if (d0 < 0.3 && d1 > 0.1) {
+                            if (subject.length() > 0) {
+                                subject += ",";
+                            }
+                            subject += stock;
+                            content += "\nStock:" + stock + "\n上涨次数："
+                                    + incPriCnt + " 下跌次数：" + desPriCnt
+                                    + " 平衡次数 ：" + eqlPriCnt + "\n";
+                            content += "平均成交量增幅:" + detQty + "\n";
                         }
-                        subject += stock;
-                        content += "\nStock:" + stock + "\n上涨次数：" + incPriCnt + " 下跌次数：" + desPriCnt + " 平衡次数 ：" + eqlPriCnt + "\n";
-                        content += "平均成交量增幅:" + detQty + "\n";
                     }
                 } catch (SQLException e1) {
 
