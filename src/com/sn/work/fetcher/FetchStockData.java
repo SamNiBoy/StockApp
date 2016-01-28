@@ -54,7 +54,7 @@ public class FetchStockData implements IWork {
     {
         Statement stm = null;
         ResultSet rs = null;
-        String sql = "select area, id from stk where gz_flg = 1";
+        String sql = "select area, id from stk ";
 
         String stkLst = "";
         

@@ -80,7 +80,7 @@ public class LoadStk {
             try{
                 URL url = new URL(stkSql);
                 InputStream is = url.openStream();
-                InputStreamReader isr = new InputStreamReader(is);
+                InputStreamReader isr = new InputStreamReader(is, "GBK");
                 BufferedReader br = new BufferedReader(isr);
                 str = br.readLine();
                 int idx = str.indexOf(",");
@@ -130,7 +130,7 @@ public class LoadStk {
             try{
                 URL url = new URL(stkSql);
                 InputStream is = url.openStream();
-                InputStreamReader isr = new InputStreamReader(is);
+                InputStreamReader isr = new InputStreamReader(is, "GBK");
                 BufferedReader br = new BufferedReader(isr);
                 str = br.readLine();
                 int idx = str.indexOf(",");
@@ -141,12 +141,12 @@ public class LoadStk {
                     
                     String stkName = str.substring(21, idx);
                     
-                    String sql = "insert into stk (id, area, name, py, bu) values('"
+                    String sql = "insert into stk (id, area, name, py, bu, gz_flg) values('"
                             + stkID + "', '"
                             + area + "', '"
                             + stkName + "', '"
                             + "py" + "', '"
-                            + "NoDef" + "')";
+                            + "NoDef" + "',0)";
                     log.info(sql);
                     stm.executeUpdate(sql);
                     loadedCnt++;
@@ -175,7 +175,7 @@ public class LoadStk {
             try{
                 URL url = new URL(stkSql);
                 InputStream is = url.openStream();
-                InputStreamReader isr = new InputStreamReader(is);
+                InputStreamReader isr = new InputStreamReader(is, "GBK");
                 BufferedReader br = new BufferedReader(isr);
                 str = br.readLine();
                 int idx = str.indexOf(",");
@@ -186,12 +186,12 @@ public class LoadStk {
                     
                     String stkName = str.substring(21, idx);
                     
-                    String sql = "insert into stk (id, area, name, py, bu) values('"
+                    String sql = "insert into stk (id, area, name, py, bu, gz_flg) values('"
                             + stkID + "', '"
                             + area + "', '"
                             + stkName + "', '"
                             + "py" + "', '"
-                            + "NoDef" + "')";
+                            + "NoDef" + "',0)";
                     log.info(sql);
                     stm.executeUpdate(sql);
                     loadedCnt++;
@@ -210,7 +210,7 @@ public class LoadStk {
             e1.printStackTrace();
         }
         
-        log.info("TOtal loaded new stocks:" + loadedCnt);
+        log.info("Total loaded new stocks:" + loadedCnt);
         return loadedCnt;
     }
     static String CreateStk(String stk)
