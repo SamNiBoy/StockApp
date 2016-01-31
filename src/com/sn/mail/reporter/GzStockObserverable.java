@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,8 +56,8 @@ public class GzStockObserverable extends Observable {
     public void update() {
         String gzSummary = "", otherStockSummary = "";
         needSentMail = false;
-        gzSummary = checkStatusForStock(true, 0.3, 0.1);
-        otherStockSummary = checkStatusForStock(false, 0.1, 0.2);
+        gzSummary = checkStatusForStock(true, 0.02);
+        otherStockSummary = checkStatusForStock(false, 0.02);
         subject = content = "";
         subject = "股票实时信息播报";
         content = gzSummary + "\n" + otherStockSummary;
@@ -67,17 +68,17 @@ public class GzStockObserverable extends Observable {
         }
     }
     
-    private String checkStatusForStock(boolean gz_flg, double eqlRt, double difRt)
+    private String checkStatusForStock(boolean gz_flg, double pctRt)
     {
 
-        log.info("GzStockObserverable calculate gz_flg:" + gz_flg + " eqlRt:" + eqlRt + " difRt:" + difRt);
+        log.info("GzStockObserverable calculate gz_flg:" + gz_flg + " eqlRt:" + pctRt);
         Statement stm = null;
         String summary = "";
         if (gz_flg) {
-            summary = "关注股票(eqlRt:" + eqlRt + ", difRt:" + difRt + ") 如下：\n";
+            summary = "关注股票(pctRt:" + pctRt + ") 如下：\n";
         }
         else {
-            summary = "非关注股票(eqlRt:" + eqlRt + ",difRt:" + difRt + ") 如下：\n";
+            summary = "非关注股票(pctRt:" + pctRt + ") 如下：\n";
         }
         try {
             stm = con.createStatement();
@@ -94,6 +95,8 @@ public class GzStockObserverable extends Observable {
             long incPriCnt = 0, eqlPriCnt = 0;
             long desPriCnt = 0;
             long detQty = 0, qtyCnt = 0;
+            NumberFormat nf = NumberFormat.getInstance();
+            nf.setMaximumFractionDigits(3);
             
             for (String stock : gzStocks.keySet()) {
                 // Always give id for gzed stock.
@@ -102,9 +105,11 @@ public class GzStockObserverable extends Observable {
                 }
                 
                 try {
-                    sql = "select cur_pri, dl_stk_num from stkdat2 where id ='"
+                    sql = "select cur_pri, td_opn_pri, dl_stk_num from stkdat2 where id ='"
                             + stock
-                            + "' and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') order by ft_id";
+                            + "' and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate , 'yyyy-mm-dd') "
+                            + "  and dl_dt >= sysdate - (5*1.0)/(24*60.0) "
+                            + "  and td_opn_pri > 0 order by ft_id ";
                     
                     log.info(sql);
                     
@@ -112,6 +117,7 @@ public class GzStockObserverable extends Observable {
                     
                     double pre_cur_pri = 0, cur_pri = 0;
                     double pre_qty = 0, cur_qty = 0;
+                    double pct = 2;
                     boolean hasStkInfo = false;
                     
                     incPriCnt = eqlPriCnt = desPriCnt = 0;
@@ -131,10 +137,15 @@ public class GzStockObserverable extends Observable {
                             }
                         }
                         pre_cur_pri = cur_pri;
+                        
+                        pct = (cur_pri - rs.getDouble("td_opn_pri"))/ rs.getDouble("td_opn_pri");
 
                         if (pre_qty != 0) {
                             if (cur_qty > pre_qty) {
                                 detQty += cur_qty - pre_qty;
+                            }
+                            else {
+                                log.info("what's this");
                             }
                             qtyCnt++;
                         }
@@ -144,22 +155,17 @@ public class GzStockObserverable extends Observable {
                         detQty = detQty / qtyCnt;
                     }
 
-                    if (incPriCnt + eqlPriCnt + desPriCnt > 0 && hasStkInfo) {
-                        double d0 = eqlPriCnt * 1.0
-                                / (incPriCnt + desPriCnt + eqlPriCnt);
-                        double d1 = Math.abs(incPriCnt - desPriCnt) * 1.0
-                                / Math.abs(Math.max(1,Math.max(incPriCnt, desPriCnt)));
-                        log.info("d0:" + d0 + "\nd1:" + d1);
-
-                        if (d0 < eqlRt && d1 > difRt) {
+                    if (hasStkInfo && incPriCnt + eqlPriCnt + desPriCnt > 0) {
+                        log.info("pri pct is:" + pct + " against:" + pctRt);
+                        if (Math.abs(pct) >= pctRt) {
                             if (!gz_flg) {
                                 summary += stock + ":" + gzStocks.get(stock) + "\n";
                             }
                             needSentMail = true;
                             summary += "涨:" + incPriCnt + " 跌:" + desPriCnt
-                                    + " 平:" + eqlPriCnt + " 幅:" + detQty + "价:" + cur_pri + " 量:" + cur_qty + "]\n";
+                                    + " 平:" + eqlPriCnt + " 幅:[" + nf.format(pct*100) + "/" + detQty + "] 价:" + cur_pri + " 量:" + cur_qty + "]\n";
                         }
-                        else {
+                        else if (gz_flg){
                             summary += "]";
                         }
                     }

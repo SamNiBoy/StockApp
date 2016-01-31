@@ -208,7 +208,7 @@ public class FetchStockData implements IWork {
                                    + s5_pri + ","
                                + "to_date('" + dl_dt.toString() +" " + dl_tm +"', 'yyyy-mm-dd hh24:mi:ss')" + ", '"
                                + dl_tm + "'," +"sysdate)";
-        log.info("sql:" + sql);
+       // log.info("sql:" + sql);
 
         return sql;
 
