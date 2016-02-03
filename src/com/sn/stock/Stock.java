@@ -5,7 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -13,7 +16,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.work.fetcher.FetchStockData;
 
-public class Stock {
+public class Stock implements Comparable<Stock>{
 
     static Logger log = Logger.getLogger(Stock.class);
     /**
@@ -21,7 +24,7 @@ public class Stock {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        Stock s = new Stock("600863", 5, 5, DBManager.getConnection());
+        Stock s = new Stock("600863", "abc");
 
     }
     private String ID;
@@ -29,152 +32,59 @@ public class Stock {
     private String Area;
     private String Py;
     private String Bu;
-    private int gapType;
-    private int Days;
+    private double pct; // the pct of cur_pri to td_opn_pri
+    private long incPriCnt;
+    private long desPriCnt;
+    private long detQty;
+    private double cur_pri;
+    private long cur_qty;
     
-    Connection con = null;
+    private List<Integer> rk = new ArrayList<Integer>();
     
-    public Stock(String id, int gaptyp, int ds, Connection cc)
+    public long getIncPriCnt() {
+        return incPriCnt;
+    }
+
+    public void setIncPriCnt(long incPriCnt) {
+        this.incPriCnt = incPriCnt;
+    }
+
+    public long getDesPriCnt() {
+        return desPriCnt;
+    }
+
+    public void setDesPriCnt(long desPriCnt) {
+        this.desPriCnt = desPriCnt;
+    }
+
+    public long getDetQty() {
+        return detQty;
+    }
+
+    public void setDetQty(long detQty) {
+        this.detQty = detQty;
+    }
+
+    public double getCur_pri() {
+        return cur_pri;
+    }
+
+    public void setCur_pri(double cur_pri) {
+        this.cur_pri = cur_pri;
+    }
+
+    public long getCur_qty() {
+        return cur_qty;
+    }
+
+    public void setCur_qty(long cur_qty) {
+        this.cur_qty = cur_qty;
+    }
+    
+    public Stock(String id, String nm)
     {
         ID = id;
-        gapType = gaptyp;
-        Days = ds;
-        map = new HashMap<String, Double>();
-        con = cc;
-        commonCreate();
-    }
-    /* This map stores:
-     * Inc cnt,
-     * Dsc cnt,
-     * continue Inc cnt,
-     * diff2 increase flag
-     * continue Dsc cnt,
-     * diff2 decrease flag,
-     * qty sharp increase,
-     * inc/des pct so far
-     */
-    public Map<String, Double> map;
-    
-    private void commonCreate()
-    {
-        log.info("Start loading data for stock:" + ID);
-
-        try {
-            Statement stm = con.createStatement();
-            String sql = "select * from stk where id ='" + ID + "'";
-            ResultSet rs = stm.executeQuery(sql);
-            if (rs.next()){
-                Name = rs.getString("name");
-                Py = rs.getString("py");
-                Bu = rs.getString("bu");
-            }
-            rs.close();
-            sql = "select sum(decode(sign(cur_pri_df),1,1,0)) incCnt," +
-                  "       sum(decode(sign(cur_pri_df),-1,1,0)) dscCnt" +
-                  "  from stkddf" +
-                  " where id ='" + ID + 
-                  "' and gap =" + gapType +
-                  "  and dl_dt > (select max(dl_dt) from stkddf where id ='" + ID + "') - " +Days;
-            log.info(sql);
-            rs = stm.executeQuery(sql);
-            if (rs.next())
-            {
-                log.info("Total incCnt:" + rs.getLong("incCnt") + " Total dscCnt:" + rs.getLong("dscCnt"));
-                map.put("incCnt", Double.valueOf(rs.getLong("incCnt")));
-                map.put("dscCnt", Double.valueOf(rs.getLong("dscCnt")));
-            }
-            rs.close();
-            
-            sql = "select * " +
-            "  from stkddf" +
-            " where id ='" + ID + 
-            "' and gap =" + gapType +
-            "  and dl_dt > (select max(dl_dt) from stkddf where id ='" + ID + "') - " +Days +
-            " order by ft_id desc";
-            
-            log.info(sql);
-            rs = stm.executeQuery(sql);
-            
-            boolean fstRcd = true;
-            int ctnInc = 0;
-            int ctnDsc = 0;
-            double pdf = 0;
-            while (rs.next())
-            {
-                pdf = rs.getDouble("cur_pri_df");
-                if (fstRcd)
-                {
-                    if (pdf > 0) {
-                        ctnInc = 1;
-                        ctnDsc = 0;
-                    }
-                    else if (pdf < 0)
-                    {
-                        ctnInc = 0;
-                        ctnDsc = 1;
-                    }
-                    fstRcd = false;
-                }
-                else if (pdf > 0 && ctnInc > 0)
-                {
-                    ctnInc++;
-                }
-                else if (pdf < 0 && ctnDsc > 0)
-                {
-                    ctnDsc++;
-                }
-                else {
-                    break;
-                }
-            }
-            log.info("Total continue increase ctnInc:" + ctnInc + " Total continue desrease ctnDsc:" + ctnDsc);
-            map.put("ctnInc", Double.valueOf(ctnInc));
-            map.put("ctnDsc", Double.valueOf(ctnDsc));
-            rs.close();
-            
-            sql = "select decode(t1.td_opn_pri, 0, 0, (t2.cur_pri - t1.cur_pri))/ decode(t1.td_opn_pri, 0, 1, t1.td_opn_pri) incPct " +
-                  " from stkdat2 t1, stkdat2 t2 " +
-                  "where t1.id = t2.id" +
-                  "  and t1.ft_id = (select min(ft_id) " +
-                  "                    from stkdat2 where id ='" + ID +
-                  "'                    and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate - " + 0 + ", 'yyyy-mm-dd'))" +
-                  "  and t2.ft_id = (select max(ft_id) " +
-                  "                    from stkdat2 where id ='" + ID +
-                  "'                    and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate - " + 0 + ", 'yyyy-mm-dd'))";
-            
-            log.info(sql);
-            rs = stm.executeQuery(sql);
-            if (rs.next())
-            {
-                log.info("Total incPct:" + rs.getDouble("incPct") + " for ID:" + ID);
-                map.put("incPct", rs.getDouble("incPct"));
-            }
-            else{
-                log.info("No date found for calculating incPct, set 0.");
-                map.put("incPct", 0.0);
-            }
-            rs.close();
-            
-            sql = "select max(dl_stk_num_df) / decode(avg(dl_stk_num_df), 0, 1, avg(dl_stk_num_df)) qtyRatio" +
-            "  from stkddf" +
-            " where stkddf.id = '" + ID + 
-            "' and gap =" + gapType +
-            "  and dl_dt > (select max(dl_dt) from stkddf where id ='" + ID + "') - " +Days;
-            
-            log.info(sql);
-            rs = stm.executeQuery(sql);
-            if (rs.next())
-            {
-                log.info("Total dl_stk_num_df(max/avg) ratio:" + rs.getDouble("qtyRatio"));
-                map.put("qtyRatio", rs.getDouble("qtyRatio"));
-            }
-            rs.close();
-            stm.close();
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            log.error("Stock.CommonCreate errored:" + e.getMessage());
-            e.printStackTrace();
-        }
+        Name = nm;
     }
     
     public String dsc()
@@ -183,17 +93,87 @@ public class Stock {
         String dsc = "";
         dsc += "ID:" + ID + "\n";
         dsc += "Name:" + Name + "\n";
-        dsc += "incCnt:" + map.get("incCnt") + "\n";
-        dsc += "dscCnt:" + map.get("dscCnt") + "\n";
-        dsc += "ctnInc:" + map.get("ctnInc") + "\n";
-        dsc += "ctnDsc:" + map.get("ctnDsc") + "\n";
-        dsc += "incPct:" + df.format(map.get("incPct")) + "\n";
-        dsc += "qtyRatio:" + df.format(map.get("qtyRatio")) + "\n";
-        
         return dsc;
         
     }
     
+    public void setRk(int r) {
+        rk.add(r);
+    }
+    
+    public int getRk() {
+        
+        int r;
+        if (rk.size() <= 0) {
+            r = -1;
+        }
+        
+        r = rk.get(rk.size() - 1);
+        return r;
+    }
+    
+    public double getAvgRkSpeed() {
+        if (rk.size() <= 0) {
+            return 0;
+        }
+        
+        int pre_rk = 0, detRk = 0;
+        for (int i = 0; i < rk.size(); i++) {
+            if (pre_rk == 0) {
+                pre_rk = rk.get(i);
+                continue;
+            }
+            else {
+                detRk += rk.get(i) - pre_rk;
+            }
+        }
+        
+        double avgRkSpeed = detRk*1.0 / rk.size();
+        log.info("got avgRkSpeed as:" + avgRkSpeed);
+        
+        return avgRkSpeed;
+    }
+    
+    public String getArea() {
+        return Area;
+    }
+
+    public void setArea(String area) {
+        Area = area;
+    }
+
+    public String getPy() {
+        return Py;
+    }
+
+    public void setPy(String py) {
+        Py = py;
+    }
+
+    public String getBu() {
+        return Bu;
+    }
+
+    public void setBu(String bu) {
+        Bu = bu;
+    }
+
+    public double getPct() {
+        return pct;
+    }
+
+    public void setPct(double pct) {
+        this.pct = pct;
+    }
+
+    public void setID(String iD) {
+        ID = iD;
+    }
+
+    public void setName(String name) {
+        Name = name;
+    }
+
     public String getName()
     {
         return Name;
@@ -202,6 +182,29 @@ public class Stock {
     public String getID()
     {
         return ID;
+    }
+    
+    @Override
+    public int compareTo(Stock o) {
+        // TODO Auto-generated method stub
+        return pct - o.pct > 0 ? -1 : 1;
+    }
+    
+    public String getTableRow() {
+        String row = "";
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMaximumFractionDigits(2);
+        row = "<tr> <td> " + nf.format(pct*100) + "</td>" +
+        "<td> " + getAvgRkSpeed() + "</td>" +
+        "<td> " + ID + "</td> " +
+        "<td> " + Name + "</td>" +
+        "<td> " + incPriCnt + "</td>" +
+        "<td> " + desPriCnt + "</td>" +
+        "<td> " + detQty + "</td>" +
+        "<td> " + cur_pri + "</td> " +
+        "<td> " + cur_qty + "</td> </tr>";
+        
+        return row;
     }
 
 }

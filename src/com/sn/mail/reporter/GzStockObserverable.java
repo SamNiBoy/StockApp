@@ -22,6 +22,7 @@ import com.sn.mail.reporter.MailSenderType;
 import com.sn.mail.reporter.MailSenderFactory;
 import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.reporter.WCMsgSender;
+import com.sn.stock.Stock;
 
 public class GzStockObserverable extends Observable {
 
@@ -32,6 +33,7 @@ public class GzStockObserverable extends Observable {
     public String content;
     private boolean hasSentMail = false;
     private boolean needSentMail = false;
+    static private Map<String, Stock> stocks = null;
 
     public String getSubject() {
         return subject;
@@ -57,12 +59,16 @@ public class GzStockObserverable extends Observable {
     public void update() {
         String gzSummary = "", otherStockSummary = "", index = "";
         needSentMail = false;
+        if (stocks == null && !loadStocks()) {
+            log.info("loadStocks failed, no mail can be sent");
+            return;
+        }
         gzSummary = checkStatusForStock(true, 0.0);
         otherStockSummary = checkStatusForStock(false, 0.01);
         index = getIndex();
         subject = content = "";
         subject = "News";
-        content = gzSummary + "<br/>" + otherStockSummary + index;
+        content = index + gzSummary + "<br/>" + otherStockSummary;
         if (needSentMail) {
             this.setChanged();
             this.notifyObservers(this);
@@ -85,6 +91,7 @@ public class GzStockObserverable extends Observable {
         summary += "<table border = 1>" +
                    "<tr>" +
                    "<th> Pct</th> " +
+                   "<th> RankSpeed</th> " +
                    "<th> ID </th> " +
                    "<th> Name </th> " +
                    "<th> incCnt</th> " +
@@ -94,7 +101,7 @@ public class GzStockObserverable extends Observable {
                    "<th> qty </th> </tr> ";
         try {
             stm = con.createStatement();
-            String sql = "select id, name from stk where gz_flg = " + (gz_flg ? "1" : "0");
+            String sql = "select id, name from stk where rownum < 20 and gz_flg = " + (gz_flg ? "1" : "0");
             ResultSet rs = stm.executeQuery(sql);
             Map<String, String> gzStocks = new HashMap<String, String>();
 
@@ -107,10 +114,9 @@ public class GzStockObserverable extends Observable {
             long incPriCnt = 0, eqlPriCnt = 0;
             long desPriCnt = 0;
             long detQty = 0, qtyCnt = 0;
-            NumberFormat nf = NumberFormat.getInstance();
-            nf.setMaximumFractionDigits(2);
+
             Map<String, String> rowMap = new HashMap<String, String>();
-            List<pair> sl = new ArrayList<pair>();
+            List<Stock> sl = new ArrayList<Stock>();
             
             for (String stock : gzStocks.keySet()) {
                 try {
@@ -126,7 +132,7 @@ public class GzStockObserverable extends Observable {
                     rs = stm.executeQuery(sql);
                     
                     double pre_cur_pri = 0, cur_pri = 0;
-                    double pre_qty = 0, cur_qty = 0;
+                    long pre_qty = 0, cur_qty = 0;
                     double pct = 2;
                     boolean hasStkInfo = false;
                     
@@ -135,7 +141,7 @@ public class GzStockObserverable extends Observable {
                     while (rs.next()) {
                         hasStkInfo = true;
                         cur_pri = rs.getDouble("cur_pri");
-                        cur_qty = rs.getDouble("dl_stk_num");
+                        cur_qty = rs.getLong("dl_stk_num");
                         if (pre_cur_pri != 0) {
                             if (cur_pri > pre_cur_pri) {
                                 incPriCnt++;
@@ -169,17 +175,14 @@ public class GzStockObserverable extends Observable {
                         log.info("pri pct is:" + pct + " against:" + pctRt);
                         if (Math.abs(pct) >= pctRt) {
                             needSentMail = true;
-                            row = "<tr> <td> " + nf.format(pct*100) + "</td>" +
-                                  "<td> " + stock + "</td> " +
-                                  "<td> " + gzStocks.get(stock) + "</td>" +
-                                  "<td> " + incPriCnt + "</td>" +
-                                  "<td> " + desPriCnt + "</td>" +
-                                  "<td> " + detQty + "</td>" +
-                                  "<td> " + cur_pri + "</td> " +
-                                  "<td> " + cur_qty + "</td> </tr>";
-                            rowMap.put(stock, row);
+                            Stock stk = stocks.get(stock);
+                            stk.setIncPriCnt(incPriCnt);
+                            stk.setDesPriCnt(desPriCnt);
+                            stk.setDetQty(detQty);
+                            stk.setCur_pri(cur_pri);
+                            stk.setCur_qty(cur_qty);
                          
-                            sl.add(new pair(stock, pct));
+                            sl.add(stk);
                         }
                     }
                 } catch (SQLException e1) {
@@ -190,8 +193,11 @@ public class GzStockObserverable extends Observable {
             
             Collections.sort(sl);
             
-            for (pair p : sl) {
-                summary += rowMap.get(p.ID);
+            int rk = 1;
+            for (Stock p : sl) {
+                p.setRk(rk);
+                rk++;
+                summary += p.getTableRow();
             }
             summary += "</table>";
         } catch (SQLException e) {
@@ -215,12 +221,13 @@ public class GzStockObserverable extends Observable {
         int catagory = -2;
         index += "<table border = 1>" +
                    "<tr>" +
-                   "<th> Stock Number</th> " +
+                   "<th> Stock Count</th> " +
                    "<th> Total+ </th> " +
                    "<th> AvgPct+ </th> " +
                    "<th> Total-</th> " +
                    "<th> AvgPct-</th> " + 
-                   "<th> Total= </th> </tr> ";
+                   "<th> Total= </th> " +
+                   "<th> Degree </th> </tr> ";
         try {
             stm = con.createStatement();
             String sql = "select count(case when cur_pri > td_opn_pri then 1 else 0 end) IncNum, " +
@@ -273,28 +280,40 @@ public class GzStockObserverable extends Observable {
                      "<td> " + nf.format(AvgIncPct) + "</td>" +
                      "<td> " + TotDec + "</td>" +
                      "<td> " + nf.format(AvgDecPct) + "</td>" +
-                     "<td> " + TotEql + "</td></tr></table>";
+                     "<td> " + TotEql + "</td>" +
+                     "<td> " + nf.format((TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1)) + " C</tr></table>";
         }
         log.info("got index msg:" + index);
         return index;
     }
     
-    class pair implements Comparable<pair>{
-        public String ID;
-        public double pct;
-        
-        public pair(String idd, double pctt)
-        {
-            ID = idd;
-            pct = pctt;
-        }
-        
-        @Override
-        public int compareTo(pair o) {
-            // TODO Auto-generated method stub
-            return pct - o.pct > 0 ? -1 : 1;
-        }
-        
-    }
+    private boolean loadStocks() {
 
+        Statement stm = null;
+        ResultSet rs = null;
+        
+        stocks = new HashMap<String, Stock>();
+        try {
+            stm = con.createStatement();
+            String sql = "select id, name from stk order by id";
+            rs = stm.executeQuery(sql);
+            
+            String id, name;
+
+            while (rs.next()) {
+                id = rs.getString("id");
+                name = rs.getString("name");
+                stocks.put(id, new Stock(id, name));
+            }
+            rs.close();
+            stm.close();
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+        log.info("GzStockObserverable loadStock successed!");
+        return true;
+    
+    }
 }
