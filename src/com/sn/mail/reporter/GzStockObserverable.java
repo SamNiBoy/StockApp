@@ -171,9 +171,8 @@ public class GzStockObserverable extends Observable {
                     }
 
                     if (hasStkInfo && incPriCnt + eqlPriCnt + desPriCnt > 0) {
-                        String row = "";
                         log.info("pri pct is:" + pct + " against:" + pctRt);
-                        if (Math.abs(pct) >= pctRt) {
+                        if (Math.abs(pct) >= pctRt && cur_pri <= 20) {
                             needSentMail = true;
                             Stock stk = stocks.get(stock);
                             stk.setIncPriCnt(incPriCnt);
