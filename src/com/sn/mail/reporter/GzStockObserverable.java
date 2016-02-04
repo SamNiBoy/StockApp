@@ -101,7 +101,7 @@ public class GzStockObserverable extends Observable {
                    "<th> qty </th> </tr> ";
         try {
             stm = con.createStatement();
-            String sql = "select id, name from stk where rownum < 20 and gz_flg = " + (gz_flg ? "1" : "0");
+            String sql = "select id, name from stk where gz_flg = " + (gz_flg ? "1" : "0");
             ResultSet rs = stm.executeQuery(sql);
             Map<String, String> gzStocks = new HashMap<String, String>();
 
@@ -171,16 +171,19 @@ public class GzStockObserverable extends Observable {
                     }
 
                     if (hasStkInfo && incPriCnt + eqlPriCnt + desPriCnt > 0) {
+
                         log.info("pri pct is:" + pct + " against:" + pctRt);
-                        if (Math.abs(pct) >= pctRt && cur_pri <= 20) {
+
+                        Stock stk = stocks.get(stock);
+                        stk.setIncPriCnt(incPriCnt);
+                        stk.setDesPriCnt(desPriCnt);
+                        stk.setDetQty(detQty);
+                        stk.setCur_pri(cur_pri);
+                        stk.setCur_qty(cur_qty);
+                        stk.setPct(pct);
+
+                        if (Math.abs(pct) >= pctRt) {
                             needSentMail = true;
-                            Stock stk = stocks.get(stock);
-                            stk.setIncPriCnt(incPriCnt);
-                            stk.setDesPriCnt(desPriCnt);
-                            stk.setDetQty(detQty);
-                            stk.setCur_pri(cur_pri);
-                            stk.setCur_qty(cur_qty);
-                         
                             sl.add(stk);
                         }
                     }
@@ -196,7 +199,10 @@ public class GzStockObserverable extends Observable {
             for (Stock p : sl) {
                 p.setRk(rk);
                 rk++;
-                summary += p.getTableRow();
+                // only return stock with price <= 20
+                if (p.getCur_pri() <= 20) {
+                    summary += p.getTableRow();
+                }
             }
             summary += "</table>";
         } catch (SQLException e) {
