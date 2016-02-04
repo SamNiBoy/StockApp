@@ -195,7 +195,7 @@ public class Stock implements Comparable<Stock>{
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(2);
         row = "<tr> <td> " + nf.format(pct*100) + "</td>" +
-        "<td> " + getAvgRkSpeed() + "</td>" +
+        "<td> " + nf.format(getAvgRkSpeed()) + "</td>" +
         "<td> " + ID + "</td> " +
         "<td> " + Name + "</td>" +
         "<td> " + incPriCnt + "</td>" +
