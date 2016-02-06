@@ -24,7 +24,7 @@ public class Stock implements Comparable<Stock>{
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        Stock s = new Stock("600863", "abc");
+        Stock s = new Stock("600863", "abc", 1);
 
     }
     private String ID;
@@ -33,14 +33,41 @@ public class Stock implements Comparable<Stock>{
     private String Py;
     private String Bu;
     private double pct; // the pct of cur_pri to td_opn_pri
+    private double prePct; //pct of previous days.
     private long incPriCnt;
     private long desPriCnt;
     private long detQty;
     private double cur_pri;
     private long cur_qty;
+    private long gz_flg;
+    private long keepLostDays;
     
     private List<Integer> rk = new ArrayList<Integer>();
     
+    public long getKeepLostDays() {
+        return keepLostDays;
+    }
+
+    public void setKeepLostDays(long keepLostDays) {
+        this.keepLostDays = keepLostDays;
+    }
+
+    public double getPrePct() {
+        return prePct;
+    }
+
+    public void setPrePct(double prePct) {
+        this.prePct = prePct;
+    }
+    
+    public long getGz_flg() {
+        return gz_flg;
+    }
+
+    public void setGz_flg(long gzFlg) {
+        gz_flg = gzFlg;
+    }
+
     public long getIncPriCnt() {
         return incPriCnt;
     }
@@ -81,10 +108,11 @@ public class Stock implements Comparable<Stock>{
         this.cur_qty = cur_qty;
     }
     
-    public Stock(String id, String nm)
+    public Stock(String id, String nm, long gzflg)
     {
         ID = id;
         Name = nm;
+        gz_flg = gzflg;
     }
     
     public String dsc()
@@ -195,7 +223,10 @@ public class Stock implements Comparable<Stock>{
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(2);
         row = "<tr> <td> " + nf.format(pct*100) + "</td>" +
+        "<td> " + nf.format(prePct*100) + "</td>" +
+        "<td> " + getRk() + "</td>" +
         "<td> " + nf.format(getAvgRkSpeed()) + "</td>" +
+        "<td> " + keepLostDays + "</td>" +
         "<td> " + ID + "</td> " +
         "<td> " + Name + "</td>" +
         "<td> " + incPriCnt + "</td>" +

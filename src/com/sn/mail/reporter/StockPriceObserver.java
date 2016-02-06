@@ -32,7 +32,7 @@ public class StockPriceObserver implements Observer {
             // 发送邮件
             SimpleMailSender sms = MailSenderFactory.getSender();
             List<String> recipients = new ArrayList<String>();
-            recipients.add("sam.ni@bleum.com");
+            recipients.add("yl_nxj@163.com");
             // recipients.add("samniboy@gmail.com");
             String subject = gso.getSubject();
             String content = gso.getContent();

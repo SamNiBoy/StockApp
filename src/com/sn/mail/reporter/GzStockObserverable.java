@@ -91,7 +91,10 @@ public class GzStockObserverable extends Observable {
         summary += "<table border = 1>" +
                    "<tr>" +
                    "<th> Pct</th> " +
+                   "<th> PrePct</th> " +
+                   "<th> RK </th> " +
                    "<th> RankSpeed</th> " +
+                   "<th> KeepDaysLost</th> " +
                    "<th> ID </th> " +
                    "<th> Name </th> " +
                    "<th> incCnt</th> " +
@@ -123,7 +126,7 @@ public class GzStockObserverable extends Observable {
                     sql = "select cur_pri, td_opn_pri, dl_stk_num from stkdat2 where id ='"
                             + stock
                             + "' and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate , 'yyyy-mm-dd') "
-                            //+ "' and to_char(dl_dt, 'yyyy-mm-dd') >= '2015-05-29'"
+                            //+ "' and to_char(dl_dt, 'yyyy-mm-dd') >= '2016-02-05'"
                             + "  and dl_dt >= sysdate - (5*1.0)/(24*60.0) "
                             + "  and td_opn_pri > 0 order by ft_id ";
                     
@@ -169,6 +172,43 @@ public class GzStockObserverable extends Observable {
                     if (qtyCnt > 0) {
                         detQty = detQty / qtyCnt;
                     }
+                    
+                    rs.close();
+                    int rowCnt = 0, daysToTrack = 4;
+                    sql = "select * from ("
+                        + "select id, to_char(dl_dt, 'yyyy-mm-dd') dt, max(yt_cls_pri) yt_cls_pri "
+                        + "from stkdat2 "
+                        + "where id = '" + stock + "' "
+                        + "group by to_char(dl_dt, 'yyyy-mm-dd'), id "
+                        + "order by dt desc) "
+                        + "where rownum <= " + daysToTrack;
+
+                    log.info(sql);
+                    
+                    double pre_ys_cls_pri = -1, prePct = 0.0;
+                    long keepDaysLost = 1;
+                    rs = stm.executeQuery(sql);
+                    while (rs.next()) {
+                        rowCnt++;
+                        if (pre_ys_cls_pri == -1) {
+                            pre_ys_cls_pri = rs.getDouble("yt_cls_pri");
+                            continue;
+                        }
+                        else {
+                            prePct += (pre_ys_cls_pri - rs.getDouble("yt_cls_pri")) / rs.getDouble("yt_cls_pri");
+                            if (pre_ys_cls_pri > rs.getDouble("yt_cls_pri")) {
+                                keepDaysLost = 0;
+                            }
+                            pre_ys_cls_pri = rs.getDouble("yt_cls_pri");
+                        }
+                    }
+                    
+                    if (rowCnt > 0) {
+                        prePct = prePct / rowCnt;
+                    }
+                    
+                    log.info("Past " + daysToTrack + " avg pct:" + prePct + " keepLostDays:" + keepDaysLost);
+                    
 
                     if (hasStkInfo && incPriCnt + eqlPriCnt + desPriCnt > 0) {
 
@@ -181,6 +221,8 @@ public class GzStockObserverable extends Observable {
                         stk.setCur_pri(cur_pri);
                         stk.setCur_qty(cur_qty);
                         stk.setPct(pct);
+                        stk.setPrePct(prePct);
+                        stk.setKeepLostDays(keepDaysLost);
 
                         if (Math.abs(pct) >= pctRt) {
                             needSentMail = true;
@@ -200,7 +242,9 @@ public class GzStockObserverable extends Observable {
                 p.setRk(rk);
                 rk++;
                 // only return stock with price <= 20
-                if (p.getCur_pri() <= 20) {
+                if ((p.getCur_pri() <= 50 && p.getPrePct() < -0.05) ||
+                     p.getGz_flg() > 0 ||
+                     (p.getCur_pri() <= 50 && p.getKeepLostDays() > 0 && p.getPrePct() < -0.01)) {
                     summary += p.getTableRow();
                 }
             }
@@ -300,7 +344,7 @@ public class GzStockObserverable extends Observable {
         stocks = new HashMap<String, Stock>();
         try {
             stm = con.createStatement();
-            String sql = "select id, name from stk order by id";
+            String sql = "select id, name, gz_flg from stk order by id";
             rs = stm.executeQuery(sql);
             
             String id, name;
@@ -308,7 +352,7 @@ public class GzStockObserverable extends Observable {
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                stocks.put(id, new Stock(id, name));
+                stocks.put(id, new Stock(id, name, rs.getLong("gz_flg")));
             }
             rs.close();
             stm.close();
