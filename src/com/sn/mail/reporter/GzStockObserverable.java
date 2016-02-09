@@ -23,6 +23,7 @@ import com.sn.mail.reporter.MailSenderFactory;
 import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.reporter.WCMsgSender;
 import com.sn.stock.Stock;
+import com.sn.stock.Stock.Follower;
 
 public class GzStockObserverable extends Observable {
 
@@ -57,7 +58,7 @@ public class GzStockObserverable extends Observable {
     }
 
     public void update() {
-        String gzSummary = "", otherStockSummary = "", index = "";
+        String gzSummary = "", otherStockSummary = "", index = "", fmsg = "";
         needSentMail = false;
         if (stocks == null && !loadStocks()) {
             log.info("loadStocks failed, no mail can be sent");
@@ -66,9 +67,10 @@ public class GzStockObserverable extends Observable {
         gzSummary = checkStatusForStock(true, 0.0);
         otherStockSummary = checkStatusForStock(false, 0.01);
         index = getIndex();
+        fmsg = getFollowers();
         subject = content = "";
         subject = "News";
-        content = index + gzSummary + "<br/>" + otherStockSummary;
+        content = index + gzSummary + "<br/>" + otherStockSummary + "<br/>" + fmsg;
         if (needSentMail) {
             this.setChanged();
             this.notifyObservers(this);
@@ -258,6 +260,76 @@ public class GzStockObserverable extends Observable {
         return summary;
     }
     
+    private String getFollowers() {
+
+        String fmsg = "";
+        fmsg += "<table border = 1>" +
+                   "<tr>" +
+                   "<th> Stock</th> " +
+                   "<th> Name</th> " +
+                   "<th> CurPri</th> " +
+                   "<th> CurPct</th> " +
+                   "<th> Followers+ </th> " +
+                   "<th> FollowersAvgPct+ </th> " +
+                   "<th> Followers- </th> " +
+                   "<th> FollowersAvgPct- </th> </tr> ";
+        for (String stk : stocks.keySet()) {
+            Stock s = stocks.get(stk);
+            String cp = ""; // for FollowerCnt+
+            double cpavgpct = 0.0;
+            String cm = ""; // for FollowerCnt-
+            double cmavgpct = 0.0;
+            Map<String, List<Follower>> fs = s.getFollowers();
+            for (String pct : fs.keySet()) {
+                List<Follower> f1 = fs.get(pct);
+
+                cm = cp = "";
+                for (int j = 0; j < f1.size(); j++) {
+                    Follower f = f1.get(j);
+                    if (f.followCnt > 2 && !f.id.equals(s.getID())) {
+                        if (pct.startsWith("-")) {
+                            if (cm.length() == 0) {
+                                cm = "[" + pct + "]";
+                            }
+                            cm += f.id + "(" + f.followCnt + ")|";
+                        }
+                        else {
+                            if (cp.length() == 0) {
+                                cp = "[" + pct + "]";
+                            }
+                            cp += f.id + "(" + f.followCnt + ")|";
+                        }
+                    }
+                }
+                
+                if (pct.startsWith("-") && cm.length() > 0) {
+                    cmavgpct = s.getFollowersAvgCurPri(Integer.valueOf(pct));
+                }
+                else if (cp.length() > 0) {
+                    cpavgpct = s.getFollowersAvgCurPri(Integer.valueOf(pct));
+                }
+            }
+            NumberFormat nf = NumberFormat.getInstance();
+            nf.setMaximumFractionDigits(2);
+            if (cm.length() > 0 || cp.length() > 0)
+            {
+                fmsg += "<tr> <td>" + s.getID() + "</td>" +
+                        "<td> " + s.getName() + "</td>" +
+                        "<td> " + nf.format(s.getCur_pri()) + "</td>" +
+                        "<td> " + nf.format(s.getCurPct()*100) + "%</td>" +
+                        "<td> " + cp + "</td>" +
+                         "<td> " + nf.format(cpavgpct*100) + "%</td>" +
+                         "<td> " + cm + "</td>" +
+                         "<td> " + nf.format(cmavgpct*100) + "%</td></tr>";
+            }
+        }
+        fmsg += "</table>";
+        needSentMail = true;
+        log.info("got follower msg:" + fmsg);
+        return fmsg;
+    
+    }
+    
     private String getIndex() {
         Statement stm = null;
         String index = "";
@@ -326,9 +398,9 @@ public class GzStockObserverable extends Observable {
         {
             index += "<tr> <td>" + StkNum + "</td>" +
                     "<td> " + TotInc + "</td>" +
-                     "<td> " + nf.format(AvgIncPct) + "</td>" +
+                     "<td> " + nf.format(AvgIncPct*100) + "%</td>" +
                      "<td> " + TotDec + "</td>" +
-                     "<td> " + nf.format(AvgDecPct) + "</td>" +
+                     "<td> " + nf.format(AvgDecPct*100) + "%</td>" +
                      "<td> " + TotEql + "</td>" +
                      "<td> " + nf.format((TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1)) + " C</tr></table>";
         }
@@ -342,17 +414,23 @@ public class GzStockObserverable extends Observable {
         ResultSet rs = null;
         
         stocks = new HashMap<String, Stock>();
+        Stock s = null;
+        int Total = 0, cnt = 0;
         try {
             stm = con.createStatement();
             String sql = "select id, name, gz_flg from stk order by id";
             rs = stm.executeQuery(sql);
             
             String id, name;
-
+            
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                stocks.put(id, new Stock(id, name, rs.getLong("gz_flg")));
+                s = new Stock(id, name, rs.getLong("gz_flg"));
+                s.constructFollowers();
+                stocks.put(id, s);
+                cnt++;
+                log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
             }
             rs.close();
             stm.close();

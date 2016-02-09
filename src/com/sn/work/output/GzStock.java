@@ -54,6 +54,7 @@ public class GzStock implements com.sn.work.itf.IWork {
             Statement stm = con.createStatement();
             stm.executeUpdate(sql);
 
+            con.commit();
                 msg += "Stock:" + stockID + " get gzed!\n";
             stm.close();
             con.close();

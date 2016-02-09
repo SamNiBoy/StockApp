@@ -8,6 +8,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +25,26 @@ public class Stock implements Comparable<Stock>{
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        Stock s = new Stock("600863", "abc", 1);
-
+        Connection con = DBManager.getConnection();
+        try {
+            Statement stm = con.createStatement();
+            String sql = "select id, name, gz_flg from stk";
+            
+            ResultSet rs = stm.executeQuery(sql);
+            List<Stock> sl = new LinkedList<Stock>();
+            while(rs.next()) {
+                Stock s = new Stock(rs.getString("id"), rs.getString("name"), 1);
+                s.constructFollowers();
+                sl.add(s);
+            }
+            for (int i = 0; i < sl.size(); i++) {
+                Stock s = sl.get(i);
+                s.printFollowers();
+            }
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+        }
     }
     private String ID;
     private String Name;
@@ -41,7 +60,6 @@ public class Stock implements Comparable<Stock>{
     private long cur_qty;
     private long gz_flg;
     private long keepLostDays;
-    
     private List<Integer> rk = new ArrayList<Integer>();
     
     public long getKeepLostDays() {
@@ -237,5 +255,232 @@ public class Stock implements Comparable<Stock>{
         
         return row;
     }
+    
+    //static data
+    private Map<String, List<Follower>> followers = null;
+    
+    public Map<String, List<Follower>> getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(Map<String, List<Follower>> followers) {
+        this.followers = followers;
+    }
+
+    public class Follower{
+        Follower(String identifier, int fc) {
+            id = identifier;
+            followCnt =fc;
+        }
+        public String id;
+        public int followCnt;
+    }
+    public void constructFollowers()
+    {
+        Connection con = DBManager.getConnection();
+        followers = new HashMap<String, List<Follower>>();
+        String sql = "";
+        Statement stm = null, stm2 = null;
+        ResultSet rs = null, rs2 = null;
+        String dt = "";
+        int pctRk = 0;
+
+        try {
+            log.info("construct followers for: " + ID + " name:" + Name);
+            stm = con.createStatement();
+            sql = "select s2.dt, cast((s1.yt_cls_pri - s2.yt_cls_pri) / s2.yt_cls_pri / 0.01 as int) pctRk"
+                + "  from stkClsPri s1, stkClsPri s2 "
+                + " where s1.id = s2.id "
+                + "   and to_char(to_date(s1.dt, 'yyyy-mm-dd hh:mi:ss') - 1, 'yyy-mm-dd') = to_char(to_date(s2.dt, 'yyyy-mm-dd hh:mi:ss'), 'yyy-mm-dd')"
+                + "   and s1.id = '" + ID + "'"
+                + "   and abs (cast((s1.yt_cls_pri - s2.yt_cls_pri) / s2.yt_cls_pri / 0.01 as int)) > 7 "
+                + "  order by dt ";
+
+            log.info(sql);
+            rs = stm.executeQuery(sql);
+            while (rs.next()) {
+
+                dt = rs.getString("dt");
+                pctRk = rs.getInt("pctRk");
+
+                if (pctRk >= 0) {
+                    sql = "select s2.id, s2.dt "
+                       + "  from stkClsPri s1, stkClsPri s2 "
+                       + " where s1.id = s2.id "
+                       + "   and to_char(to_date(s1.dt, 'yyyy-mm-dd hh:mi:ss') - 1, 'yyy-mm-dd') = to_char(to_date(s2.dt, 'yyyy-mm-dd hh:mi:ss'), 'yyy-mm-dd')"
+                       + "   and s2.dt = '" + dt + "'"
+                       + "   and cast((s1.yt_cls_pri - s2.yt_cls_pri) / s2.yt_cls_pri / 0.01 as int) >= " + pctRk;
+                }
+                else if (pctRk < 0) {
+                    sql = "select s2.id, s2.dt "
+                        + "  from stkClsPri s1, stkClsPri s2 "
+                        + " where s1.id = s2.id "
+                        + "   and to_char(to_date(s1.dt, 'yyyy-mm-dd hh:mi:ss') - 1, 'yyy-mm-dd') = to_char(to_date(s2.dt, 'yyyy-mm-dd hh:mi:ss'), 'yyy-mm-dd')"
+                        + "   and s2.dt = '" + dt + "'"
+                        + "   and cast((s1.yt_cls_pri - s2.yt_cls_pri) / s2.yt_cls_pri / 0.01 as int) <= " + pctRk;
+                }
+                else {
+                    continue;
+                }
+
+                log.info(sql);
+
+                stm2 = con.createStatement();
+                rs2 = stm2.executeQuery(sql);
+
+                while (rs2.next()) {
+                    boolean existFlg = false;
+                    List<Follower> fs = followers.get(String.valueOf(pctRk));
+                    
+                    //log.info("got follower:" + rs2.getString("id"));
+                    
+                    if (fs != null) {
+                        for (int i = 0; i < fs.size(); i++) {
+                            Follower f = fs.get(i);
+                            if (f.id.equals(rs2.getString("id"))) {
+                                f.followCnt++;
+                                existFlg = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!existFlg) {
+                        if (fs == null) {
+                            fs = new LinkedList<Follower>();
+                            followers.put(String.valueOf(pctRk), fs);
+                        }
+                        
+                        fs.add(new Follower(rs2.getString("id"), 1));
+                    }
+                }
+                rs2.close();
+                stm2.close();
+            }
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try{
+                rs.close();
+                stm.close();
+                con.close();
+            }
+            catch (SQLException e2) {
+                e2.printStackTrace();
+            }
+        }
+        //printFollowers();
+    }
+    
+    public void printFollowers()
+    {
+        log.info("Now print followers for " + ID);
+        if (followers != null) {
+            for(String key : followers.keySet()) {
+                log.info("Print key:" + key);
+                List<Follower> fs = followers.get(key);
+                if (fs != null) {
+                    for(int i = 0; i < fs.size(); i++) {
+                        Follower f = fs.get(i);
+                        if (f.followCnt > 2)
+                        log.info(f.id + "|" + f.followCnt);
+                    }
+                    
+                }
+            }
+        }
+        log.info("Print followers end...");
+    }
+    
+    public double getFollowersAvgCurPri(int pctRk) {
+        List<Follower> fs = followers.get(String.valueOf(pctRk));
+        if (fs == null) {
+            return 0.0;
+        }
+        String ids = "";
+        double avgPct = 0.0;
+        for (int i = 0; i < fs.size(); i++) {
+            Follower f = fs.get(i);
+            if (f.followCnt > 2 && !f.id.equals(ID)) {
+                if (ids.length() > 0) {
+                    ids += ",";
+                }
+                ids += "'" + f.id + "'";
+            }
+        }
+        if (ids.length() <= 0) {
+            log.info("No followers more than 2 for stock:" + ID + " skip cal avgCurPri for followers...");
+            return 0.0;
+        }
+        try {
+            Connection con = DBManager.getConnection();
+            Statement stm = con.createStatement();
+            String sql = "select avg((cur_pri - yt_cls_pri) / yt_cls_pri) avgPct from stkdat2 " +
+                         //"  where to_char(dl_dt, 'yyyy-mm-dd') = '2016-02-02'"//to_char(sysdate, 'yyyy-mm-dd') "
+                         "  where to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') "
+                       + "  and id in (" + ids + ")"
+                       + "  and not exists (select 'x' from stkdat2 sd " +
+                            "                where sd.id = stkdat2.id " +
+                            //"                  and to_char(sd.dl_dt, 'yyyy-mm-dd') = '2016-02-02' "//to_char(sysdate, 'yyyy-mm-dd') "
+                            "                  and to_char(sd.dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') "
+                          + "                  and sd.ft_id > stkdat2.ft_id)";
+            log.info(sql);
+            ResultSet rs = stm.executeQuery(sql);
+            if (rs.next()) {
+                avgPct = rs.getDouble("avgPct");
+                log.info("Got avgPct for followers: " + avgPct);
+            }
+            rs.close();
+            stm.close();
+            con.close();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return avgPct;
+    }
+    
+    public double getCurPct() {
+        double curPct = 0.0;
+        Connection con = null;
+        Statement stm = null;
+        ResultSet rs = null;
+        try {
+            con = DBManager.getConnection();
+            stm = con.createStatement();
+            String sql = "select (cur_pri - yt_cls_pri) / yt_cls_pri pct from stkdat2 " +
+                         //"  where to_char(dl_dt, 'yyyy-mm-dd') = '2016-02-02'"//to_char(sysdate, 'yyyy-mm-dd') "
+                         "  where to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') "
+                       + "  and id = '" + ID + "'"
+                       + "  and not exists (select 'x' from stkdat2 sd " +
+                            "                where sd.id = stkdat2.id " +
+                           // "                  and to_char(sd.dl_dt, 'yyyy-mm-dd') = '2016-02-02' "//to_char(sysdate, 'yyyy-mm-dd') "
+                            "                  and to_char(sd.dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') "
+                          + "                  and sd.ft_id > stkdat2.ft_id)";
+            log.info(sql);
+            rs = stm.executeQuery(sql);
+            if (rs.next()) {
+                curPct = rs.getDouble("pct");
+                log.info("Got curPct : " + curPct);
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                rs.close();
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        return curPct;
+    }
+    
 
 }

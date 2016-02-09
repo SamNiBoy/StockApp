@@ -9,6 +9,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -56,7 +57,7 @@ public class GA implements IWork {
     {
         Statement stm = null;
         ResultSet rs = null;
-        String sql = "select distinct id from stkdat2 where to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') and td_opn_pri > 0 order by id ";
+        String sql = "select id from stk order by id ";
 
         int i = 0;
 
@@ -79,21 +80,6 @@ public class GA implements IWork {
                 i++;
             }
             
-            double p;
-            for (i = 0; i < stkNum; i++) {
-                for (int j = 0; j < stkNum; j++) {
-                    p = Math.random();
-                    if (p < 1/3.0) {
-                        mat[i][j] = -1;
-                    }
-                    else if (p >= 1/3.0 && p < 2/3.0) {
-                        mat[i][j] = 0;
-                    }
-                    else {
-                        mat[i][j] = 1;
-                    }
-                }
-            }
         }
         catch(Exception e)
         {
