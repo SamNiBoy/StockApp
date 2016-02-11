@@ -58,7 +58,7 @@ public class GzStockObserverable extends Observable {
     }
 
     public void update() {
-        String gzSummary = "", otherStockSummary = "", index = "", fmsg = "";
+        String gzSummary = "", otherStockSummary = "", index = "", fmsg = "", stockPlused = "";
         needSentMail = false;
         if (stocks == null && !loadStocks()) {
             log.info("loadStocks failed, no mail can be sent");
@@ -68,9 +68,10 @@ public class GzStockObserverable extends Observable {
         otherStockSummary = checkStatusForStock(false, 0.01);
         index = getIndex();
         fmsg = getFollowers();
+        stockPlused = getDetQtyPlused();
         subject = content = "";
         subject = "News";
-        content = index + gzSummary + "<br/>" + otherStockSummary + "<br/>" + fmsg;
+        content = index + gzSummary + "<br/>" + otherStockSummary + "<br/>" + fmsg + "<br/>" + stockPlused;
         if (needSentMail) {
             this.setChanged();
             this.notifyObservers(this);
@@ -128,7 +129,7 @@ public class GzStockObserverable extends Observable {
                     sql = "select cur_pri, td_opn_pri, dl_stk_num from stkdat2 where id ='"
                             + stock
                             + "' and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate , 'yyyy-mm-dd') "
-                            //+ "' and to_char(dl_dt, 'yyyy-mm-dd') >= '2016-02-05'"
+                           // + "' and to_char(dl_dt, 'yyyy-mm-dd') >= '2016-02-05'"
                             + "  and dl_dt >= sysdate - (5*1.0)/(24*60.0) "
                             + "  and td_opn_pri > 0 order by ft_id ";
                     
@@ -262,7 +263,7 @@ public class GzStockObserverable extends Observable {
     
     private String getFollowers() {
 
-        String fmsg = "";
+        String fmsg = "同增股票<br/>";
         fmsg += "<table border = 1>" +
                    "<tr>" +
                    "<th> Stock</th> " +
@@ -321,18 +322,47 @@ public class GzStockObserverable extends Observable {
                          "<td> " + nf.format(cpavgpct*100) + "%</td>" +
                          "<td> " + cm + "</td>" +
                          "<td> " + nf.format(cmavgpct*100) + "%</td></tr>";
+                needSentMail = true;
             }
         }
         fmsg += "</table>";
-        needSentMail = true;
+
         log.info("got follower msg:" + fmsg);
         return fmsg;
     
     }
     
+    private String getDetQtyPlused() {
+        String StockPlused = "猛成交量股票<br/>";
+        StockPlused += "<table border = 1>" +
+                   "<tr>" +
+                   "<th> Stock</th> " +
+                   "<th> Name</th> " +
+                   "<th> CurPri</th> " +
+                   "<th> DetQty </th> " +
+                   "<th> Pre_DetQty </th> </tr> ";
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMaximumFractionDigits(2);
+        for (String stk : stocks.keySet()) {
+               Stock s = stocks.get(stk);
+               if (s.isPre_detQty_plused()) {
+                   StockPlused += "<tr> <td>" + s.getID() + "</td>" +
+                        "<td> " + s.getName() + "</td>" +
+                        "<td> " + nf.format(s.getCur_pri()) + "</td>" +
+                        "<td> " + s.getDetQty() + "</td>" +
+                        "<td> " + s.getPre_detQty() + "</td></tr>";
+                   needSentMail = true;
+               }
+        }
+        StockPlused += "</table>";
+
+        log.info("got StockPlused msg:" + StockPlused);
+        return StockPlused;
+    }
+    
     private String getIndex() {
         Statement stm = null;
-        String index = "";
+        String index = "股市行情<br/>";
         int StkNum = 0;
         int TotInc = 0;
         int TotDec = 0;

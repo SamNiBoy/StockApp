@@ -56,12 +56,27 @@ public class Stock implements Comparable<Stock>{
     private long incPriCnt;
     private long desPriCnt;
     private long detQty;
+    private long pre_detQty = 0; //store pre 5 mintes det_qty.
+    private boolean pre_detQty_plused = false; //true if detQty increased sharply.
     private double cur_pri;
     private long cur_qty;
     private long gz_flg;
     private long keepLostDays;
     private List<Integer> rk = new ArrayList<Integer>();
     
+    
+    public long getPre_detQty() {
+        return pre_detQty;
+    }
+
+    public void setPre_detQty(long preDetQty) {
+        pre_detQty = preDetQty;
+    }
+
+    public boolean isPre_detQty_plused() {
+        return pre_detQty_plused;
+    }
+
     public long getKeepLostDays() {
         return keepLostDays;
     }
@@ -108,6 +123,13 @@ public class Stock implements Comparable<Stock>{
 
     public void setDetQty(long detQty) {
         this.detQty = detQty;
+        if (pre_detQty != 0 && detQty > 5 * pre_detQty) {
+            pre_detQty_plused =true;
+        }
+        else if (pre_detQty != 0){
+            pre_detQty_plused = false;
+        }
+        pre_detQty = detQty;
     }
 
     public double getCur_pri() {
