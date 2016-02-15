@@ -56,7 +56,7 @@ public class Stock implements Comparable<Stock>{
     private long incPriCnt;
     private long desPriCnt;
     private long detQty;
-    private long pre_detQty = 0; //store pre 5 mintes det_qty.
+    public long pre_detQty = 0; //store pre 5 mintes det_qty.
     private boolean pre_detQty_plused = false; //true if detQty increased sharply.
     private double cur_pri;
     private long cur_qty;
@@ -66,7 +66,10 @@ public class Stock implements Comparable<Stock>{
     
     
     public long getPre_detQty() {
-        return pre_detQty;
+        long temp = pre_detQty;
+        log.info("pre_detQty :" + pre_detQty + " swap with detQty:" + detQty);
+        pre_detQty = detQty;
+        return temp;
     }
 
     public void setPre_detQty(long preDetQty) {
@@ -123,13 +126,17 @@ public class Stock implements Comparable<Stock>{
 
     public void setDetQty(long detQty) {
         this.detQty = detQty;
-        if (pre_detQty != 0 && detQty > 5 * pre_detQty) {
+        
+        if (pre_detQty == 0) {
+            pre_detQty = detQty;
+        }
+        
+        if (detQty > 20 * pre_detQty) {
             pre_detQty_plused =true;
         }
-        else if (pre_detQty != 0){
+        else {
             pre_detQty_plused = false;
         }
-        pre_detQty = detQty;
     }
 
     public double getCur_pri() {
@@ -180,7 +187,7 @@ public class Stock implements Comparable<Stock>{
         return r;
     }
     
-    public double getAvgRkSpeed() {
+    public long getAvgRkSpeed() {
         if (rk.size() <= 0) {
             return 0;
         }
@@ -193,10 +200,11 @@ public class Stock implements Comparable<Stock>{
             }
             else {
                 detRk += rk.get(i) - pre_rk;
+                pre_rk = rk.get(i);
             }
         }
         
-        double avgRkSpeed = detRk*1.0 / rk.size();
+        long avgRkSpeed = detRk / rk.size();
         log.info("got avgRkSpeed as:" + avgRkSpeed);
         
         return avgRkSpeed;
@@ -265,13 +273,13 @@ public class Stock implements Comparable<Stock>{
         row = "<tr> <td> " + nf.format(pct*100) + "</td>" +
         "<td> " + nf.format(prePct*100) + "</td>" +
         "<td> " + getRk() + "</td>" +
-        "<td> " + nf.format(getAvgRkSpeed()) + "</td>" +
+        "<td> " + getAvgRkSpeed() + "/" + rk.size() + "</td>" +
         "<td> " + keepLostDays + "</td>" +
         "<td> " + ID + "</td> " +
         "<td> " + Name + "</td>" +
         "<td> " + incPriCnt + "</td>" +
         "<td> " + desPriCnt + "</td>" +
-        "<td> " + detQty + "</td>" +
+        "<td> " +  nf.format(this.pre_detQty == 0 ? 0 : detQty/this.getPre_detQty()) + "</td>" +
         "<td> " + cur_pri + "</td> " +
         "<td> " + cur_qty + "</td> </tr>";
         
@@ -315,6 +323,7 @@ public class Stock implements Comparable<Stock>{
                 + " where s1.id = s2.id "
                 + "   and to_char(to_date(s1.dt, 'yyyy-mm-dd hh:mi:ss') - 1, 'yyy-mm-dd') = to_char(to_date(s2.dt, 'yyyy-mm-dd hh:mi:ss'), 'yyy-mm-dd')"
                 + "   and s1.id = '" + ID + "'"
+                + "   and to_char(to_date(s1.dt, 'yyyy-mm-dd hh:mi:ss'), 'yyyy-mm-dd') >= to_char(sysdate - 20, 'yyyy-mm-dd')"
                 + "   and abs (cast((s1.yt_cls_pri - s2.yt_cls_pri) / s2.yt_cls_pri / 0.01 as int)) > 7 "
                 + "  order by dt ";
 

@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,10 +69,10 @@ public class GzStockObserverable extends Observable {
         otherStockSummary = checkStatusForStock(false, 0.01);
         index = getIndex();
         fmsg = getFollowers();
-        stockPlused = getDetQtyPlused();
+        //stockPlused = getDetQtyPlused();
         subject = content = "";
         subject = "News";
-        content = index + gzSummary + "<br/>" + otherStockSummary + "<br/>" + fmsg + "<br/>" + stockPlused;
+        content = index + gzSummary + "<br/>" + otherStockSummary + "<br/>" + fmsg + "<br/>";
         if (needSentMail) {
             this.setChanged();
             this.notifyObservers(this);
@@ -102,7 +103,7 @@ public class GzStockObserverable extends Observable {
                    "<th> Name </th> " +
                    "<th> incCnt</th> " +
                    "<th> dscCnt</th> " +
-                   "<th> detQty</th> " +
+                   "<th> detQtyRate</th> " +
                    "<th> cur_pri</th> " +
                    "<th> qty </th> </tr> ";
         try {
@@ -247,7 +248,8 @@ public class GzStockObserverable extends Observable {
                 // only return stock with price <= 20
                 if ((p.getCur_pri() <= 50 && p.getPrePct() < -0.05) ||
                      p.getGz_flg() > 0 ||
-                     (p.getCur_pri() <= 50 && p.getKeepLostDays() > 0 && p.getPrePct() < -0.01)) {
+                     (p.getCur_pri() <= 50 && p.getKeepLostDays() > 0 && p.getPrePct() < -0.01) ||
+                     p.isPre_detQty_plused()) {
                     summary += p.getTableRow();
                 }
             }
@@ -339,21 +341,48 @@ public class GzStockObserverable extends Observable {
                    "<th> Stock</th> " +
                    "<th> Name</th> " +
                    "<th> CurPri</th> " +
+                   "<th> Pct</th> " +
+                   "<th> Rate </th> " +
                    "<th> DetQty </th> " +
-                   "<th> Pre_DetQty </th> </tr> ";
+                   "<th> Pre_DetQty </th></tr> ";
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(2);
+        List<Stock> ls = new ArrayList<Stock>();
         for (String stk : stocks.keySet()) {
-               Stock s = stocks.get(stk);
+            ls.add(stocks.get(stk));
+        }
+        
+//        Collections.sort(ls, new Comparator<Stock>() {
+//            @Override
+//            public int compare(Stock l, Stock r) {
+//                // TODO Auto-generated method stub
+//                double lr = l.getDetQty() * 1.0 / l.pre_detQty;
+//                double rr = r.getDetQty() * 1.0 / r.pre_detQty;
+//                if ( lr > rr)
+//                {
+//                    return -1;
+//                }
+//                else if (lr == rr ){
+//                    return 0;
+//                }
+//                else {
+//                    return 1;
+//                }
+//            }
+//        });
+        for (Stock s : ls) {
                if (s.isPre_detQty_plused()) {
                    StockPlused += "<tr> <td>" + s.getID() + "</td>" +
                         "<td> " + s.getName() + "</td>" +
                         "<td> " + nf.format(s.getCur_pri()) + "</td>" +
+                        "<td> " + nf.format(s.getPct() * 100) + "%</td>" +
+                        "<td> " + nf.format(s.pre_detQty == 0 ? 0.0 : s.getDetQty() / s.pre_detQty) + "</td>" +
                         "<td> " + s.getDetQty() + "</td>" +
-                        "<td> " + s.getPre_detQty() + "</td></tr>";
+                        "<td> " + s.getPre_detQty() + "</td> </tr>";
                    needSentMail = true;
                }
         }
+        ls = null;
         StockPlused += "</table>";
 
         log.info("got StockPlused msg:" + StockPlused);
