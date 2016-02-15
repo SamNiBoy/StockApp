@@ -398,15 +398,21 @@ public class GzStockObserverable extends Observable {
         int TotEql = 0;
         double AvgIncPct = 0.0;
         double AvgDecPct = 0.0;
+        double totIncDlMny = 0.0;
+        double totDecDlMny = 0.0;
+        double totEqlDlMny = 0.0;
         int catagory = -2;
         index += "<table border = 1>" +
                    "<tr>" +
                    "<th> Stock Count</th> " +
                    "<th> Total+ </th> " +
                    "<th> AvgPct+ </th> " +
+                   "<th> TotDlMny+ </th> " +
                    "<th> Total-</th> " +
                    "<th> AvgPct-</th> " + 
+                   "<th> TotDlMny- </th> " +
                    "<th> Total= </th> " +
+                   "<th> TotDlMny= </th> " +
                    "<th> Degree </th> </tr> ";
         try {
             stm = con.createStatement();
@@ -414,6 +420,7 @@ public class GzStockObserverable extends Observable {
                          "       count(case when cur_pri < td_opn_pri then 1 else 0 end) DecNum, " +
                          "       count(case when cur_pri = td_opn_pri then 1 else 0 end) EqlNum, " +
             		     " avg((cur_pri - td_opn_pri)/td_opn_pri) avgPct," +
+            		     " sum(dl_mny_num) totDlMny," +
                          " case when cur_pri > td_opn_pri then 1 " +
                          "               when cur_pri < td_opn_pri then -1 " +
                          "               when cur_pri = td_opn_pri then 0 end catagory " +
@@ -432,15 +439,18 @@ public class GzStockObserverable extends Observable {
                 {
                     TotDec = rs.getInt("DecNum");
                     AvgDecPct = rs.getDouble("avgPct");
+                    totDecDlMny = rs.getDouble("totDlMny");
                 }
                 else if (catagory == 0)
                 {
                     TotEql = rs.getInt("EqlNum");
+                    totEqlDlMny = rs.getDouble("totDlMny");
                 }
                 else if (catagory == 1)
                 {
                     TotInc = rs.getInt("IncNum");
                     AvgIncPct = rs.getDouble("avgPct");
+                    totIncDlMny = rs.getDouble("totDlMny");
                 }
             }
             rs.close();
@@ -458,9 +468,12 @@ public class GzStockObserverable extends Observable {
             index += "<tr> <td>" + StkNum + "</td>" +
                     "<td> " + TotInc + "</td>" +
                      "<td> " + nf.format(AvgIncPct*100) + "%</td>" +
+                     "<td> " + nf.format(totIncDlMny/100000000) + "亿</td>" +
                      "<td> " + TotDec + "</td>" +
                      "<td> " + nf.format(AvgDecPct*100) + "%</td>" +
+                     "<td> " + nf.format(totDecDlMny/100000000) + "亿</td>" +
                      "<td> " + TotEql + "</td>" +
+                     "<td> " + nf.format(totEqlDlMny/100000000) + "亿</td>" +
                      "<td> " + nf.format((TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1)) + " C</tr></table>";
         }
         log.info("got index msg:" + index);
