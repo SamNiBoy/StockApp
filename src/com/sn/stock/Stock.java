@@ -52,6 +52,7 @@ public class Stock implements Comparable<Stock>{
     private String Py;
     private String Bu;
     private double pct; // the pct of cur_pri to td_opn_pri
+    private double pctToCls; // the pct of cur_pri to yt_cls_pri
     private double prePct; //pct of previous days.
     private long incPriCnt;
     private long desPriCnt;
@@ -59,12 +60,29 @@ public class Stock implements Comparable<Stock>{
     public long pre_detQty = 0; //store pre 5 mintes det_qty.
     private boolean pre_detQty_plused = false; //true if detQty increased sharply.
     private double cur_pri;
+    private double dlmnynum;
     private long cur_qty;
     private long gz_flg;
     private long keepLostDays;
     private List<Integer> rk = new ArrayList<Integer>();
     
     
+    public double getDlmnynum() {
+        return dlmnynum;
+    }
+
+    public void setDlmnynum(double dlmnynum) {
+        this.dlmnynum = dlmnynum;
+    }
+
+    public double getPctToCls() {
+        return pctToCls;
+    }
+
+    public void setPctToCls(double pctToCls) {
+        this.pctToCls = pctToCls;
+    }
+
     public long getPre_detQty() {
         long temp = pre_detQty;
         log.info("pre_detQty :" + pre_detQty + " swap with detQty:" + detQty);
@@ -270,18 +288,20 @@ public class Stock implements Comparable<Stock>{
         String row = "";
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(2);
-        row = "<tr> <td> " + nf.format(pct*100) + "</td>" +
+        row = "<tr> <td> " + nf.format(pctToCls*100) + "</td>" +
+        "<td> " + nf.format(pct*100) + "</td>" +
         "<td> " + nf.format(prePct*100) + "</td>" +
+        "<td> " + keepLostDays + "</td>" +
         "<td> " + getRk() + "</td>" +
         "<td> " + getAvgRkSpeed() + "/" + rk.size() + "</td>" +
-        "<td> " + keepLostDays + "</td>" +
         "<td> " + ID + "</td> " +
         "<td> " + Name + "</td>" +
         "<td> " + incPriCnt + "</td>" +
         "<td> " + desPriCnt + "</td>" +
         "<td> " +  nf.format(this.pre_detQty == 0 ? 0 : detQty/this.getPre_detQty()) + "</td>" +
         "<td> " + cur_pri + "</td> " +
-        "<td> " + cur_qty + "</td> </tr>";
+        "<td> " + cur_qty/100 + "手</td> " +
+        "<td> " + nf.format(dlmnynum / 100000000) + "亿</td> </tr>";
         
         return row;
     }
@@ -323,7 +343,7 @@ public class Stock implements Comparable<Stock>{
                 + " where s1.id = s2.id "
                 + "   and to_char(to_date(s1.dt, 'yyyy-mm-dd hh:mi:ss') - 1, 'yyy-mm-dd') = to_char(to_date(s2.dt, 'yyyy-mm-dd hh:mi:ss'), 'yyy-mm-dd')"
                 + "   and s1.id = '" + ID + "'"
-                + "   and to_char(to_date(s1.dt, 'yyyy-mm-dd hh:mi:ss'), 'yyyy-mm-dd') >= to_char(sysdate - 20, 'yyyy-mm-dd')"
+                + "   and to_char(to_date(s1.dt, 'yyyy-mm-dd hh:mi:ss'), 'yyyy-mm-dd') >= to_char(sysdate - 10, 'yyyy-mm-dd')"
                 + "   and abs (cast((s1.yt_cls_pri - s2.yt_cls_pri) / s2.yt_cls_pri / 0.01 as int)) > 7 "
                 + "  order by dt ";
 

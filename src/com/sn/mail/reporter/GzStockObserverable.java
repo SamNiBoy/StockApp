@@ -94,18 +94,20 @@ public class GzStockObserverable extends Observable {
         }
         summary += "<table border = 1>" +
                    "<tr>" +
-                   "<th> Pct</th> " +
-                   "<th> PrePct</th> " +
-                   "<th> RK </th> " +
-                   "<th> RankSpeed</th> " +
-                   "<th> KeepDaysLost</th> " +
+                   "<th> PTC</th> " +
+                   "<th> PTO</th> " +
+                   "<th> P4C</th> " +
+                   "<th> KDL</th> " +
+                   "<th> PRK </th> " +
+                   "<th> RKS</th> " +
                    "<th> ID </th> " +
                    "<th> Name </th> " +
-                   "<th> incCnt</th> " +
-                   "<th> dscCnt</th> " +
-                   "<th> detQtyRate</th> " +
-                   "<th> cur_pri</th> " +
-                   "<th> qty </th> </tr> ";
+                   "<th> IncCnt</th> " +
+                   "<th> DscCnt</th> " +
+                   "<th> DQR</th> " +
+                   "<th> Price</th> " +
+                   "<th> Qty</th> " +
+                   "<th> Mny </th> </tr> ";
         try {
             stm = con.createStatement();
             String sql = "select id, name from stk where gz_flg = " + (gz_flg ? "1" : "0");
@@ -127,7 +129,7 @@ public class GzStockObserverable extends Observable {
             
             for (String stock : gzStocks.keySet()) {
                 try {
-                    sql = "select cur_pri, td_opn_pri, dl_stk_num from stkdat2 where id ='"
+                    sql = "select cur_pri, td_opn_pri, dl_stk_num, yt_cls_pri, dl_mny_num from stkdat2 where id ='"
                             + stock
                             + "' and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate , 'yyyy-mm-dd') "
                            // + "' and to_char(dl_dt, 'yyyy-mm-dd') >= '2016-02-05'"
@@ -140,7 +142,8 @@ public class GzStockObserverable extends Observable {
                     
                     double pre_cur_pri = 0, cur_pri = 0;
                     long pre_qty = 0, cur_qty = 0;
-                    double pct = 2;
+                    double pct = 0, pctToCls = 0;
+                    double totMny = 0.0;
                     boolean hasStkInfo = false;
                     
                     incPriCnt = eqlPriCnt = desPriCnt = 0;
@@ -161,6 +164,9 @@ public class GzStockObserverable extends Observable {
                         pre_cur_pri = cur_pri;
                         
                         pct = (cur_pri - rs.getDouble("td_opn_pri"))/ rs.getDouble("td_opn_pri");
+                        pctToCls = (cur_pri - rs.getDouble("yt_cls_pri"))/ rs.getDouble("yt_cls_pri");
+
+                        totMny = rs.getDouble("dl_mny_num");
 
                         if (pre_qty != 0) {
                             if (cur_qty > pre_qty) {
@@ -225,8 +231,11 @@ public class GzStockObserverable extends Observable {
                         stk.setCur_pri(cur_pri);
                         stk.setCur_qty(cur_qty);
                         stk.setPct(pct);
+                        stk.setPctToCls(pctToCls);
+                        stk.setDlmnynum(totMny);
                         stk.setPrePct(prePct);
                         stk.setKeepLostDays(keepDaysLost);
+                        stk.setGz_flg((gz_flg ? 1 : 0));
 
                         if (Math.abs(pct) >= pctRt) {
                             needSentMail = true;
