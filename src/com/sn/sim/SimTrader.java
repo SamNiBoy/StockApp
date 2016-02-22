@@ -30,7 +30,8 @@ import com.sn.mail.reporter.StockObserver;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.reporter.WCMsgSender;
 import com.sn.sim.strategy.ITradeStrategy;
-import com.sn.sim.strategy.imp.TSIncFast;
+import com.sn.sim.strategy.imp.TradeStrategyGenerator;
+import com.sn.sim.strategy.imp.TradeStrategyImp;
 import com.sn.stock.Stock;
 import com.sn.stock.Stock.Follower;
 
@@ -39,32 +40,15 @@ public class SimTrader extends Observable {
     static Logger log = Logger.getLogger(SimTrader.class);
 
     static Connection con = null;
-    public String subject;
-    public String content;
-    static private boolean hasSentMail = false;
-    static private boolean needSentMail = false;
-    static private boolean useDftAcnt = true;
     static List<ITradeStrategy> strategies = new ArrayList<ITradeStrategy>();
-    static ITradeStrategy cur_stra = null;
+    static ITradeStrategy strategy = null;
 
-    public String getSubject() {
-        return subject;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public boolean hasSentMail() {
-        return hasSentMail;
-    }
-
-    public SimTrader() {
+    public SimTrader() throws Exception {
         this.addObserver(StockObserver.globalObs);
-        strategies.add(new TSIncFast());
+        strategies.addAll(TradeStrategyGenerator.generatorStrategies());
     }
 
-    static public void main(String[] args) {
+    static public void main(String[] args) throws Exception {
         
         SimStockDriver.addStkToSim("002397");
         SimStockDriver.addStkToSim("600503");
@@ -72,7 +56,7 @@ public class SimTrader extends Observable {
         
         SimStockDriver.loadStocks();
         StockObserverable.stocks = SimStockDriver.simstocks;
-        SimTrader ppo = new SimTrader();
+        SimTrader st = new SimTrader();
         
         if (!SimStockDriver.initData()) {
             log.info("can not init SimStockDriver...");
@@ -80,14 +64,12 @@ public class SimTrader extends Observable {
         }
         
         for (ITradeStrategy cs : strategies) {
-            
-            cur_stra = cs;
-            needSentMail = false;
+            strategy = cs;
             int StepCnt = 0;
             log.info("Now start simulate trading...");
             while (SimStockDriver.step()) {
                 log.info("Simulate step:" + (++StepCnt));
-                ppo.update();
+                st.run();
             }
             SimStockDriver.startOver();
         }
@@ -95,55 +77,29 @@ public class SimTrader extends Observable {
         SimStockDriver.finishStep();
         log.info("Now end simulate trading.");
 
-        if (needSentMail) {
-            ppo.setChanged();
-            ppo.notifyObservers(ppo);
-            hasSentMail = true;
-        }
     }
 
+    public void run() {
+        if (buyStock() || sellStock()) {
+            reportTradeStat();
+        }
+    }
+    
     public void update() {
-        String Summary = "";
-        if (buyStock() ||
-            sellStock()) {
-            needSentMail = true;
-            Summary = reportBuySellStat();
-        }
-        String returnStr = "";  
-        SimpleDateFormat f = new SimpleDateFormat("HH:mm:ss");  
-        Date date = new Date();  
-        returnStr = f.format(date);
-        subject = content = "";
-        subject = "Profit Information " + returnStr;
-        content = Summary + "<br/>";
-        if (needSentMail) {
-            this.setChanged();
-            this.notifyObservers(this);
-            hasSentMail = true;
-            needSentMail = false;
-        }
     }
     
     private boolean buyStock()
     {
         log.info("strat buyStock...");
-        List<CashAcnt> Acnts = null;
         boolean hasBoughtStock = false;
 
-        if (this.useDftAcnt) {
-            Acnts = CashAcntManger.getDftAcnt();
-        }
-        else {
-            Acnts = CashAcntManger.getAllAcnts();
-        }
         for (String stock : StockObserverable.stocks.keySet()) {
             Stock s = StockObserverable.stocks.get(stock);
-            if (cur_stra.isGoodStockToSelect(s) && cur_stra.isGoodPointtoBuy(s)) {
-                for(CashAcnt a: Acnts) {
-                    if (a.buyStock(s)) {
-                        a.calProfit();
-                        hasBoughtStock = true;
-                    }
+            if (strategy.isGoodStockToSelect(s) && strategy.isGoodPointtoBuy(s)) {
+                if (strategy.buyStock(s)) {
+                    String dt = s.getDl_dt().toString().substring(0,10);
+                    strategy.calProfit(dt);
+                    hasBoughtStock = true;
                 }
             }
         }
@@ -154,23 +110,15 @@ public class SimTrader extends Observable {
     private boolean sellStock()
     {
         log.info("start sellStock...");
-        List<CashAcnt> Acnts = null;
         boolean hasSoldStock = false;
 
-        if (this.useDftAcnt) {
-            Acnts = CashAcntManger.getDftAcnt();
-        }
-        else {
-            Acnts = CashAcntManger.getAllAcnts();
-        }
         for (String stock : StockObserverable.stocks.keySet()) {
             Stock s = StockObserverable.stocks.get(stock);
-            if (cur_stra.isGoodPointtoSell(s)) {
-                for(CashAcnt a: Acnts) {
-                    if (a.sellStock(s)) {
-                        a.calProfit();
-                        hasSoldStock = true;
-                    }
+            if (strategy.isGoodPointtoSell(s)) {
+                if (strategy.sellStock(s)) {
+                    String dt = s.getDl_dt().toString().substring(0,10);
+                    strategy.calProfit(dt);
+                    hasSoldStock = true;
                 }
             }
         }
@@ -178,20 +126,11 @@ public class SimTrader extends Observable {
         return hasSoldStock;
     }
     
-    private String reportBuySellStat() {
+    private boolean reportTradeStat() {
         log.info("reportBuySellStat...");
-        List<CashAcnt> Acnts = null;
-        String msg = "";
 
-        if (this.useDftAcnt) {
-            Acnts = CashAcntManger.getDftAcnt();
-        }
-        else {
-            Acnts = CashAcntManger.getAllAcnts();
-        }
-        for(CashAcnt a: Acnts) {
-            msg += a.reportAcntProfitWeb();
-        }
-        return msg;
+        boolean rs = strategy.reportTradeStat(this);
+        
+        return rs;
     }
 }

@@ -80,10 +80,7 @@ public class MonitorStockData implements IWork {
             StockObserverable spo = new StockObserverable();
             spo.update();
             
-            SimTradeObserverable sto = new SimTradeObserverable();
-            sto.update();
-
-            if (spo.hasSentMail() || sto.hasSentMail()) {
+            if (spo.hasSentMail()) {
                 res = "Already sent mail to your mailbox!";
             }
             else {

@@ -14,7 +14,7 @@ import com.sn.db.DBManager;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.stock.Stock;
 
-public class CashAcnt {
+public class CashAcnt implements ICashAccount{
 
     static Logger log = Logger.getLogger(CashAcnt.class);
     private String actId;
@@ -116,153 +116,17 @@ public class CashAcnt {
                 + "\n dftAcnt:" + dftAcnt);
     }
     
-    public boolean buyStock(Stock s) {
-        double useableMny = this.getMaxAvaMny();
-        int buyMnt = (int)(useableMny/s.getCur_pri()) / 100 * 100;
-        double occupiedMny = buyMnt * s.getCur_pri();
-        
-        printAcntInfo();
-        s.dsc();
-        
-        log.info("trying to buy amount:" + buyMnt + " with using Mny:" + occupiedMny);
-        
-        if (buyMnt < 100) {
-            log.info(" No enough mony to by stock: " + s.getName());
-            return false;
-        }
-        
-        log.info("now start to bug stock " + s.getName()
-                + " price:" + s.getCur_pri()
-                + " with money: " + useableMny
-                + " buy mount:" + buyMnt);
 
-        Connection con = DBManager.getConnection();
-        String sql = "select case when max(d.seqnum) is null then -1 else max(d.seqnum) end maxseq from TradeHdr h " +
-        		"       join TradeDtl d " +
-        		"         on h.stkId = d.stkId " +
-        		"        and h.acntId = d.acntId " +
-        		"      where h.stkId = '" + s.getID()+ "'" +
-        		"        and h.acntId = '" + actId + "'";
-        int seqnum = 0;
-        try {
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery(sql);
-            if (rs.next()) {
-                if (rs.getInt("maxseq") < 0) {
-                    sql = "insert into TradeHdr values('" + this.actId + "','"
-                    + s.getID() + "',"
-                    + s.getCur_pri()*buyMnt + ","
-                    + buyMnt + ","
-                    + s.getCur_pri() + ",'" + s.getDl_dt() + "')";
-                    log.info(sql);
-                    Statement stm2 = con.createStatement();
-                    stm2.execute(sql);
-                    stm2.close();
-                    stm2 = null;
-                }
-                seqnum = rs.getInt("maxseq") + 1;
-            }
-            stm.close();
-            stm = con.createStatement();
-            sql = "insert into TradeDtl values('"
-                + this.actId + "','"
-                + s.getID() + "',"
-                + seqnum + ","
-                + s.getCur_pri() + ", "
-                + buyMnt
-                + ", '" + s.getDl_dt() + "', 1)";
-            log.info(sql);
-            stm.execute(sql);
-            
-            //now sync used money
-            usedMny += occupiedMny;
-            
-            stm.close();
-            stm = con.createStatement();
-            sql = "update CashAcnt set used_mny = " + usedMny + " where acntId = '" + this.actId + "'";
-            stm.execute(sql);
-            con.commit();
-            con.close();
-            con=null;
-            return true;
-        }
-        catch(SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
     
-    public boolean sellStock(Stock s) {
 
-        printAcntInfo();
-        s.dsc();
-        
-        log.info("now start to sell stock " + s.getName()
-                + " price:" + s.getCur_pri()
-                + " against CashAcount: " + actId);
-
-        int sellableAmt = this.getSellableAmt(s.getID());
-        
-        if (sellableAmt <= 0) {
-            return false;
-        }
-
-        double relasedMny = sellableAmt * s.getCur_pri();
-        Connection con = DBManager.getConnection();
-        int seqnum = 0;
-        try {
-            String sql = "select max(d.seqnum) maxseq " +
-            "       from TradeDtl d " +
-            "      where d.stkId = '" + s.getID()+ "'" +
-            "        and d.acntId = '" + actId + "'";
     
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery(sql);
-            if (!rs.next()) {
-                seqnum = 0;
-            }
-            else {
-                seqnum = rs.getInt("maxseq") + 1;
-            }
-            rs.close();
-            stm.close();
-            stm = con.createStatement();
-            sql = "insert into TradeDtl values( '"
-                + actId + "','"
-                + s.getID() + "',"
-                + seqnum + ","
-                + s.getCur_pri() + ", "
-                + sellableAmt
-                + ", '" + s.getDl_dt() + "', 0)";
-            log.info(sql);
-            stm.execute(sql);
-            
-            //now sync used money
-            usedMny -= relasedMny;
-            stm.close();
-            stm = con.createStatement();
-            sql = "update CashAcnt set used_mny = used_mny - " + relasedMny + " where acntId = '" + this.actId + "'";
-            log.info(sql);
-            stm.execute(sql);
-            con.commit();
-            con.close();
-            con=null;
-            return true;
-        }
-        catch(SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    
-    }
-    
-    private int getSellableAmt(String stkId) {
+    public int getSellableAmt(String stkId, String sellDt) {
         Connection con = DBManager.getConnection();
         String sql = "select case when sum(b.amount) is null then 0 else sum(b.amount) end SellableAmt from TradeDtl b " +
                 "      where b.stkId = '" + stkId + "'" +
                 "        and acntId = '" + actId + "'" +
                 "        and b.buy_flg = 1 " +
-                "        and to_char(dl_dt, 'yyyy-mm-dd') < to_char(sysdate, 'yyyy-mm-dd') " +
+                "        and to_char(dl_dt, 'yyyy-mm-dd') < '" + sellDt + "' " +
                 "      order by b.seqnum";
         ResultSet rs = null;
         
@@ -306,13 +170,13 @@ public class CashAcnt {
         return sellableAmt - soldAmt;
     }
     
-    private int getUnSellableAmt(String stkId) {
+    public int getUnSellableAmt(String stkId, String sellDt) {
         Connection con = DBManager.getConnection();
         String sql = "select case when sum(b.amount) is null then 0 else sum(b.amount) end unSellableAmt from TradeDtl b " +
                 "      where b.stkId = '" + stkId + "'" +
                 "        and b.acntId = '" + actId + "'" +
                 "        and b.buy_flg = 1 " +
-                "        and to_char(b.dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') " +
+                "        and to_char(b.dl_dt, 'yyyy-mm-dd') = '" + sellDt + "' " +
                 "      order by b.seqnum";
         ResultSet rs = null;
         
@@ -337,7 +201,7 @@ public class CashAcnt {
         return unSellableAmt;
     }
     
-    public boolean calProfit() {
+    public boolean calProfit(String ForDt) {
         Connection con = DBManager.getConnection();
         
         String sql = "select stkId from TradeHdr h where h.acntId = '" + actId + "'";
@@ -353,7 +217,7 @@ public class CashAcnt {
                 String stkId = rs.getString("stkId");
                 Stock s = stks.get(stkId);
                 
-                int inHandMnt = getSellableAmt(stkId) + getUnSellableAmt(stkId);
+                int inHandMnt = getSellableAmt(stkId, ForDt) + getUnSellableAmt(stkId, ForDt);
                 
                 log.info("in hand amt:" + inHandMnt + " price:" + s.getCur_pri() + " with cost:" + usedMny);
                 subpftMny = inHandMnt * s.getCur_pri();

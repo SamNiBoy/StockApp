@@ -192,7 +192,6 @@ public class SimStockDriver {
                 
                 if (pointer.containsKey(stkId)) {
                     pt = pointer.get(stkId);
-                    pointer.put(stkId, pt + 1);
                 }
                 
                 DtRs.next();
@@ -200,7 +199,7 @@ public class SimStockDriver {
                 String sid = DtRs.getString("id");
                 int ft_id = DtRs.getInt("ft_id");
                 
-                while (!sid.equals(stkId) || (pt > 0 && ft_id != pt)) {
+                while (!sid.equals(stkId) || (pt > 0 && ft_id <= pt)) {
                     
                     if (!DtRs.next()) {
                         log.info("No more row in DtRs, finished step()!");
@@ -213,13 +212,11 @@ public class SimStockDriver {
                 
                 Stock s = simstocks.get(stkId);
                 if (s != null) {
-                    log.info("Now, loading DtRs to for stock:" + s.getID());
+                    log.info("Now, loading DtRs for stock:" + s.getID());
                     s.refreshData(DtRs);
                 }
 
-                if (pt == 0) {
-                    pointer.put(stkId, ft_id);
-                }
+                pointer.put(stkId, ft_id);
             }
             log.info("end step with true!");
             return true;

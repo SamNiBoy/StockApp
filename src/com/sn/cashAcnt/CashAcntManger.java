@@ -27,19 +27,18 @@ public class CashAcntManger {
         return acnts;
     }
     
-    static public List<CashAcnt> getDftAcnt() {
-        List<CashAcnt> dftAct = new ArrayList<CashAcnt>();
-        
+    static public CashAcnt getDftAcnt() {
+        CashAcnt rs = null;
         if (acnts.isEmpty()) {
             loadAllAcnts();
         }
         for (CashAcnt s : acnts) {
             if (s.isDftAcnt()) {
-                dftAct.add(s);
+                rs = s;
                 break;
             }
         }
-        return dftAct;
+        return rs;
     }
     static public boolean loadAllAcnts() {
 
