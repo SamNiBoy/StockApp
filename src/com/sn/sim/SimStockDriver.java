@@ -244,4 +244,18 @@ public class SimStockDriver {
         log.info("end finishStep");
         return true;
     }
+    
+    static boolean startOver() {
+        log.info("start startOver again");
+        try {
+            pointer.clear();
+            DtRs.first();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        log.info("end startOver again.");
+        return true;
+    }
 }

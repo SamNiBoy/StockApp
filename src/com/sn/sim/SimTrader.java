@@ -29,12 +29,14 @@ import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.mail.reporter.StockObserver;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.reporter.WCMsgSender;
+import com.sn.sim.strategy.ITradeStrategy;
+import com.sn.sim.strategy.imp.TSIncFast;
 import com.sn.stock.Stock;
 import com.sn.stock.Stock.Follower;
 
-public class SimTradeObserverable extends Observable {
+public class SimTrader extends Observable {
 
-    static Logger log = Logger.getLogger(SimTradeObserverable.class);
+    static Logger log = Logger.getLogger(SimTrader.class);
 
     static Connection con = null;
     public String subject;
@@ -42,6 +44,8 @@ public class SimTradeObserverable extends Observable {
     static private boolean hasSentMail = false;
     static private boolean needSentMail = false;
     static private boolean useDftAcnt = true;
+    static List<ITradeStrategy> strategies = new ArrayList<ITradeStrategy>();
+    static ITradeStrategy cur_stra = null;
 
     public String getSubject() {
         return subject;
@@ -55,8 +59,9 @@ public class SimTradeObserverable extends Observable {
         return hasSentMail;
     }
 
-    public SimTradeObserverable() {
+    public SimTrader() {
         this.addObserver(StockObserver.globalObs);
+        strategies.add(new TSIncFast());
     }
 
     static public void main(String[] args) {
@@ -67,18 +72,24 @@ public class SimTradeObserverable extends Observable {
         
         SimStockDriver.loadStocks();
         StockObserverable.stocks = SimStockDriver.simstocks;
-        SimTradeObserverable ppo = new SimTradeObserverable();
+        SimTrader ppo = new SimTrader();
         
         if (!SimStockDriver.initData()) {
             log.info("can not init SimStockDriver...");
             return;
         }
-        needSentMail = false;
-        int StepCnt = 0;
-        log.info("Now start simulate trading...");
-        while (SimStockDriver.step()) {
-            log.info("Simulate step:" + (++StepCnt));
-            ppo.update();
+        
+        for (ITradeStrategy cs : strategies) {
+            
+            cur_stra = cs;
+            needSentMail = false;
+            int StepCnt = 0;
+            log.info("Now start simulate trading...");
+            while (SimStockDriver.step()) {
+                log.info("Simulate step:" + (++StepCnt));
+                ppo.update();
+            }
+            SimStockDriver.startOver();
         }
         
         SimStockDriver.finishStep();
@@ -127,7 +138,7 @@ public class SimTradeObserverable extends Observable {
         }
         for (String stock : StockObserverable.stocks.keySet()) {
             Stock s = StockObserverable.stocks.get(stock);
-            if (s.isGoodCandidateForBuy()) {
+            if (cur_stra.isGoodStockToSelect(s) && cur_stra.isGoodPointtoBuy(s)) {
                 for(CashAcnt a: Acnts) {
                     if (a.buyStock(s)) {
                         a.calProfit();
@@ -154,7 +165,7 @@ public class SimTradeObserverable extends Observable {
         }
         for (String stock : StockObserverable.stocks.keySet()) {
             Stock s = StockObserverable.stocks.get(stock);
-            if (s.isGoodCandidateForSell()) {
+            if (cur_stra.isGoodPointtoSell(s)) {
                 for(CashAcnt a: Acnts) {
                     if (a.sellStock(s)) {
                         a.calProfit();
