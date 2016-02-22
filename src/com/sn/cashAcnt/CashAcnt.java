@@ -153,7 +153,7 @@ public class CashAcnt {
                     + s.getID() + "',"
                     + s.getCur_pri()*buyMnt + ","
                     + buyMnt + ","
-                    + s.getCur_pri() + ", sysdate)";
+                    + s.getCur_pri() + ",'" + s.getDl_dt() + "')";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -170,7 +170,7 @@ public class CashAcnt {
                 + seqnum + ","
                 + s.getCur_pri() + ", "
                 + buyMnt
-                + ", sysdate, 1)";
+                + ", '" + s.getDl_dt() + "', 1)";
             log.info(sql);
             stm.execute(sql);
             
@@ -233,7 +233,7 @@ public class CashAcnt {
                 + seqnum + ","
                 + s.getCur_pri() + ", "
                 + sellableAmt
-                + ", sysdate, 0)";
+                + ", '" + s.getDl_dt() + "', 0)";
             log.info(sql);
             stm.execute(sql);
             

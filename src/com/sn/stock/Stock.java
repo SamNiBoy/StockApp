@@ -1,6 +1,7 @@
 package com.sn.stock;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -61,6 +62,7 @@ public class Stock implements Comparable<Stock>{
     private boolean pre_detQty_plused = false; //true if detQty increased sharply.
     private double cur_pri;
     private double dlmnynum;
+    private Date dl_dt;
     private long cur_qty;
     private long gz_flg;
     private long keepLostDays;
@@ -89,7 +91,14 @@ public class Stock implements Comparable<Stock>{
         }
     }
     
-    
+    public Date getDl_dt() {
+        return dl_dt;
+    }
+
+    public void setDl_dt(Date dl_dt) {
+        this.dl_dt = dl_dt;
+    }
+
     public double getDlmnynum() {
         return dlmnynum;
     }
@@ -349,6 +358,7 @@ public class Stock implements Comparable<Stock>{
     private List<Long> dl_stk_num_lst = new ArrayList<Long>();
     private List<Double> dl_mny_num_lst = new ArrayList<Double>();
     private List<Double> pctToCls_lst = new ArrayList<Double>();
+    private List<Date> dl_dt_lst = new ArrayList<Date>();
     
     public boolean refreshData(ResultSet stkDat2set) {
         ResultSet rs = stkDat2set;
@@ -362,10 +372,12 @@ public class Stock implements Comparable<Stock>{
                 pct = (cur_pri - rs.getDouble("td_opn_pri"))/ rs.getDouble("td_opn_pri");
                 pctToCls = (cur_pri - rs.getDouble("yt_cls_pri"))/ rs.getDouble("yt_cls_pri");
                 dlmnynum = rs.getDouble("dl_mny_num");
+                dl_dt = rs.getDate("ft_dt");
                 cur_pri_lst.add(cur_pri);
                 dl_stk_num_lst.add(cur_qty);
                 dl_mny_num_lst.add(dlmnynum);
                 pctToCls_lst.add(pctToCls);
+                dl_dt_lst.add(dl_dt);
                 return true;
             }
         }

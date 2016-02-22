@@ -74,13 +74,16 @@ public class SimTradeObserverable extends Observable {
             return;
         }
         needSentMail = false;
-        
+        int StepCnt = 0;
+        log.info("Now start simulate trading...");
         while (SimStockDriver.step()) {
+            log.info("Simulate step:" + (++StepCnt));
             ppo.update();
         }
         
         SimStockDriver.finishStep();
-        
+        log.info("Now end simulate trading.");
+
         if (needSentMail) {
             ppo.setChanged();
             ppo.notifyObservers(ppo);
