@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -109,16 +110,6 @@ public class CashAcnt implements ICashAccount{
     public void setDftAcnt(boolean dftAcnt) {
         this.dftAcnt = dftAcnt;
     }
-    
-    public void printAcntInfo() {
-        log.info("actId:" + actId + "\n initMny:" + initMny + "\n usedMny:" + usedMny + "\n pftMny:" + pftMny
-                + "\n splitNum:" + splitNum + "\n max_useable_pct:" + maxUsePct
-                + "\n dftAcnt:" + dftAcnt);
-    }
-    
-
-    
-
     
     public int getSellableAmt(String stkId, String sellDt) {
         Connection con = DBManager.getConnection();
@@ -343,5 +334,69 @@ public class CashAcnt implements ICashAccount{
         
         return totMsg;
         
+    }
+    
+    public void printAcntInfo() {
+        DecimalFormat df = new DecimalFormat("##.##");
+        String pftPct = df.format((pftMny - usedMny) / usedMny * 100);
+        String profit = df.format(pftMny - usedMny);
+        log.info("##################################################################################################");
+        log.info("|AccountId\t|InitMny\t|UsedMny\t|PftMny\t\t|SplitNum\t|MaxUsePct\t|DftAcnt\t|PP\t|Profit|");
+        log.info("|" + actId + "\t|" + initMny + "\t|" + usedMny + "\t\t|" + pftMny + "\t\t|" + splitNum + "\t\t|" + maxUsePct + "\t\t|" + dftAcnt + "\t\t|" + pftPct + "%\t|" + profit);
+        log.info("##################################################################################################");
+    }
+    
+    @Override
+    public void printTradeInfo() {
+        // TODO Auto-generated method stub
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        String sql = null;
+        try {
+            stm = con.createStatement();
+            sql = "select acntId," +
+            		"     stkId," +
+            		"    round(pft_mny, 2) pft_mny, " +
+            		"    in_hand_qty, " +
+            		"    round(pft_price, 2) pft_price, " +
+            		"    to_char(add_dt, 'yyyy-mm-dd hh24:mi:ss') add_dt " +
+            		"from TradeHdr where acntId = '" + actId + "' order by stkid ";
+            //log.info(sql);
+            ResultSet rs = stm.executeQuery(sql);
+            log.info("=======================================================================================");
+            log.info("|AccountID\t|StockID\t|Pft_mny\t|InHandQty\t|PftPrice\t|TranDt|");
+            while (rs.next()) {
+                log.info("|" + rs.getString("acntId") + "\t|" +
+                        rs.getString("stkId") + "\t\t|" +
+                        rs.getString("pft_mny") + "\t\t|" +
+                        rs.getInt("in_hand_qty") + "\t\t|" +
+                        rs.getDouble("pft_price") + "\t\t|" +
+                        rs.getString("add_dt") + "|");
+                Statement stmdtl = con.createStatement();
+                String sqldtl = "select stkid, seqnum, price, amount, to_char(dl_dt, 'yyyy-mm-dd hh24:mi:ss') dl_dt, buy_flg " +
+                		        "  from tradedtl where stkid ='" + rs.getString("stkId") + "'";
+                //log.info(sql);
+                
+                ResultSet rsdtl = stmdtl.executeQuery(sqldtl);
+                log.info("\tStockID\tSeqnum\tPrice\tAmount\tBuy/Sell\tTranDt");
+                while (rsdtl.next()) {
+                    log.info("\t" + rsdtl.getString("stkid") + "\t" +
+                             rsdtl.getInt("seqnum") + "\t" +
+                             rsdtl.getDouble("price") + "\t" +
+                             rsdtl.getInt("amount") + "\t" +
+                             (rsdtl.getInt("buy_flg") > 0 ? "B":"S") + "\t\t" +
+                             rsdtl.getString("dl_dt") + "\t");
+                }
+                rsdtl.close();
+                stmdtl.close();
+            }
+            log.info("=======================================================================================");
+            rs.close();
+            stm.close();
+            con.close();
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
     }
 }

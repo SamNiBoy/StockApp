@@ -215,6 +215,8 @@ public class TradeStrategyImp implements ITradeStrategy {
     @Override
     public boolean reportTradeStat(Observable obs) {
         // TODO Auto-generated method stub
+        cash_account.printAcntInfo();
+        cash_account.printTradeInfo();
         return false;
     }
 }

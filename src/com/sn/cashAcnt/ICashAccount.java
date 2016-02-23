@@ -30,6 +30,7 @@ public interface ICashAccount {
     public int getSplitNum();
     public boolean isDftAcnt();
     public void printAcntInfo();
+    public void printTradeInfo();
     public int getSellableAmt(String stkId, String sellDt);
     public int getUnSellableAmt(String stkId, String sellDt);
     public boolean calProfit(String ForDt);

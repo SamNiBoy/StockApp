@@ -52,7 +52,7 @@ public class SimTrader extends Observable {
         
         SimStockDriver.addStkToSim("002397");
         SimStockDriver.addStkToSim("600503");
-        SimStockDriver.setStartEndSimDt("2016-02-18", "2016-02-19");
+        SimStockDriver.setStartEndSimDt("2016-02-17", "2016-02-19");
         
         SimStockDriver.loadStocks();
         StockObserverable.stocks = SimStockDriver.simstocks;
@@ -71,6 +71,7 @@ public class SimTrader extends Observable {
                 log.info("Simulate step:" + (++StepCnt));
                 st.run();
             }
+            strategy.reportTradeStat(st);
             SimStockDriver.startOver();
         }
         

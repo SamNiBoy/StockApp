@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.sim.SimTradeObserverable;
+import com.sn.sim.SimTrader;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.mail.reporter.StockObserver;
 import com.sn.work.WorkManager;
