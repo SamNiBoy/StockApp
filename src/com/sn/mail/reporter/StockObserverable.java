@@ -5,14 +5,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.log4j.Logger;
 
 import javax.mail.MessagingException;
@@ -26,16 +30,16 @@ import com.sn.reporter.WCMsgSender;
 import com.sn.stock.Stock;
 import com.sn.stock.Stock.Follower;
 
-public class GzStockObserverable extends Observable {
+public class StockObserverable extends Observable {
 
-    static Logger log = Logger.getLogger(GzStockObserverable.class);
+    static Logger log = Logger.getLogger(StockObserverable.class);
 
     static Connection con = DBManager.getConnection();
     public String subject;
     public String content;
     private boolean hasSentMail = false;
     private boolean needSentMail = false;
-    static private Map<String, Stock> stocks = null;
+    static public ConcurrentHashMap<String, Stock> stocks = null;
 
     public String getSubject() {
         return subject;
@@ -49,12 +53,12 @@ public class GzStockObserverable extends Observable {
         return hasSentMail;
     }
 
-    public GzStockObserverable() {
-        this.addObserver(StockPriceObserver.globalObs);
+    public StockObserverable() {
+        this.addObserver(StockObserver.globalObs);
     }
 
     static public void main(String[] args) {
-        GzStockObserverable ppo = new GzStockObserverable();
+        StockObserverable ppo = new StockObserverable();
         ppo.update();
     }
 
@@ -70,8 +74,12 @@ public class GzStockObserverable extends Observable {
         index = getIndex();
         fmsg = getFollowers();
         //stockPlused = getDetQtyPlused();
+        String returnStr = "";  
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");  
+        Date date = new Date();  
+        returnStr = f.format(date);
         subject = content = "";
-        subject = "News";
+        subject = "News " + returnStr;
         content = index + gzSummary + "<br/>" + otherStockSummary + "<br/>" + fmsg + "<br/>";
         if (needSentMail) {
             this.setChanged();
@@ -254,11 +262,7 @@ public class GzStockObserverable extends Observable {
             for (Stock p : sl) {
                 p.setRk(rk);
                 rk++;
-                // only return stock with price <= 20
-                if ((p.getCur_pri() <= 50 && p.getPrePct() < -0.05) ||
-                     p.getGz_flg() > 0 ||
-                     (p.getCur_pri() <= 50 && p.getKeepLostDays() > 0 && p.getPrePct() < -0.01) ||
-                     p.isPre_detQty_plused()) {
+                if (p.isGoodCandidateForBuy()) {
                     summary += p.getTableRow();
                 }
             }
@@ -489,12 +493,12 @@ public class GzStockObserverable extends Observable {
         return index;
     }
     
-    private boolean loadStocks() {
+    static public boolean loadStocks() {
 
         Statement stm = null;
         ResultSet rs = null;
         
-        stocks = new HashMap<String, Stock>();
+        stocks = new ConcurrentHashMap<String, Stock>();
         Stock s = null;
         int Total = 0, cnt = 0;
         try {
@@ -508,6 +512,7 @@ public class GzStockObserverable extends Observable {
                 id = rs.getString("id");
                 name = rs.getString("name");
                 s = new Stock(id, name, rs.getLong("gz_flg"));
+                s.setCur_pri(7.8);
                 s.constructFollowers();
                 stocks.put(id, s);
                 cnt++;

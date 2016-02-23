@@ -66,6 +66,29 @@ public class Stock implements Comparable<Stock>{
     private long keepLostDays;
     private List<Integer> rk = new ArrayList<Integer>();
     
+    public boolean isGoodCandidateForBuy() {
+        if ((getCur_pri() <= 50 && getPrePct() < -0.05) ||
+             getGz_flg() > 0 ||
+             (getCur_pri() <= 50 && getKeepLostDays() > 0 && getPrePct() < -0.01) ||
+             isPre_detQty_plused()) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
+    public boolean isGoodCandidateForSell() {
+        if ((getCur_pri() <= 50 && getPrePct() < 0.5) ||
+             (getCur_pri() <= 50 && getKeepLostDays() > 0 && getPrePct() < -0.01) ||
+             isPre_detQty_plused()) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
     
     public double getDlmnynum() {
         return dlmnynum;
@@ -186,6 +209,11 @@ public class Stock implements Comparable<Stock>{
         String dsc = "";
         dsc += "ID:" + ID + "\n";
         dsc += "Name:" + Name + "\n";
+        dsc += "cur_pri:" + cur_pri + "\n";
+        dsc += "keepLostDays:" + keepLostDays + "\n";
+        dsc += "gz_flg:" + gz_flg + "\n";
+        dsc += "incPriCnt:" + incPriCnt + "\n";
+        dsc += "desPriCnt:" + desPriCnt + "\n";
         return dsc;
         
     }
@@ -315,6 +343,36 @@ public class Stock implements Comparable<Stock>{
 
     public void setFollowers(Map<String, List<Follower>> followers) {
         this.followers = followers;
+    }
+    
+    private List<Double> cur_pri_lst = new ArrayList<Double>();
+    private List<Long> dl_stk_num_lst = new ArrayList<Long>();
+    private List<Double> dl_mny_num_lst = new ArrayList<Double>();
+    private List<Double> pctToCls_lst = new ArrayList<Double>();
+    
+    public boolean refreshData(ResultSet stkDat2set) {
+        ResultSet rs = stkDat2set;
+        try {
+            if (rs == null || !rs.next()) {
+                return false;
+            }
+            if (rs.next()) {
+                cur_pri = rs.getDouble("cur_pri");
+                cur_qty = rs.getLong("dl_stk_num");
+                pct = (cur_pri - rs.getDouble("td_opn_pri"))/ rs.getDouble("td_opn_pri");
+                pctToCls = (cur_pri - rs.getDouble("yt_cls_pri"))/ rs.getDouble("yt_cls_pri");
+                dlmnynum = rs.getDouble("dl_mny_num");
+                cur_pri_lst.add(cur_pri);
+                dl_stk_num_lst.add(cur_qty);
+                dl_mny_num_lst.add(dlmnynum);
+                pctToCls_lst.add(pctToCls);
+                return true;
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public class Follower{

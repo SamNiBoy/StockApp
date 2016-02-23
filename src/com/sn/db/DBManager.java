@@ -4,6 +4,7 @@ import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.log4j.Logger;
@@ -105,5 +106,40 @@ public class DBManager {
         ds.setMinPoolSize(20);
         ds.setInitialPoolSize(20);
         ds.setMaxStatements(180);
+    }
+    
+    static public ResultSet executeSelect(String sql) {
+        Connection con = getConnection();
+        ResultSet rs = null;
+        log.info("Try executing:" + sql);
+        try {
+            Statement stm = con.createStatement();
+            rs = stm.executeQuery(sql);
+            stm.close();
+            con.close();
+            stm = null;
+            con = null;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return rs;
+    }
+    static public boolean executeUpdate(String sql) {
+        Connection con = getConnection();
+        boolean result = false;
+        log.info("Try executing:" + sql);
+        try {
+            Statement stm = con.createStatement();
+            result = stm.execute(sql);
+            stm.close();
+            con.close();
+            stm = null;
+            con = null;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 }

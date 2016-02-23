@@ -14,8 +14,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.mail.reporter.GzStockObserverable;
-import com.sn.mail.reporter.StockPriceObserver;
+import com.sn.sim.SimTradeObserverable;
+import com.sn.mail.reporter.StockObserverable;
+import com.sn.mail.reporter.StockObserver;
 import com.sn.work.WorkManager;
 import com.sn.work.fetcher.FetchStockData;
 import com.sn.work.itf.IWork;
@@ -76,9 +77,13 @@ public class MonitorStockData implements IWork {
                     e.printStackTrace();
                 }
             }
-            GzStockObserverable spo = new GzStockObserverable();
+            StockObserverable spo = new StockObserverable();
             spo.update();
-            if (spo.hasSentMail()) {
+            
+            SimTradeObserverable sto = new SimTradeObserverable();
+            sto.update();
+
+            if (spo.hasSentMail() || sto.hasSentMail()) {
                 res = "Already sent mail to your mailbox!";
             }
             else {

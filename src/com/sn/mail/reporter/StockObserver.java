@@ -14,21 +14,21 @@ import com.sn.mail.reporter.MailSenderType;
 import com.sn.mail.reporter.MailSenderFactory;
 import com.sn.mail.reporter.SimpleMailSender;
 
-public class StockPriceObserver implements Observer {
-    static Logger log = Logger.getLogger(StockPriceObserver.class);
-    static public StockPriceObserver globalObs = new StockPriceObserver();
+public class StockObserver implements Observer {
+    static Logger log = Logger.getLogger(StockObserver.class);
+    static public StockObserver globalObs = new StockObserver();
 
     static public void main(String[] args) {
-        StockPriceObserver ppo = new StockPriceObserver();
-        GzStockObserverable gso = new GzStockObserverable();
+        StockObserver ppo = new StockObserver();
+        StockObserverable gso = new StockObserverable();
         gso.update();
         ppo.update(gso, null);
     }
 
     @Override
     public void update(Observable obj, Object arg) {
-        if (obj instanceof GzStockObserverable) {
-            GzStockObserverable gso = (GzStockObserverable) obj;
+        if (obj instanceof StockObserverable) {
+            StockObserverable gso = (StockObserverable) obj;
             // 发送邮件
             SimpleMailSender sms = MailSenderFactory.getSender();
             List<String> recipients = new ArrayList<String>();

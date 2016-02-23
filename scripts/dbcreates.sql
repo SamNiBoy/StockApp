@@ -151,6 +151,7 @@ dt varchar2(10 byte) not null,
 yt_cls_pri number not null,
 CONSTRAINT "stkClsPri_PK" PRIMARY KEY (id, dt)
 );
+
 /* Create stkClsPri data*/
 insert into stkClsPri (select id, 
         	   to_char(dl_dt, 'yyyy-mm-dd'),  
@@ -158,7 +159,36 @@ insert into stkClsPri (select id,
         	  from stkdat2  
         	   where not exists (select 'x' from stkClsPri scp where scp.id = stkdat2.id and to_char(stkdat2.dl_dt,'yyyy-mm-dd') = scp.dt) 
               group by id,  
-              to_char(dl_dt,'yyyy-mm-dd')
+              to_char(dl_dt,'yyyy-mm-dd'));
+
+create table stkDlyInfo(
+id varchar2(6 byte) not null,
+dt varchar2(10 byte) not null,
+yt_cls_pri number not null,
+td_cls_pri number not null,
+td_opn_pri number not null,
+td_hst_pri number not null,
+td_lst_pri number not null,
+dl_stk_num number not null,
+dl_mny_num number not null,
+CONSTRAINT "stkDlyInfo" PRIMARY KEY (id, dt)
+);
+/*create stkDlyInfo data*/
+insert into stkDlyInfo (select id, 
+        	                     to_char(dl_dt, 'yyyy-mm-dd'),  
+        	                     yt_cls_pri,
+        	                     cur_pri,
+                               td_opn_pri,
+                               td_hst_pri,
+                               td_lst_pri,
+                               dl_stk_num,
+                               dl_mny_num
+        	   from stkdat2  
+        	   where not exists (select 'x' from stkDlyInfo scp where scp.id = stkdat2.id and to_char(stkdat2.dl_dt,'yyyy-mm-dd') = scp.dt) 
+               and not exists (select 'x' from stkdat2 s2 where s2.id = stkdat2.id  and s2.ft_id > stkdat2.ft_id and to_char(s2.dl_dt,'yyyy-mm-dd') = to_char(stkdat2.dl_dt,'yyyy-mm-dd'))
+             ); 
+
+
 
 /* get day highest stock*/
 select lst.id from stkdat2 fst, stkdat2 lst
@@ -249,5 +279,38 @@ create view curpri_df2_vw as
           where t3.id  = t1.id
             and t3.ft_id > t1.ft_id
             and t3.ft_id < t2.ft_id
-         ) 
+         )
   );
+  
+create table CashAcnt(
+acntId varchar2(20 byte) not null primary key,
+init_mny number not null,
+used_mny number not null,
+pft_mny number,
+split_num number not null,
+max_useable_pct number not null,
+dft_acnt_flg number not null,
+add_dt date not null
+);
+
+insert into cashacnt values('testCashAct001',20000,0,0,4,0.5,1,sysdate);
+  
+create table TradeHdr(
+acntId varchar2(20 byte) not null,
+stkId varchar2(6 byte) not null,
+pft_mny number not null,
+add_dt date not null,
+CONSTRAINT "TradeHdr_PK" PRIMARY KEY (acntId, stkId)
+);
+
+create table TradeDtl(
+acntId varchar2(20 byte) not null,
+stkId varchar2(6 byte) not null,
+seqnum number not null,
+price number not null,
+amount number not null,
+dl_dt date not null,
+buy_flg number not null,
+CONSTRAINT "TradeDtl_PK" PRIMARY KEY (acntId, stkId, seqnum)
+);
+
