@@ -219,4 +219,42 @@ public class TradeStrategyImp implements ITradeStrategy {
         cash_account.printTradeInfo();
         return false;
     }
+
+    @Override
+    public boolean hasStockInHand(Stock s) {
+        // TODO Auto-generated method stub
+
+        log.info("now check if stock " + s.getName()
+                + " in hand with price:" + s.getCur_pri()
+                + " against CashAcount: " + cash_account.getActId());
+
+        String dt = s.getDl_dt().toString().substring(0, 10);
+        Connection con = DBManager.getConnection();
+        boolean hasStockInHand = false;
+        try {
+            String sql = "select 'hasStockInHand' " +
+            "       from TradeHdr h " +
+            "      where h.stkId = '" + s.getID()+ "'" +
+            "        and h.acntId = '" + cash_account.getActId() + "'";
+    
+            log.info(sql);
+            Statement stm = con.createStatement();
+            ResultSet rs = stm.executeQuery(sql);
+            if (!rs.next()) {
+                hasStockInHand = false;
+            }
+            else {
+                hasStockInHand = true;
+            }
+            rs.close();
+            stm.close();
+            con.close();
+
+            return hasStockInHand;
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

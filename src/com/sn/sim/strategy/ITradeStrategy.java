@@ -21,6 +21,7 @@ public interface ITradeStrategy {
     public boolean sellStock(Stock s);
     public boolean buyStock(Stock s);
     public boolean calProfit(String ForDt);
+    public boolean hasStockInHand(Stock s);
     
     public boolean reportTradeStat(Observable obs);
 }

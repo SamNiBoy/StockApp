@@ -50,9 +50,9 @@ public class SimTrader extends Observable {
 
     static public void main(String[] args) throws Exception {
         
-        SimStockDriver.addStkToSim("002397");
-        SimStockDriver.addStkToSim("600503");
-        SimStockDriver.setStartEndSimDt("2016-02-17", "2016-02-19");
+        SimStockDriver.addStkToSim("000727");
+        SimStockDriver.addStkToSim("000973");
+        SimStockDriver.setStartEndSimDt("2016-02-25", "2016-02-25");
         
         SimStockDriver.loadStocks();
         StockObserverable.stocks = SimStockDriver.simstocks;
@@ -98,10 +98,12 @@ public class SimTrader extends Observable {
             Stock s = StockObserverable.stocks.get(stock);
             if (strategy.isGoodStockToSelect(s) && strategy.isGoodPointtoBuy(s)) {
                 if (strategy.buyStock(s)) {
-                    String dt = s.getDl_dt().toString().substring(0,10);
-                    strategy.calProfit(dt);
                     hasBoughtStock = true;
                 }
+            }
+            if (strategy.hasStockInHand(s)) {
+                String dt = s.getDl_dt().toString().substring(0,10);
+                strategy.calProfit(dt);
             }
         }
         log.info("end buyStock...");
@@ -117,10 +119,12 @@ public class SimTrader extends Observable {
             Stock s = StockObserverable.stocks.get(stock);
             if (strategy.isGoodPointtoSell(s)) {
                 if (strategy.sellStock(s)) {
-                    String dt = s.getDl_dt().toString().substring(0,10);
-                    strategy.calProfit(dt);
                     hasSoldStock = true;
                 }
+            }
+            if (strategy.hasStockInHand(s)) {
+                String dt = s.getDl_dt().toString().substring(0,10);
+                strategy.calProfit(dt);
             }
         }
         log.info("end sellStock...");

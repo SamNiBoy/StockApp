@@ -341,8 +341,8 @@ public class CashAcnt implements ICashAccount{
         String pftPct = df.format((pftMny - usedMny) / usedMny * 100);
         String profit = df.format(pftMny - usedMny);
         log.info("##################################################################################################");
-        log.info("|AccountId\t|InitMny\t|UsedMny\t|PftMny\t\t|SplitNum\t|MaxUsePct\t|DftAcnt\t|PP\t|Profit|");
-        log.info("|" + actId + "\t|" + initMny + "\t|" + usedMny + "\t\t|" + pftMny + "\t\t|" + splitNum + "\t\t|" + maxUsePct + "\t\t|" + dftAcnt + "\t\t|" + pftPct + "%\t|" + profit);
+        log.info("|AccountId\t|InitMny\t|UsedMny\t|PftMny\t|SplitNum\t|MaxUsePct\t|DftAcnt\t|PP\t|Profit|");
+        log.info("|" + actId + "\t|" + df.format(initMny) + "\t\t|" + df.format(usedMny) + "\t\t|" + df.format(pftMny) + "\t|" + splitNum + "\t\t|" + df.format(maxUsePct) + "\t\t|" + dftAcnt + "\t\t|" + pftPct + "%\t|" + profit + "\t|");
         log.info("##################################################################################################");
     }
     
