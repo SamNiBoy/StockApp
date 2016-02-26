@@ -145,19 +145,25 @@ dl_dt date not null
 );
 create index stkdat2_id_dldt_idx on stkdat2 (id, ft_id, dl_dt)
 
-create table stkClsPri(
+create table stkDayPri(
 id varchar2(6 byte) not null,
 dt varchar2(10 byte) not null,
 yt_cls_pri number not null,
-CONSTRAINT "stkClsPri_PK" PRIMARY KEY (id, dt)
+td_opn_pri number not null,
+td_hst_pri number not null,
+td_lst_pri number not null,
+CONSTRAINT "stkDayPri_PK" PRIMARY KEY (id, dt)
 );
 
 /* Create stkClsPri data*/
-insert into stkClsPri (select id, 
+insert into stkDayPri (select id, 
         	   to_char(dl_dt, 'yyyy-mm-dd'),  
-        	  max(yt_cls_pri)  
+        	  max(yt_cls_pri),
+        	  max(td_opn_pri),
+        	  max(td_hst_pri),
+        	  min(td_lst_pri)
         	  from stkdat2  
-        	   where not exists (select 'x' from stkClsPri scp where scp.id = stkdat2.id and to_char(stkdat2.dl_dt,'yyyy-mm-dd') = scp.dt) 
+        	   where not exists (select 'x' from stkDayPri scp where scp.id = stkdat2.id and to_char(stkdat2.dl_dt,'yyyy-mm-dd') = scp.dt) 
               group by id,  
               to_char(dl_dt,'yyyy-mm-dd'));
 
