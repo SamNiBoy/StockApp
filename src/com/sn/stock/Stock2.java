@@ -131,10 +131,47 @@ public class Stock2 implements Comparable<Stock2>{
                 rs.close();
                 stm.close();
                 con.close();
-                PrintStockData();
+                //PrintStockData();
             }
             catch(SQLException e) {
                 e.printStackTrace();
+            }
+            return true;
+        }
+        
+        
+        public boolean injectRawData(StockRawData rsd) {
+            if(rsd != null) {
+                //ft_id_lst.add(rs.getInt("ft_id"));
+                cur_pri_lst.add(rsd.cur_pri);
+                b1_bst_pri_lst.add(rsd.b1_bst_pri);
+                s1_bst_pri_lst.add(rsd.s1_bst_pri);
+                dl_stk_num_lst.add(rsd.dl_stk_num);
+                dl_mny_num_lst.add(rsd.dl_mny_num);
+                b1_num_lst.add(rsd.b1_num);
+                b1_pri_lst.add(rsd.b1_pri);
+                b2_num_lst.add(rsd.b2_num);
+                b2_pri_lst.add(rsd.b2_pri);
+                b3_num_lst.add(rsd.b3_num);
+                b3_pri_lst.add(rsd.b3_pri);
+                b4_num_lst.add(rsd.b4_num);
+                b4_pri_lst.add(rsd.b4_pri);
+                b5_num_lst.add(rsd.b5_num);
+                b5_pri_lst.add(rsd.b5_pri);
+                s1_num_lst.add(rsd.s1_num);
+                s1_pri_lst.add(rsd.s1_pri);
+                s2_num_lst.add(rsd.s2_num);
+                s2_pri_lst.add(rsd.s2_pri);
+                s3_num_lst.add(rsd.s3_num);
+                s3_pri_lst.add(rsd.s3_pri);
+                s4_num_lst.add(rsd.s4_num);
+                s4_pri_lst.add(rsd.s4_pri);
+                s5_num_lst.add(rsd.s5_num);
+                s5_pri_lst.add(rsd.s5_pri);
+                dl_dt_lst.add(Timestamp.valueOf(rsd.dl_dt + " " + rsd.dl_tm));
+            }
+            else {
+                return false;
             }
             return true;
         }
@@ -225,6 +262,82 @@ public class Stock2 implements Comparable<Stock2>{
     public int compareTo(Stock2 arg0) {
         // TODO Auto-generated method stub
         return 0;
+    }
+    
+    public boolean injectData(StockRawData rsd) {
+        return sd.injectRawData(rsd);
+    }
+    
+    public boolean saveData(StockRawData rsd) {
+        
+        String sql = "insert into stkDat (ft_id,"
+            + " id,"
+            + " td_opn_pri,"
+            + " yt_cls_pri,"
+            + " cur_pri,"
+            + " td_hst_pri,"
+            + " td_lst_pri,"
+            + " b1_bst_pri,"
+            + " s1_bst_pri,"
+            + " dl_stk_num,"
+            + " dl_mny_num,"
+            + " b1_num,"
+            + " b1_pri,"
+            + " b2_num,"
+            + " b2_pri,"
+            + " b3_num,"
+            + " b3_pri,"
+            + " b4_num,"
+            + " b4_pri,"
+            + " b5_num,"
+            + " b5_pri,"
+            + " s1_num,"
+            + " s1_pri,"
+            + " s2_num,"
+            + " s2_pri,"
+            + " s3_num,"
+            + " s3_pri,"
+            + " s4_num,"
+            + " s4_pri,"
+            + " s5_num,"
+            + " s5_pri,"
+            + " dl_dt,"
+            + " dl_tm,"
+            + " ft_dt)"
+            + " values (SEQ_STKDAT_PK.nextval," +
+            "'" + rsd.id + "',"
+                + td_opn_pri + ","
+                + yt_cls_pri + ","
+                + cur_pri + ","
+                + td_hst_pri + ","
+                + td_lst_pri + ","
+                + b1_bst_pri + ","
+                + s1_bst_pri + ","
+                + dl_stk + ","
+                + dl_mny + ","
+                + b1_num + ","
+                + b1_pri + ","
+                + b2_num + ","
+                + b2_pri + ","
+                + b3_num + ","
+                + b3_pri + ","
+                + b4_num + ","
+                + b4_pri + ","
+                + b5_num + ","
+                + b5_pri + ","
+                + s1_num + ","
+                + s1_pri + ","
+                + s2_num + ","
+                + s2_pri + ","
+                + s3_num + ","
+                + s3_pri + ","
+                + s4_num + ","
+                + s4_pri + ","
+                + s5_num + ", "
+                + s5_pri + ","
+            + "to_date('" + dl_dt.toString() +" " + dl_tm +"', 'yyyy-mm-dd hh24:mi:ss')" + ", '"
+            + dl_tm + "'," +"sysdate)";
+        return true;
     }
     
     public void printStockInfo() {
