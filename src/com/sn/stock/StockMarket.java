@@ -38,11 +38,7 @@ public class StockMarket{
     private static double totDecDlMny = 0.0;
     private static double totEqlDlMny = 0.0;
     private static double Degree = 0.0;
-    static
-    {
-        loadStocks();
-        loadGzStocks();
-    }
+    
     /**
      * @param args
      */
@@ -128,6 +124,9 @@ public class StockMarket{
     
     
     public static ConcurrentHashMap<String, Stock2> getStocks() {
+        if (stocks == null) {
+            loadStocks();
+        }
         return stocks;
     }
 
@@ -136,6 +135,9 @@ public class StockMarket{
     }
 
     public static ConcurrentHashMap<String, Stock2> getGzstocks() {
+        if (gzstocks == null) {
+            loadGzStocks();
+        }
         return gzstocks;
     }
 

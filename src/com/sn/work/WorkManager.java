@@ -106,6 +106,18 @@ public class WorkManager {
         }
         return false;
     }
+    
+    public static boolean canSubmitWork(String workName) {
+        cleanupDoneWork();
+        ScheduledFuture<?> sf = SFM.get(workName);
+
+        log.info("check if work:" + workName + " can be submited!");
+        if (sf != null)
+        {
+            return false;
+        }
+        return true;
+    }
 
 
 

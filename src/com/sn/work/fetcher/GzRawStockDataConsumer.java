@@ -24,7 +24,7 @@ import com.sn.work.itf.IWork;
 
 public class GzRawStockDataConsumer implements IWork {
 
-    public RawStockDataQueue dq = new RawStockDataQueue(5000);
+    public RawStockDataQueue rdq = new RawStockDataQueue(5000);
     /*
      * Initial delay before executing work.
      */
@@ -37,7 +37,9 @@ public class GzRawStockDataConsumer implements IWork {
 
     TimeUnit tu = TimeUnit.MILLISECONDS;
 
-    static int maxLstNum = 50;
+    int maxLstNum = 50;
+    
+    private volatile boolean fetcher_is_exit = false;
 
     static Logger log = Logger.getLogger(GzRawStockDataConsumer.class);
 
@@ -55,15 +57,34 @@ public class GzRawStockDataConsumer implements IWork {
         delayBeforNxtStart = dbn;
     }
 
+    
+    public boolean isFetcher_is_exit() {
+        return fetcher_is_exit;
+    }
+
+    public void setFetcher_is_exit(boolean fetcherIsExit) {
+        fetcher_is_exit = fetcherIsExit;
+    }
+
     public void run() {
-        ArrayBlockingQueue<StockRawData> dd = dq.getDatque();
+        ArrayBlockingQueue<StockRawData> dd = rdq.getDatque();
+        ConcurrentHashMap<String, Stock2> gzs = StockMarket
+        .getGzstocks();
         try {
             while (true) {
                 StockRawData srd = dd.take();
-                ConcurrentHashMap<String, Stock2> gzs = StockMarket
-                        .getGzstocks();
+                
+                if (srd == null) {
+                    log.info("GzRawStockDataConsumer can not get raw data to consume, continue");
+                    if (fetcher_is_exit) {
+                        log.info("GzRawStockDataFetch is exited, now exit consumer.");
+                        break;
+                    }
+                    continue;
+                }
                 Stock2 s = gzs.get(srd.id);
                 if (s != null) {
+                    log.info("Now consuming StockRawData " + srd.id + " Name" + srd.name);
                     s.injectData(srd);
                 }
             }
@@ -71,6 +92,15 @@ public class GzRawStockDataConsumer implements IWork {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    
+    public RawStockDataQueue getRdq() {
+        return rdq;
+    }
+
+    public void setRdq(RawStockDataQueue dq) {
+        this.rdq = dq;
     }
 
     public String getWorkResult() {

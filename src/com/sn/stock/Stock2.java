@@ -268,8 +268,11 @@ public class Stock2 implements Comparable<Stock2>{
         return sd.injectRawData(rsd);
     }
     
-    public boolean saveData(StockRawData rsd) {
+    public boolean saveData(StockRawData rsd, Connection con) {
         
+        if (rsd == null || con == null) {
+            return false;
+        }
         String sql = "insert into stkDat (ft_id,"
             + " id,"
             + " td_opn_pri,"
@@ -306,37 +309,46 @@ public class Stock2 implements Comparable<Stock2>{
             + " ft_dt)"
             + " values (SEQ_STKDAT_PK.nextval," +
             "'" + rsd.id + "',"
-                + td_opn_pri + ","
-                + yt_cls_pri + ","
-                + cur_pri + ","
-                + td_hst_pri + ","
-                + td_lst_pri + ","
-                + b1_bst_pri + ","
-                + s1_bst_pri + ","
-                + dl_stk + ","
-                + dl_mny + ","
-                + b1_num + ","
-                + b1_pri + ","
-                + b2_num + ","
-                + b2_pri + ","
-                + b3_num + ","
-                + b3_pri + ","
-                + b4_num + ","
-                + b4_pri + ","
-                + b5_num + ","
-                + b5_pri + ","
-                + s1_num + ","
-                + s1_pri + ","
-                + s2_num + ","
-                + s2_pri + ","
-                + s3_num + ","
-                + s3_pri + ","
-                + s4_num + ","
-                + s4_pri + ","
-                + s5_num + ", "
-                + s5_pri + ","
-            + "to_date('" + dl_dt.toString() +" " + dl_tm +"', 'yyyy-mm-dd hh24:mi:ss')" + ", '"
-            + dl_tm + "'," +"sysdate)";
+                + rsd.td_opn_pri + ","
+                + rsd.yt_cls_pri + ","
+                + rsd.cur_pri + ","
+                + rsd.td_hst_pri + ","
+                + rsd.td_lst_pri + ","
+                + rsd.b1_bst_pri + ","
+                + rsd.s1_bst_pri + ","
+                + rsd.dl_stk_num + ","
+                + rsd.dl_mny_num + ","
+                + rsd.b1_num + ","
+                + rsd.b1_pri + ","
+                + rsd.b2_num + ","
+                + rsd.b2_pri + ","
+                + rsd.b3_num + ","
+                + rsd.b3_pri + ","
+                + rsd.b4_num + ","
+                + rsd.b4_pri + ","
+                + rsd.b5_num + ","
+                + rsd.b5_pri + ","
+                + rsd.s1_num + ","
+                + rsd.s1_pri + ","
+                + rsd.s2_num + ","
+                + rsd.s2_pri + ","
+                + rsd.s3_num + ","
+                + rsd.s3_pri + ","
+                + rsd.s4_num + ","
+                + rsd.s4_pri + ","
+                + rsd.s5_num + ", "
+                + rsd.s5_pri + ","
+            + "to_date('" + rsd.dl_dt.toString() +" " + rsd.dl_tm +"', 'yyyy-mm-dd hh24:mi:ss')" + ", '"
+            + rsd.dl_tm + "'," +"sysdate)";
+        
+        log.info(sql);
+        try {
+            Statement stm = con.createStatement();
+            stm.execute(sql);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
         return true;
     }
     

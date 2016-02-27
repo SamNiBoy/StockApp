@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.work.WorkManager;
 import com.sn.work.fetcher.FetchStockData;
+import com.sn.work.fetcher.GzStockDataFetcher;
 import com.sn.work.monitor.MonitorStockData;
 import com.sn.work.output.CalFetchStat;
 import com.sn.work.output.GzStock;
@@ -49,6 +50,7 @@ public class WeChatReporter extends BaseWCReporter{
                 + "3.停止获取股票数据.\n" + "4.报告获取数据情况.\n" 
                 + "5.监控关注股票\n" + "6.停止监控关注股票\n"
                 + "7.关机\n"
+                + "8.模拟买卖关注股票\n" + "9.停止模拟买卖关注股票\n"
                 + "gzxxxxxx 关注股票.\n" + " tzxxxxxx 停止关注股票.\n";
 
         String msg = createWCMsg();
@@ -119,6 +121,14 @@ public class WeChatReporter extends BaseWCReporter{
                 else {
                     resContent = sdp.getWorkResult();
                 }
+            }
+            else if (content.equals("8")) {
+                GzStockDataFetcher.start();
+                resContent = GzStockDataFetcher.getResMsg();
+            }
+            else if (content.equals("9")) {
+                GzStockDataFetcher.stop();
+                resContent = GzStockDataFetcher.getResMsg();
             }
             else if (content.length() > 2 && content.substring(0,2).equalsIgnoreCase("gz")) {
                 String stk = content.substring(2, 8);

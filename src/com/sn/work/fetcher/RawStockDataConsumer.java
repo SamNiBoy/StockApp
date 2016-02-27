@@ -65,7 +65,7 @@ public class RawStockDataConsumer implements IWork {
                         .getStocks();
                 Stock2 s = gzs.get(srd.id);
                 if (s != null) {
-                    s.injectData(srd);
+                    s.saveData(srd, con);
                 }
             }
         } catch (InterruptedException e) {

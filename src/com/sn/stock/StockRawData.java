@@ -67,7 +67,7 @@ public class StockRawData{
     public double s1_bst_pri = 0;
     public String dl_tm = null;
 
-    static StockRawData createStockData(String stkDat) {
+    static public StockRawData createStockData(String stkDat) {
         String dts[] = stkDat.split(",");
 
         if (dts.length < 32)
