@@ -95,7 +95,7 @@ public class Stock2 implements Comparable<Stock2>{
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDat2 where ft_id > " + lst_ft_id +
                 " and id = '" + stkid +
-                "' and to_char(dl_dt,'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') and rownum < 5 order by dl_dt";
+                "' and to_char(dl_dt,'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') order by dl_dt";
                 
                 log.info(sql);
                 ResultSet rs = stm.executeQuery(sql);
@@ -140,7 +140,7 @@ public class Stock2 implements Comparable<Stock2>{
         }
         
         
-        public boolean injectRawData(StockRawData rsd) {
+        public boolean injectRawData(RawStockData rsd) {
             if(rsd != null) {
                 //ft_id_lst.add(rs.getInt("ft_id"));
                 cur_pri_lst.add(rsd.cur_pri);
@@ -264,11 +264,11 @@ public class Stock2 implements Comparable<Stock2>{
         return 0;
     }
     
-    public boolean injectData(StockRawData rsd) {
+    public boolean injectData(RawStockData rsd) {
         return sd.injectRawData(rsd);
     }
     
-    public boolean saveData(StockRawData rsd, Connection con) {
+    public boolean saveData(RawStockData rsd, Connection con) {
         
         if (rsd == null || con == null) {
             return false;
@@ -345,10 +345,14 @@ public class Stock2 implements Comparable<Stock2>{
         try {
             Statement stm = con.createStatement();
             stm.execute(sql);
+            stm.close();
         }
         catch (SQLException e) {
             e.printStackTrace();
         }
+        
+        log.info("saveData ran success.");
+        
         return true;
     }
     

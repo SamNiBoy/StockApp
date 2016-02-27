@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import com.sn.work.WorkManager;
 import com.sn.work.fetcher.FetchStockData;
 import com.sn.work.fetcher.GzStockDataFetcher;
+import com.sn.work.fetcher.StockDataFetcher;
 import com.sn.work.monitor.MonitorStockData;
 import com.sn.work.output.CalFetchStat;
 import com.sn.work.output.GzStock;
@@ -76,19 +77,27 @@ public class WeChatReporter extends BaseWCReporter{
                     resContent = ttb.getWorkResult();
                 }
             }
+//            else if (content.equals("2")) {
+//                FetchStockData fsd = new FetchStockData(0, 30000);
+//                if (!WorkManager.submitWork(fsd)) {
+//                    resContent = "Work already scheduled, can not do it again!";
+//                }
+//                else {
+//                    resContent = "Started fetching stock data!";
+//                }
+//            }
+//            else if (content.equals("3")) {
+//                FetchStockData sfd = new FetchStockData(0, 0);
+//                WorkManager.cancelWork(sfd.getWorkName());
+//                resContent = "Stoped fetching stock data.";
+//            }
             else if (content.equals("2")) {
-                FetchStockData fsd = new FetchStockData(0, 30000);
-                if (!WorkManager.submitWork(fsd)) {
-                    resContent = "Work already scheduled, can not do it again!";
-                }
-                else {
-                    resContent = "Started fetching stock data!";
-                }
+                StockDataFetcher.start();
+                resContent = StockDataFetcher.getResMsg();
             }
             else if (content.equals("3")) {
-                FetchStockData sfd = new FetchStockData(0, 0);
-                WorkManager.cancelWork(sfd.getWorkName());
-                resContent = "Stoped fetching stock data.";
+                StockDataFetcher.stop();
+                resContent = StockDataFetcher.getResMsg();
             }
             else if (content.equals("4")) {
                 CalFetchStat cfs = new CalFetchStat(0, 3);

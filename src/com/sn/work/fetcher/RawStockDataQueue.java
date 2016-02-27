@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.stock.StockRawData;
+import com.sn.stock.RawStockData;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
@@ -25,7 +25,7 @@ public class RawStockDataQueue {
 
     static Logger log = Logger.getLogger(RawStockDataQueue.class);
     
-    private ArrayBlockingQueue<StockRawData> datque = null;
+    private ArrayBlockingQueue<RawStockData> datque = null;
     /**
      * @param args
      */
@@ -37,14 +37,14 @@ public class RawStockDataQueue {
 
     public RawStockDataQueue(int sz)
     {
-        datque = new ArrayBlockingQueue<StockRawData>(sz, false);
+        datque = new ArrayBlockingQueue<RawStockData>(sz, false);
     }
 
-    public ArrayBlockingQueue<StockRawData> getDatque() {
+    public ArrayBlockingQueue<RawStockData> getDatque() {
         return datque;
     }
 
-    public void setDatque(ArrayBlockingQueue<StockRawData> datque) {
+    public void setDatque(ArrayBlockingQueue<RawStockData> datque) {
         this.datque = datque;
     }
     

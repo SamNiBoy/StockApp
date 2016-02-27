@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
-import com.sn.stock.StockRawData;
+import com.sn.stock.RawStockData;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
@@ -67,12 +67,12 @@ public class GzRawStockDataConsumer implements IWork {
     }
 
     public void run() {
-        ArrayBlockingQueue<StockRawData> dd = rdq.getDatque();
+        ArrayBlockingQueue<RawStockData> dd = rdq.getDatque();
         ConcurrentHashMap<String, Stock2> gzs = StockMarket
         .getGzstocks();
         try {
             while (true) {
-                StockRawData srd = dd.take();
+                RawStockData srd = dd.take();
                 
                 if (srd == null) {
                     log.info("GzRawStockDataConsumer can not get raw data to consume, continue");

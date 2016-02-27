@@ -19,9 +19,9 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.work.fetcher.FetchStockData;
 
-public class StockRawData{
+public class RawStockData{
 
-    static Logger log = Logger.getLogger(StockRawData.class);
+    static Logger log = Logger.getLogger(RawStockData.class);
     /**
      * @param args
      */
@@ -67,7 +67,7 @@ public class StockRawData{
     public double s1_bst_pri = 0;
     public String dl_tm = null;
 
-    static public StockRawData createStockData(String stkDat) {
+    static public RawStockData createStockData(String stkDat) {
         String dts[] = stkDat.split(",");
 
         if (dts.length < 32)
@@ -76,7 +76,7 @@ public class StockRawData{
             return null;
         }
         log.info("Parse row data for:" + stkDat);
-        StockRawData srd = new StockRawData();
+        RawStockData srd = new RawStockData();
         srd.id = dts[0].substring(13, 19);;
         srd.area = dts[0].substring(11, 13);
         srd.name = dts[0].substring(21);
