@@ -49,6 +49,29 @@ public class StockObserver implements Observer {
                 e.printStackTrace();
             }
         }
+        else if (obj instanceof GzStockBuySellPointObserverable) {
+
+            GzStockBuySellPointObserverable gso = (GzStockBuySellPointObserverable) obj;
+            // 发送邮件
+            SimpleMailSender sms = MailSenderFactory.getSender();
+            List<String> recipients = new ArrayList<String>();
+            recipients.add("yl_nxj@163.com");
+            // recipients.add("samniboy@gmail.com");
+            String subject = gso.getSubject();
+            String content = gso.getContent();
+            log.info("got mail:" + subject + "\n" + content);
+            System.out.println("got mail:" + subject + "\n" + content);
+            try {
+                for (String recipient : recipients) {
+                    sms.send(recipient, subject, content);
+                }
+            } catch (AddressException e) {
+                e.printStackTrace();
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        
+        }
     }
 
 }

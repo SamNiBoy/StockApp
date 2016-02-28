@@ -25,6 +25,8 @@ import com.sn.work.itf.IWork;
 public class GzRawStockDataConsumer implements IWork {
 
     public RawStockDataQueue rdq = new RawStockDataQueue(5000);
+    
+    public ArrayBlockingQueue<Stock2> refreshedStocks = new ArrayBlockingQueue<Stock2>(5000, false);;
     /*
      * Initial delay before executing work.
      */
@@ -86,6 +88,7 @@ public class GzRawStockDataConsumer implements IWork {
                 if (s != null) {
                     log.info("Now consuming StockRawData " + srd.id + " Name" + srd.name);
                     s.injectData(srd);
+                    refreshedStocks.put(s);
                 }
             }
         } catch (InterruptedException e) {

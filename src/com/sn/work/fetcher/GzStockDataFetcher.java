@@ -18,6 +18,7 @@ import com.sn.db.DBManager;
 import com.sn.stock.RawStockData;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
+import com.sn.work.monitor.MonitorGzStockData;
 
 public class GzStockDataFetcher implements IWork {
 
@@ -38,6 +39,7 @@ public class GzStockDataFetcher implements IWork {
     
     static GzStockDataFetcher self = null;
     GzRawStockDataConsumer cnsmr = null;
+    MonitorGzStockData monitor = null;
     
     static Logger log = Logger.getLogger(GzStockDataFetcher.class);
     
@@ -158,6 +160,15 @@ public class GzStockDataFetcher implements IWork {
         }
         else {
             log.info("GzStockDataFetcher consumer looks already running, skip resubmit...");
+        }
+        
+        MonitorGzStockData mgsd = new MonitorGzStockData(cnsmr.refreshedStocks);
+        if (WorkManager.canSubmitWork(mgsd.getWorkName())) {
+            WorkManager.submitWork(mgsd);
+            log.info("GzStockDataFetcher successfully lunched MonitorGzStockData...");
+        }
+        else {
+            log.info("GzStockDataFetcher MonitorGzStockData looks already running, skip resubmit...");
         }
         
         try {

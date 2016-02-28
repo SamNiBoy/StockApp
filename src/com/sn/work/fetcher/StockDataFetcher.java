@@ -89,9 +89,7 @@ public class StockDataFetcher implements IWork {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        RawStockDataConsumer gsdc = new RawStockDataConsumer(0, 0);
-        StockDataFetcher fsd = new StockDataFetcher(0, 10, gsdc);
-        WorkManager.submitWork(fsd);
+        start();
     }
 
     public StockDataFetcher(long id, long dbn, RawStockDataConsumer sdcr)

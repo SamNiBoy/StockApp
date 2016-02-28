@@ -7,11 +7,12 @@ import java.util.concurrent.TimeUnit;
 
 import com.sn.db.DBManager;
 import com.sn.stock.Stock;
+import com.sn.stock.Stock2;
 
 public interface IBuyPointSelector {
 
     /**
      * @param args
      */
-    public boolean isGoodBuyPoint(Stock s);
+    public boolean isGoodBuyPoint(Stock2 s);
 }

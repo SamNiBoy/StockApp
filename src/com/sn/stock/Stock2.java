@@ -21,7 +21,7 @@ import com.sn.work.fetcher.FetchStockData;
 
 public class Stock2 implements Comparable<Stock2>{
 
-    private class StockData{
+    public class StockData{
         //Save all history data
         String stkid;
         List<Double> td_opn_pri_lst = new ArrayList<Double>();
@@ -59,6 +59,271 @@ public class Stock2 implements Comparable<Stock2>{
         List<Double> s5_pri_lst = new ArrayList<Double>();
         List<Timestamp> dl_dt_lst = new ArrayList<Timestamp>();
         
+        
+        public String getStkid() {
+            return stkid;
+        }
+
+        public void setStkid(String stkid) {
+            this.stkid = stkid;
+        }
+
+        public List<Double> getTd_opn_pri_lst() {
+            return td_opn_pri_lst;
+        }
+
+        public void setTd_opn_pri_lst(List<Double> tdOpnPriLst) {
+            td_opn_pri_lst = tdOpnPriLst;
+        }
+
+        public List<Double> getYt_cls_pri_lst() {
+            return yt_cls_pri_lst;
+        }
+
+        public void setYt_cls_pri_lst(List<Double> ytClsPriLst) {
+            yt_cls_pri_lst = ytClsPriLst;
+        }
+
+        public List<Double> getTd_hst_pri_lst() {
+            return td_hst_pri_lst;
+        }
+
+        public void setTd_hst_pri_lst(List<Double> tdHstPriLst) {
+            td_hst_pri_lst = tdHstPriLst;
+        }
+
+        public List<Double> getTd_lst_pri_lst() {
+            return td_lst_pri_lst;
+        }
+
+        public void setTd_lst_pri_lst(List<Double> tdLstPriLst) {
+            td_lst_pri_lst = tdLstPriLst;
+        }
+
+        public List<String> getDt_lst() {
+            return dt_lst;
+        }
+
+        public void setDt_lst(List<String> dtLst) {
+            dt_lst = dtLst;
+        }
+
+        public List<Integer> getFt_id_lst() {
+            return ft_id_lst;
+        }
+
+        public void setFt_id_lst(List<Integer> ftIdLst) {
+            ft_id_lst = ftIdLst;
+        }
+
+        public List<Double> getCur_pri_lst() {
+            return cur_pri_lst;
+        }
+
+        public void setCur_pri_lst(List<Double> curPriLst) {
+            cur_pri_lst = curPriLst;
+        }
+
+        public List<Double> getB1_bst_pri_lst() {
+            return b1_bst_pri_lst;
+        }
+
+        public void setB1_bst_pri_lst(List<Double> b1BstPriLst) {
+            b1_bst_pri_lst = b1BstPriLst;
+        }
+
+        public List<Double> getS1_bst_pri_lst() {
+            return s1_bst_pri_lst;
+        }
+
+        public void setS1_bst_pri_lst(List<Double> s1BstPriLst) {
+            s1_bst_pri_lst = s1BstPriLst;
+        }
+
+        public List<Integer> getDl_stk_num_lst() {
+            return dl_stk_num_lst;
+        }
+
+        public void setDl_stk_num_lst(List<Integer> dlStkNumLst) {
+            dl_stk_num_lst = dlStkNumLst;
+        }
+
+        public List<Double> getDl_mny_num_lst() {
+            return dl_mny_num_lst;
+        }
+
+        public void setDl_mny_num_lst(List<Double> dlMnyNumLst) {
+            dl_mny_num_lst = dlMnyNumLst;
+        }
+
+        public List<Integer> getB1_num_lst() {
+            return b1_num_lst;
+        }
+
+        public void setB1_num_lst(List<Integer> b1NumLst) {
+            b1_num_lst = b1NumLst;
+        }
+
+        public List<Double> getB1_pri_lst() {
+            return b1_pri_lst;
+        }
+
+        public void setB1_pri_lst(List<Double> b1PriLst) {
+            b1_pri_lst = b1PriLst;
+        }
+
+        public List<Integer> getB2_num_lst() {
+            return b2_num_lst;
+        }
+
+        public void setB2_num_lst(List<Integer> b2NumLst) {
+            b2_num_lst = b2NumLst;
+        }
+
+        public List<Double> getB2_pri_lst() {
+            return b2_pri_lst;
+        }
+
+        public void setB2_pri_lst(List<Double> b2PriLst) {
+            b2_pri_lst = b2PriLst;
+        }
+
+        public List<Integer> getB3_num_lst() {
+            return b3_num_lst;
+        }
+
+        public void setB3_num_lst(List<Integer> b3NumLst) {
+            b3_num_lst = b3NumLst;
+        }
+
+        public List<Double> getB3_pri_lst() {
+            return b3_pri_lst;
+        }
+
+        public void setB3_pri_lst(List<Double> b3PriLst) {
+            b3_pri_lst = b3PriLst;
+        }
+
+        public List<Integer> getB4_num_lst() {
+            return b4_num_lst;
+        }
+
+        public void setB4_num_lst(List<Integer> b4NumLst) {
+            b4_num_lst = b4NumLst;
+        }
+
+        public List<Double> getB4_pri_lst() {
+            return b4_pri_lst;
+        }
+
+        public void setB4_pri_lst(List<Double> b4PriLst) {
+            b4_pri_lst = b4PriLst;
+        }
+
+        public List<Integer> getB5_num_lst() {
+            return b5_num_lst;
+        }
+
+        public void setB5_num_lst(List<Integer> b5NumLst) {
+            b5_num_lst = b5NumLst;
+        }
+
+        public List<Double> getB5_pri_lst() {
+            return b5_pri_lst;
+        }
+
+        public void setB5_pri_lst(List<Double> b5PriLst) {
+            b5_pri_lst = b5PriLst;
+        }
+
+        public List<Integer> getS1_num_lst() {
+            return s1_num_lst;
+        }
+
+        public void setS1_num_lst(List<Integer> s1NumLst) {
+            s1_num_lst = s1NumLst;
+        }
+
+        public List<Double> getS1_pri_lst() {
+            return s1_pri_lst;
+        }
+
+        public void setS1_pri_lst(List<Double> s1PriLst) {
+            s1_pri_lst = s1PriLst;
+        }
+
+        public List<Integer> getS2_num_lst() {
+            return s2_num_lst;
+        }
+
+        public void setS2_num_lst(List<Integer> s2NumLst) {
+            s2_num_lst = s2NumLst;
+        }
+
+        public List<Double> getS2_pri_lst() {
+            return s2_pri_lst;
+        }
+
+        public void setS2_pri_lst(List<Double> s2PriLst) {
+            s2_pri_lst = s2PriLst;
+        }
+
+        public List<Integer> getS3_num_lst() {
+            return s3_num_lst;
+        }
+
+        public void setS3_num_lst(List<Integer> s3NumLst) {
+            s3_num_lst = s3NumLst;
+        }
+
+        public List<Double> getS3_pri_lst() {
+            return s3_pri_lst;
+        }
+
+        public void setS3_pri_lst(List<Double> s3PriLst) {
+            s3_pri_lst = s3PriLst;
+        }
+
+        public List<Integer> getS4_num_lst() {
+            return s4_num_lst;
+        }
+
+        public void setS4_num_lst(List<Integer> s4NumLst) {
+            s4_num_lst = s4NumLst;
+        }
+
+        public List<Double> getS4_pri_lst() {
+            return s4_pri_lst;
+        }
+
+        public void setS4_pri_lst(List<Double> s4PriLst) {
+            s4_pri_lst = s4PriLst;
+        }
+
+        public List<Integer> getS5_num_lst() {
+            return s5_num_lst;
+        }
+
+        public void setS5_num_lst(List<Integer> s5NumLst) {
+            s5_num_lst = s5NumLst;
+        }
+
+        public List<Double> getS5_pri_lst() {
+            return s5_pri_lst;
+        }
+
+        public void setS5_pri_lst(List<Double> s5PriLst) {
+            s5_pri_lst = s5PriLst;
+        }
+
+        public List<Timestamp> getDl_dt_lst() {
+            return dl_dt_lst;
+        }
+
+        public void setDl_dt_lst(List<Timestamp> dlDtLst) {
+            dl_dt_lst = dlDtLst;
+        }
+
         StockData(String stkId) {
             stkid = stkId;
             Connection con = DBManager.getConnection();
@@ -227,6 +492,39 @@ public class Stock2 implements Comparable<Stock2>{
     boolean gz_flg;
     StockData sd;
     
+    
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean isGz_flg() {
+        return gz_flg;
+    }
+
+    public void setGz_flg(boolean gzFlg) {
+        gz_flg = gzFlg;
+    }
+
+    public StockData getSd() {
+        return sd;
+    }
+
+    public void setSd(StockData sd) {
+        this.sd = sd;
+    }
+
     public static void main(String[] args) {
         // TODO Auto-generated method stub
         Connection con = DBManager.getConnection();
