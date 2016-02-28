@@ -33,10 +33,11 @@ public class StockBuySellEntry{
     
     public static void main(String[] args) {}
     
-    public StockBuySellEntry(String ids, String nm, boolean ibp, String tm)
+    public StockBuySellEntry(String ids, String nm, double curpri, boolean ibp, String tm)
     {
         id = ids;
         name = nm;
+        price = curpri;
         is_buy_point = ibp;
         timestamp = tm;
     }

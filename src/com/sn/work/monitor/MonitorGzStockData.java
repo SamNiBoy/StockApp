@@ -77,10 +77,10 @@ public class MonitorGzStockData implements IWork {
                 DefaultSellPointSelector sps = new DefaultSellPointSelector();
                 DefaultBuyPointSelector dbs = new DefaultBuyPointSelector();
                 if (sps.isGoodSellPoint(s)) {
-                    stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(), false, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
+                    stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(), s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), false, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
                 }
                 else if(dbs.isGoodBuyPoint(s)) {
-                    stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(), true, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
+                    stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(),s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), true, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
                 }
             }
             else if (!stockTomail.isEmpty()) {
