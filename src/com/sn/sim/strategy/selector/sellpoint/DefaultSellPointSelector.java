@@ -15,13 +15,9 @@ public class DefaultSellPointSelector implements ISellPointSelector {
      * @param args
      */
     public boolean isGoodSellPoint(Stock2 s) {
-        double cur_pri, pre_cur_pri;
-        if (s.getSd().getCur_pri_lst().size() <= 1) {
-            return false;
-        }
-        cur_pri = s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1);
-        pre_cur_pri = s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 2);
-        if (pre_cur_pri > cur_pri) {
+        int periods = 5;
+        int upTimes = 4;
+        if (s.getSd().priceDownAfterSharpedUp(periods, upTimes)) {
             return true;
         }
         return false;

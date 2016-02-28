@@ -207,10 +207,10 @@ public class GzStockDataFetcher implements IWork {
                 if (failCnt == 1) {
                     break;
                 }
-                if (failCnt > 100)
+                if (failCnt > 50)
                 {
                     failCnt = 0;
-                    log.info("Stock data is same 100 times, cancel fetch and consumer...");
+                    log.info("Stock data is same 50 times, cancel fetch and consumer...");
                     WorkManager.cancelWork(this.getWorkName());
                     break;
                 }

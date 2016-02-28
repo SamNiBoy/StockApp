@@ -60,6 +60,125 @@ public class Stock2 implements Comparable<Stock2>{
         List<Timestamp> dl_dt_lst = new ArrayList<Timestamp>();
         
         
+        
+        public boolean keepDaysClsPriLost(int days, double threshold) {
+            log.info("keepDaysClsPriLost: check if yt_cls_pri has " + days + " days keep lost with threshold value:" + threshold);
+            int size = yt_cls_pri_lst.size();
+            if(size < days + 1 || days <= 0) {
+                return false;
+            }
+            
+            double pre_yt_cls_pri = yt_cls_pri_lst.get(size - 2);
+            double yt_cls_pri = yt_cls_pri_lst.get(size - 1);
+            for(int i = 0; i < days; i++) {
+                if (pre_yt_cls_pri > yt_cls_pri) {
+                    log.info("pre_yt_cls_pri:" + pre_yt_cls_pri + " is higher than " + yt_cls_pri + ", check next see if keep lost.");
+                    continue;
+                }
+                else {
+                    if ((yt_cls_pri - pre_yt_cls_pri) / yt_cls_pri < threshold) {
+                        log.info("even pre_cls_pri < yt_cls_pri, but " + pre_yt_cls_pri + "," + yt_cls_pri + " gap less than threshold:" + threshold);
+                        continue;
+                    }
+                    log.info("pre_yt_cls_pri:" + pre_yt_cls_pri + " is lower than " + yt_cls_pri + ", not keep lost.");
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        public double getAvgYtClsPri(int days) {
+            log.info("getAvgYtClsPri: get avg yt_cls_pri for " + days + " days");
+            double avgPri = 0;
+            int size = yt_cls_pri_lst.size();
+            if (size < days) {
+                log.info("Warning: there is no " + days + " yt_cls_pri data for stock:" + id + " using " + size + " days' data.");
+                days = size;
+            }
+            
+            for (int i = 0; i<days; i++) {
+                avgPri += yt_cls_pri_lst.get(size - i - 1);
+            }
+            
+            avgPri = avgPri / days;
+            log.info("Get avg yt_cls_pri as:" + avgPri);
+            return avgPri;
+        }
+        
+        public boolean detQtyPlused(int periods, int ratio) {
+            log.info("detQtyPlused: check if detQty plused during " + periods + " by ratio:" + ratio);
+            int size = dl_stk_num_lst.size();
+            if (size <= periods) {
+                return false;
+            }
+            long sumDetQty = 0;
+            long curDetQty = dl_stk_num_lst.get(size - 1) - dl_stk_num_lst.get(size - 2);
+            for (int i = 0; i<periods; i++) {
+                sumDetQty += dl_stk_num_lst.get(size - i - 2) - dl_stk_num_lst.get(size - i - 3);
+            }
+            long avgPeriodDetQty = sumDetQty / periods;
+            
+            if (curDetQty / avgPeriodDetQty > ratio) {
+                log.info("detQtyPlused: curDetQty" + curDetQty + " " + curDetQty / avgPeriodDetQty + " times more than ratio:" + ratio);
+                return true;
+            }
+            return false;
+        }
+        
+        public boolean priceUpAfterSharpedDown(int periods, int downTimes) {
+            log.info("priceUpAfterSharpedDown: check if price goes up after " + downTimes + " times down during period:" + periods);
+            int size = cur_pri_lst.size();
+            if (size <= periods) {
+                log.info("priceUpAfterSharpedDown: only has " + size + " data less or equal than " +periods);
+                return false;
+            }
+            double cur_pri = cur_pri_lst.get(size -1);
+            double pre_cur_pri = cur_pri_lst.get(size - 2);
+            if (cur_pri < pre_cur_pri) {
+                return false;
+            }
+            
+            int downTimeCnt = 0;
+            for (int i=0; i<periods; i++) {
+                if (cur_pri_lst.get(size - 1 - i - 1) < cur_pri_lst.get(size - 1 - i - 2)) {
+                    downTimeCnt++;
+                }
+            }
+            
+            log.info("Check if actual down times:" + downTimeCnt + " is >= parameter:" + downTimes);
+            if (downTimeCnt >= downTimes) {
+                return true;
+            }
+            return false;
+        }
+        
+        public boolean priceDownAfterSharpedUp(int periods, int upTimes) {
+            log.info("priceUpAfterSharpedDown: check if price goes down after " + upTimes + " times up during period:" + periods);
+            int size = cur_pri_lst.size();
+            if (size <= periods) {
+                log.info("priceDownAfterSharpedUp: only has " + size + " data less or equal than " +periods);
+                return false;
+            }
+            double cur_pri = cur_pri_lst.get(size -1);
+            double pre_cur_pri = cur_pri_lst.get(size - 2);
+            if (cur_pri > pre_cur_pri) {
+                return false;
+            }
+            
+            int upTimeCnt = 0;
+            for (int i=0; i<periods; i++) {
+                if (cur_pri_lst.get(size - 1 - i - 1) > cur_pri_lst.get(size - 1 - i - 2)) {
+                    upTimeCnt++;
+                }
+            }
+            
+            log.info("Check if actual up times:" + upTimeCnt + " is >= parameter:" + upTimes);
+            if (upTimeCnt >= upTimes) {
+                return true;
+            }
+            return false;
+        }
+
         public String getStkid() {
             return stkid;
         }

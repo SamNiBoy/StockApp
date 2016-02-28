@@ -82,6 +82,7 @@ public class RawStockDataConsumer implements IWork {
                     log.info("Now run ExactDatForstkDat2 RawStockDataConsume.");
                     ExactDatForstkDat2();
                     con.commit();
+                    StockMarket.calIndex();
                 }
             }
         } catch (Exception e) {

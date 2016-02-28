@@ -31,7 +31,6 @@ import com.sn.work.itf.IWork;
 
 public class MonitorGzStockData implements IWork {
 
-    static Connection con = DBManager.getConnection();
     /* Initial delay before executing work.
      */
     long initDelay = 0;
@@ -77,7 +76,7 @@ public class MonitorGzStockData implements IWork {
                 log.info("check stock " + s.getId() + " for buy/sell point");
                 DefaultSellPointSelector sps = new DefaultSellPointSelector();
                 DefaultBuyPointSelector dbs = new DefaultBuyPointSelector();
-                if (!sps.isGoodSellPoint(s)) {
+                if (sps.isGoodSellPoint(s)) {
                     stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(), false, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
                 }
                 else if(dbs.isGoodBuyPoint(s)) {

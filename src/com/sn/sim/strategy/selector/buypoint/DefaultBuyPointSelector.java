@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import com.sn.db.DBManager;
 import com.sn.stock.Stock;
 import com.sn.stock.Stock2;
+import com.sn.stock.StockMarket;
 
 public class DefaultBuyPointSelector implements IBuyPointSelector{
 
@@ -15,13 +16,13 @@ public class DefaultBuyPointSelector implements IBuyPointSelector{
      * @param args
      */
     public boolean isGoodBuyPoint(Stock2 s) {
-        double cur_pri, pre_cur_pri;
-        if (s.getSd().getCur_pri_lst().size() <= 1) {
-            return false;
-        }
-        cur_pri = s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1);
-        pre_cur_pri = s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 2);
-        if (pre_cur_pri < cur_pri) {
+        int periods = 5;
+        int ratio = 10;
+        int downTimes = 3;
+        if (s.getSd().detQtyPlused(periods, ratio) &&
+            s.getSd().priceUpAfterSharpedDown(periods, downTimes) &&
+            !StockMarket.isMarketTooCold() &&
+            StockMarket.hasMoreIncStock()) {
             return true;
         }
         return false;
