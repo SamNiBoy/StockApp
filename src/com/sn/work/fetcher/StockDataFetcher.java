@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
@@ -39,6 +41,9 @@ public class StockDataFetcher implements IWork {
     static StockDataFetcher self = null;
     RawStockDataConsumer cnsmr = null;
     
+    public static ReentrantLock lock = new ReentrantLock();
+    public static Condition finishedOneRoundFetch = lock.newCondition();
+    
     static Logger log = Logger.getLogger(StockDataFetcher.class);
     
     public static String getResMsg() {
@@ -52,7 +57,7 @@ public class StockDataFetcher implements IWork {
     static public boolean start() {
         if (self == null) {
             RawStockDataConsumer gsdc = new RawStockDataConsumer(0, 0);
-            self = new StockDataFetcher(0, 300, gsdc);
+            self = new StockDataFetcher(0, 35000, gsdc);
             if (WorkManager.submitWork(self)) {
                 resMsg = "Newly created StockDataFetcher and started!";
                 return true;
@@ -187,6 +192,11 @@ public class StockDataFetcher implements IWork {
                 
                     log.info(str);
                     srd = RawStockData.createStockData(str);
+                    
+                    if (srd == null) {
+                        log.info("can not create rawdata for " + str + " continue...");
+                        continue;
+                    }
                     log.info("StockDataFetcher put rawdata to queue with size:" + cnsmr.getDq().getDatque().size());
                     cnsmr.getDq().getDatque().put(srd);
                 }
@@ -203,6 +213,14 @@ public class StockDataFetcher implements IWork {
                     break;
                 }
             }
+            lock.lock();
+            try {
+                finishedOneRoundFetch.signalAll();
+            }
+            finally {
+                lock.unlock();
+            }
+            
         } catch (Exception e) {
             e.printStackTrace();
         }

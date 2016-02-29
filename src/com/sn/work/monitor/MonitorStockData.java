@@ -19,6 +19,7 @@ import com.sn.mail.reporter.StockObserverable;
 import com.sn.mail.reporter.StockObserver;
 import com.sn.work.WorkManager;
 import com.sn.work.fetcher.FetchStockData;
+import com.sn.work.fetcher.StockDataFetcher;
 import com.sn.work.itf.IWork;
 
 public class MonitorStockData implements IWork {
@@ -60,36 +61,29 @@ public class MonitorStockData implements IWork {
      * ;
      */
 
-
     public void run()
     {
         // TODO Auto-generated method stub
-        String str;
-        try {
-            synchronized (FetchStockData.bellForWork) {
-                try {
-                    log.info("Waiting before start mointor stocks...");
-                    FetchStockData.bellForWork.wait();
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    log.error("MonitorStockData Can not wait on bellForWork:"
-                            + e.getMessage());
-                    e.printStackTrace();
+            StockDataFetcher.lock.lock();
+            try {
+                log.info("Waiting before start mointor stocks...");
+                StockDataFetcher.finishedOneRoundFetch.await();
+                StockObserverable spo = new StockObserverable();
+                spo.update();
+                
+                if (spo.hasSentMail()) {
+                    res = "Already sent mail to your mailbox!";
+                }
+                else {
+                    res = "No mail sent because no significent stock price change!";
                 }
             }
-            StockObserverable spo = new StockObserverable();
-            spo.update();
-            
-            if (spo.hasSentMail()) {
-                res = "Already sent mail to your mailbox!";
+            catch (Exception e) {
+                e.printStackTrace();
             }
-            else {
-                res = "No mail sent because no significent stock price change!";
+            finally {
+                StockDataFetcher.lock.unlock();
             }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public String getWorkResult()

@@ -124,10 +124,13 @@ public class StockMarket{
     
     
     public static ConcurrentHashMap<String, Stock2> getStocks() {
-        if (stocks == null) {
-            loadStocks();
+        synchronized (StockMarket.class) {
+            log.info("getStocks check if stocks is null? " + (stocks == null ? "Yes" : "No"));
+            if (stocks == null) {
+                loadStocks();
+            }
+            return stocks;
         }
-        return stocks;
     }
 
     public static void setStocks(ConcurrentHashMap<String, Stock2> stocks) {
@@ -293,6 +296,38 @@ public class StockMarket{
         return true;
     }
     
+    static public String getShortDesc() {
+        return "Deg:" + Degree + " StkNum/Inc/Dec/Eql:(" + StkNum + "/" + TotInc + "/" + TotDec + "/" + TotEql + ")";
+    }
+    
+    static public String getLongDsc() {
+        
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMaximumFractionDigits(2);
+        String index = "<table border = 1>" +
+        "<tr>" +
+        "<th> Stock Count</th> " +
+        "<th> Total+ </th> " +
+        "<th> AvgPct+ </th> " +
+        "<th> TotDlMny+ </th> " +
+        "<th> Total-</th> " +
+        "<th> AvgPct-</th> " + 
+        "<th> TotDlMny- </th> " +
+        "<th> Total= </th> " +
+        "<th> TotDlMny= </th> " +
+        "<th> Degree </th> </tr> ";
+        index += "<tr> <td>" + StkNum + "</td>" +
+        "<td> " + TotInc + "</td>" +
+         "<td> " + nf.format(AvgIncPct*100) + "%</td>" +
+         "<td> " + nf.format(totIncDlMny/100000000) + "亿</td>" +
+         "<td> " + TotDec + "</td>" +
+         "<td> " + nf.format(AvgDecPct*100) + "%</td>" +
+         "<td> " + nf.format(totDecDlMny/100000000) + "亿</td>" +
+         "<td> " + TotEql + "</td>" +
+         "<td> " + nf.format(totEqlDlMny/100000000) + "亿</td>" +
+         "<td> " + nf.format((TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1)) + " C</tr></table>";
+        return index;
+    }
     static public boolean isMarketTooCold() {
         return Degree < -20;
     }

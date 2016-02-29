@@ -29,6 +29,7 @@ import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.reporter.WCMsgSender;
 import com.sn.stock.Stock;
 import com.sn.stock.StockBuySellEntry;
+import com.sn.stock.StockMarket;
 import com.sn.stock.Stock.Follower;
 
 public class GzStockBuySellPointObserverable extends Observable {
@@ -74,8 +75,8 @@ public class GzStockBuySellPointObserverable extends Observable {
         Date date = new Date();  
         returnStr = f.format(date);
         subject = content = "";
-        subject = "Stock for buy/sell " + returnStr;
-        content = getBody();
+        subject = StockMarket.getShortDesc() + returnStr;
+        content = StockMarket.getLongDsc() + "<br>" + getBody();
         if (needSentMail) {
             this.setChanged();
             this.notifyObservers(this);

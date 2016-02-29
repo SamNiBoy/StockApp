@@ -81,11 +81,9 @@ public class StockObserverable extends Observable {
         subject = content = "";
         subject = "News " + returnStr;
         content = index + gzSummary + "<br/>" + otherStockSummary + "<br/>" + fmsg + "<br/>";
-        if (needSentMail) {
             this.setChanged();
             this.notifyObservers(this);
             hasSentMail = true;
-        }
     }
     
     private String checkStatusForStock(boolean gz_flg, double pctRt)

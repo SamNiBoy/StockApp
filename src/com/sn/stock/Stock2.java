@@ -17,47 +17,48 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.work.fetcher.FetchStockData;
 
 public class Stock2 implements Comparable<Stock2>{
 
     public class StockData{
+        int MAX_SZ = 200;
         //Save all history data
         String stkid;
-        List<Double> td_opn_pri_lst = new ArrayList<Double>();
-        List<Double> yt_cls_pri_lst = new ArrayList<Double>();
-        List<Double> td_hst_pri_lst = new ArrayList<Double>();
-        List<Double> td_lst_pri_lst = new ArrayList<Double>();
-        List<String> dt_lst = new ArrayList<String>();
+        List<Double> td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Double> yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Double> td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Double> td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<String> dt_lst = new BoundArrayList<String>(MAX_SZ);
         
+
         //Save today's data
-        List<Integer> ft_id_lst = new ArrayList<Integer>();
-        List<Double> cur_pri_lst = new ArrayList<Double>();
-        List<Double> b1_bst_pri_lst = new ArrayList<Double>();
-        List<Double> s1_bst_pri_lst = new ArrayList<Double>();
-        List<Integer> dl_stk_num_lst = new ArrayList<Integer>();
-        List<Double> dl_mny_num_lst = new ArrayList<Double>();
-        List<Integer> b1_num_lst = new ArrayList<Integer>();
-        List<Double> b1_pri_lst = new ArrayList<Double>();
-        List<Integer> b2_num_lst = new ArrayList<Integer>();
-        List<Double> b2_pri_lst = new ArrayList<Double>();
-        List<Integer> b3_num_lst = new ArrayList<Integer>();
-        List<Double> b3_pri_lst = new ArrayList<Double>();
-        List<Integer> b4_num_lst = new ArrayList<Integer>();
-        List<Double> b4_pri_lst = new ArrayList<Double>();
-        List<Integer> b5_num_lst = new ArrayList<Integer>();
-        List<Double> b5_pri_lst = new ArrayList<Double>();
-        List<Integer> s1_num_lst = new ArrayList<Integer>();
-        List<Double> s1_pri_lst = new ArrayList<Double>();
-        List<Integer> s2_num_lst = new ArrayList<Integer>();
-        List<Double> s2_pri_lst = new ArrayList<Double>();
-        List<Integer> s3_num_lst = new ArrayList<Integer>();
-        List<Double> s3_pri_lst = new ArrayList<Double>();
-        List<Integer> s4_num_lst = new ArrayList<Integer>();
-        List<Double> s4_pri_lst = new ArrayList<Double>();
-        List<Integer> s5_num_lst = new ArrayList<Integer>();
-        List<Double> s5_pri_lst = new ArrayList<Double>();
-        List<Timestamp> dl_dt_lst = new ArrayList<Timestamp>();
+        List<Integer> ft_id_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> cur_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Double> b1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Double> s1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Integer> dl_stk_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> dl_mny_num_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Integer> b1_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> b1_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Integer> b2_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> b2_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Integer> b3_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> b3_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Integer> b4_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> b4_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Integer> b5_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> b5_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Integer> s1_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> s1_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Integer> s2_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> s2_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Integer> s3_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> s3_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Integer> s4_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> s4_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Integer> s5_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+        List<Double> s5_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+        List<Timestamp> dl_dt_lst = new BoundArrayList<Timestamp>(MAX_SZ);
         
         
         
@@ -602,7 +603,7 @@ public class Stock2 implements Comparable<Stock2>{
         }
     }
     
-    static Logger log = Logger.getLogger(Stock.class);
+    static Logger log = Logger.getLogger(Stock2.class);
     /**
      * @param args
      */

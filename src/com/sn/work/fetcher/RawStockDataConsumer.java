@@ -65,6 +65,7 @@ public class RawStockDataConsumer implements IWork {
 
     public void run()
     {
+        log.info("Now about to run RawStockConsumer's run...");
         ConcurrentHashMap<String, Stock2> ss = StockMarket
         .getStocks();
         ArrayBlockingQueue<RawStockData> dd = dq.getDatque();

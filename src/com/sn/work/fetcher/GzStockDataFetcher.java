@@ -54,7 +54,7 @@ public class GzStockDataFetcher implements IWork {
     static public boolean start() {
         if (self == null) {
             GzRawStockDataConsumer gsdc = new GzRawStockDataConsumer(0, 0);
-            self = new GzStockDataFetcher(0, 300, gsdc);
+            self = new GzStockDataFetcher(0, 10000, gsdc);
             if (WorkManager.submitWork(self)) {
                 resMsg = "Newly created GzStockDataFetcher and started!";
                 return true;
@@ -210,7 +210,7 @@ public class GzStockDataFetcher implements IWork {
                 if (failCnt > 50)
                 {
                     failCnt = 0;
-                    log.info("Stock data is same 50 times, cancel fetch and consumer...");
+                    log.info("Stock data is same 50 times, cancel GzStockDataFetcher...");
                     WorkManager.cancelWork(this.getWorkName());
                     break;
                 }

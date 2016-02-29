@@ -405,7 +405,7 @@ public class Stock implements Comparable<Stock>{
             log.info("construct followers for: " + ID + " name:" + Name);
             stm = con.createStatement();
             sql = "select s2.dt, cast((s1.yt_cls_pri - s2.yt_cls_pri) / s2.yt_cls_pri / 0.01 as int) pctRk"
-                + "  from stkClsPri s1, stkClsPri s2 "
+                + "  from stkDlyInfo s1, stkDlyInfo s2 "
                 + " where s1.id = s2.id "
                 + "   and to_char(to_date(s1.dt, 'yyyy-mm-dd hh:mi:ss') - 1, 'yyy-mm-dd') = to_char(to_date(s2.dt, 'yyyy-mm-dd hh:mi:ss'), 'yyy-mm-dd')"
                 + "   and s1.id = '" + ID + "'"
@@ -422,7 +422,7 @@ public class Stock implements Comparable<Stock>{
 
                 if (pctRk >= 0) {
                     sql = "select s2.id, s2.dt "
-                       + "  from stkClsPri s1, stkClsPri s2 "
+                       + "  from stkDlyInfo s1, stkDlyInfo s2 "
                        + " where s1.id = s2.id "
                        + "   and to_char(to_date(s1.dt, 'yyyy-mm-dd hh:mi:ss') - 1, 'yyy-mm-dd') = to_char(to_date(s2.dt, 'yyyy-mm-dd hh:mi:ss'), 'yyy-mm-dd')"
                        + "   and s2.dt = '" + dt + "'"
@@ -430,7 +430,7 @@ public class Stock implements Comparable<Stock>{
                 }
                 else if (pctRk < 0) {
                     sql = "select s2.id, s2.dt "
-                        + "  from stkClsPri s1, stkClsPri s2 "
+                        + "  from stkDlyInfo s1, stkDlyInfo s2 "
                         + " where s1.id = s2.id "
                         + "   and to_char(to_date(s1.dt, 'yyyy-mm-dd hh:mi:ss') - 1, 'yyy-mm-dd') = to_char(to_date(s2.dt, 'yyyy-mm-dd hh:mi:ss'), 'yyy-mm-dd')"
                         + "   and s2.dt = '" + dt + "'"
