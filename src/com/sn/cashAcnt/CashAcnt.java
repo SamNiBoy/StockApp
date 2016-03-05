@@ -13,7 +13,10 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.StockObserverable;
+import com.sn.sim.SimStockDriver;
 import com.sn.stock.Stock;
+import com.sn.stock.Stock2;
+import com.sn.stock.StockMarket;
 
 public class CashAcnt implements ICashAccount{
 
@@ -34,10 +37,26 @@ public class CashAcnt implements ICashAccount{
 
     }
     public CashAcnt(String id) {
+
+        loadAcnt(id);
+    }
+    
+    public double getMaxAvaMny() {
+        
+        double useableMny = initMny * maxUsePct;
+        if ((useableMny - usedMny) > initMny / splitNum) {
+            return initMny / splitNum;
+        }
+        else {
+            return useableMny - usedMny;
+        }
+    }
+    
+    public boolean loadAcnt(String id) {
         Connection con = DBManager.getConnection();
         String sql = "select * from CashAcnt where acntId = '" + id + "'";
         
-        log.info("create cashAcnt info:" + id);
+        log.info("load cashAcnt info from db:" + id);
         log.info(sql);
         try {
         Statement stm = con.createStatement();
@@ -58,21 +77,12 @@ public class CashAcnt implements ICashAccount{
         rs.close();
         con.close();
         con = null;
+        return true;
         }
         catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-    
-    public double getMaxAvaMny() {
-        
-        double useableMny = initMny * maxUsePct;
-        if ((useableMny - usedMny) > initMny / splitNum) {
-            return initMny / splitNum;
-        }
-        else {
-            return useableMny - usedMny;
-        }
+        return false;
     }
     public String getActId() {
         return actId;
@@ -192,7 +202,7 @@ public class CashAcnt implements ICashAccount{
         return unSellableAmt;
     }
     
-    public boolean calProfit(String ForDt) {
+    public boolean calProfit(String ForDt, Map<String, Stock2>stockSet) {
         Connection con = DBManager.getConnection();
         
         String sql = "select stkId from TradeHdr h where h.acntId = '" + actId + "'";
@@ -203,10 +213,10 @@ public class CashAcnt implements ICashAccount{
         try {
             Statement stm = con.createStatement();
             rs = stm.executeQuery(sql);
-            Map<String, Stock> stks = StockObserverable.stocks;
+            Map<String, Stock2> stks = stockSet;
             while (rs.next()) {
                 String stkId = rs.getString("stkId");
-                Stock s = stks.get(stkId);
+                Stock2 s = stks.get(stkId);
                 
                 int inHandMnt = getSellableAmt(stkId, ForDt) + getUnSellableAmt(stkId, ForDt);
                 
@@ -352,6 +362,7 @@ public class CashAcnt implements ICashAccount{
         Connection con = DBManager.getConnection();
         Statement stm = null;
         String sql = null;
+        DecimalFormat df = new DecimalFormat("##.##");
         try {
             stm = con.createStatement();
             sql = "select acntId," +
@@ -370,21 +381,22 @@ public class CashAcnt implements ICashAccount{
                         rs.getString("stkId") + "\t\t|" +
                         rs.getString("pft_mny") + "\t\t|" +
                         rs.getInt("in_hand_qty") + "\t\t|" +
-                        rs.getDouble("pft_price") + "\t\t|" +
+                        df.format(rs.getDouble("pft_price")) + "\t\t|" +
                         rs.getString("add_dt") + "|");
                 Statement stmdtl = con.createStatement();
                 String sqldtl = "select stkid, seqnum, price, amount, to_char(dl_dt, 'yyyy-mm-dd hh24:mi:ss') dl_dt, buy_flg " +
-                		        "  from tradedtl where stkid ='" + rs.getString("stkId") + "'";
+                		        "  from tradedtl where stkid ='" + rs.getString("stkId") + "' order by seqnum";
                 //log.info(sql);
                 
                 ResultSet rsdtl = stmdtl.executeQuery(sqldtl);
-                log.info("\tStockID\tSeqnum\tPrice\tAmount\tBuy/Sell\tTranDt");
+                log.info("\tStockID\tSeqnum\tPrice\tAmount\tB/S\tsubTotal\tTranDt");
                 while (rsdtl.next()) {
                     log.info("\t" + rsdtl.getString("stkid") + "\t" +
                              rsdtl.getInt("seqnum") + "\t" +
-                             rsdtl.getDouble("price") + "\t" +
+                             df.format(rsdtl.getDouble("price")) + "\t" +
                              rsdtl.getInt("amount") + "\t" +
-                             (rsdtl.getInt("buy_flg") > 0 ? "B":"S") + "\t\t" +
+                             (rsdtl.getInt("buy_flg") > 0 ? "B":"S") + "\t" +
+                             df.format((rsdtl.getInt("buy_flg") > 0 ? -1 : 1) * rsdtl.getDouble("price") * rsdtl.getInt("amount")) + "\t\t" +
                              rsdtl.getString("dl_dt") + "\t");
                 }
                 rsdtl.close();
@@ -398,5 +410,28 @@ public class CashAcnt implements ICashAccount{
         catch(SQLException e){
             e.printStackTrace();
         }
+    }
+    @Override
+    public boolean initAccount() {
+        // TODO Auto-generated method stub
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        String sql = "delete from cashacnt where dft_acnt_flg = 1";
+        try {
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();
+            stm = con.createStatement();
+            sql = "insert into cashacnt values('testCashAct001',50000,0,0,8,0.5,1,sysdate)";
+            stm.execute(sql);
+            con.commit();
+            stm.close();
+            con.close();
+            loadAcnt(actId);
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

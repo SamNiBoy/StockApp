@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.log4j.Logger;
 
 import javax.mail.MessagingException;
@@ -22,6 +24,7 @@ import javax.mail.internet.AddressException;
 
 import com.sn.cashAcnt.CashAcnt;
 import com.sn.cashAcnt.CashAcntManger;
+import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.MailSenderType;
 import com.sn.mail.reporter.MailSenderFactory;
@@ -33,109 +36,148 @@ import com.sn.sim.strategy.ITradeStrategy;
 import com.sn.sim.strategy.imp.TradeStrategyGenerator;
 import com.sn.sim.strategy.imp.TradeStrategyImp;
 import com.sn.stock.Stock;
+import com.sn.stock.Stock2;
+import com.sn.stock.StockMarket;
 import com.sn.stock.Stock.Follower;
+import com.sn.work.WorkManager;
+import com.sn.work.itf.IWork;
 
-public class SimTrader extends Observable {
+public class SimTrader implements IWork{
 
     static Logger log = Logger.getLogger(SimTrader.class);
 
-    static Connection con = null;
-    static List<ITradeStrategy> strategies = new ArrayList<ITradeStrategy>();
-    static ITradeStrategy strategy = null;
+    /*
+     * Initial delay before executing work.
+     */
+    private long initDelay = 0;
 
-    public SimTrader() throws Exception {
-        this.addObserver(StockObserver.globalObs);
-        strategies.addAll(TradeStrategyGenerator.generatorStrategies());
+    /*
+     * Seconds delay befor executing next work.
+     */
+    private long delayBeforNxtStart = 5;
+
+    private TimeUnit tu = TimeUnit.MILLISECONDS;
+    
+    private boolean simOnGzStk = true;
+    
+    public String resMsg = "Initial msg for work SimTrader.";
+    
+    static Connection con = null;
+    SimStockDriver ssd = new SimStockDriver();
+
+    public SimTrader(long id, long dbn, boolean onlyGzStk) throws Exception {
+        initDelay = id;
+        delayBeforNxtStart = dbn;
+        simOnGzStk = onlyGzStk;
     }
 
     static public void main(String[] args) throws Exception {
-        
-        SimStockDriver.addStkToSim("000727");
-        SimStockDriver.addStkToSim("000973");
-        SimStockDriver.setStartEndSimDt("2016-02-25", "2016-02-25");
-        
-        SimStockDriver.loadStocks();
-        StockObserverable.stocks = SimStockDriver.simstocks;
-        SimTrader st = new SimTrader();
-        
-        if (!SimStockDriver.initData()) {
-            log.info("can not init SimStockDriver...");
-            return;
-        }
-        
-        for (ITradeStrategy cs : strategies) {
-            strategy = cs;
-            int StepCnt = 0;
-            log.info("Now start simulate trading...");
-            while (SimStockDriver.step()) {
-                log.info("Simulate step:" + (++StepCnt));
-                st.run();
-            }
-            strategy.reportTradeStat(st);
-            SimStockDriver.startOver();
-        }
-        
-        SimStockDriver.finishStep();
-        log.info("Now end simulate trading.");
-
+        SimTrader st = new SimTrader(0, 0, false);
+        st.run();
     }
 
     public void run() {
-        if (buyStock() || sellStock()) {
-            reportTradeStat();
+        // SimStockDriver.addStkToSim("000727");
+        Connection con = DBManager.getConnection();
+        String sql = "";
+        if (simOnGzStk) {
+            sql = "select * from stk where gz_flg = 1 ";
         }
-    }
-    
-    public void update() {
-    }
-    
-    private boolean buyStock()
-    {
-        log.info("strat buyStock...");
-        boolean hasBoughtStock = false;
+        else {
+            sql = "select * from stk ";
+        }
 
-        for (String stock : StockObserverable.stocks.keySet()) {
-            Stock s = StockObserverable.stocks.get(stock);
-            if (strategy.isGoodStockToSelect(s) && strategy.isGoodPointtoBuy(s)) {
-                if (strategy.buyStock(s)) {
-                    hasBoughtStock = true;
+        ArrayList<String> stks = new ArrayList<String>();
+        try {
+            Statement stm = con.createStatement();
+            int batch = 0;
+            int batcnt = 0;
+            ResultSet rs = stm.executeQuery(sql);
+            while (rs.next()) {
+                stks.add(rs.getString("id"));
+                batch++;
+                if (batch == 50) {
+                    batcnt++;
+                    log.info("Now have 10 stocks to sim, start a worker for it.");
+                    SimWorker sw;
+                    try {
+                        sw = new SimWorker(0, 0, "SimWorker" + batcnt);
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        return;
+                    }
+                    sw.addStksToWorker(stks);
+                    stks.clear();
+                    WorkManager.submitWork(sw);
+                    batch = 0;
                 }
             }
-            if (strategy.hasStockInHand(s)) {
-                String dt = s.getDl_dt().toString().substring(0,10);
-                strategy.calProfit(dt);
-            }
-        }
-        log.info("end buyStock...");
-        return hasBoughtStock;
-    }
-    
-    private boolean sellStock()
-    {
-        log.info("start sellStock...");
-        boolean hasSoldStock = false;
 
-        for (String stock : StockObserverable.stocks.keySet()) {
-            Stock s = StockObserverable.stocks.get(stock);
-            if (strategy.isGoodPointtoSell(s)) {
-                if (strategy.sellStock(s)) {
-                    hasSoldStock = true;
+            if (batch > 0) {
+                batcnt++;
+                log.info("Now have " + batch + " stocks to sim, start a worker for it.");
+                SimWorker sw;
+                try {
+                    sw = new SimWorker(0, 0, "SimWorker" + batcnt);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    return;
                 }
+                sw.addStksToWorker(stks);
+                WorkManager.submitWork(sw);
+                batch = 0;
             }
-            if (strategy.hasStockInHand(s)) {
-                String dt = s.getDl_dt().toString().substring(0,10);
-                strategy.calProfit(dt);
-            }
+            rs.close();
+            stm.close();
+            con.close();
+            log.info("Now end simulate trading.");
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        log.info("end sellStock...");
-        return hasSoldStock;
+        try {
+            WorkManager.shutdownWorksAfterFinish();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
-    
-    private boolean reportTradeStat() {
-        log.info("reportBuySellStat...");
 
-        boolean rs = strategy.reportTradeStat(this);
-        
-        return rs;
+    @Override
+    public long getDelayBeforeNxt() {
+        // TODO Auto-generated method stub
+        return delayBeforNxtStart;
     }
+
+    @Override
+    public long getInitDelay() {
+        // TODO Auto-generated method stub
+        return initDelay;
+    }
+
+    @Override
+    public TimeUnit getTimeUnit() {
+        // TODO Auto-generated method stub
+        return tu;
+    }
+
+    @Override
+    public String getWorkName() {
+        // TODO Auto-generated method stub
+        return "SimTrader";
+    }
+
+    @Override
+    public String getWorkResult() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean isCycleWork() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
 }

@@ -19,7 +19,7 @@ import com.sn.work.itf.IWork;
  */
 public class WorkManager {
 
-    static int CW_THREAD_NUMBER = 10;
+    static int CW_THREAD_NUMBER = 50;
     static ScheduledExecutorService exec = Executors
             .newScheduledThreadPool(CW_THREAD_NUMBER);
 
@@ -83,6 +83,19 @@ public class WorkManager {
             }
         }
         log.info("Now finished cleanup finished work!");
+    }
+    
+    public static void shutdownWorksAfterFinish() throws InterruptedException {
+        log.info("Now let's check if finsihed all worker before shutdown thead pool...");
+        for (String workName : SFM.keySet()) {
+            ScheduledFuture<?> sf = SFM.get(workName);
+            while (!sf.isDone()) {
+                log.info("Work:" + workName + " is not finished! wait for 1 second");
+                Thread.currentThread().sleep(1000);
+            }
+        }
+        log.info("Now finished all works, shutdow pool");
+        shutdownWorks();
     }
 
     public static void shutdownWorks() {

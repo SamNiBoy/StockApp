@@ -5,13 +5,18 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.stock.Stock;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 
 public class DefaultBuyPointSelector implements IBuyPointSelector{
 
+    static Logger log = Logger.getLogger(DefaultBuyPointSelector.class);
+    
     /**
      * @param args
      */
@@ -23,8 +28,10 @@ public class DefaultBuyPointSelector implements IBuyPointSelector{
             s.getSd().priceUpAfterSharpedDown(periods, downTimes) &&
             !StockMarket.isMarketTooCold() &&
             StockMarket.hasMoreIncStock()) {
+            log.info("DefaultBuyPointSelector returned ture for isGoodStock()");
             return true;
         }
-        return false;
+        log.info("DefaultBuyPointSelector returned false for isGoodStock()");
+        return true;
     }
 }

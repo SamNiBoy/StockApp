@@ -125,7 +125,6 @@ public class StockMarket{
     
     public static ConcurrentHashMap<String, Stock2> getStocks() {
         synchronized (StockMarket.class) {
-            log.info("getStocks check if stocks is null? " + (stocks == null ? "Yes" : "No"));
             if (stocks == null) {
                 loadStocks();
             }
@@ -297,7 +296,9 @@ public class StockMarket{
     }
     
     static public String getShortDesc() {
-        return "Deg:" + Degree + " StkNum/Inc/Dec/Eql:(" + StkNum + "/" + TotInc + "/" + TotDec + "/" + TotEql + ")";
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMaximumFractionDigits(2);
+        return "Deg:" + nf.format(Degree) + " StkNum/Inc/Dec/Eql:(" + StkNum + "/" + TotInc + "/" + TotDec + "/" + TotEql + ")";
     }
     
     static public String getLongDsc() {

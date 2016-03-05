@@ -28,7 +28,9 @@ public class TradeStrategyGenerator {
         IStockSelector ss = new DefaultStockSelector();
         IBuyPointSelector bs = new DefaultBuyPointSelector();
         ISellPointSelector ses = new DefaultSellPointSelector();
-        ICashAccount ca = CashAcntManger.getDftAcnt();
+        ICashAccount ca = null;
+        //CashAcntManger.getDftAcnt();
+        //ca.initAccount();
         ITradeStrategy its = new TradeStrategyImp(ss, bs, ses, ca);
         
         res.add(its);

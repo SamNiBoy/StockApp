@@ -7,11 +7,12 @@ import java.util.concurrent.TimeUnit;
 
 import com.sn.db.DBManager;
 import com.sn.stock.Stock;
+import com.sn.stock.Stock2;
 
 public interface IStockSelector {
 
     /**
      * @param args
      */
-    public boolean isGoodStock(Stock s);
+    public boolean isGoodStock(Stock2 s);
 }

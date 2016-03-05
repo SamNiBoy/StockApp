@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.Map;
 import java.util.Observable;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +20,7 @@ import com.sn.sim.strategy.selector.buypoint.IBuyPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.ISellPointSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.stock.Stock;
+import com.sn.stock.Stock2;
 
 public class TradeStrategyImp implements ITradeStrategy {
 
@@ -29,18 +31,52 @@ public class TradeStrategyImp implements ITradeStrategy {
     ISellPointSelector sellpoint_selector = null;
     
     ICashAccount cash_account = null;
+    
+    
+    public IStockSelector getStock_selector() {
+        return stock_selector;
+    }
+
+    public void setStock_selector(IStockSelector stockSelector) {
+        stock_selector = stockSelector;
+    }
+
+    public IBuyPointSelector getBuypoint_selector() {
+        return buypoint_selector;
+    }
+
+    public void setBuypoint_selector(IBuyPointSelector buypointSelector) {
+        buypoint_selector = buypointSelector;
+    }
+
+    public ISellPointSelector getSellpoint_selector() {
+        return sellpoint_selector;
+    }
+
+    public void setSellpoint_selector(ISellPointSelector sellpointSelector) {
+        sellpoint_selector = sellpointSelector;
+    }
+
+    public ICashAccount getCash_account() {
+        return cash_account;
+    }
+
+    public void setCash_account(ICashAccount cashAccount) {
+        cash_account = cashAccount;
+    }
+
     /**
      * @param args
      */
-    public boolean isGoodStockToSelect(Stock s) {
+    public boolean isGoodStockToSelect(Stock2 s) {
         return stock_selector.isGoodStock(s);
     }
 
-    public boolean isGoodPointtoBuy(Stock s) {
+    public boolean isGoodPointtoBuy(Stock2 s) {
         return buypoint_selector.isGoodBuyPoint(s);
     }
 
-    public boolean isGoodPointtoSell(Stock s) {
+    public boolean isGoodPointtoSell(Stock2 s) {
         return sellpoint_selector.isGoodSellPoint(s);
     }
     
@@ -48,7 +84,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                             IBuyPointSelector bs,
                             ISellPointSelector ses,
                             ICashAccount ca) throws Exception {
-        if (ss == null || bs == null || ses == null || ca == null) {
+        if (ss == null || bs == null || ses == null) {
             throw new Exception("Can not create trade strategy with null selector.");
         }
         stock_selector = ss;
@@ -58,13 +94,13 @@ public class TradeStrategyImp implements ITradeStrategy {
     }
 
     @Override
-    public boolean buyStock(Stock s) {
+    public boolean buyStock(Stock2 s) {
         double useableMny = cash_account.getMaxAvaMny();
         int buyMnt = (int)(useableMny/s.getCur_pri()) / 100 * 100;
         double occupiedMny = buyMnt * s.getCur_pri();
         
-        cash_account.printAcntInfo();
-        s.dsc();
+        //cash_account.printAcntInfo();
+        //s.printStockInfo();
         
         log.info("trying to buy amount:" + buyMnt + " with using Mny:" + occupiedMny);
         
@@ -138,10 +174,10 @@ public class TradeStrategyImp implements ITradeStrategy {
     }
 
     @Override
-    public boolean sellStock(Stock s) {
+    public boolean sellStock(Stock2 s) {
 
-        cash_account.printAcntInfo();
-        s.dsc();
+        //cash_account.printAcntInfo();
+        //s.printStockInfo();
         
         log.info("now start to sell stock " + s.getName()
                 + " price:" + s.getCur_pri()
@@ -207,13 +243,13 @@ public class TradeStrategyImp implements ITradeStrategy {
     }
 
     @Override
-    public boolean calProfit(String ForDt) {
+    public boolean calProfit(String ForDt, Map<String, Stock2>stockSet) {
         // TODO Auto-generated method stub
-        return cash_account.calProfit(ForDt);
+        return cash_account.calProfit(ForDt, stockSet);
     }
 
     @Override
-    public boolean reportTradeStat(Observable obs) {
+    public boolean reportTradeStat() {
         // TODO Auto-generated method stub
         cash_account.printAcntInfo();
         cash_account.printTradeInfo();
@@ -221,14 +257,13 @@ public class TradeStrategyImp implements ITradeStrategy {
     }
 
     @Override
-    public boolean hasStockInHand(Stock s) {
+    public boolean hasStockInHand(Stock2 s) {
         // TODO Auto-generated method stub
 
         log.info("now check if stock " + s.getName()
                 + " in hand with price:" + s.getCur_pri()
                 + " against CashAcount: " + cash_account.getActId());
 
-        String dt = s.getDl_dt().toString().substring(0, 10);
         Connection con = DBManager.getConnection();
         boolean hasStockInHand = false;
         try {
@@ -256,5 +291,23 @@ public class TradeStrategyImp implements ITradeStrategy {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public ICashAccount getCashAccount() {
+        // TODO Auto-generated method stub
+        return cash_account;
+    }
+
+    @Override
+    public boolean initAccount() {
+        // TODO Auto-generated method stub
+        return cash_account.initAccount();
+    }
+
+    @Override
+    public void setCashAccount(ICashAccount ca) {
+        // TODO Auto-generated method stub
+        setCash_account(ca);
     }
 }

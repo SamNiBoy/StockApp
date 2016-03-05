@@ -1,12 +1,15 @@
 package com.sn.sim;
 
 import java.sql.Connection;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -32,23 +35,27 @@ import com.sn.mail.reporter.StockObserver;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.reporter.WCMsgSender;
 import com.sn.stock.Stock;
+import com.sn.stock.Stock2;
 import com.sn.stock.Stock.Follower;
 
 public class SimStockDriver {
 
     static Logger log = Logger.getLogger(SimStockDriver.class);
 
-    static Connection con = null;
+    Connection con = null;
 
-    static ArrayList<String> stk_list = new ArrayList<String>();
+    ArrayList<String> stk_list = new ArrayList<String>();
     
-    static String start_dt = ""; // format 'yyyy-mm-dd'
-    static String end_dt = "";
-    static ResultSet DtRs = null;
+    String start_dt = ""; // format 'yyyy-mm-dd'
+    String end_dt = "";
+    Statement SimStm = null;
+    ResultSet DtRs = null;
     
-    static public ConcurrentHashMap<String, Stock> simstocks = null;
+    private boolean is_sim_on_today = false;
     
-    static boolean addStkToSim(String stkId) {
+    public ConcurrentHashMap<String, Stock2> simstocks = null;
+    
+    boolean addStkToSim(String stkId) {
         if (stkId != null && !stkId.equals("")) {
             stk_list.add(stkId);
         }
@@ -58,9 +65,37 @@ public class SimStockDriver {
         return true;
     }
     
-    static boolean setStartEndSimDt(String s, String e) {
+    public void removeStkToSim() {
+        stk_list.clear();
+    }
+    
+    boolean setStartEndSimDt(String s, String e) {
         start_dt = s;
         end_dt = e;
+        //SimpleDateFormat df = new SimpleDateFormat("YYYY-MM-DD");
+        log.info("end_dt string:" + end_dt);
+        if (con == null) {
+            con = DBManager.getConnection();
+        }
+
+        String sql = "select 'x' from dual where to_char(sysdate, 'yyyy-mm-dd') = '" + end_dt + "'";
+        try {
+            Statement stm = con.createStatement();
+            ResultSet rs = stm.executeQuery(sql);
+            if (rs.next()) {
+                log.info("Sim on today's data, set is_sim_on_today to true");
+                is_sim_on_today = true;
+            }
+            else {
+                is_sim_on_today = false;
+                log.info("Sim not cover today's data, set is_sim_on_today to false");
+            }
+            rs.close();
+            stm.close();
+        }
+        catch (SQLException ee) {
+            ee.printStackTrace();
+        }
         return true;
     }
     
@@ -68,16 +103,17 @@ public class SimStockDriver {
     }
 
     static public void main(String[] args) {
-        loadStocks();
+        SimStockDriver ssd = new SimStockDriver();
+        ssd.loadStocks();
     }
 
-    static public boolean loadStocks() {
+    public boolean loadStocks() {
 
         Statement stm = null;
         ResultSet rs = null;
         
-        simstocks = new ConcurrentHashMap<String, Stock>();
-        Stock s = null;
+        simstocks = new ConcurrentHashMap<String, Stock2>();
+        Stock2 s = null;
         int cnt = 0;
         
         if (con == null) {
@@ -94,7 +130,7 @@ public class SimStockDriver {
                 while (rs.next()) {
                     id = rs.getString("id");
                     name = rs.getString("name");
-                    s = new Stock(id, name, rs.getLong("gz_flg"));
+                    s = new Stock2(id, name, rs.getLong("gz_flg"));
                     simstocks.put(id, s);
                     cnt++;
                     log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -113,7 +149,7 @@ public class SimStockDriver {
                     if (rs.next()) {
                         id = rs.getString("id");
                         name = rs.getString("name");
-                        s = new Stock(id, name, rs.getLong("gz_flg"));
+                        s = new Stock2(id, name, rs.getLong("gz_flg"));
                         simstocks.put(id, s);
                         cnt++;
                         log.info("LoadStocks completed:" + cnt * 1.0 / stk_list.size());
@@ -132,7 +168,11 @@ public class SimStockDriver {
     
     }
     
-    static boolean initData() {
+    boolean initData() {
+        if (is_sim_on_today) {
+            log.info("is_sim_on_today is true, initWithTodayData will take care of initData!");
+            return true;
+        }
         if (start_dt.equals("") || end_dt.equals("")) {
             log.info("start date or end date is not specificed, can not initData!");
             return false;
@@ -158,11 +198,11 @@ public class SimStockDriver {
         }
         
         log.info("got idClause: " + idClause);
-        String sql = "select * from stkdat2 where to_char(dl_dt, 'yyyy-mm-dd') >= '" + start_dt + 
+        String sql = "select * from arc_stkdat2 where to_char(dl_dt, 'yyyy-mm-dd') >= '" + start_dt + 
         "'"+ " and to_char(dl_dt, 'yyyy-mm-dd') <= '" + end_dt + "'" + idClause + " order by id, ft_id";
         try {
-            Statement stm = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            DtRs = stm.executeQuery(sql);
+            SimStm = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            DtRs = SimStm.executeQuery(sql);
         }
         catch(SQLException e) {
             e.printStackTrace();
@@ -178,15 +218,62 @@ public class SimStockDriver {
         }
     }
     
-    static Map<String, Integer> pointer = new HashMap<String, Integer>();
-    static boolean step() {
-        if (DtRs == null) {
+    boolean initWithTodayData(String stkId) {
+        if (start_dt.equals("") || end_dt.equals("")) {
+            log.info("start date or end date is not specificed, can not initWithTodayData!");
+            return false;
+        }
+        else if(!is_sim_on_today) {
+            log.info("is_sim_on_today is false, can not run initWithTodayData.");
+            return false;
+        }
+        
+        if (con == null) {
+            con = DBManager.getConnection();
+        }
+        
+        String idClause = " and id = '" + stkId + "'";
+        
+        String sql = "select * from arc_stkdat2 where to_char(dl_dt, 'yyyy-mm-dd') >= '" + start_dt + 
+        "'"+ " and to_char(dl_dt, 'yyyy-mm-dd') <= '" + end_dt + "'" + idClause + " order by id, ft_id";
+        log.info(sql);
+        try {
+            if (DtRs != null) {
+                DtRs.close();
+                SimStm.close();
+            }
+            SimStm = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            DtRs = SimStm.executeQuery(sql);
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+        }
+        
+        if (DtRs != null) {
+            log.info("successfully loaded DtRs in initWithTodayData()");
+            return true;
+        }
+        else {
+            log.info("unsuccessfully loaded DtRs in initWithTodayData()");
+            return false;
+        }
+    }
+    
+    Map<String, Integer> pointer = new HashMap<String, Integer>();
+    
+    boolean step() {
+        if (DtRs == null && !is_sim_on_today) {
             log.info("DtRs is null, can not step");
             return false;
         }
         try {
             for (String stkId : stk_list) {
                 
+                //Every time we need to reload data from db when is sim on today's data.
+                if (is_sim_on_today) {
+                    log.info("Now loading DtRs for is_sim_on_today is true");
+                    initWithTodayData(stkId);
+                }
                 int pt = 0;
                 DtRs.first();
                 
@@ -194,7 +281,10 @@ public class SimStockDriver {
                     pt = pointer.get(stkId);
                 }
                 
-                DtRs.next();
+                if (!DtRs.next()) {
+                    log.info("There is no data to simTrader...");
+                    return false;
+                }
                 
                 String sid = DtRs.getString("id");
                 int ft_id = DtRs.getInt("ft_id");
@@ -210,10 +300,10 @@ public class SimStockDriver {
                     ft_id = DtRs.getInt("ft_id");
                 }
                 
-                Stock s = simstocks.get(stkId);
+                Stock2 s = simstocks.get(stkId);
                 if (s != null) {
                     log.info("Now, loading DtRs for stock:" + s.getID());
-                    s.refreshData(DtRs);
+                    s.getSd().loadDataFromRs(DtRs);
                 }
 
                 pointer.put(stkId, ft_id);
@@ -228,7 +318,7 @@ public class SimStockDriver {
         return false;
     }
     
-    static boolean finishStep() {
+    boolean finishStep() {
         log.info("start finishStep");
         try {
             DtRs.close();
@@ -242,7 +332,7 @@ public class SimStockDriver {
         return true;
     }
     
-    static boolean startOver() {
+    boolean startOver() {
         log.info("start startOver again");
         try {
             pointer.clear();

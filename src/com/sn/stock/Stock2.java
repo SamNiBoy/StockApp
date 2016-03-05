@@ -109,7 +109,7 @@ public class Stock2 implements Comparable<Stock2>{
         public boolean detQtyPlused(int periods, int ratio) {
             log.info("detQtyPlused: check if detQty plused during " + periods + " by ratio:" + ratio);
             int size = dl_stk_num_lst.size();
-            if (size <= periods) {
+            if (size <= periods + 1) {
                 return false;
             }
             long sumDetQty = 0;
@@ -118,6 +118,8 @@ public class Stock2 implements Comparable<Stock2>{
                 sumDetQty += dl_stk_num_lst.get(size - i - 2) - dl_stk_num_lst.get(size - i - 3);
             }
             long avgPeriodDetQty = sumDetQty / periods;
+            
+            avgPeriodDetQty = (avgPeriodDetQty == 0) ? 1 : avgPeriodDetQty;
             
             if (curDetQty / avgPeriodDetQty > ratio) {
                 log.info("detQtyPlused: curDetQty" + curDetQty + " " + curDetQty / avgPeriodDetQty + " times more than ratio:" + ratio);
@@ -156,7 +158,7 @@ public class Stock2 implements Comparable<Stock2>{
         public boolean priceDownAfterSharpedUp(int periods, int upTimes) {
             log.info("priceUpAfterSharpedDown: check if price goes down after " + upTimes + " times up during period:" + periods);
             int size = cur_pri_lst.size();
-            if (size <= periods) {
+            if (size <= periods ) {
                 log.info("priceDownAfterSharpedUp: only has " + size + " data less or equal than " +periods);
                 return false;
             }
@@ -167,7 +169,7 @@ public class Stock2 implements Comparable<Stock2>{
             }
             
             int upTimeCnt = 0;
-            for (int i=0; i<periods; i++) {
+            for (int i=0; i<periods - 1; i++) {
                 if (cur_pri_lst.get(size - 1 - i - 1) > cur_pri_lst.get(size - 1 - i - 2)) {
                     upTimeCnt++;
                 }
@@ -524,6 +526,48 @@ public class Stock2 implements Comparable<Stock2>{
             return true;
         }
         
+        //This is for simTrade to step on rs.
+        public boolean loadDataFromRs(ResultSet rs) {
+            if (rs == null) {
+                log.info("Can not LoadDataFromRs as rs is null");
+                return false;
+            }
+            try {
+                    ft_id_lst.add(rs.getInt("ft_id"));
+                    cur_pri_lst.add(rs.getDouble("cur_pri"));
+                    b1_bst_pri_lst.add(rs.getDouble("b1_bst_pri"));
+                    s1_bst_pri_lst.add(rs.getDouble("s1_bst_pri"));
+                    dl_stk_num_lst.add(rs.getInt("dl_stk_num"));
+                    dl_mny_num_lst.add(rs.getDouble("dl_mny_num"));
+                    b1_num_lst.add(rs.getInt("b1_num"));
+                    b1_pri_lst.add(rs.getDouble("b1_pri"));
+                    b2_num_lst.add(rs.getInt("b2_num"));
+                    b2_pri_lst.add(rs.getDouble("b2_pri"));
+                    b3_num_lst.add(rs.getInt("b3_num"));
+                    b3_pri_lst.add(rs.getDouble("b3_pri"));
+                    b4_num_lst.add(rs.getInt("b4_num"));
+                    b4_pri_lst.add(rs.getDouble("b4_pri"));
+                    b5_num_lst.add(rs.getInt("b5_num"));
+                    b5_pri_lst.add(rs.getDouble("b5_pri"));
+                    s1_num_lst.add(rs.getInt("s1_num"));
+                    s1_pri_lst.add(rs.getDouble("s1_pri"));
+                    s2_num_lst.add(rs.getInt("s2_num"));
+                    s2_pri_lst.add(rs.getDouble("s2_pri"));
+                    s3_num_lst.add(rs.getInt("s3_num"));
+                    s3_pri_lst.add(rs.getDouble("s3_pri"));
+                    s4_num_lst.add(rs.getInt("s4_num"));
+                    s4_pri_lst.add(rs.getDouble("s4_pri"));
+                    s5_num_lst.add(rs.getInt("s5_num"));
+                    s5_pri_lst.add(rs.getDouble("s5_pri"));
+                    dl_dt_lst.add(rs.getTimestamp("dl_dt"));
+            }
+            catch(SQLException e) {
+                e.printStackTrace();
+            }
+            log.info("Loaded data success from rs for Stock2.");
+            return true;
+        }
+        
         
         public boolean injectRawData(RawStockData rsd) {
             if(rsd != null) {
@@ -781,5 +825,26 @@ public class Stock2 implements Comparable<Stock2>{
         log.info("ID\t|Name\t|GZ_FLG\t|");
         log.info(id + "\t|" + name + "\t|" + ((gz_flg)? "TRUE" : "FALSE") + "\t|\n");
         sd.PrintStockData();
+    }
+
+    public Timestamp getDl_dt() {
+        // TODO Auto-generated method stub
+        if (!sd.dl_dt_lst.isEmpty()) {
+            return sd.dl_dt_lst.get(sd.dl_dt_lst.size() - 1);
+        }
+        return null;
+    }
+
+    public double getCur_pri() {
+        // TODO Auto-generated method stub
+        if (!sd.cur_pri_lst.isEmpty()) {
+            return sd.cur_pri_lst.get(sd.cur_pri_lst.size() - 1);
+        }
+        return 0;
+    }
+
+    public String getID() {
+        // TODO Auto-generated method stub
+        return id;
     }
 }
