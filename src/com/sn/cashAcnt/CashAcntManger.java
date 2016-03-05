@@ -103,6 +103,7 @@ public class CashAcntManger {
         Statement stm = con.createStatement();
         stm.execute(sql);
         stm.close();
+        con.commit();
         
         stm = con.createStatement();
         sql = "insert into cashacnt values(" +
@@ -123,12 +124,6 @@ public class CashAcntManger {
         }
         catch (SQLException e) {
             e.printStackTrace();
-            try {
-                con.close();
-            } catch (SQLException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
         }
         return false;
     }

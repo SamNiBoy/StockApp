@@ -9,6 +9,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -83,7 +84,8 @@ public class RawStockDataConsumer implements IWork {
                     log.info("Now run ExactDatForstkDat2 RawStockDataConsume.");
                     ExactDatForstkDat2();
                     con.commit();
-                    StockMarket.calIndex();
+                    Timestamp ts = s.getDl_dt();
+                    StockMarket.calIndex(ts);
                 }
             }
         } catch (Exception e) {

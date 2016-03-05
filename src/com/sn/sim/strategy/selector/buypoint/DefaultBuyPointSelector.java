@@ -24,14 +24,14 @@ public class DefaultBuyPointSelector implements IBuyPointSelector{
         int periods = 5;
         int ratio = 10;
         int downTimes = 3;
-        if (s.getSd().detQtyPlused(periods, ratio) &&
-            s.getSd().priceUpAfterSharpedDown(periods, downTimes) &&
-            !StockMarket.isMarketTooCold() &&
-            StockMarket.hasMoreIncStock()) {
+        if (true) {//s.getSd().detQtyPlused(periods, ratio) &&
+            //s.getSd().priceUpAfterSharpedDown(periods, downTimes)) {
+            //!StockMarket.isMarketTooCold(s.getDl_dt()) &&
+            //StockMarket.hasMoreIncStock()) {
             log.info("DefaultBuyPointSelector returned ture for isGoodStock()");
             return true;
         }
         log.info("DefaultBuyPointSelector returned false for isGoodStock()");
-        return true;
+        return false;
     }
 }

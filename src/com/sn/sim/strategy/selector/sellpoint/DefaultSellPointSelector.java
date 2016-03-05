@@ -22,7 +22,7 @@ public class DefaultSellPointSelector implements ISellPointSelector {
     public boolean isGoodSellPoint(Stock2 s) {
         int periods = 5;
         int upTimes = 4;
-        if (s.getSd().priceDownAfterSharpedUp(periods, upTimes)) {
+        if (true) {//s.getSd().priceDownAfterSharpedUp(periods, upTimes)) {
             log.info("DefaultSellPointSelector returned ture for isGoodStock()");
             return true;
         }

@@ -19,7 +19,7 @@ public class DefaultStockSelector implements IStockSelector {
      * @param args
      */
     public boolean isGoodStock(Stock2 s) {
-        if (1 > 0) {
+        if (true) {//s.getSd().keepDaysClsPriLost(5, 0.01)) {
             log.info("DefaultStockSelector returned ture for isGoodStock()");
             return true;
         }

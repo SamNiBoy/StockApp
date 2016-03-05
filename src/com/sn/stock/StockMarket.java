@@ -235,7 +235,7 @@ public class StockMarket{
         Degree = degree;
     }
 
-    static public boolean calIndex() {
+    static public boolean calIndex(Timestamp tm) {
 
         Connection con = DBManager.getConnection();
         Statement stm = null;
@@ -253,6 +253,7 @@ public class StockMarket{
                          "               when cur_pri = td_opn_pri then 0 end catagory " +
                          " from stkdat2 " +
                          " where td_opn_pri > 0 " +
+                         "   and dl_dt <= to_date('" + tm.toLocaleString() + "', 'yyyy-mm-dd HH24:MI:SS')" +
                          "   and not exists (select 'x' from stkdat2 skd where skd.id = stkdat2.id and ft_id > stkdat2.ft_id)" +
                          " group by case when cur_pri > td_opn_pri then 1 " +
                          "               when cur_pri < td_opn_pri then -1 " +
@@ -329,7 +330,10 @@ public class StockMarket{
          "<td> " + nf.format((TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1)) + " C</tr></table>";
         return index;
     }
-    static public boolean isMarketTooCold() {
+    static public boolean isMarketTooCold(Timestamp tm) {
+        if (Degree == 0.0) {
+            calIndex(tm);
+        }
         return Degree < -20;
     }
     

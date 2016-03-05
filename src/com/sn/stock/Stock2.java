@@ -564,6 +564,7 @@ public class Stock2 implements Comparable<Stock2>{
             catch(SQLException e) {
                 e.printStackTrace();
             }
+            
             log.info("Loaded data success from rs for Stock2.");
             return true;
         }
