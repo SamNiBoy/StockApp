@@ -36,6 +36,7 @@ import com.sn.mail.reporter.StockObserverable;
 import com.sn.reporter.WCMsgSender;
 import com.sn.stock.Stock;
 import com.sn.stock.Stock2;
+import com.sn.stock.StockMarket;
 import com.sn.stock.Stock.Follower;
 
 public class SimStockDriver {
@@ -304,6 +305,7 @@ public class SimStockDriver {
                 if (s != null) {
                     log.info("Now, loading DtRs for stock:" + s.getID());
                     s.getSd().loadDataFromRs(DtRs);
+                    //StockMarket.calIndex(s.getDl_dt());
                 }
 
                 pointer.put(stkId, ft_id);

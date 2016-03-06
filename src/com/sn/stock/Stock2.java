@@ -451,7 +451,7 @@ public class Stock2 implements Comparable<Stock2>{
             Connection con = DBManager.getConnection();
             try {
                 Statement stm = con.createStatement();
-                String sql = "select * from stkDayPri where id ='" + stkId + "' order by dt";
+                String sql = "select * from stkDlyInfo where id ='" + stkId + "' order by dt";
                 
                 log.info(sql);
                 ResultSet rs = stm.executeQuery(sql);

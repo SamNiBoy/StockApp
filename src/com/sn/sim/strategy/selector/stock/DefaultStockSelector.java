@@ -7,10 +7,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
+import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.sim.strategy.imp.TradeStrategyImp;
 import com.sn.stock.Stock;
 import com.sn.stock.Stock2;
+import com.sn.stock.StockMarket;
 
 public class DefaultStockSelector implements IStockSelector {
 
@@ -18,12 +20,13 @@ public class DefaultStockSelector implements IStockSelector {
     /**
      * @param args
      */
-    public boolean isGoodStock(Stock2 s) {
-        if (true) {//s.getSd().keepDaysClsPriLost(5, 0.01)) {
-            log.info("DefaultStockSelector returned ture for isGoodStock()");
-            return true;
+    public boolean isGoodStock(Stock2 s, ICashAccount ac) {
+        if (StockMarket.isMarketTooCold(s.getDl_dt()) &&
+                !StockMarket.hasMoreIncStock()) {
+                    log.info("returned false because market is too cool.");
+                    return false;
         }
-        log.info("DefaultStockSelector returned false for isGoodStock()");
-        return false;
+        log.info("returned true for isGoodStock()");
+        return true;
     }
 }

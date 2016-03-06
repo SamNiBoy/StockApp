@@ -91,7 +91,7 @@ public class SimWorker implements IWork {
                     hasBoughtStock = true;
                 }
             }
-            if (strategy.hasStockInHand(s)) {
+            if (strategy.getCashAccount().hasStockInHand(s)) {
                 String dt = s.getDl_dt().toString().substring(0, 10);
                 strategy.calProfit(dt, ssd.simstocks);
             }
@@ -111,7 +111,7 @@ public class SimWorker implements IWork {
                     hasSoldStock = true;
                 }
             }
-            if (strategy.hasStockInHand(s)) {
+            if (strategy.getCashAccount().hasStockInHand(s)) {
                 String dt = s.getDl_dt().toString().substring(0, 10);
                 strategy.calProfit(dt, ssd.simstocks);
             }
@@ -134,7 +134,7 @@ public class SimWorker implements IWork {
             ssd.removeStkToSim();
             ssd.addStkToSim(stk);
             ssd.setStartEndSimDt("2016-03-03", "2016-03-04");
-
+            
             ssd.loadStocks();
 
             if (!ssd.initData()) {

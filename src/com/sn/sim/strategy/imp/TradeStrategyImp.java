@@ -19,7 +19,6 @@ import com.sn.sim.strategy.ITradeStrategy;
 import com.sn.sim.strategy.selector.buypoint.IBuyPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.ISellPointSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
-import com.sn.stock.Stock;
 import com.sn.stock.Stock2;
 
 public class TradeStrategyImp implements ITradeStrategy {
@@ -69,15 +68,15 @@ public class TradeStrategyImp implements ITradeStrategy {
      * @param args
      */
     public boolean isGoodStockToSelect(Stock2 s) {
-        return stock_selector.isGoodStock(s);
+        return stock_selector.isGoodStock(s, cash_account);
     }
 
     public boolean isGoodPointtoBuy(Stock2 s) {
-        return buypoint_selector.isGoodBuyPoint(s);
+        return buypoint_selector.isGoodBuyPoint(s, cash_account);
     }
 
     public boolean isGoodPointtoSell(Stock2 s) {
-        return sellpoint_selector.isGoodSellPoint(s);
+        return sellpoint_selector.isGoodSellPoint(s, cash_account);
     }
     
     public TradeStrategyImp(IStockSelector ss,
@@ -164,7 +163,6 @@ public class TradeStrategyImp implements ITradeStrategy {
             stm.execute(sql);
             con.commit();
             con.close();
-            con=null;
             return true;
         }
         catch(SQLException e) {
@@ -232,7 +230,6 @@ public class TradeStrategyImp implements ITradeStrategy {
             stm.execute(sql);
             con.commit();
             con.close();
-            con=null;
             return true;
         }
         catch(SQLException e) {
@@ -253,43 +250,6 @@ public class TradeStrategyImp implements ITradeStrategy {
         // TODO Auto-generated method stub
         cash_account.printAcntInfo();
         cash_account.printTradeInfo();
-        return false;
-    }
-
-    @Override
-    public boolean hasStockInHand(Stock2 s) {
-        // TODO Auto-generated method stub
-
-        log.info("now check if stock " + s.getName()
-                + " in hand with price:" + s.getCur_pri()
-                + " against CashAcount: " + cash_account.getActId());
-
-        Connection con = DBManager.getConnection();
-        boolean hasStockInHand = false;
-        try {
-            String sql = "select 'hasStockInHand' " +
-            "       from TradeHdr h " +
-            "      where h.stkId = '" + s.getID()+ "'" +
-            "        and h.acntId = '" + cash_account.getActId() + "'";
-    
-            log.info(sql);
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery(sql);
-            if (!rs.next()) {
-                hasStockInHand = false;
-            }
-            else {
-                hasStockInHand = true;
-            }
-            rs.close();
-            stm.close();
-            con.close();
-
-            return hasStockInHand;
-        }
-        catch(SQLException e) {
-            e.printStackTrace();
-        }
         return false;
     }
 

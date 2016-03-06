@@ -76,10 +76,10 @@ public class MonitorGzStockData implements IWork {
                 log.info("check stock " + s.getId() + " for buy/sell point");
                 DefaultSellPointSelector sps = new DefaultSellPointSelector();
                 DefaultBuyPointSelector dbs = new DefaultBuyPointSelector();
-                if (sps.isGoodSellPoint(s)) {
+                if (sps.isGoodSellPoint(s, null)) {
                     stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(), s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), false, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
                 }
-                else if(dbs.isGoodBuyPoint(s)) {
+                else if(dbs.isGoodBuyPoint(s, null)) {
                     stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(),s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), true, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
                 }
             }

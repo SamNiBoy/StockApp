@@ -24,7 +24,6 @@ public interface ITradeStrategy {
     public boolean sellStock(Stock2 s);
     public boolean buyStock(Stock2 s);
     public boolean calProfit(String ForDt, Map<String, Stock2>stockSet);
-    public boolean hasStockInHand(Stock2 s);
     
     public boolean reportTradeStat();
     public ICashAccount getCashAccount();

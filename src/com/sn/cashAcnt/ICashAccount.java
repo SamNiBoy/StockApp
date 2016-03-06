@@ -36,4 +36,7 @@ public interface ICashAccount {
     public int getUnSellableAmt(String stkId, String sellDt);
     public boolean calProfit(String ForDt, Map<String, Stock2>stockSet);
     public boolean initAccount();
+    public boolean hasStockInHand(Stock2 s);
+    public double getInHandStockCostPrice(Stock2 s);
+    public double getStockCostRatio(Stock2 s);
 }
