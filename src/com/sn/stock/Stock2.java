@@ -814,7 +814,8 @@ public class Stock2 implements Comparable<Stock2>{
             e.printStackTrace();
         }
         
-        log.info("saveData ran success.");
+        sd.injectRawData(rsd);
+        log.info("saveData and injectRawData ran success.");
         
         return true;
     }

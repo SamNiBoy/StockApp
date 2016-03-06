@@ -41,7 +41,7 @@ public class DefaultBuyPointSelector implements IBuyPointSelector {
 			}
 		}
 		
-		if (s.getSd().getAvgYtClsPri(3) < s.getCur_pri()) {
+		if (s.getSd().getAvgYtClsPri(3) > s.getCur_pri()) {
 			log.info("Past 3 days close pri lower then cur pri:" + s.getCur_pri() + " good to buy, return true.");
 			return true;
 		}

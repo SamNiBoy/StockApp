@@ -29,6 +29,8 @@ import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.reporter.WCMsgSender;
 import com.sn.stock.Stock;
 import com.sn.stock.Stock.Follower;
+import com.sn.stock.Stock2;
+import com.sn.stock.StockMarket;
 
 public class StockObserverable extends Observable {
 
@@ -39,7 +41,6 @@ public class StockObserverable extends Observable {
     public String content;
     private boolean hasSentMail = false;
     private boolean needSentMail = false;
-    static public ConcurrentHashMap<String, Stock> stocks = null;
 
     public String getSubject() {
         return subject;
@@ -63,12 +64,141 @@ public class StockObserverable extends Observable {
     }
 
     public void update() {
+    
+        needSentMail = false;
+        NumberFormat nf = NumberFormat.getInstance();
+        nf.setMaximumFractionDigits(2);
+        String Summary = "";
+        Summary += "<table border = 1>" +
+                "<tr>" +
+                "<th> ID</th> " +
+                "<th> Lst_Pri</th> " +
+                "<th> Hst_pri</th> " +
+                "<th> Top3CNTPCT</th> " +
+                "<th> CUR_PRI</th> " +
+                "<th> BUCKET No.</th> </tr> ";
+        
+        String body = "";
+        String sql = "select sps.*, (c1 + c2 + c3) / (c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9 + c10) Top3Pct"
+        		   + "  from stkPriStat sps "
+        		   + " where (c1 + c2 + c3) / (c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9 + c10) > 0.8 "
+        		   + "   and (c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9 + c10) > 0";
+        try {
+        	log.info(sql);
+            Statement stm = con.createStatement();
+        	ResultSet rs = stm.executeQuery(sql);
+        	while (rs.next()) {
+        		double hst, lst, top3Pct;
+        		String id;
+        		double BucketNo;
+        		lst = rs.getDouble("lst_pri");
+        		hst = rs.getDouble("hst_pri");
+        		id = rs.getString("id");
+        		top3Pct = rs.getDouble("Top3Pct");
+        		Stock2 s = StockMarket.getStocks().get(id);
+        		if (s != null) {
+        			if (s.getCur_pri() < lst + (hst - lst) * 3.0 / 10.0 && s.getCur_pri() >= lst) {
+        				BucketNo = ((s.getCur_pri() - lst) / (hst - lst) * 10) + 1;
+        				body += "<tr> <td>" + s.getID() + "</td>" +
+                                "<td> " + nf.format(lst) + "</td>" +
+                                "<td> " + nf.format(hst) + "</td>" +
+                                "<td> " + nf.format(top3Pct) + "%</td>" +
+                                "<td> " + nf.format(s.getCur_pri()) + "</td>" +
+                                 "<td> " + nf.format(BucketNo) + "</td></tr>";
+        			}
+        			else if (s.getCur_pri() < lst || s.getCur_pri() > hst) {
+        				if (s.getCur_pri() < lst) {
+            				body += "<tr> <td>" + s.getID() + "</td>" +
+                                    "<td> " + nf.format(lst) + "</td>" +
+                                    "<td> " + nf.format(hst) + "</td>" +
+                                    "<td> " + nf.format(top3Pct) + "%</td>" +
+                                    "<td> " + nf.format(s.getCur_pri()) + "</td>" +
+                                     "<td> " + -1 + "*</td></tr>";
+        				}
+        				else if (s.getCur_pri() > lst) {
+            				body += "<tr> <td>" + s.getID() + "</td>" +
+                                    "<td> " + nf.format(lst) + "</td>" +
+                                    "<td> " + nf.format(hst) + "</td>" +
+                                    "<td> " + nf.format(top3Pct) + "%</td>" +
+                                    "<td> " + nf.format(s.getCur_pri()) + "</td>" +
+                                     "<td> " + 11 + "*</td></tr>";
+        				}
+        				refreshStkPriStat(id);
+        			}
+        		}
+        	}
+        	rs.close();
+        	stm.close();
+        }
+        catch (SQLException e) {
+        	e.printStackTrace();
+        }
+        
+        if (body.length() > 0) {
+            String returnStr = "";  
+            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");  
+            Date date = new Date();  
+            returnStr = f.format(date);
+            subject = content = "";
+            subject = "Stock Stacks " + returnStr;
+            content = Summary + body;
+            this.setChanged();
+            this.notifyObservers(this);
+            hasSentMail = true;
+        }
+    
+    }
+    
+    private void refreshStkPriStat(String stkId) {
+    	Statement stm = null;
+    	String sql0 = "delete from stkPriStat where id = '" + stkId + "'";
+    	String sql =" insert into stkPriStat " +
+    		        "	select s2.id," +
+    		        "       t.lst_pri,                                                                                                                                                                                        " +
+    		        "       t.hst_pri,                                                                                                                                                                                        " +
+    		        "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 1.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c1,                                                                 " +
+    		        "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 2.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 1.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c2,  " +
+    		        "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 3.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 2.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c3,  " +
+    		        "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 4.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 3.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c4,  " +
+    		        "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 5.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 4.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c5,  " +
+    		        "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 6.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 5.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c6,  " +
+    		        "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 7.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 6.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c7,  " +
+    		        "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 8.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 7.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c8,  " +
+    		        "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 9.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 8.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c9,  " +
+    		        "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 10.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 9.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c10," +
+    		        "       sysdate                                                                                                                                                                                           " +
+    		        "  from stkdat2 s2, (select id, min(cur_pri) lst_pri, max(cur_pri) hst_pri from stkdat2 sx group by sx.id) t,                                                                                             " +
+    		        "       stkdat2 s1                                                                                                                                                                                        " +
+    		        " where s2.id = s1.id                                                                                                                                                                                     " +
+    		        "   and s2.ft_id > s1.ft_id                                                                                                                                                                               " +
+    		        "   and to_char(s2.dl_dt,'yyyy-mm-dd') = to_char(s1.dl_dt,'yyyy-mm-dd')                                                                                                                                   " +
+    		        "   and not exists (select 'x' from stkdat2 ss where ss.id = s2.id and ss.ft_id > s1.ft_id and ss.ft_id < s2.ft_id)                                                                                       " +
+    		        "   and s2.id = t.id                                                                                                                                                                                      " +
+    		        "   and s2. id = '" + stkId + "'" +
+    		        "group by s2.id, t.lst_pri, t.hst_pri                                                                                                                                                                     ";
+    	try {
+    		stm = con.createStatement();
+    		log.info(sql0);
+    		stm.execute(sql0);
+    		stm.close();
+    		
+    		stm = con.createStatement();
+    		log.info(sql);
+    		stm.execute(sql);
+    		stm.close();
+    		con.commit();
+    	}
+    	catch (SQLException e) {
+    		e.printStackTrace();
+    	}
+    }
+    public void update0() {
         String gzSummary = "", otherStockSummary = "", index = "", fmsg = "", stockPlused = "";
         needSentMail = false;
-        if (stocks == null && !loadStocks()) {
-            log.info("loadStocks failed, no mail can be sent");
-            return;
-        }
+      //  if (stocks == null && !loadStocks()) {
+     //       log.info("loadStocks failed, no mail can be sent");
+     //       return;
+      //  }
         gzSummary = checkStatusForStock(true, 0.0);
         otherStockSummary = checkStatusForStock(false, 0.01);
         index = getIndex();
@@ -131,7 +261,7 @@ public class StockObserverable extends Observable {
             long detQty = 0, qtyCnt = 0;
 
             Map<String, String> rowMap = new HashMap<String, String>();
-            List<Stock> sl = new ArrayList<Stock>();
+            List<Stock2> sl = new ArrayList<Stock2>();
             
             for (String stock : gzStocks.keySet()) {
                 try {
@@ -230,22 +360,22 @@ public class StockObserverable extends Observable {
 
                         log.info("pri pct is:" + pct + " against:" + pctRt);
 
-                        Stock stk = stocks.get(stock);
-                        stk.setIncPriCnt(incPriCnt);
-                        stk.setDesPriCnt(desPriCnt);
-                        stk.setDetQty(detQty);
-                        stk.setCur_pri(cur_pri);
-                        stk.setCur_qty(cur_qty);
-                        stk.setPct(pct);
-                        stk.setPctToCls(pctToCls);
-                        stk.setDlmnynum(totMny);
-                        stk.setPrePct(prePct);
-                        stk.setKeepLostDays(keepDaysLost);
-                        stk.setGz_flg((gz_flg ? 1 : 0));
+                        //Stock2 stk = stocks.get(stock);
+//                        stk.setIncPriCnt(incPriCnt);
+//                        stk.setDesPriCnt(desPriCnt);
+//                        stk.setDetQty(detQty);
+//                        stk.setCur_pri(cur_pri);
+//                        stk.setCur_qty(cur_qty);
+//                        stk.setPct(pct);
+//                        stk.setPctToCls(pctToCls);
+//                        stk.setDlmnynum(totMny);
+//                        stk.setPrePct(prePct);
+//                        stk.setKeepLostDays(keepDaysLost);
+//                        stk.setGz_flg((gz_flg ? 1 : 0));
 
                         if (Math.abs(pct) >= pctRt) {
                             needSentMail = true;
-                            sl.add(stk);
+                            //sl.add(stk);
                         }
                     }
                 } catch (SQLException e1) {
@@ -257,12 +387,12 @@ public class StockObserverable extends Observable {
             Collections.sort(sl);
             
             int rk = 1;
-            for (Stock p : sl) {
-                p.setRk(rk);
-                rk++;
-                if (p.isGoodCandidateForBuy()) {
-                    summary += p.getTableRow();
-                }
+            for (Stock2 p : sl) {
+//                p.setRk(rk);
+//                rk++;
+//                if (p.isGoodCandidateForBuy()) {
+//                    summary += p.getTableRow();
+//                }
             }
             summary += "</table>";
         } catch (SQLException e) {
@@ -287,57 +417,57 @@ public class StockObserverable extends Observable {
                    "<th> FollowersAvgPct+ </th> " +
                    "<th> Followers- </th> " +
                    "<th> FollowersAvgPct- </th> </tr> ";
-        for (String stk : stocks.keySet()) {
-            Stock s = stocks.get(stk);
+    //    for (String stk : stocks.keySet()) {
+     //       Stock2 s = stocks.get(stk);
             String cp = ""; // for FollowerCnt+
             double cpavgpct = 0.0;
             String cm = ""; // for FollowerCnt-
             double cmavgpct = 0.0;
-            Map<String, List<Follower>> fs = s.getFollowers();
-            for (String pct : fs.keySet()) {
-                List<Follower> f1 = fs.get(pct);
-
-                cm = cp = "";
-                for (int j = 0; j < f1.size(); j++) {
-                    Follower f = f1.get(j);
-                    if (f.followCnt > 2 && !f.id.equals(s.getID())) {
-                        if (pct.startsWith("-")) {
-                            if (cm.length() == 0) {
-                                cm = "[" + pct + "]";
-                            }
-                            cm += f.id + "(" + f.followCnt + ")|";
-                        }
-                        else {
-                            if (cp.length() == 0) {
-                                cp = "[" + pct + "]";
-                            }
-                            cp += f.id + "(" + f.followCnt + ")|";
-                        }
-                    }
-                }
-                
-                if (pct.startsWith("-") && cm.length() > 0) {
-                    cmavgpct = s.getFollowersAvgCurPri(Integer.valueOf(pct));
-                }
-                else if (cp.length() > 0) {
-                    cpavgpct = s.getFollowersAvgCurPri(Integer.valueOf(pct));
-                }
-            }
-            NumberFormat nf = NumberFormat.getInstance();
-            nf.setMaximumFractionDigits(2);
-            if (cm.length() > 0 || cp.length() > 0)
-            {
-                fmsg += "<tr> <td>" + s.getID() + "</td>" +
-                        "<td> " + s.getName() + "</td>" +
-                        "<td> " + nf.format(s.getCur_pri()) + "</td>" +
-                        "<td> " + nf.format(s.getCurPct()*100) + "%</td>" +
-                        "<td> " + cp + "</td>" +
-                         "<td> " + nf.format(cpavgpct*100) + "%</td>" +
-                         "<td> " + cm + "</td>" +
-                         "<td> " + nf.format(cmavgpct*100) + "%</td></tr>";
-                needSentMail = true;
-            }
-        }
+            //Map<String, List<Follower>> fs = s.getFollowers();
+//            for (String pct : fs.keySet()) {
+//                List<Follower> f1 = fs.get(pct);
+//
+//                cm = cp = "";
+//                for (int j = 0; j < f1.size(); j++) {
+//                    Follower f = f1.get(j);
+//                    if (f.followCnt > 2 && !f.id.equals(s.getID())) {
+//                        if (pct.startsWith("-")) {
+//                            if (cm.length() == 0) {
+//                                cm = "[" + pct + "]";
+//                            }
+//                            cm += f.id + "(" + f.followCnt + ")|";
+//                        }
+//                        else {
+//                            if (cp.length() == 0) {
+//                                cp = "[" + pct + "]";
+//                            }
+//                            cp += f.id + "(" + f.followCnt + ")|";
+//                        }
+//                    }
+//                }
+//                
+//                if (pct.startsWith("-") && cm.length() > 0) {
+//                    cmavgpct = s.getFollowersAvgCurPri(Integer.valueOf(pct));
+//                }
+//                else if (cp.length() > 0) {
+//                    cpavgpct = s.getFollowersAvgCurPri(Integer.valueOf(pct));
+//                }
+ //           }
+//            NumberFormat nf = NumberFormat.getInstance();
+//            nf.setMaximumFractionDigits(2);
+//            if (cm.length() > 0 || cp.length() > 0)
+//            {
+//                fmsg += "<tr> <td>" + s.getID() + "</td>" +
+//                        "<td> " + s.getName() + "</td>" +
+//                        "<td> " + nf.format(s.getCur_pri()) + "</td>" +
+//                        "<td> " + nf.format(s.getCurPct()*100) + "%</td>" +
+//                        "<td> " + cp + "</td>" +
+//                         "<td> " + nf.format(cpavgpct*100) + "%</td>" +
+//                         "<td> " + cm + "</td>" +
+//                         "<td> " + nf.format(cmavgpct*100) + "%</td></tr>";
+//                needSentMail = true;
+//            }
+//        }
         fmsg += "</table>";
 
         log.info("got follower msg:" + fmsg);
@@ -359,9 +489,9 @@ public class StockObserverable extends Observable {
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(2);
         List<Stock> ls = new ArrayList<Stock>();
-        for (String stk : stocks.keySet()) {
-            ls.add(stocks.get(stk));
-        }
+ //       for (String stk : stocks.keySet()) {
+            //ls.add(stocks.get(stk));
+  //      }
         
 //        Collections.sort(ls, new Comparator<Stock>() {
 //            @Override
@@ -496,8 +626,8 @@ public class StockObserverable extends Observable {
         Statement stm = null;
         ResultSet rs = null;
         
-        stocks = new ConcurrentHashMap<String, Stock>();
-        Stock s = null;
+    //    stocks = new ConcurrentHashMap<String, Stock2>();
+        Stock2 s = null;
         int Total = 0, cnt = 0;
         try {
             stm = con.createStatement();
@@ -509,10 +639,10 @@ public class StockObserverable extends Observable {
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock(id, name, rs.getLong("gz_flg"));
-                s.setCur_pri(7.8);
-                s.constructFollowers();
-                stocks.put(id, s);
+                s = new Stock2(id, name, rs.getLong("gz_flg"));
+                //s.setCur_pri(7.8);
+                //s.constructFollowers();
+       //         stocks.put(id, s);
                 cnt++;
                 log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
             }

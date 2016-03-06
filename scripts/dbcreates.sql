@@ -266,7 +266,49 @@ create view curpri_df2_vw as
             and t3.ft_id < t2.ft_id
          )
   );
-  
+
+create table stkPriStat(
+id varchar2(6 byte) not null primary key,
+lst_pri number not null,
+hst_pri number not null,
+c1 number not null,
+c2 number not null,
+c3 number not null,
+c4 number not null,
+c5 number not null,
+c6 number not null,
+c7 number not null,
+c8 number not null,
+c9 number not null,
+c10 number not null,
+add_dt date not null
+);
+
+insert into stkPriStat 
+select s2.id,
+       t.lst_pri,
+       t.hst_pri,
+       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 1.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c1,
+       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 2.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 1.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c2,
+       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 3.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 2.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c3,
+       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 4.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 3.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c4,
+       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 5.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 4.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c5,
+       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 6.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 5.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c6,
+       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 7.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 6.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c7,
+       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 8.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 7.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c8,
+       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 9.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 8.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c9,
+       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 10.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 9.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c10,
+       sysdate
+  from stkdat2 s2, (select id, min(cur_pri) lst_pri, max(cur_pri) hst_pri from stkdat2 sx group by sx.id) t,
+       stkdat2 s1
+ where s2.id = s1.id
+   and s2.ft_id > s1.ft_id
+   and to_char(s2.dl_dt,'yyyy-mm-dd') = to_char(s1.dl_dt,'yyyy-mm-dd')
+   and not exists (select 'x' from stkdat2 ss where ss.id = s2.id and ss.ft_id > s1.ft_id and ss.ft_id < s2.ft_id)
+   and s2.id = t.id 
+group by s2.id, t.lst_pri, t.hst_pri
+
+
 create table CashAcnt(
 acntId varchar2(20 byte) not null primary key,
 init_mny number not null,

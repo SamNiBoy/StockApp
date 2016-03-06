@@ -111,7 +111,8 @@ public class SimWorker implements IWork {
                     hasSoldStock = true;
                 }
             }
-            if (strategy.getCashAccount().hasStockInHand(s)) {
+            //we may have no qty in hand after sell.
+            if (strategy.getCashAccount().hasStockInHand(s) || hasSoldStock) {
                 String dt = s.getDl_dt().toString().substring(0, 10);
                 strategy.calProfit(dt, ssd.simstocks);
             }
