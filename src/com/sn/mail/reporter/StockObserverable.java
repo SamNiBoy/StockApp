@@ -81,8 +81,7 @@ public class StockObserverable extends Observable {
         String body = "";
         String sql = "select sps.*, (c1 + c2 + c3) / (c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9 + c10) Top3Pct"
         		   + "  from stkPriStat sps "
-        		   + " where (c1 + c2 + c3) / (c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9 + c10) > 0.8 "
-        		   + "   and (c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9 + c10) > 0";
+        		   + " where (c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9 + c10) > 0";
         try {
         	log.info(sql);
             Statement stm = con.createStatement();
@@ -97,7 +96,7 @@ public class StockObserverable extends Observable {
         		top3Pct = rs.getDouble("Top3Pct");
         		Stock2 s = StockMarket.getStocks().get(id);
         		if (s != null) {
-        			if (s.getCur_pri() < lst + (hst - lst) * 3.0 / 10.0 && s.getCur_pri() >= lst) {
+        			if (s.getCur_pri() < lst + (hst - lst) * 3.0 / 10.0 && s.getCur_pri() >= lst && top3Pct > 0.6) {
         				BucketNo = ((s.getCur_pri() - lst) / (hst - lst) * 10) + 1;
         				body += "<tr> <td>" + s.getID() + "</td>" +
                                 "<td> " + nf.format(lst) + "</td>" +
@@ -107,7 +106,7 @@ public class StockObserverable extends Observable {
                                  "<td> " + nf.format(BucketNo) + "</td></tr>";
         			}
         			else if (s.getCur_pri() < lst || s.getCur_pri() > hst) {
-        				if (s.getCur_pri() < lst) {
+        				if (s.getCur_pri() < lst && top3Pct > 0.6) {
             				body += "<tr> <td>" + s.getID() + "</td>" +
                                     "<td> " + nf.format(lst) + "</td>" +
                                     "<td> " + nf.format(hst) + "</td>" +
@@ -115,7 +114,7 @@ public class StockObserverable extends Observable {
                                     "<td> " + nf.format(s.getCur_pri()) + "</td>" +
                                      "<td> " + -1 + "*</td></tr>";
         				}
-        				else if (s.getCur_pri() > lst) {
+        				else if (s.getCur_pri() > lst && top3Pct > 0.6) {
             				body += "<tr> <td>" + s.getID() + "</td>" +
                                     "<td> " + nf.format(lst) + "</td>" +
                                     "<td> " + nf.format(hst) + "</td>" +
@@ -140,7 +139,7 @@ public class StockObserverable extends Observable {
             Date date = new Date();  
             returnStr = f.format(date);
             subject = content = "";
-            subject = "Stock Stacks " + returnStr;
+            subject = "statistics for Stock: " + returnStr;
             content = Summary + body;
             this.setChanged();
             this.notifyObservers(this);

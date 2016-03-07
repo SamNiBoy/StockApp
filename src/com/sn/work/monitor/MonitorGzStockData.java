@@ -86,8 +86,10 @@ public class MonitorGzStockData implements IWork {
             else if (!stockTomail.isEmpty()) {
                 log.info("Now sending buy/sell stock information for " + stockTomail.size());
                 gsbsob.setData(stockTomail);
-                gsbsob.update();
-                stockTomail.clear();
+                if (stockTomail.size() > 50) {
+                    gsbsob.update();
+                    stockTomail.clear();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

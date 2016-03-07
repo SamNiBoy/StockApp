@@ -208,8 +208,9 @@ public class StockDataFetcher implements IWork {
                 if (failCnt > 1)
                 {
                     failCnt = 0;
-                    log.info("Stock data is same 2 times, cancel StockDataFetcher and consumer...");
-                    WorkManager.cancelWork(this.getWorkName());
+                    log.info("Stock data is same 2 times, Sleeping 1 minute...");
+                    Thread.currentThread().sleep(60*1000);
+                    //WorkManager.cancelWork(this.getWorkName());
                     break;
                 }
             }
