@@ -84,7 +84,7 @@ public class SimTrader implements IWork{
             sql = "select * from stk where gz_flg = 1 ";
         }
         else {
-            sql = "select * from stk ";
+            sql = "select * from stk where rownum < 100";
         }
 
         ArrayList<String> stks = new ArrayList<String>();

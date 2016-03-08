@@ -26,10 +26,16 @@ public class DefaultSellPointSelector implements ISellPointSelector {
 
 		if (ac != null) {
 			boolean hasStockInHand = ac.hasStockInHand(s);
-			double inhandPri = ac.getInHandStockCostPrice(s);
+			//double inhandPri = ac.getInHandStockCostPrice(s);
+			double lstbuypri = ac.getLstBuyPri(s);
 
-			if (hasStockInHand && (s.getCur_pri() - inhandPri) / inhandPri > 0.03) {
-				log.info("returned true");
+			if (hasStockInHand && ((s.getCur_pri() - lstbuypri) / lstbuypri > 0.02 || (s.getCur_pri() - lstbuypri) / lstbuypri < -0.01)) {
+				if (s.getCur_pri() - lstbuypri > 0) {
+				log.info("good sell point because prices goes higher, sell it.");
+				}
+				else if (s.getCur_pri() - lstbuypri < 0) {
+					log.info("good sell point because prices goes downer, sell it.");
+			    }
 				return true;
 			}
 			else if (!hasStockInHand) {

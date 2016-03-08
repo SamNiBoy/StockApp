@@ -26,17 +26,21 @@ public class DefaultBuyPointSelector implements IBuyPointSelector {
 		int ratio = 10;
 		int downTimes = 3;
 
-		if (StockMarket.isMarketTooCold(s.getDl_dt()) && !StockMarket.hasMoreIncStock()) {
+		if (StockMarket.isMarketTooCold(s.getDl_dt())) {
 			log.info("returned false because market is too cool.");
 			return false;
 		}
 
 		if (ac != null) {
 			boolean hasStockInHand = ac.hasStockInHand(s);
-			double inhandPri = ac.getInHandStockCostPrice(s);
+			Double lstbuypri = ac.getLstBuyPri(s);
 			// If stock price goes down then previous bought, bug again.
-			if (hasStockInHand && (inhandPri - s.getCur_pri()) / inhandPri >= 0.03) {
+			if (hasStockInHand && (lstbuypri - s.getCur_pri()) / lstbuypri >= 0.02) {
 				log.info("buy more as price goes down after bought.");
+				return true;
+			}
+			else if (!hasStockInHand && (s.getOpen_pri() - s.getCur_pri()) / lstbuypri >= 0.02) {
+				log.info("buy more as price goes down after open pri.");
 				return true;
 			}
 		}

@@ -38,5 +38,6 @@ public interface ICashAccount {
     public boolean initAccount();
     public boolean hasStockInHand(Stock2 s);
     public double getInHandStockCostPrice(Stock2 s);
+    public Double getLstBuyPri(Stock2 s);
     public double getStockCostRatio(Stock2 s);
 }

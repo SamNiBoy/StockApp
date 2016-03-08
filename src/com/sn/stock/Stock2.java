@@ -837,12 +837,25 @@ public class Stock2 implements Comparable<Stock2>{
         return null;
     }
 
-    public double getCur_pri() {
+    public Double getCur_pri() {
         // TODO Auto-generated method stub
+    	Double cur_pri = null;
         if (!sd.cur_pri_lst.isEmpty()) {
-            return sd.cur_pri_lst.get(sd.cur_pri_lst.size() - 1);
+        	cur_pri = sd.cur_pri_lst.get(sd.cur_pri_lst.size() - 1);
+        	log.info("Got cur_pri:" + cur_pri + " for stock:" + id);
+            return cur_pri;
         }
-        return 0;
+        return cur_pri;
+    }
+    
+    public Double getOpen_pri() {
+    	Double opn_pri = null;
+        if (!sd.cur_pri_lst.isEmpty()) {
+        	opn_pri = sd.td_opn_pri_lst.get(sd.td_opn_pri_lst.size() - 1);
+        	log.info("Got opn_pri:" + opn_pri + " for stock:" + id);
+            return opn_pri;
+        }
+        return opn_pri;
     }
 
     public String getID() {

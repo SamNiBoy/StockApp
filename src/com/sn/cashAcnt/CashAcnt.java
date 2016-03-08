@@ -495,16 +495,17 @@ public class CashAcnt implements ICashAccount {
 			log.info(sql);
 			Statement stm = con.createStatement();
 			ResultSet rs = stm.executeQuery(sql);
-			
+
 			double ratio = 0;
-			
-			log.info("costMny:" + rs.getDouble("costMny") + ", initMny:" + initMny);
-			
-			if (rs.getDouble("costMny") > 0) {
-				ratio = rs.getDouble("costMny") / initMny;
+			if (rs.next()) {
+				log.info("costMny:" + rs.getDouble("costMny") + ", initMny:" + initMny);
+
+				if (rs.getDouble("costMny") > 0) {
+					ratio = rs.getDouble("costMny") / initMny;
+				}
+				log.info("ratio:" + ratio);
 			}
-			log.info("ratio:" + ratio);
-			
+
 			rs.close();
 			stm.close();
 			con.close();
@@ -513,5 +514,34 @@ public class CashAcnt implements ICashAccount {
 			e.printStackTrace();
 		}
 		return 0;
+	}
+
+	@Override
+	public Double getLstBuyPri(Stock2 s) {
+		// TODO Auto-generated method stub
+		log.info("check stock " + s.getName() + " last buy price against CashAcount: " + actId);
+
+		Connection con = DBManager.getConnection();
+		try {
+			String sql = "select * from Tradedtl d  where d.stkId = '" + s.getID() + "'" + "  and d.acntId = '" + actId
+					+ "' order by seqnum desc";
+
+			log.info(sql);
+			Statement stm = con.createStatement();
+			ResultSet rs = stm.executeQuery(sql);
+
+			Double lstbuypri = 0.0;
+			if (rs.next()) {
+				lstbuypri = rs.getDouble("price");
+				log.info("get last buy price:" + lstbuypri);
+			}
+			rs.close();
+			stm.close();
+			con.close();
+			return lstbuypri;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
