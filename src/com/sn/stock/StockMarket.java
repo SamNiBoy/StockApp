@@ -243,9 +243,9 @@ public class StockMarket{
         int catagory = -2;
         try {
             stm = con.createStatement();
-            String sql = "select count(case when cur_pri > td_opn_pri then 1 else 0 end) IncNum, " +
-                         "       count(case when cur_pri < td_opn_pri then 1 else 0 end) DecNum, " +
-                         "       count(case when cur_pri = td_opn_pri then 1 else 0 end) EqlNum, " +
+            String sql = "select sum(case when cur_pri > td_opn_pri then 1 else 0 end) IncNum, " +
+                         "       sum(case when cur_pri < td_opn_pri then 1 else 0 end) DecNum, " +
+                         "       sum(case when cur_pri = td_opn_pri then 1 else 0 end) EqlNum, " +
                          " avg((cur_pri - td_opn_pri)/td_opn_pri) avgPct," +
                          " sum(dl_mny_num) totDlMny," +
                          " case when cur_pri > td_opn_pri then 1 " +

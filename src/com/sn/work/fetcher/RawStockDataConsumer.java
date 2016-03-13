@@ -84,6 +84,9 @@ public class RawStockDataConsumer implements IWork {
                     log.info("Now run ExactDatForstkDat2 RawStockDataConsume.");
                     ExactDatForstkDat2();
                     con.commit();
+
+                }
+                if (cnt > ss.size() && s != null) {
                     Timestamp ts = s.getDl_dt();
                     StockMarket.calIndex(ts);
                 }

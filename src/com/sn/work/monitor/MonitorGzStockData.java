@@ -19,7 +19,9 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.sim.SimTrader;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
+import com.sn.sim.strategy.selector.buypoint.QtyBuyPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.DefaultSellPointSelector;
+import com.sn.sim.strategy.selector.sellpoint.QtySellPointSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.mail.reporter.GzStockBuySellPointObserverable;
@@ -74,8 +76,8 @@ public class MonitorGzStockData implements IWork {
             s = queueToMonitor.poll(1000, TimeUnit.MILLISECONDS);
             if (s != null) {
                 log.info("check stock " + s.getId() + " for buy/sell point");
-                DefaultSellPointSelector sps = new DefaultSellPointSelector();
-                DefaultBuyPointSelector dbs = new DefaultBuyPointSelector();
+                QtySellPointSelector sps = new QtySellPointSelector();
+                QtyBuyPointSelector dbs = new QtyBuyPointSelector();
                 if (sps.isGoodSellPoint(s, null)) {
                     stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(), s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), false, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
                 }

@@ -106,6 +106,45 @@ public class Stock2 implements Comparable<Stock2>{
             return avgPri;
         }
         
+        public Double getCurPriStddev() {
+            log.info("getCurPriStddev: get stddev for cur_pri.");
+            double yt_cls_pri = 0;
+            int size = cur_pri_lst.size();
+            int size2 = cur_pri_lst.size();
+            if (size <= 0 || size2 <= 0) {
+                log.info("No curPri for stddev calculation.");
+                return null;
+            }
+            
+            yt_cls_pri = yt_cls_pri_lst.get(size2 - 1);
+            
+            List<Double> pctLst = new ArrayList<Double>();
+            
+            double pct = 0.0;
+            double cur_pri = 0.0;
+            for (int i = 0; i < size; i++) {
+            	cur_pri = cur_pri_lst.get(i);
+            	pct = (cur_pri - yt_cls_pri) / yt_cls_pri;
+            	pctLst.add(pct);
+            }
+            
+            double avgPct = 0.0;
+            for(int i = 0; i < size; i++) {
+            	avgPct += pctLst.get(i);
+            }
+            
+            avgPct = avgPct / size;
+            
+            double stddev = 0.0;
+            for(int i = 0; i < size; i++) {
+            	stddev += Math.abs(pctLst.get(i) - avgPct);
+            }
+            
+            stddev = stddev / size;
+            log.info("Get avg (cur_pri - yt_cls_pri)/yt_cls_pri as:" + avgPct + " stddev:" + stddev);
+            return stddev;
+        }
+        
         public boolean detQtyPlused(int periods, int ratio) {
             log.info("detQtyPlused: check if detQty plused during " + periods + " by ratio:" + ratio);
             int size = dl_stk_num_lst.size();
@@ -472,6 +511,32 @@ public class Stock2 implements Comparable<Stock2>{
             }
         }
         
+        StockData(String stkId, String start_dte, String end_dte) {
+            stkid = stkId;
+            Connection con = DBManager.getConnection();
+            try {
+                Statement stm = con.createStatement();
+                String sql = "select * from stkDlyInfo where id ='" + stkId + "' order by dt";
+                
+                log.info(sql);
+                ResultSet rs = stm.executeQuery(sql);
+                while(rs.next()) {
+                    td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
+                    yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
+                    td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
+                    td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
+                    dt_lst.add(rs.getString("dt"));
+                }
+                rs.close();
+                stm.close();
+                con.close();
+                //LoadData(start_dte, end_dte);
+            }
+            catch(SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        
         boolean LoadData() {
             int lst_ft_id = 0;
             if (!ft_id_lst.isEmpty()) {
@@ -525,6 +590,61 @@ public class Stock2 implements Comparable<Stock2>{
             }
             return true;
         }
+        
+        boolean LoadData(String stat_dte, String end_dte) {
+            int lst_ft_id = 0;
+            if (!ft_id_lst.isEmpty()) {
+                lst_ft_id = ft_id_lst.get(ft_id_lst.size() - 1);
+            }
+            Connection con = DBManager.getConnection();
+            try {
+                Statement stm = con.createStatement();
+                String sql = "select * from stkDat2 where ft_id > " + lst_ft_id +
+                " and id = '" + stkid +
+                "' and to_char(dl_dt,'yyyy-mm-dd') >= '" + stat_dte + "' and to_char(dl_dt,'yyyy-mm-dd') <= '" + end_dte + "' order by dl_dt";
+                
+                log.info(sql);
+                ResultSet rs = stm.executeQuery(sql);
+                while(rs.next()) {
+                    ft_id_lst.add(rs.getInt("ft_id"));
+                    cur_pri_lst.add(rs.getDouble("cur_pri"));
+                    b1_bst_pri_lst.add(rs.getDouble("b1_bst_pri"));
+                    s1_bst_pri_lst.add(rs.getDouble("s1_bst_pri"));
+                    dl_stk_num_lst.add(rs.getInt("dl_stk_num"));
+                    dl_mny_num_lst.add(rs.getDouble("dl_mny_num"));
+                    b1_num_lst.add(rs.getInt("b1_num"));
+                    b1_pri_lst.add(rs.getDouble("b1_pri"));
+                    b2_num_lst.add(rs.getInt("b2_num"));
+                    b2_pri_lst.add(rs.getDouble("b2_pri"));
+                    b3_num_lst.add(rs.getInt("b3_num"));
+                    b3_pri_lst.add(rs.getDouble("b3_pri"));
+                    b4_num_lst.add(rs.getInt("b4_num"));
+                    b4_pri_lst.add(rs.getDouble("b4_pri"));
+                    b5_num_lst.add(rs.getInt("b5_num"));
+                    b5_pri_lst.add(rs.getDouble("b5_pri"));
+                    s1_num_lst.add(rs.getInt("s1_num"));
+                    s1_pri_lst.add(rs.getDouble("s1_pri"));
+                    s2_num_lst.add(rs.getInt("s2_num"));
+                    s2_pri_lst.add(rs.getDouble("s2_pri"));
+                    s3_num_lst.add(rs.getInt("s3_num"));
+                    s3_pri_lst.add(rs.getDouble("s3_pri"));
+                    s4_num_lst.add(rs.getInt("s4_num"));
+                    s4_pri_lst.add(rs.getDouble("s4_pri"));
+                    s5_num_lst.add(rs.getInt("s5_num"));
+                    s5_pri_lst.add(rs.getDouble("s5_pri"));
+                    dl_dt_lst.add(rs.getTimestamp("dl_dt"));
+                }
+                rs.close();
+                stm.close();
+                con.close();
+                //PrintStockData();
+            }
+            catch(SQLException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+
         
         //This is for simTrade to step on rs.
         public boolean loadDataFromRs(ResultSet rs) {
@@ -646,6 +766,53 @@ public class Stock2 implements Comparable<Stock2>{
                          " dl_dt: " + dl_dt_lst.get(i) + "\n");
             }
         }
+
+		public Double getMaxCurPri() {
+			// TODO Auto-generated method stub
+			int sz = cur_pri_lst.size();
+			double maxPri = 0;
+			if (sz > 0) {
+			    for (int i = 0; i < sz; i++) {
+			    	if (maxPri < cur_pri_lst.get(i)) {
+			    		maxPri = cur_pri_lst.get(i);
+			    	}
+			    }
+			}
+			log.info("got max pri for stock:" + id + ":" + maxPri);
+			if (maxPri > 0) {
+				return maxPri;
+			}
+			return null;
+		}
+		
+		public Double getMinCurPri() {
+			// TODO Auto-generated method stub
+			int sz = cur_pri_lst.size();
+			double minPri = 100000;
+			if (sz > 0) {
+			    for (int i = 0; i < sz; i++) {
+			    	if (minPri > cur_pri_lst.get(i) && cur_pri_lst.get(i) > 0) {
+			    		minPri = cur_pri_lst.get(i);
+			    	}
+			    }
+			}
+			log.info("got min pri for stock:" + id + ":" + minPri);
+			if (minPri > 0) {
+				return minPri;
+			}
+			return null;
+		}
+
+		public Double getYtClsPri() {
+			// TODO Auto-generated method stub
+			int sz = yt_cls_pri_lst.size();
+			
+			if (sz > 0) {
+				log.info("yt_cls_pri for stock:" + id + " is:" +yt_cls_pri_lst.get(sz - 1));
+				return yt_cls_pri_lst.get(sz - 1);
+			}
+			return null;
+		}
     }
     
     static Logger log = Logger.getLogger(Stock2.class);
@@ -720,6 +887,14 @@ public class Stock2 implements Comparable<Stock2>{
         gz_flg = gzflg > 0;
         sd = new StockData(id);
     }
+    
+    public Stock2(String ids, String nm, long gzflg, String start_dte, String end_dte)
+    {
+        id = ids;
+        name = nm;
+        gz_flg = gzflg > 0;
+        sd = new StockData(id, start_dte, end_dte);
+    }
 
     @Override
     public int compareTo(Stock2 arg0) {
@@ -729,6 +904,22 @@ public class Stock2 implements Comparable<Stock2>{
     
     public boolean injectData(RawStockData rsd) {
         return sd.injectRawData(rsd);
+    }
+    
+    public Double getCurPriStddev() {
+        return sd.getCurPriStddev();
+    }
+    
+    public Double getMaxCurPri() {
+    	return sd.getMaxCurPri();
+    }
+    
+    public Double getMinCurPri() {
+    	return sd.getMinCurPri();
+    }
+
+    public Double getYtClsPri() {
+    	return sd.getYtClsPri();
     }
     
     public boolean saveData(RawStockData rsd, Connection con) {

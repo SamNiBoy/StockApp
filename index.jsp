@@ -3,6 +3,7 @@
                String path = request.getContextPath();
     %>
 <%
+out.print("hello, welcome, sam");
 BufferedReader br = new BufferedReader(new InputStreamReader((ServletInputStream)request.getInputStream()));
 String line = null;
 StringBuilder sb = new StringBuilder();

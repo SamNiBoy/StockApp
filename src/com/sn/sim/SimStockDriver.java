@@ -131,7 +131,7 @@ public class SimStockDriver {
                 while (rs.next()) {
                     id = rs.getString("id");
                     name = rs.getString("name");
-                    s = new Stock2(id, name, rs.getLong("gz_flg"));
+                    s = new Stock2(id, name, rs.getLong("gz_flg"), start_dt, end_dt);
                     simstocks.put(id, s);
                     cnt++;
                     log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -150,7 +150,7 @@ public class SimStockDriver {
                     if (rs.next()) {
                         id = rs.getString("id");
                         name = rs.getString("name");
-                        s = new Stock2(id, name, rs.getLong("gz_flg"));
+                        s = new Stock2(id, name, rs.getLong("gz_flg"), start_dt, end_dt);
                         simstocks.put(id, s);
                         cnt++;
                         log.info("LoadStocks completed:" + cnt * 1.0 / stk_list.size());
@@ -199,8 +199,9 @@ public class SimStockDriver {
         }
         
         log.info("got idClause: " + idClause);
-        String sql = "select * from arc_stkdat2 where to_char(dl_dt, 'yyyy-mm-dd') >= '" + start_dt + 
+        String sql = "select * from stkdat2 where to_char(dl_dt, 'yyyy-mm-dd') >= '" + start_dt + 
         "'"+ " and to_char(dl_dt, 'yyyy-mm-dd') <= '" + end_dt + "'" + idClause + " order by id, ft_id";
+        log.info(sql);
         try {
             SimStm = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             DtRs = SimStm.executeQuery(sql);
@@ -235,7 +236,7 @@ public class SimStockDriver {
         
         String idClause = " and id = '" + stkId + "'";
         
-        String sql = "select * from arc_stkdat2 where to_char(dl_dt, 'yyyy-mm-dd') >= '" + start_dt + 
+        String sql = "select * from stkdat2 where to_char(dl_dt, 'yyyy-mm-dd') >= '" + start_dt + 
         "'"+ " and to_char(dl_dt, 'yyyy-mm-dd') <= '" + end_dt + "'" + idClause + " order by id, ft_id";
         log.info(sql);
         try {

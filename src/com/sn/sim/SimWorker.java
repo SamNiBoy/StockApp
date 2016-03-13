@@ -76,7 +76,7 @@ public class SimWorker implements IWork {
     public static void main(String[] args) throws Exception {
 
         SimWorker sw = new SimWorker(0, 0, "testSimWorker");
-        sw.stkToSim.add("600503");
+        sw.stkToSim.add("600891");
         sw.startSim();
     }
 
@@ -134,7 +134,7 @@ public class SimWorker implements IWork {
         for (String stk : stkToSim) {
             ssd.removeStkToSim();
             ssd.addStkToSim(stk);
-            ssd.setStartEndSimDt("2016-03-03", "2016-03-04");
+            ssd.setStartEndSimDt("2016-03-06", "2016-03-09");
             
             ssd.loadStocks();
 

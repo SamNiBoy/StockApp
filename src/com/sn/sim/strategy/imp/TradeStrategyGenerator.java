@@ -14,8 +14,12 @@ import com.sn.db.DBManager;
 import com.sn.sim.strategy.ITradeStrategy;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.sim.strategy.selector.buypoint.IBuyPointSelector;
+import com.sn.sim.strategy.selector.buypoint.MacdBuyPointSelector;
+import com.sn.sim.strategy.selector.buypoint.QtyBuyPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.DefaultSellPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.ISellPointSelector;
+import com.sn.sim.strategy.selector.sellpoint.MacdSellPointSelector;
+import com.sn.sim.strategy.selector.sellpoint.QtySellPointSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.stock.Stock;
@@ -26,8 +30,12 @@ public class TradeStrategyGenerator {
         List<ITradeStrategy> res = new ArrayList<ITradeStrategy>();
         
         IStockSelector ss = new DefaultStockSelector();
-        IBuyPointSelector bs = new DefaultBuyPointSelector();
-        ISellPointSelector ses = new DefaultSellPointSelector();
+        IBuyPointSelector bs = new QtyBuyPointSelector();
+        ISellPointSelector ses = new QtySellPointSelector();
+//        IBuyPointSelector bs = new MacdBuyPointSelector();
+//        ISellPointSelector ses = new MacdSellPointSelector();
+//        IBuyPointSelector bs = new DefaultBuyPointSelector();
+//        ISellPointSelector ses = new DefaultSellPointSelector();
         ICashAccount ca = null;
         //CashAcntManger.getDftAcnt();
         //ca.initAccount();
