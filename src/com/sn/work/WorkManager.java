@@ -23,7 +23,7 @@ public class WorkManager {
     static ScheduledExecutorService exec = Executors
             .newScheduledThreadPool(CW_THREAD_NUMBER);
 
-    static Map<String, ScheduledFuture<?>> SFM = new HashMap<String, ScheduledFuture<?>>();
+    static Map<String, ScheduledFuture<?>> SFM = new ConcurrentHashMap<String, ScheduledFuture<?>>();
 
     static Logger log = Logger.getLogger(WorkManager.class);
     /**

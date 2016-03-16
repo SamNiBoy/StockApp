@@ -80,15 +80,16 @@ public class RawStockDataConsumer implements IWork {
                     log.info("About to consume RawData from RawStockDataConsume, queue size:" + dd.size());
                     s.saveData(srd, con);
                 }
-                if (dd.isEmpty()) {
+                if (cnt >= ss.size()) {
                     log.info("Now run ExactDatForstkDat2 RawStockDataConsume.");
                     ExactDatForstkDat2();
                     con.commit();
-
                 }
-                if (cnt > ss.size() && s != null) {
+                if ((cnt >= ss.size() && s != null) || dd.isEmpty()) {
+                	log.info("after fetch:" + cnt + " rows, and calIndex at:" + s.getDl_dt());
                     Timestamp ts = s.getDl_dt();
                     StockMarket.calIndex(ts);
+                    cnt = 0;
                 }
             }
         } catch (Exception e) {

@@ -144,6 +144,7 @@ s5_pri number not null,
 dl_dt date not null
 );
 create index stkdat2_id_dldt_idx on stkdat2 (id, ft_id, dl_dt)
+create index stkdat2_idx3 on stkdat2 (id, ft_id, to_char(dl_dt, 'yyyy-mm-dd'), cur_pri, yt_cls_pri,dl_stk_num);
 
 
 create table stkDlyInfo(
