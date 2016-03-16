@@ -214,12 +214,15 @@ public class StockDataFetcher implements IWork {
                     break;
                 }
             }
-            lock.lock();
-            try {
-                finishedOneRoundFetch.signalAll();
-            }
-            finally {
-                lock.unlock();
+            
+            if (failCnt == 0) {
+                lock.lock();
+                try {
+                    finishedOneRoundFetch.signalAll();
+                }
+                finally {
+                    lock.unlock();
+                }
             }
             
         } catch (Exception e) {

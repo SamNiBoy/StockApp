@@ -68,21 +68,22 @@ public class MonitorStockData implements IWork {
             try {
                 log.info("Waiting before start mointor stocks...");
                 StockDataFetcher.finishedOneRoundFetch.await();
-                StockObserverable spo = new StockObserverable();
-                spo.update();
-                
-                if (spo.hasSentMail()) {
-                    res = "Already sent mail to your mailbox!";
-                }
-                else {
-                    res = "No mail sent because no significent stock price change!";
-                }
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
             finally {
                 StockDataFetcher.lock.unlock();
+            }
+
+            StockObserverable spo = new StockObserverable();
+            spo.update();
+            
+            if (spo.hasSentMail()) {
+                res = "Already sent mail to your mailbox!";
+            }
+            else {
+                res = "No mail sent because no significent stock price change!";
             }
     }
 
