@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -66,8 +67,7 @@ public class StockObserverable extends Observable {
 	public void update() {
 
 		needSentMail = false;
-		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMaximumFractionDigits(2);
+		DecimalFormat df = new DecimalFormat("##.##");
 		int TopN = 10;
 		String Summary = "";
 		Summary += "<table border = 1>"
@@ -88,7 +88,7 @@ public class StockObserverable extends Observable {
 				+ "   and s2.id = s3.id "
 				+ "   and s2.ft_id > s3.ft_id "
 				+ "   and not exists (select 'x' from stkdat2 s4 where s4.id = s2.id and s4.ft_id < s2.ft_id and s4.ft_id > s3.ft_id) "
-				+ "   and to_char(s2.dl_dt, 'yyy-mm-dd hh24:mi:ss') >= to_char(sysdate - 5 / (60 * 24), 'yyyy-mm-dd hh24:mi:ss') "
+				+ "   and s2.dl_dt >= sysdate - 5 / (60 * 24) "
 				+ "   and to_char(s2.dl_dt, 'yyyy-mm-dd') = to_char(s3.dl_dt, 'yyyy-mm-dd') "
 				+ "   and s2.yt_cls_pri > 0"
 				+ "  group by s1.id, s1.name "
@@ -108,7 +108,7 @@ public class StockObserverable extends Observable {
 				Stock2 s = StockMarket.getStocks().get(id);
 				if (s != null) {
 					body += "<tr> <td>" + s.getID() + "</td>" + "<td> " + s.getName() + "</td>" + "<td> "
-							+ nf.format(s.getCur_pri()) + "</td>" + "<td> " + nf.format(avgSpeed) + "</td>" + "<td> "
+							+ df.format(s.getCur_pri()) + "</td>" + "<td> " + df.format(avgSpeed) + "</td>" + "<td> "
 							+ avgHand + " Hands</td></tr>";
 				}
 			}
@@ -125,7 +125,7 @@ public class StockObserverable extends Observable {
 					+ "   and s2.id = s3.id "
 					+ "   and s2.ft_id > s3.ft_id "
 					+ "   and not exists (select 'x' from stkdat2 s4 where s4.id = s2.id and s4.ft_id < s2.ft_id and s4.ft_id > s3.ft_id) "
-					+ "   and to_char(s2.dl_dt, 'yyy-mm-dd hh24:mi:ss') >= to_char(sysdate - 5 / (60 * 24), 'yyyy-mm-dd hh24:mi:ss') "
+					+ "   and s2.dl_dt >= sysdate - 5 / (60 * 24) "
 					+ "   and to_char(s2.dl_dt, 'yyyy-mm-dd') = to_char(s3.dl_dt, 'yyyy-mm-dd') "
 					+ "   and s2.yt_cls_pri > 0"
 					+ "  group by s1.id, s1.name "
@@ -144,10 +144,12 @@ public class StockObserverable extends Observable {
 				Stock2 s = StockMarket.getStocks().get(id);
 				if (s != null) {
 					body2 += "<tr> <td>" + s.getID() + "</td>" + "<td> " + s.getName() + "</td>" + "<td> "
-							+ nf.format(s.getCur_pri()) + "</td>" + "<td> " + nf.format(avgSpeed) + "</td>" + "<td> "
+							+ df.format(s.getCur_pri()) + "</td>" + "<td> " + df.format(avgSpeed) + "</td>" + "<td> "
 							+ avgHand + " Hands</td></tr>";
 				}
 			}
+			rs.close();
+			stm.close();
 			
 		} catch (SQLException e) {
 			e.printStackTrace();

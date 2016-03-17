@@ -324,11 +324,11 @@ public class Stock implements Comparable<Stock>{
     
     public String getTableRow() {
         String row = "";
-        NumberFormat nf = NumberFormat.getInstance();
-        nf.setMaximumFractionDigits(2);
-        row = "<tr> <td> " + nf.format(pctToCls*100) + "</td>" +
-        "<td> " + nf.format(pct*100) + "</td>" +
-        "<td> " + nf.format(prePct*100) + "</td>" +
+        DecimalFormat df = new DecimalFormat("##.##");
+        df.setMaximumFractionDigits(2);
+        row = "<tr> <td> " + df.format(pctToCls*100) + "</td>" +
+        "<td> " + df.format(pct*100) + "</td>" +
+        "<td> " + df.format(prePct*100) + "</td>" +
         "<td> " + keepLostDays + "</td>" +
         "<td> " + getRk() + "</td>" +
         "<td> " + getAvgRkSpeed() + "/" + rk.size() + "</td>" +
@@ -336,10 +336,10 @@ public class Stock implements Comparable<Stock>{
         "<td> " + Name + "</td>" +
         "<td> " + incPriCnt + "</td>" +
         "<td> " + desPriCnt + "</td>" +
-        "<td> " +  nf.format(this.pre_detQty == 0 ? 0 : detQty/this.getPre_detQty()) + "</td>" +
+        "<td> " +  df.format(this.pre_detQty == 0 ? 0 : detQty/this.getPre_detQty()) + "</td>" +
         "<td> " + cur_pri + "</td> " +
         "<td> " + cur_qty/100 + "手</td> " +
-        "<td> " + nf.format(dlmnynum / 100000000) + "亿</td> </tr>";
+        "<td> " + df.format(dlmnynum / 100000000) + "亿</td> </tr>";
         
         return row;
     }

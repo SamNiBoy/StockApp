@@ -204,10 +204,7 @@ public class GzStockDataFetcher implements IWork {
                     cnsmr.getRdq().getDatque().put(srd);
                 }
                 br.close();
-                if (failCnt == 1) {
-                    break;
-                }
-                if (failCnt > 50)
+                if (failCnt > 0)
                 {
                     failCnt = 0;
                     log.info("Stock data is same 50 times, sleep 1 minute GzStockDataFetcher...");
@@ -219,7 +216,7 @@ public class GzStockDataFetcher implements IWork {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        log.info("Now fetcher exit!!!");
+        log.info("GzStockDataFetcher Now exit!!!");
     }
 
     public String getWorkResult()

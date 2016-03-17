@@ -72,26 +72,21 @@ public class MonitorGzStockData implements IWork {
         Stock2 s;
         while(true) {
         try {
-
-            s = queueToMonitor.poll(1000, TimeUnit.MILLISECONDS);
-            if (s != null) {
-                log.info("check stock " + s.getId() + " for buy/sell point");
-                QtySellPointSelector sps = new QtySellPointSelector();
-                QtyBuyPointSelector dbs = new QtyBuyPointSelector();
-                if (sps.isGoodSellPoint(s, null)) {
-                    stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(), s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), false, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
-                }
-                else if(dbs.isGoodBuyPoint(s, null)) {
-                    stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(),s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), true, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
-                }
+            s = queueToMonitor.poll();
+            log.info("check stock " + s.getId() + " for buy/sell point");
+            QtySellPointSelector sps = new QtySellPointSelector();
+            QtyBuyPointSelector dbs = new QtyBuyPointSelector();
+            if (sps.isGoodSellPoint(s, null)) {
+                stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(), s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), false, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
             }
-            else if (!stockTomail.isEmpty()) {
-                log.info("Now sending buy/sell stock information for " + stockTomail.size());
-                gsbsob.setData(stockTomail);
-                if (stockTomail.size() > 50) {
-                    gsbsob.update();
-                    stockTomail.clear();
-                }
+            else if(dbs.isGoodBuyPoint(s, null)) {
+                stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(),s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), true, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
+            }
+            if (!stockTomail.isEmpty()) {
+               log.info("Now sending buy/sell stock information for " + stockTomail.size());
+               gsbsob.setData(stockTomail);
+               gsbsob.update();
+               stockTomail.clear();
             }
         } catch (Exception e) {
             e.printStackTrace();

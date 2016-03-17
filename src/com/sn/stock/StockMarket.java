@@ -297,15 +297,13 @@ public class StockMarket{
     }
     
     static public String getShortDesc() {
-        NumberFormat nf = NumberFormat.getInstance();
-        nf.setMaximumFractionDigits(2);
-        return "Deg:" + nf.format(Degree) + " StkNum/Inc/Dec/Eql:(" + StkNum + "/" + TotInc + "/" + TotDec + "/" + TotEql + ")";
+    	DecimalFormat df = new DecimalFormat("##.##");
+        return "Deg:" + df.format(Degree) + " StkNum/Inc/Dec/Eql:(" + StkNum + "/" + TotInc + "/" + TotDec + "/" + TotEql + ")";
     }
     
     static public String getLongDsc() {
         
-        NumberFormat nf = NumberFormat.getInstance();
-        nf.setMaximumFractionDigits(2);
+    	DecimalFormat df = new DecimalFormat("##.##");
         String index = "<table border = 1>" +
         "<tr>" +
         "<th> Stock Count</th> " +
@@ -320,14 +318,14 @@ public class StockMarket{
         "<th> Degree </th> </tr> ";
         index += "<tr> <td>" + StkNum + "</td>" +
         "<td> " + TotInc + "</td>" +
-         "<td> " + nf.format(AvgIncPct*100) + "%</td>" +
-         "<td> " + nf.format(totIncDlMny/100000000) + "亿</td>" +
+         "<td> " + df.format(AvgIncPct*100) + "%</td>" +
+         "<td> " + df.format(totIncDlMny/100000000) + "亿</td>" +
          "<td> " + TotDec + "</td>" +
-         "<td> " + nf.format(AvgDecPct*100) + "%</td>" +
-         "<td> " + nf.format(totDecDlMny/100000000) + "亿</td>" +
+         "<td> " + df.format(AvgDecPct*100) + "%</td>" +
+         "<td> " + df.format(totDecDlMny/100000000) + "亿</td>" +
          "<td> " + TotEql + "</td>" +
-         "<td> " + nf.format(totEqlDlMny/100000000) + "亿</td>" +
-         "<td> " + nf.format((TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1)) + " C</tr></table>";
+         "<td> " + df.format(totEqlDlMny/100000000) + "亿</td>" +
+         "<td> " + df.format((TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1)) + " C</tr></table>";
         return index;
     }
     static public boolean isMarketTooCold(Timestamp tm) {

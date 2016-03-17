@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -91,26 +92,25 @@ public class GzStockBuySellPointObserverable extends Observable {
         }
         
         needSentMail = true;
-        String body = "";
-        body += "<table bordre = 1>" +
+        StringBuffer body = new StringBuffer();
+        body.append("<table bordre = 1>" +
         "<tr>" +
         "<th> ID</th> " +
         "<th> Name</th> " +
         "<th> Price</th> " +
         "<th> Buy/Sell</th> " +
-        "<th> Time</th></tr> ";
+        "<th> Time</th></tr>");
         
-        NumberFormat nf = NumberFormat.getInstance();
-        nf.setMaximumFractionDigits(2);
+        DecimalFormat df = new DecimalFormat("##.##");
         
         for (StockBuySellEntry e : sbse) {
-            body += "<tr> <td>" + e.id + "</td>" +
+            body.append("<tr> <td>" + e.id + "</td>" +
             "<td> " + e.name + "</td>" +
-            "<td> " + nf.format(e.price) + "</td>" +
+            "<td> " + df.format(e.price) + "</td>" +
             "<td> " + (e.is_buy_point ? "B" : "S") + "</td>" +
-            "<td> " + e.timestamp + "</td></tr>";
+            "<td> " + e.timestamp + "</td></tr>");
         }
         
-        return body;
+        return body.toString();
     }
 }
