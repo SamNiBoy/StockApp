@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -20,18 +21,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
-
 import com.sn.db.DBManager;
-import com.sn.mail.reporter.MailSenderType;
-import com.sn.mail.reporter.MailSenderFactory;
-import com.sn.mail.reporter.SimpleMailSender;
-import com.sn.reporter.WCMsgSender;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 
 public class GzStockBuySellPointObserverable extends Observable {
+
+    static Logger log = Logger.getLogger(GzStockBuySellPointObserverable.class);
+
+    static Connection con = DBManager.getConnection();
+    private List<StockBuySellEntry> sbse = new ArrayList<StockBuySellEntry>();
+    private List<MailSubscriber> ms = new ArrayList<MailSubscriber>();
 
 	public class MailSubscriber{
 		String openID;
@@ -47,13 +47,30 @@ public class GzStockBuySellPointObserverable extends Observable {
 		}
 		public String subject;
 		public String content;
+		private Map<String, Long> lastSend = new HashMap<String, Long>();
+		
+		public boolean saveSend(String stk) {
+			//If already send within half an hour, will not send again.
+			Long gap = 30*60*1000L;
+			if (sentWithin(stk, gap)) {
+				log.info("Aleady sent mail to user:" + openID + "for stock:" + stk + " within:" + gap + " will not sent again.");
+				return false;
+			}
+			lastSend.remove(stk);
+			lastSend.put(stk, System.currentTimeMillis());
+			return true;
+		}
+		
+		private boolean sentWithin(String stk, long gap) {
+			Long lstTm = lastSend.get(stk);
+			Long now = System.currentTimeMillis();
+			if (lstTm != null && now - lstTm < gap) {
+				return true;
+			}
+			return false;
+		}
 	}
-    static Logger log = Logger.getLogger(GzStockBuySellPointObserverable.class);
-
-    static Connection con = DBManager.getConnection();
-    private List<StockBuySellEntry> sbse = new ArrayList<StockBuySellEntry>();
-    private List<MailSubscriber> ms = new ArrayList<MailSubscriber>();
-
+	
     public List<MailSubscriber> getMailSubscribers() {
     	return ms;
     }
@@ -96,11 +113,13 @@ public class GzStockBuySellPointObserverable extends Observable {
         String subject = StockMarket.getShortDesc() + returnStr;
         StringBuffer body;
         boolean usr_need_mail = false;
+        boolean generated_mail = false;
         
         for (MailSubscriber u : ms) {
         	u.subject = subject;
         	u.content = "";
         	body = new StringBuffer();
+        	usr_need_mail = false;
             body.append("<table bordre = 1>" +
                     "<tr>" +
                     "<th> ID</th> " +
@@ -110,18 +129,24 @@ public class GzStockBuySellPointObserverable extends Observable {
                     "<th> Time</th></tr>");
             DecimalFormat df = new DecimalFormat("##.##");
             for (StockBuySellEntry e : sbse) {
-            	if (u.gzStk(e.id)) {
+            	if (u.gzStk(e.id) && u.saveSend(e.id)) {
                     body.append("<tr> <td>" + e.id + "</td>" +
                     "<td> " + e.name + "</td>" +
                     "<td> " + df.format(e.price) + "</td>" +
                     "<td> " + (e.is_buy_point ? "B" : "S") + "</td>" +
                     "<td> " + e.timestamp + "</td></tr>");
                     usr_need_mail = true;
+                    generated_mail = true;
             	}
             }
-            u.content = body.toString();
+            if (usr_need_mail) {
+                u.content = body.toString();
+            }
+            else {
+            	u.content = "";
+            }
         }
-        return usr_need_mail;
+        return generated_mail;
     }
 
     public GzStockBuySellPointObserverable(List<StockBuySellEntry> s) {
