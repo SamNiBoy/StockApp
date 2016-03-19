@@ -14,7 +14,6 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.sim.SimStockDriver;
-import com.sn.stock.Stock;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 

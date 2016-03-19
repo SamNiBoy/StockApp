@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
 public class ListGzStock implements IWork {
@@ -22,6 +23,7 @@ public class ListGzStock implements IWork {
     long initDelay = 0;
     long delayBeforNxtStart = 5;
     static String res = "开始收集关注股票信息...";
+    String frmUsr;
 
     Connection con = DBManager.getConnection();
 
@@ -32,13 +34,14 @@ public class ListGzStock implements IWork {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        ListGzStock lgs = new ListGzStock(0, 0);
+        ListGzStock lgs = new ListGzStock(0, 0, "abc");
         lgs.run();
     }
 
-    public ListGzStock(long id, long dbn) {
+    public ListGzStock(long id, long dbn, String usr) {
         initDelay = id;
         delayBeforNxtStart = dbn;
+        frmUsr = usr;
     }
 
     public void run() {
@@ -61,7 +64,7 @@ public class ListGzStock implements IWork {
     private String getGzStockInfo()
     {
         Statement stm = null;
-        String sql = "select id, name from stk where gz_flg = 1";
+        String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1";
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
 
@@ -140,6 +143,12 @@ public class ListGzStock implements IWork {
     }
 
     public String getWorkResult() {
+    	try{
+    	    WorkManager.waitUntilWorkIsDone(this.getWorkName());
+    	}
+    	catch (Exception e) {
+    		e.printStackTrace();
+    	}
         return res;
     }
 

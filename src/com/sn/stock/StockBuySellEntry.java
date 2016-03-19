@@ -21,7 +21,7 @@ import com.sn.work.fetcher.FetchStockData;
 
 public class StockBuySellEntry{
 
-    static Logger log = Logger.getLogger(Stock.class);
+    static Logger log = Logger.getLogger(StockBuySellEntry.class);
     /**
      * @param args
      */

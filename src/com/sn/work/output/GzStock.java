@@ -24,6 +24,7 @@ public class GzStock implements com.sn.work.itf.IWork {
     
     String stockID;
 
+    String frmUsr;
     TimeUnit tu = TimeUnit.MILLISECONDS;
     /* Result calcualted by this worker.
      */
@@ -38,27 +39,44 @@ public class GzStock implements com.sn.work.itf.IWork {
 
     }
 
-    public GzStock(long id, long dbn, String stk)
+    public GzStock(long id, long dbn, String usr, String stk)
     {
         initDelay = id;
         delayBeforNxtStart = dbn;
         stockID = stk;
+        frmUsr = usr;
     }
 
     public void run()
     {        // //////////////////Menu
         String msg = "";
         Connection con = DBManager.getConnection();
-        String sql = "update stk set gz_flg = 1 where ID = '" + stockID + "'";
+        String sql = "select 'x' from usrStk where id = '" + stockID + "' and openID = '" + frmUsr + "'";
         try {
             Statement stm = con.createStatement();
-            stm.executeUpdate(sql);
+            ResultSet rs = null;
+            rs = stm.executeQuery(sql);
 
+            if (rs.next()) {
+            	rs.close();
+            	stm.close();
+            	sql = "update usrStk set gz_flg = 1 - gz_flg where id = '" + stockID + "' and openID = '" + frmUsr + "'";
+            	stm = con.createStatement();
+            	log.info(sql);
+            	stm.execute(sql);
+            }
+            else {
+            	rs.close();
+            	stm.close();
+            	stm = con.createStatement();
+            	sql = "insert into usrStk values ('" + frmUsr + "','" + stockID + "',1, sysdate)";
+            	log.info(sql);
+            	stm.execute(sql);
+            }
             con.commit();
-                msg += "Stock:" + stockID + " get gzed!\n";
+                msg += "Stock:" + stockID + " get gz or tzed!\n";
             stm.close();
             con.close();
-            log.info("gz msg:" + msg + " for opt 5");
             res = msg;
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,6 +85,12 @@ public class GzStock implements com.sn.work.itf.IWork {
 
     public String getWorkResult()
     {
+    	try{
+    	    WorkManager.waitUntilWorkIsDone(this.getWorkName());
+    	}
+    	catch (Exception e) {
+    		e.printStackTrace();
+    	}
         return res;
     }
 
@@ -86,7 +110,7 @@ public class GzStock implements com.sn.work.itf.IWork {
     }
     public String getWorkName()
     {
-        return "ShutDownPC";
+        return "GzStock";
     }
 
     public boolean isCycleWork()

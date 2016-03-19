@@ -72,7 +72,7 @@ public class MonitorGzStockData implements IWork {
         Stock2 s;
         while(true) {
         try {
-            s = queueToMonitor.poll();
+            s = queueToMonitor.take();
             log.info("check stock " + s.getId() + " for buy/sell point");
             QtySellPointSelector sps = new QtySellPointSelector();
             QtyBuyPointSelector dbs = new QtyBuyPointSelector();

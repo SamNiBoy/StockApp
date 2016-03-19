@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.stock.StockMarket;
+import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
 public class CalFetchStat implements com.sn.work.itf.IWork {
@@ -52,21 +54,29 @@ public class CalFetchStat implements com.sn.work.itf.IWork {
             ResultSet rs = stm.executeQuery(sql);
 
             if (rs.next()){
-                msg += "Total stkDat:" + rs.getLong("totCnt") + "\n"
-                      +"CNT/STK:" + rs.getLong("cntPerStk") + "\n";
+                msg += "Total stockk Data:" + rs.getLong("totCnt") + "\n"
+                      +"Count per Stock:" + rs.getLong("cntPerStk") + "\n";
             }
             rs.close();
             stm.close();
             con.close();
             log.info("calculate fetch stat msg:" + msg + " for opt 5");
-            res = msg;
         } catch (Exception e) {
             e.printStackTrace();
+            msg = "Stock Data statistic not available.\n";
         }
-        }
+        msg += StockMarket.getShortDesc();
+        res = msg;
+    }
 
     public String getWorkResult()
     {
+    	try{
+    	    WorkManager.waitUntilWorkIsDone(this.getWorkName());
+    	}
+    	catch (Exception e) {
+    		e.printStackTrace();
+    	}
         return res;
     }
 

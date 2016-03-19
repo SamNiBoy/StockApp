@@ -821,7 +821,6 @@ public class Stock2 implements Comparable<Stock2>{
      */
     String id;
     String name;
-    boolean gz_flg;
     StockData sd;
     
     
@@ -839,14 +838,6 @@ public class Stock2 implements Comparable<Stock2>{
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public boolean isGz_flg() {
-        return gz_flg;
-    }
-
-    public void setGz_flg(boolean gzFlg) {
-        gz_flg = gzFlg;
     }
 
     public StockData getSd() {
@@ -884,7 +875,6 @@ public class Stock2 implements Comparable<Stock2>{
     {
         id = ids;
         name = nm;
-        gz_flg = gzflg > 0;
         sd = new StockData(id);
     }
     
@@ -892,7 +882,6 @@ public class Stock2 implements Comparable<Stock2>{
     {
         id = ids;
         name = nm;
-        gz_flg = gzflg > 0;
         sd = new StockData(id, start_dte, end_dte);
     }
 
@@ -1016,7 +1005,7 @@ public class Stock2 implements Comparable<Stock2>{
         log.info("Stock " + id + " data information:\n");
         log.info("========================================\n");
         log.info("ID\t|Name\t|GZ_FLG\t|");
-        log.info(id + "\t|" + name + "\t|" + ((gz_flg)? "TRUE" : "FALSE") + "\t|\n");
+        log.info(id + "\t|" + name + "\t|\n");
         sd.PrintStockData();
     }
 

@@ -97,7 +97,7 @@ public class StockMarket{
         int Total = 0, cnt = 0;
         try {
             stm = con.createStatement();
-            String sql = "select id, name, gz_flg from stk where gz_flg = 1 order by id";
+            String sql = "select s.id, s.name, u.gz_flg from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 order by s.id";
             rs = stm.executeQuery(sql);
             
             String id, name;

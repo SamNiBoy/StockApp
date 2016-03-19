@@ -19,6 +19,7 @@ import com.sn.stock.RawStockData;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 import com.sn.work.monitor.MonitorGzStockData;
+import com.sn.work.monitor.MonitorStockData;
 
 public class GzStockDataFetcher implements IWork {
 
@@ -108,7 +109,7 @@ public class GzStockDataFetcher implements IWork {
     {
         Statement stm = null;
         ResultSet rs = null;
-        String sql = "select area, id from stk where gz_flg = 1";
+        String sql = "select distinct stk.area, stk.id from stk, usrStk where stk.id = usrStk.id and usrStk.gz_flg = 1";
 
         String stkLst = "";
         

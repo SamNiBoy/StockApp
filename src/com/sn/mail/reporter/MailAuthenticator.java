@@ -16,7 +16,6 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.stock.Stock;
 import com.sn.wechat.msg.itf.IWCMsg;
 
 import javax.mail.Authenticator;

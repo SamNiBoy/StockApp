@@ -28,8 +28,6 @@ import com.sn.mail.reporter.MailSenderType;
 import com.sn.mail.reporter.MailSenderFactory;
 import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.reporter.WCMsgSender;
-import com.sn.stock.Stock;
-import com.sn.stock.Stock.Follower;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 
@@ -539,7 +537,6 @@ public class StockObserverable extends Observable {
 				+ "<th> Pct</th> " + "<th> Rate </th> " + "<th> DetQty </th> " + "<th> Pre_DetQty </th></tr> ";
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(2);
-		List<Stock> ls = new ArrayList<Stock>();
 		// for (String stk : stocks.keySet()) {
 		// ls.add(stocks.get(stk));
 		// }
@@ -562,17 +559,6 @@ public class StockObserverable extends Observable {
 		// }
 		// }
 		// });
-		for (Stock s : ls) {
-			if (s.isPre_detQty_plused()) {
-				StockPlused += "<tr> <td>" + s.getID() + "</td>" + "<td> " + s.getName() + "</td>" + "<td> "
-						+ nf.format(s.getCur_pri()) + "</td>" + "<td> " + nf.format(s.getPct() * 100) + "%</td>"
-						+ "<td> " + nf.format(s.pre_detQty == 0 ? 0.0 : s.getDetQty() / s.pre_detQty) + "</td>"
-						+ "<td> " + s.getDetQty() + "</td>" + "<td> " + s.getPre_detQty() + "</td> </tr>";
-				needSentMail = true;
-			}
-		}
-		ls = null;
-		StockPlused += "</table>";
 
 		log.info("got StockPlused msg:" + StockPlused);
 		return StockPlused;

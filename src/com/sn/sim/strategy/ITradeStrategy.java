@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.stock.Stock;
 import com.sn.stock.Stock2;
 
 public interface ITradeStrategy {

@@ -35,10 +35,8 @@ import com.sn.reporter.WCMsgSender;
 import com.sn.sim.strategy.ITradeStrategy;
 import com.sn.sim.strategy.imp.TradeStrategyGenerator;
 import com.sn.sim.strategy.imp.TradeStrategyImp;
-import com.sn.stock.Stock;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
-import com.sn.stock.Stock.Follower;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 

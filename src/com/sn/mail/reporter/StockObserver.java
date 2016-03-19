@@ -11,6 +11,7 @@ import javax.mail.internet.AddressException;
 import org.apache.log4j.Logger;
 
 import com.sn.mail.reporter.MailSenderType;
+import com.sn.mail.reporter.GzStockBuySellPointObserverable.MailSubscriber;
 import com.sn.mail.reporter.MailSenderFactory;
 import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.sim.SimTrader;
@@ -54,16 +55,15 @@ public class StockObserver implements Observer {
             GzStockBuySellPointObserverable gso = (GzStockBuySellPointObserverable) obj;
             // 发送邮件
             SimpleMailSender sms = MailSenderFactory.getSender();
-            List<String> recipients = new ArrayList<String>();
-            recipients.add("yl_nxj@163.com");
             // recipients.add("samniboy@gmail.com");
-            String subject = gso.getSubject();
-            String content = gso.getContent();
-            log.info("got mail:" + subject + "\n" + content);
-            System.out.println("got mail:" + subject + "\n" + content);
+            List<MailSubscriber> ms = gso.getMailSubscribers();
+            
             try {
-                for (String recipient : recipients) {
-                    sms.send(recipient, subject, content);
+                for (MailSubscriber u : ms) {
+                	if (u.content.length() > 0) {
+                		log.info("now send mail:" + u.subject + "\n" + u.content + " for usr:" + u.openID + " to mail:" + u.mail);
+                        sms.send(u.mail, u.subject, u.content);
+                	}
                 }
             } catch (AddressException e) {
                 e.printStackTrace();

@@ -22,7 +22,6 @@ import com.sn.sim.strategy.selector.sellpoint.MacdSellPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.QtySellPointSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
-import com.sn.stock.Stock;
 
 public class TradeStrategyGenerator {
 

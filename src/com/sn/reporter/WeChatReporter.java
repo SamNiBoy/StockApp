@@ -13,6 +13,8 @@ import com.sn.work.output.ListGzStock;
 import com.sn.work.output.ShutDownPC;
 import com.sn.work.output.TopTenBst;
 import com.sn.work.output.TopTenWst;
+import com.sn.work.task.AddMail;
+import com.sn.work.task.EnaUsrBuySell;
 import com.sn.work.task.TaskManager;
 import com.sn.work.task.usrStock;
 
@@ -47,12 +49,12 @@ public class WeChatReporter extends BaseWCReporter{
 
     public String printHelp() {
         resContent = "你可以发送以下代码:\n"
-                + "1.获取我关注的股票.\n" + "2.获取股票数据.\n"
-                + "3.停止获取股票数据.\n" + "4.报告获取数据情况.\n" 
-                + "5.监控关注股票\n" + "6.停止监控关注股票\n"
-                + "7.关机\n"
-                + "8.模拟买卖关注股票\n" + "9.停止模拟买卖关注股票\n"
-                + "gzxxxxxx 关注股票.\n" + " tzxxxxxx 停止关注股票.\n";
+                + "1.获取关注的股票.\n" + "2.获取股票数据.\n"
+                + "3.停止获取股票数据.\n" + "4.报告数据情况.\n" 
+                + "5.监控关注股票买卖.\n" + "6.停止监控关注股票买卖.\n"
+                + "7.关机.\n"
+                + "xxxxxx 关注/取消关注股票.\n"
+                + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
 
         String msg = createWCMsg();
         return msg;
@@ -63,15 +65,15 @@ public class WeChatReporter extends BaseWCReporter{
         }
         
         log.info("got input:[" + content + "], firstly let's check tasks");
-//        if (!TaskManager.isTasksStarted())
-//        {
-//            TaskManager.startTasks();
-//        }
+        if (!TaskManager.isTasksStarted())
+        {
+            TaskManager.startTasks();
+        }
 
             if (content.equals("1")) {
-                ListGzStock ttb = new ListGzStock(0, 3);
+                ListGzStock ttb = new ListGzStock(0, 3, this.getFromUserName());
                 if (!WorkManager.submitWork(ttb)) {
-                    resContent = "Work already scheduled, can not do it again!";
+                    resContent = "ListGzStock already scheduled, can not do it again!";
                 }
                 else {
                     resContent = ttb.getWorkResult();
@@ -102,67 +104,74 @@ public class WeChatReporter extends BaseWCReporter{
             else if (content.equals("4")) {
                 CalFetchStat cfs = new CalFetchStat(0, 3);
                 if (!WorkManager.submitWork(cfs)) {
-                    resContent = "Work already scheduled, can not do it again!";
+                    resContent = "CalFetchStat already scheduled, can not do it again!";
                 }
                 else {
                     resContent = cfs.getWorkResult();
                 }
             }
+//            else if (content.equals("5")) {
+//                MonitorStockData sdp = new MonitorStockData(0, 35000);
+//                if (!WorkManager.submitWork(sdp)) {
+//                    resContent = "Work already scheduled, can not do it again!";
+//                }
+//                else {
+//                    resContent = sdp.getWorkResult();
+//                }
+//            }
+//            else if (content.equals("6")) {
+//                MonitorStockData sdp = new MonitorStockData(0, 0);
+//                WorkManager.cancelWork(sdp.getWorkName());
+//                resContent = "Stoped monitoring stock data.";
+//            }
             else if (content.equals("5")) {
-                MonitorStockData sdp = new MonitorStockData(0, 35000);
-                if (!WorkManager.submitWork(sdp)) {
-                    resContent = "Work already scheduled, can not do it again!";
+            	EnaUsrBuySell us = new EnaUsrBuySell(0, 0, this.getFromUserName(), true);
+                if (!WorkManager.submitWork(us)) {
+                    resContent = "AddMail already scheduled, can not do it again!";
                 }
                 else {
-                    resContent = sdp.getWorkResult();
+                    resContent = us.getWorkResult();
                 }
             }
             else if (content.equals("6")) {
-                MonitorStockData sdp = new MonitorStockData(0, 0);
-                WorkManager.cancelWork(sdp.getWorkName());
-                resContent = "Stoped monitoring stock data.";
+            	EnaUsrBuySell us = new EnaUsrBuySell(0, 0, this.getFromUserName(), false);
+                if (!WorkManager.submitWork(us)) {
+                    resContent = "AddMail already scheduled, can not do it again!";
+                }
+                else {
+                    resContent = us.getWorkResult();
+                }
             }
             else if (content.equals("7")) {
                 ShutDownPC sdp = new ShutDownPC(0, 3);
                 if (!WorkManager.submitWork(sdp)) {
-                    resContent = "Work already scheduled, can not do it again!";
+                    resContent = "ShutDownPC already scheduled, can not do it again!";
                 }
                 else {
                     resContent = sdp.getWorkResult();
                 }
             }
-            else if (content.equals("8")) {
-                GzStockDataFetcher.start();
-                resContent = GzStockDataFetcher.getResMsg();
-            }
-            else if (content.equals("9")) {
-                GzStockDataFetcher.stop();
-                resContent = GzStockDataFetcher.getResMsg();
-            }
-            else if (content.length() > 2 && content.substring(0,2).equalsIgnoreCase("gz")) {
-                String stk = content.substring(2, 8);
-                GzStock sdp = new GzStock(0, 3, stk);
+            else if (content.length() == 6 && !content.contains("@")) {
+                String stk = content;
+                GzStock sdp = new GzStock(0, 3, this.getFromUserName(), stk);
                 if (!WorkManager.submitWork(sdp)) {
-                    resContent = "Work already scheduled, can not do it again!";
+                    resContent = "GzStock already scheduled, can not do it again!";
                 }
                 else {
                     resContent = sdp.getWorkResult();
                 }
             }
-            else {
-                if (content.length() == 6) {
-                    usrStock us = new usrStock(0, 0, this.getFromUserName(), content);
-                    WorkManager.submitWork(us);
+            else if (content.contains("@")) {
+                    AddMail us = new AddMail(0, 0, this.getFromUserName(), content);
                     if (!WorkManager.submitWork(us)) {
-                        resContent = "Work already scheduled, can not do it again!";
+                        resContent = "AddMail already scheduled, can not do it again!";
                     }
                     else {
                         resContent = us.getWorkResult();
                     }
-                }
-                else {
-                    return printHelp();
-                }
+            }
+            else {
+                return printHelp();
             }
             return createWCMsg();
     }

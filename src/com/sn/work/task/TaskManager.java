@@ -9,12 +9,13 @@ import org.apache.log4j.Logger;
 
 import com.sn.work.itf.IWork;
 import com.sn.work.WorkManager;
+import com.sn.work.fetcher.GzStockDataFetcher;
 
 public class TaskManager {
 
     static Logger log = Logger.getLogger(TaskManager.class);
     
-    private static boolean tskStarted = false;
+    private volatile static boolean tskStarted = false;
     
     private static Map<String, IWork> tsks = new ConcurrentHashMap<String, IWork>();
     /**
@@ -32,8 +33,7 @@ public class TaskManager {
         {
             log.info("Starting tasks...");
             tskStarted = true;
-            startCalStkDDF();
-            startEvaStocks();
+            startGzStock();
             return true;
         }
         else {
@@ -55,6 +55,13 @@ public class TaskManager {
         EvaStocks evs = new EvaStocks(0, 0, false);
         WorkManager.submitWork(evs);
         tsks.put(evs.getWorkName(), evs);
+        return true;
+    }
+    
+    
+    private static boolean startGzStock()
+    {
+    	GzStockDataFetcher.start();
         return true;
     }
     

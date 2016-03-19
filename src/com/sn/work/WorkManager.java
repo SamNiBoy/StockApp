@@ -97,6 +97,16 @@ public class WorkManager {
         log.info("Now finished all works, shutdow pool");
         shutdownWorks();
     }
+    
+    public static void waitUntilWorkIsDone(String workName) throws InterruptedException {
+        log.info("Now wait until work" + workName + " is done...");
+        ScheduledFuture<?> sf = SFM.get(workName);
+        while (sf != null && !sf.isDone()) {
+            log.info("Work:" + workName + " is not finished! wait for 1 second");
+            Thread.currentThread().sleep(1000);
+        }
+        log.info("Now finished work:" + workName + "return");
+    }
 
     public static void shutdownWorks() {
         exec.shutdown();

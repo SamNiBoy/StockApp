@@ -9,7 +9,6 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.stock.Stock;
 import com.sn.wechat.msg.itf.IWCMsg;
 
 public abstract class BaseWCReporter implements IWCMsg {
@@ -108,7 +107,7 @@ public abstract class BaseWCReporter implements IWCMsg {
                 stm.close();
             } else {
                 sql = "insert into usr values ('" + usr + "',"
-                        + (hst_flg == true ? 1 : 0) + "," + "sysdate)";
+                        + (hst_flg == true ? 1 : 0) + "," + "sysdate, '', 0)";
                 stm.executeUpdate(sql);
                 log.info("User:" + frmUsr + " added as "
                         + (hst_flg == true ? 1 : 0));

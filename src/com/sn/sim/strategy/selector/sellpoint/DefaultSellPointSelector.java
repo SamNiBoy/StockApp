@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
-import com.sn.stock.Stock;
 import com.sn.stock.Stock2;
 
 public class DefaultSellPointSelector implements ISellPointSelector {

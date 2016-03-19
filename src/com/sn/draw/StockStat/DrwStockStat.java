@@ -11,7 +11,6 @@ import java.util.Comparator;
 import org.apache.log4j.Logger;
 
 import com.sn.draw.itf.Draw;
-import com.sn.stock.Stock;
 import com.sn.work.WorkManager;
 import com.sn.work.fetcher.FetchStockData;
 import com.sn.work.task.EvaStocks;
@@ -124,20 +123,5 @@ public class DrwStockStat implements Draw{
         return "Percentage";
     }
     
-    class SortByIncPct implements Comparator<Stock> {
-
-        @Override
-        public int compare(Stock arg0, Stock arg1) {
-            Stock s0 = arg0;
-            Stock s1 = arg1;
-//            if (s0.map.get("incPct") > s1.map.get("incPct")) {
-//                log.info("s0 ID:" + s0.getID() + " > s1 ID:" + s1.getID());
-//                return -1;
-//            } else {
-//                log.info("s0 ID:" + s0.getID() + " < s1 ID:" + s1.getID());
-                return 1;
-//            }
-        }
-    }
 
 }

@@ -28,37 +28,106 @@ import com.sn.mail.reporter.MailSenderType;
 import com.sn.mail.reporter.MailSenderFactory;
 import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.reporter.WCMsgSender;
-import com.sn.stock.Stock;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
-import com.sn.stock.Stock.Follower;
 
 public class GzStockBuySellPointObserverable extends Observable {
 
+	public class MailSubscriber{
+		String openID;
+		String mail;
+		List<String> gzStkLst = new ArrayList<String>();
+		public boolean gzStk(String stkId) {
+			return gzStkLst.contains(stkId);
+		}
+		MailSubscriber(String oid, String ml, String stkId) {
+			openID = oid;
+			mail = ml;
+			gzStkLst.add(stkId);
+		}
+		public String subject;
+		public String content;
+	}
     static Logger log = Logger.getLogger(GzStockBuySellPointObserverable.class);
 
     static Connection con = DBManager.getConnection();
-    public String subject;
-    public String content;
-    private boolean hasSentMail = false;
-    private boolean needSentMail = false;
     private List<StockBuySellEntry> sbse = new ArrayList<StockBuySellEntry>();
+    private List<MailSubscriber> ms = new ArrayList<MailSubscriber>();
 
-    public String getSubject() {
-        return subject;
+    public List<MailSubscriber> getMailSubscribers() {
+    	return ms;
     }
-
-    public String getContent() {
-        return content;
+    private boolean loadMailScb() {
+    	boolean load_success = false;
+    	try {
+    		Statement stm = con.createStatement();
+    		String sql = "select s.*, u.* from usrStk s, usr u where s.openID = u.openID and s.gz_flg = 1 and u.mail is not null and u.buy_sell_enabled = 1";
+    		log.info(sql);
+    		ResultSet rs = stm.executeQuery(sql);
+    		String openId;
+    		String mail;
+    		String stkId;
+    		while (rs.next()) {
+    			openId = rs.getString("openID");
+    			mail = rs.getString("mail");
+    			stkId = rs.getString("id");
+    			log.info("loading mailsubscriber:" + openId + ", mail:" + mail + ", stock:" + stkId);
+    			ms.add(new MailSubscriber(openId, mail, stkId));
+    			load_success = true;
+    		}
+    		rs.close();
+    		stm.close();
+    	}
+    	catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    	return load_success;
     }
-
-    public boolean hasSentMail() {
-        return hasSentMail;
+    
+    private boolean buildMailforSubscribers() {
+        if (ms.size() == 0) {
+        	log.info("No user subscribed an buy/sell, no need to send mail.");
+        	return false;
+        }
+        String returnStr = "";  
+        SimpleDateFormat f = new SimpleDateFormat(" HH:mm:ss");  
+        Date date = new Date();  
+        returnStr = f.format(date);
+        String subject = StockMarket.getShortDesc() + returnStr;
+        StringBuffer body;
+        boolean usr_need_mail = false;
+        
+        for (MailSubscriber u : ms) {
+        	u.subject = subject;
+        	u.content = "";
+        	body = new StringBuffer();
+            body.append("<table bordre = 1>" +
+                    "<tr>" +
+                    "<th> ID</th> " +
+                    "<th> Name</th> " +
+                    "<th> Price</th> " +
+                    "<th> Buy/Sell</th> " +
+                    "<th> Time</th></tr>");
+            DecimalFormat df = new DecimalFormat("##.##");
+            for (StockBuySellEntry e : sbse) {
+            	if (u.gzStk(e.id)) {
+                    body.append("<tr> <td>" + e.id + "</td>" +
+                    "<td> " + e.name + "</td>" +
+                    "<td> " + df.format(e.price) + "</td>" +
+                    "<td> " + (e.is_buy_point ? "B" : "S") + "</td>" +
+                    "<td> " + e.timestamp + "</td></tr>");
+                    usr_need_mail = true;
+            	}
+            }
+            u.content = body.toString();
+        }
+        return usr_need_mail;
     }
 
     public GzStockBuySellPointObserverable(List<StockBuySellEntry> s) {
         this.addObserver(StockObserver.globalObs);
         sbse.addAll(s);
+        loadMailScb();
     }
     
     public boolean setData(List<StockBuySellEntry> dat) {
@@ -70,47 +139,10 @@ public class GzStockBuySellPointObserverable extends Observable {
     }
 
     public void update() {
-        needSentMail = false;
-        String returnStr = "";  
-        SimpleDateFormat f = new SimpleDateFormat(" HH:mm:ss");  
-        Date date = new Date();  
-        returnStr = f.format(date);
-        subject = content = "";
-        subject = StockMarket.getShortDesc() + returnStr;
-        content = StockMarket.getLongDsc() + "<br>" + getBody();
-        if (needSentMail) {
+        if (buildMailforSubscribers()) {
             this.setChanged();
             this.notifyObservers(this);
-            hasSentMail = true;
             sbse.clear();
         }
-    }
-    public String getBody() {
-        if (sbse.isEmpty()) {
-            needSentMail = false;
-            return "";
-        }
-        
-        needSentMail = true;
-        StringBuffer body = new StringBuffer();
-        body.append("<table bordre = 1>" +
-        "<tr>" +
-        "<th> ID</th> " +
-        "<th> Name</th> " +
-        "<th> Price</th> " +
-        "<th> Buy/Sell</th> " +
-        "<th> Time</th></tr>");
-        
-        DecimalFormat df = new DecimalFormat("##.##");
-        
-        for (StockBuySellEntry e : sbse) {
-            body.append("<tr> <td>" + e.id + "</td>" +
-            "<td> " + e.name + "</td>" +
-            "<td> " + df.format(e.price) + "</td>" +
-            "<td> " + (e.is_buy_point ? "B" : "S") + "</td>" +
-            "<td> " + e.timestamp + "</td></tr>");
-        }
-        
-        return body.toString();
     }
 }
