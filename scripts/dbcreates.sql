@@ -17,14 +17,21 @@ CONSTRAINT "usrStk_PK" PRIMARY KEY (OpenID, id)
 
 /* msg received/send*/
 create table msg(
+msg_id number not null primary key,
 msgId number not null,
 frmUsrID varchar2(100 byte) not null,
 toUsrID varchar2(100 byte) not null,
 crtTime number not null,
 mstType varchar2(20 byte) not null,
-content varchar2(1000 byte) not null,
-CONSTRAINT "msg_PK" PRIMARY KEY (msgId)
+content varchar2(1000 byte) not null
 );
+
+create sequence SEQ_MSG_PK
+  minvalue 1
+  maxvalue 99999999
+  start with 1
+  increment by 1
+  cache 20;
 
 /* monitor stock user id*/
 create table monStk(

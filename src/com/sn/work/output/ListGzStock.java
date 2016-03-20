@@ -50,7 +50,7 @@ public class ListGzStock implements IWork {
         try {
             msg = getGzStockInfo();
             if (msg.length() <= 0) {
-                msg = "No stock gzed!";
+                msg = "目前没有关注股票，请发送股票代码进行关注.";
             }
             log.info("list gzed stocks:" + msg);
 

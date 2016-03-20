@@ -54,8 +54,8 @@ public class CalFetchStat implements com.sn.work.itf.IWork {
             ResultSet rs = stm.executeQuery(sql);
 
             if (rs.next()){
-                msg += "Total stockk Data:" + rs.getLong("totCnt") + "\n"
-                      +"Count per Stock:" + rs.getLong("cntPerStk") + "\n";
+                msg += "总共收集:" + rs.getLong("totCnt") + "条记录.\n"
+                      +"平均每股收集:" + rs.getLong("cntPerStk") + "次.\n";
             }
             rs.close();
             stm.close();
@@ -63,7 +63,7 @@ public class CalFetchStat implements com.sn.work.itf.IWork {
             log.info("calculate fetch stat msg:" + msg + " for opt 5");
         } catch (Exception e) {
             e.printStackTrace();
-            msg = "Stock Data statistic not available.\n";
+            msg = "无数据.\n";
         }
         msg += StockMarket.getShortDesc();
         res = msg;

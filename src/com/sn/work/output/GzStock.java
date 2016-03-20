@@ -51,19 +51,26 @@ public class GzStock implements com.sn.work.itf.IWork {
     {        // //////////////////Menu
         String msg = "";
         Connection con = DBManager.getConnection();
-        String sql = "select 'x' from usrStk where id = '" + stockID + "' and openID = '" + frmUsr + "'";
+        String sql = "select gz_flg from usrStk where id = '" + stockID + "' and openID = '" + frmUsr + "'";
         try {
             Statement stm = con.createStatement();
             ResultSet rs = null;
             rs = stm.executeQuery(sql);
 
             if (rs.next()) {
+            	long gz_flg = rs.getLong("gz_flg");
             	rs.close();
             	stm.close();
             	sql = "update usrStk set gz_flg = 1 - gz_flg where id = '" + stockID + "' and openID = '" + frmUsr + "'";
             	stm = con.createStatement();
             	log.info(sql);
             	stm.execute(sql);
+            	if (gz_flg == 1) {
+            	    msg = "成功取消关注:" + stockID;
+            	}
+            	else {
+            		msg = "成功关注:" + stockID;
+            	}
             }
             else {
             	rs.close();
@@ -72,9 +79,9 @@ public class GzStock implements com.sn.work.itf.IWork {
             	sql = "insert into usrStk values ('" + frmUsr + "','" + stockID + "',1, sysdate)";
             	log.info(sql);
             	stm.execute(sql);
+        		msg = "成功添加关注:" + stockID;
             }
             con.commit();
-                msg += "Stock:" + stockID + " get gz or tzed!\n";
             stm.close();
             con.close();
             res = msg;

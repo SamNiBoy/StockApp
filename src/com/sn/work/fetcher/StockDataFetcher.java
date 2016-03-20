@@ -59,17 +59,17 @@ public class StockDataFetcher implements IWork {
             RawStockDataConsumer gsdc = new RawStockDataConsumer(0, 0);
             self = new StockDataFetcher(0, 35000, gsdc);
             if (WorkManager.submitWork(self)) {
-                resMsg = "Newly created StockDataFetcher and started!";
+                resMsg = "开始收集股票数据!";
                 return true;
             }
         }
         else if (WorkManager.canSubmitWork(self.getWorkName())) {
             if (WorkManager.submitWork(self)) {
-                resMsg = "Resubmitted StockDataFetcher and started!";
+                resMsg = "重新开始股票数据收集!";
                 return true;
             }
         }
-        resMsg = "Work StockDataFetcher is started, can not start again!";
+        resMsg = "正在收集股票数据，不能再启动任务!";
         return false;
     }
     
@@ -79,11 +79,11 @@ public class StockDataFetcher implements IWork {
             return true;
         }
         else if (WorkManager.canSubmitWork(self.getWorkName())) {
-            resMsg = "StockDataFetcher is stopped, but can submit again.";
+            resMsg = "数据收集器已经停止.";
             return true;
         }
         else if (WorkManager.cancelWork(self.getWorkName())) {
-            resMsg = "StockDataFetcher is cancelled successfully.";
+            resMsg = "成功取消数据收集器.";
             return true;
         }
         resMsg = "StockDataFetcher can not be cancelled!, this is unexpected";

@@ -35,9 +35,18 @@ public class WeChatReporter extends BaseWCReporter{
         "<Content><![CDATA[0]]></Content>" +
         "<MsgId>6149652032815793242</MsgId>" +
         "</xml>";
+        
+        String wcMsg2 = "<xml><ToUserName><![CDATA[gh_a9586d5aa590]]></ToUserName>" +
+        "<FromUserName><![CDATA[osCWfs-ZVQZfrjRK0ml-eEpzeop0]]></FromUserName>" +
+        "<CreateTime>1431827441</CreateTime>" +
+        "<MsgType><![CDATA[event]]></MsgType>" +
+        "<Event><![CDATA[subscribe]]></Event>" +
+        "<Event_key><![CDATA[qrscene_123123]]></Event_key>" +
+        "<Ticket><![CDATA[TICKET]]></Ticket>" +
+        "</xml>";
 
         WeChatReporter wcr = new WeChatReporter();
-        wcr.setWcMsg(wcMsg);
+        wcr.setWcMsg(wcMsg2);
         wcr.getResponse();
     }
 
@@ -48,6 +57,7 @@ public class WeChatReporter extends BaseWCReporter{
     }
 
     public String printHelp() {
+    	if (is_admin_flg) {
         resContent = "你可以发送以下代码:\n"
                 + "1.获取关注的股票.\n" + "2.获取股票数据.\n"
                 + "3.停止获取股票数据.\n" + "4.报告数据情况.\n" 
@@ -55,9 +65,16 @@ public class WeChatReporter extends BaseWCReporter{
                 + "7.关机.\n"
                 + "xxxxxx 关注/取消关注股票.\n"
                 + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
+    	}
+    	else {
+            resContent = "你可以发送以下代码:\n"
+                    + "1.获取关注的股票.\n"
+                    + "2.监控关注股票买卖.\n" + "3.停止监控关注股票买卖.\n"
+                    + "xxxxxx 关注/取消关注股票.\n"
+                    + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
+    	}
 
-        String msg = createWCMsg();
-        return msg;
+        return resContent;
     }
     public String getResponse() {
         if (content == null || content.equals("")) {
@@ -70,6 +87,25 @@ public class WeChatReporter extends BaseWCReporter{
             TaskManager.startTasks();
         }
 
+        if (msgType.equals("event")) {
+        	if (content.equals("subscribe")) {
+        		resContent = "欢迎关注微信:\n"
+        				+ printHelp();
+        	}
+        }
+        else {
+        	// remap key for other user.
+        	if (!is_admin_flg) {
+        		if (content.equals("2")) {
+        			content = "5";
+        		}
+        		else if (content.equals("3")) {
+        			content = "6";
+        		}
+        		else if (!content.equals("1")) {
+        			content = "0";
+        		}
+        	}
             if (content.equals("1")) {
                 ListGzStock ttb = new ListGzStock(0, 3, this.getFromUserName());
                 if (!WorkManager.submitWork(ttb)) {
@@ -171,8 +207,9 @@ public class WeChatReporter extends BaseWCReporter{
                     }
             }
             else {
-                return printHelp();
+            	resContent = printHelp();
             }
+        }
             return createWCMsg();
     }
 }

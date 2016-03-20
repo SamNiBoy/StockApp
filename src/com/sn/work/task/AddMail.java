@@ -21,7 +21,6 @@ import com.sn.work.fetcher.FetchStockData;
 
 public class AddMail implements IWork {
 
-    static Connection con = DBManager.getConnection();
     /*
      * Initial delay before executing work.
      */
@@ -66,17 +65,21 @@ public class AddMail implements IWork {
     public void run() {
         // TODO Auto-generated method stub
         try {
+        	Connection con = DBManager.getConnection();
             log.info("Now start AddMail work...");
             Statement mainStm = con.createStatement();
             String sql = "update usr set mail = '" + mail + "' where openID = '" + frmUsr + "'";
             log.info("AddMail:" + sql);
             mainStm.executeUpdate(sql);
-            log.info("AddMail:" + resContent);
+            con.commit();
+            con.close();
+            resContent = "成功添加邮箱:" + mail;
         } catch (Exception e) {
             log.error("Error: " + e.getMessage());
             e.printStackTrace();
+            resContent = "添加邮箱:" + mail + "异常:" + e.getMessage();
         }
-        resContent = "mail:" + mail + " added to user:" + frmUsr + " success.";
+
     }
 
     public String getWorkResult() {

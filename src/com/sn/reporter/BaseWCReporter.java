@@ -32,7 +32,9 @@ public abstract class BaseWCReporter implements IWCMsg {
     String toUsr;
     String content;
     String msgId;
+    String msgType;
     long crtTime;
+    boolean is_admin_flg = false;
     static Connection con = DBManager.getConnection();
 
     String resContent;
@@ -44,7 +46,15 @@ public abstract class BaseWCReporter implements IWCMsg {
     }
 
     private boolean parseMsg() {
-        if (wcMsg != null && !wcMsg.equals("")) {
+    	
+    	msgType = "";
+    	if (wcMsg != null && !wcMsg.equals("")) {
+            int msgType_s = wcMsg.indexOf("<MsgType><![CDATA[");
+            int msgType_e = wcMsg.indexOf("]]></MsgType>");
+            msgType = wcMsg.substring(msgType_s + 18, msgType_e);
+    	}
+    	
+        if (msgType.equals("text")) {
             int fromuser_s = wcMsg.indexOf("<FromUserName><![CDATA[");
             int fromuser_e = wcMsg.indexOf("]]></FromUserName>");
             frmUsr = wcMsg.substring(fromuser_s + 23, fromuser_e);
@@ -70,8 +80,33 @@ public abstract class BaseWCReporter implements IWCMsg {
             chkAndCrtUsr(toUsr, true);
             crtRcvMsg();
             return true;
-        } else {
-            return false;
+        } else if (msgType.equals("event")){
+            int fromuser_s = wcMsg.indexOf("<FromUserName><![CDATA[");
+            int fromuser_e = wcMsg.indexOf("]]></FromUserName>");
+            frmUsr = wcMsg.substring(fromuser_s + 23, fromuser_e);
+
+            int touser_s = wcMsg.indexOf("<ToUserName><![CDATA[");
+            int touser_e = wcMsg.indexOf("]]></ToUserName>");
+            toUsr = wcMsg.substring(touser_s + 21, touser_e);
+
+            int event_s = wcMsg.indexOf("<Event><![CDATA[");
+            int event_e = wcMsg.indexOf("]]></Event>");
+            content = wcMsg.substring(event_s + 16, event_e).trim();
+            
+            msgId = "0";
+
+            int crtTime_s = wcMsg.indexOf("<CreateTime>");
+            int crtTime_e = wcMsg.indexOf("</CreateTime>");
+            String ct = wcMsg.substring(crtTime_s + 12, crtTime_e).trim();
+            crtTime = Long.valueOf(ct);
+
+            chkAndCrtUsr(frmUsr, false);
+            chkAndCrtUsr(toUsr, true);
+            crtRcvMsg();
+            return true;
+        }
+        else {
+        	return false;
         }
     }
 
@@ -96,6 +131,10 @@ public abstract class BaseWCReporter implements IWCMsg {
     private boolean chkAndCrtUsr(String usr, boolean hst_flg) {
         Statement stm = null;
         ResultSet rs = null;
+        //This user samni
+        if (usr.equals("osCWfs-ZVQZfrjRK0ml-eEpzeop0")) {
+        	is_admin_flg = true;
+        }
         try {
             stm = con.createStatement();
             String sql;
@@ -134,7 +173,7 @@ public abstract class BaseWCReporter implements IWCMsg {
              * mstType varchar2(20 byte) not null, content varchar2(1000 byte)
              * not null,
              */
-            sql = "insert into msg values ('" + msgId + "', '" + frmUsr
+            sql = "insert into msg values (SEQ_MSG_PK.nextval,'" + msgId + "', '" + frmUsr
                     + "', '" + toUsr + "', " + crtTime + ", 'text', '"
                     + content + "')";
             log.info("Creating msg:" + sql);
@@ -178,7 +217,7 @@ public abstract class BaseWCReporter implements IWCMsg {
     @Override
     public String getMsgType() {
         // TODO Auto-generated method stub
-        return "text";
+        return msgType;
     }
 
     @Override

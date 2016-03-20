@@ -77,11 +77,29 @@ public class EnaUsrBuySell implements IWork {
             }
             log.info("EnaUsrBuySell:" + sql);
             mainStm.executeUpdate(sql);
+            con.commit();
+            mainStm.close();
+            if (enable_buy_sell_flg) {
+                sql = "select 'x' from usr where mail is not null";
+                mainStm = con.createStatement();
+                ResultSet rs = mainStm.executeQuery(sql);
+                if (!rs.next()) {
+                        resContent = "已经开启买卖信息提示，请发送邮箱地址进行订阅。";
+                    }
+                else {
+                	resContent = "已经开启买卖信息提示，您的邮箱将收到买卖提示信息。";
+                }
+                rs.close();
+                mainStm.close();
+            }
+            else {
+            	resContent = "已停止买卖信息提示。";
+            }
         } catch (Exception e) {
             log.error("Error: " + e.getMessage());
             e.printStackTrace();
+            resContent = "异常:" + e.getMessage();
         }
-        resContent = "Enabled buy sell notification for user:" + frmUsr + " success.";
     }
 
     public String getWorkResult() {
