@@ -25,8 +25,6 @@ public class ListGzStock implements IWork {
     static String res = "开始收集关注股票信息...";
     String frmUsr;
 
-    Connection con = DBManager.getConnection();
-
     TimeUnit tu = TimeUnit.MILLISECONDS;
 
     /**
@@ -69,6 +67,7 @@ public class ListGzStock implements IWork {
         Map<String, String> Stocks = new HashMap<String, String> ();
 
         try {
+        	Connection con = DBManager.getConnection();
             stm = con.createStatement();
             ResultSet rs = stm.executeQuery(sql);
             
@@ -117,6 +116,8 @@ public class ListGzStock implements IWork {
                         }
                         pre_qty = cur_qty;
                     }
+                    rs.close();
+
                     if (qtyCnt > 0) {
                         detQty = detQty / qtyCnt;
                     }
@@ -135,6 +136,8 @@ public class ListGzStock implements IWork {
                     continue;
                 }
             }
+            stm.close();
+            con.close();
         } catch (SQLException e1) {
         
             e1.printStackTrace();

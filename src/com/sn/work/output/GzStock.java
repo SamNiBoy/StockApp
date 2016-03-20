@@ -76,10 +76,20 @@ public class GzStock implements com.sn.work.itf.IWork {
             	rs.close();
             	stm.close();
             	stm = con.createStatement();
-            	sql = "insert into usrStk values ('" + frmUsr + "','" + stockID + "',1, sysdate)";
+            	sql = "select 'x' from stk where id = '" + stockID + "'";
             	log.info(sql);
-            	stm.execute(sql);
-        		msg = "成功添加关注:" + stockID;
+            	rs = stm.executeQuery(sql);
+            	if (!rs.next()) {
+            		msg = "不存在该股票代码:" + stockID;
+            		rs.close();
+            	}
+            	else {
+            		rs.close();
+            	    sql = "insert into usrStk values ('" + frmUsr + "','" + stockID + "',1, sysdate)";
+            	    log.info(sql);
+            	    stm.execute(sql);
+        		    msg = "成功添加关注:" + stockID;
+            	}
             }
             con.commit();
             stm.close();
