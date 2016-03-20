@@ -102,7 +102,7 @@ public class WeChatReporter extends BaseWCReporter{
         		else if (content.equals("3")) {
         			content = "6";
         		}
-        		else if (!content.equals("1")) {
+        		else if (!content.equals("1") && content.length() == 1) {
         			content = "0";
         		}
         	}

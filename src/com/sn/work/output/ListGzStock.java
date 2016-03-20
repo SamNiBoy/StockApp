@@ -62,7 +62,7 @@ public class ListGzStock implements IWork {
     private String getGzStockInfo()
     {
         Statement stm = null;
-        String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1";
+        String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "'";
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
 

@@ -80,14 +80,15 @@ public class EnaUsrBuySell implements IWork {
             con.commit();
             mainStm.close();
             if (enable_buy_sell_flg) {
-                sql = "select 'x' from usr where mail is not null";
+                sql = "select mail from usr where openID = '" + frmUsr + "' and mail is not null";
                 mainStm = con.createStatement();
                 ResultSet rs = mainStm.executeQuery(sql);
                 if (!rs.next()) {
                         resContent = "已经开启买卖信息提示，请发送邮箱地址进行订阅。";
                     }
                 else {
-                	resContent = "已经开启买卖信息提示，您的邮箱将收到买卖提示信息。";
+                	String mail = rs.getString("mail");
+                	resContent = "已经开启买卖信息提示，您的邮箱:" + mail + "将收到买卖提示信息。";
                 }
                 rs.close();
                 mainStm.close();
