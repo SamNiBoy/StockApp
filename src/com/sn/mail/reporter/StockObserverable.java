@@ -29,6 +29,7 @@ import com.sn.mail.reporter.MailSenderFactory;
 import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.reporter.WCMsgSender;
 import com.sn.stock.Stock2;
+import com.sn.stock.Stock2.StockData;
 import com.sn.stock.StockMarket;
 
 public class StockObserverable extends Observable {
@@ -649,7 +650,7 @@ public class StockObserverable extends Observable {
 			while (rs.next()) {
 				id = rs.getString("id");
 				name = rs.getString("name");
-				s = new Stock2(id, name, rs.getLong("gz_flg"));
+				s = new Stock2(id, name, rs.getLong("gz_flg"), StockData.BIG_SZ);
 				// s.setCur_pri(7.8);
 				// s.constructFollowers();
 				// stocks.put(id, s);

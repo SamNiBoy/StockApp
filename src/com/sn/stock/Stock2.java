@@ -21,44 +21,47 @@ import com.sn.db.DBManager;
 public class Stock2 implements Comparable<Stock2>{
 
     public class StockData{
+
+    	static public final int BIG_SZ = 800;
+    	static public final int SMALL_SZ = 400;
         int MAX_SZ = 800;
         //Save all history data
         String stkid;
-        List<Double> td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Double> yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Double> td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Double> td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<String> dt_lst = new BoundArrayList<String>(MAX_SZ);
+        List<Double> td_opn_pri_lst = null;
+        List<Double> yt_cls_pri_lst = null;
+        List<Double> td_hst_pri_lst = null;
+        List<Double> td_lst_pri_lst = null;
+        List<String> dt_lst = null;
         
 
         //Save today's data
-        List<Integer> ft_id_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> cur_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Double> b1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Double> s1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Integer> dl_stk_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> dl_mny_num_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Integer> b1_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> b1_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Integer> b2_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> b2_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Integer> b3_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> b3_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Integer> b4_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> b4_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Integer> b5_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> b5_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Integer> s1_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> s1_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Integer> s2_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> s2_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Integer> s3_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> s3_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Integer> s4_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> s4_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Integer> s5_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-        List<Double> s5_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-        List<Timestamp> dl_dt_lst = new BoundArrayList<Timestamp>(MAX_SZ);
+        List<Integer> ft_id_lst =  null;
+        List<Double> cur_pri_lst = null;
+        List<Double> b1_bst_pri_lst = null;
+        List<Double> s1_bst_pri_lst = null;
+        List<Integer> dl_stk_num_lst =null;
+        List<Double> dl_mny_num_lst = null;
+        List<Integer> b1_num_lst = null;
+        List<Double> b1_pri_lst = null;
+        List<Integer> b2_num_lst = null;
+        List<Double> b2_pri_lst = null;
+        List<Integer> b3_num_lst = null;
+        List<Double> b3_pri_lst = null;
+        List<Integer> b4_num_lst = null;
+        List<Double> b4_pri_lst = null;
+        List<Integer> b5_num_lst = null;
+        List<Double> b5_pri_lst = null;
+        List<Integer> s1_num_lst = null;
+        List<Double> s1_pri_lst = null;
+        List<Integer> s2_num_lst = null;
+        List<Double> s2_pri_lst = null;
+        List<Integer> s3_num_lst = null;
+        List<Double> s3_pri_lst = null;
+        List<Integer> s4_num_lst = null;
+        List<Double> s4_pri_lst = null;
+        List<Integer> s5_num_lst = null;
+        List<Double> s5_pri_lst = null;
+        List<Timestamp> dl_dt_lst =null;
         
         
         
@@ -485,8 +488,46 @@ public class Stock2 implements Comparable<Stock2>{
             dl_dt_lst = dlDtLst;
         }
 
-        StockData(String stkId) {
+        StockData(String stkId, int sz) {
             stkid = stkId;
+            MAX_SZ = sz;
+            
+            td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dt_lst = new BoundArrayList<String>(MAX_SZ);
+            
+
+            //Save today's data
+            ft_id_lst = new BoundArrayList<Integer>(MAX_SZ);
+            cur_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            b1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dl_stk_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            dl_mny_num_lst = new BoundArrayList<Double>(MAX_SZ);
+            b1_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            b1_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            b2_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            b2_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            b3_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            b3_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            b4_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            b4_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            b5_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            b5_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s1_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            s1_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s2_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            s2_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s3_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            s3_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s4_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            s4_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s5_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            s5_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dl_dt_lst = new BoundArrayList<Timestamp>(MAX_SZ);
+            
             Connection con = DBManager.getConnection();
             try {
                 Statement stm = con.createStatement();
@@ -511,8 +552,46 @@ public class Stock2 implements Comparable<Stock2>{
             }
         }
         
-        StockData(String stkId, String start_dte, String end_dte) {
+        StockData(String stkId, String start_dte, String end_dte, int sz) {
             stkid = stkId;
+            MAX_SZ = sz;
+            
+            td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dt_lst = new BoundArrayList<String>(MAX_SZ);
+            
+
+            //Save today's data
+            ft_id_lst = new BoundArrayList<Integer>(MAX_SZ);
+            cur_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            b1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dl_stk_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            dl_mny_num_lst = new BoundArrayList<Double>(MAX_SZ);
+            b1_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            b1_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            b2_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            b2_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            b3_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            b3_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            b4_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            b4_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            b5_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            b5_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s1_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            s1_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s2_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            s2_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s3_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            s3_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s4_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            s4_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            s5_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            s5_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dl_dt_lst = new BoundArrayList<Timestamp>(MAX_SZ);
+
             Connection con = DBManager.getConnection();
             try {
                 Statement stm = con.createStatement();
@@ -858,7 +937,7 @@ public class Stock2 implements Comparable<Stock2>{
             ResultSet rs = stm.executeQuery(sql);
             List<Stock2> sl = new LinkedList<Stock2>();
             while(rs.next()) {
-                Stock2 s = new Stock2(rs.getString("id"), rs.getString("name"), 1);
+                Stock2 s = new Stock2(rs.getString("id"), rs.getString("name"), 1, StockData.SMALL_SZ);
                 sl.add(s);
             }
             for (int i = 0; i < sl.size(); i++) {
@@ -871,18 +950,18 @@ public class Stock2 implements Comparable<Stock2>{
         }
     }
     
-    public Stock2(String ids, String nm, long gzflg)
+    public Stock2(String ids, String nm, long gzflg, int sz)
     {
         id = ids;
         name = nm;
-        sd = new StockData(id);
+        sd = new StockData(id, sz);
     }
     
-    public Stock2(String ids, String nm, long gzflg, String start_dte, String end_dte)
+    public Stock2(String ids, String nm, long gzflg, String start_dte, String end_dte, int sz)
     {
         id = ids;
         name = nm;
-        sd = new StockData(id, start_dte, end_dte);
+        sd = new StockData(id, start_dte, end_dte, sz);
     }
 
     @Override

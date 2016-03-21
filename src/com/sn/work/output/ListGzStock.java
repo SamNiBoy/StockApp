@@ -85,7 +85,7 @@ public class ListGzStock implements IWork {
                 incPriCnt = eqlPriCnt = desPriCnt = 0;
                 detQty = qtyCnt = 0;
 
-                content += stock + ":" + Stocks.get(stock) + " 信息:\n";
+                content += stock + ":" + Stocks.get(stock) + "\n";
 
                 try {
                     sql = "select cur_pri, dl_stk_num from stkdat2 where id ='"
@@ -129,7 +129,7 @@ public class ListGzStock implements IWork {
                                 / Math.abs(Math.max(1,Math.max(incPriCnt, desPriCnt)));
                         log.info("eqlRt:" + d0 + "\ndifRt:" + d1);
                             content +=" 涨:" + incPriCnt + " 跌:" + desPriCnt
-                                    + " 平:" + eqlPriCnt + " 幅:" + detQty + "价:" + cur_pri + "\n";
+                                    + " 平:" + eqlPriCnt + " 手:" + detQty/100 + "价:" + cur_pri + "\n";
                     }
                 } catch(SQLException e0) {
                     log.info("No price infor for stock:" + stock + " continue...");

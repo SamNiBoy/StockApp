@@ -36,6 +36,7 @@ import com.sn.mail.reporter.StockObserverable;
 import com.sn.reporter.WCMsgSender;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
+import com.sn.stock.Stock2.StockData;
 
 public class SimStockDriver {
 
@@ -129,7 +130,7 @@ public class SimStockDriver {
                 while (rs.next()) {
                     id = rs.getString("id");
                     name = rs.getString("name");
-                    s = new Stock2(id, name, rs.getLong("gz_flg"), start_dt, end_dt);
+                    s = new Stock2(id, name, rs.getLong("gz_flg"), start_dt, end_dt, StockData.BIG_SZ);
                     simstocks.put(id, s);
                     cnt++;
                     log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -148,7 +149,7 @@ public class SimStockDriver {
                     if (rs.next()) {
                         id = rs.getString("id");
                         name = rs.getString("name");
-                        s = new Stock2(id, name, rs.getLong("gz_flg"), start_dt, end_dt);
+                        s = new Stock2(id, name, rs.getLong("gz_flg"), start_dt, end_dt, StockData.BIG_SZ);
                         simstocks.put(id, s);
                         cnt++;
                         log.info("LoadStocks completed:" + cnt * 1.0 / stk_list.size());

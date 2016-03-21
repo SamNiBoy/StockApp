@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.stock.Stock2.StockData;
 import com.sn.work.fetcher.FetchStockData;
 
 public class StockMarket{
@@ -69,7 +70,7 @@ public class StockMarket{
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, rs.getLong("gz_flg"));
+                s = new Stock2(id, name, rs.getLong("gz_flg"), StockData.BIG_SZ);
                 stocks.put(id, s);
                 cnt++;
                 log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -105,7 +106,7 @@ public class StockMarket{
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, rs.getLong("gz_flg"));
+                s = new Stock2(id, name, rs.getLong("gz_flg"), StockData.SMALL_SZ);
                 gzstocks.put(id, s);
                 cnt++;
                 log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -298,11 +299,10 @@ public class StockMarket{
     
     static public String getShortDesc() {
     	DecimalFormat df = new DecimalFormat("##.##");
-        return "温度:" + df.format(Degree) + StkNum + "/" + df.format((totDecDlMny +totEqlDlMny + totIncDlMny)/100000000) + "亿"
-    			+ TotInc + "/" + df.format(totIncDlMny/100000000) + "亿+"
-                + TotDec + "/" + df.format(totDecDlMny/100000000) + "亿-"
-    			+ TotEql + "/" + df.format(totEqlDlMny/100000000) + "亿=" 
-    			+ ")";
+        return "温度:" + df.format(Degree) + "[" + StkNum + "/" + df.format((totDecDlMny +totEqlDlMny + totIncDlMny)/100000000) + "亿 "
+    			+ TotInc + "/" + df.format(totIncDlMny/100000000) + "亿+ "
+                + TotDec + "/" + df.format(totDecDlMny/100000000) + "亿- "
+    			+ TotEql + "/" + df.format(totEqlDlMny/100000000) + "亿=]";
     }
     
     static public String getLongDsc() {
