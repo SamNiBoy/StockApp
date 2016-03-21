@@ -21,7 +21,7 @@ import com.sn.db.DBManager;
 public class Stock2 implements Comparable<Stock2>{
 
     public class StockData{
-        int MAX_SZ = 200;
+        int MAX_SZ = 800;
         //Save all history data
         String stkid;
         List<Double> td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);

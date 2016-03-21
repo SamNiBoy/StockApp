@@ -298,7 +298,11 @@ public class StockMarket{
     
     static public String getShortDesc() {
     	DecimalFormat df = new DecimalFormat("##.##");
-        return "Deg:" + df.format(Degree) + " StkNum/Inc/Dec/Eql:(" + StkNum + "/" + TotInc + "/" + TotDec + "/" + TotEql + ")";
+        return "温度:" + df.format(Degree) + StkNum + "/" + df.format((totDecDlMny +totEqlDlMny + totIncDlMny)/100000000) + "亿"
+    			+ TotInc + "/" + df.format(totIncDlMny/100000000) + "亿+"
+                + TotDec + "/" + df.format(totDecDlMny/100000000) + "亿-"
+    			+ TotEql + "/" + df.format(totEqlDlMny/100000000) + "亿=" 
+    			+ ")";
     }
     
     static public String getLongDsc() {
