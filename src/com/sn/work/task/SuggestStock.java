@@ -22,6 +22,7 @@ import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.sim.strategy.selector.stock.KeepGainStockSelector;
 import com.sn.sim.strategy.selector.stock.KeepLostStockSelector;
+import com.sn.sim.strategy.selector.stock.PriceStockSelector;
 import com.sn.stock.RawStockData;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
@@ -110,6 +111,7 @@ public class SuggestStock implements IWork {
 		initDelay = id;
 		delayBeforNxtStart = dbn;
 		selectors.add(new DefaultStockSelector());
+		selectors.add(new PriceStockSelector());
 		selectors.add(new KeepGainStockSelector());
 		selectors.add(new KeepLostStockSelector());
 	}
@@ -124,6 +126,12 @@ public class SuggestStock implements IWork {
 			for (String stk : stks.keySet()) {
 				Stock2 s = stks.get(stk);
 				for (IStockSelector slt : selectors) {
+					if (s == null) {
+						log.info(" s is NULL!!!");
+					}
+					else {
+						log.info("S.ID:" + s.getID());
+					}
 					if (slt.isMandatoryCriteria() && !slt.isGoodStock(s, null)) {
 						loop_nxt_stock = true;
 						break;
