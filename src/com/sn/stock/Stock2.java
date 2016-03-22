@@ -72,20 +72,42 @@ public class Stock2 implements Comparable<Stock2>{
                 return false;
             }
             
-            double pre_yt_cls_pri = yt_cls_pri_lst.get(size - 2);
-            double yt_cls_pri = yt_cls_pri_lst.get(size - 1);
+            double pre_yt_cls_pri = 0;
+            double yt_cls_pri = 0;
             for(int i = 0; i < days; i++) {
-                if (pre_yt_cls_pri > yt_cls_pri) {
-                    log.info("pre_yt_cls_pri:" + pre_yt_cls_pri + " is higher than " + yt_cls_pri + ", check next see if keep lost.");
+            	pre_yt_cls_pri = yt_cls_pri_lst.get(size - i - 2);
+                yt_cls_pri = yt_cls_pri_lst.get(size - i - 1);
+                if ((pre_yt_cls_pri - yt_cls_pri) / pre_yt_cls_pri >= threshold) {
+                    log.info("pre_yt_cls_pri:" + pre_yt_cls_pri + " is higher than " + yt_cls_pri + " by" + threshold);
                     continue;
                 }
                 else {
-                    if ((yt_cls_pri - pre_yt_cls_pri) / yt_cls_pri < threshold) {
-                        log.info("even pre_cls_pri < yt_cls_pri, but " + pre_yt_cls_pri + "," + yt_cls_pri + " gap less than threshold:" + threshold);
-                        continue;
-                    }
-                    log.info("pre_yt_cls_pri:" + pre_yt_cls_pri + " is lower than " + yt_cls_pri + ", not keep lost.");
-                    return false;
+                        log.info("pre_cls_pri < yt_cls_pri, return false");
+                        return false;
+                }
+            }
+            return true;
+        }
+        
+        public boolean keepDaysClsPriGain(int days, double threshold) {
+            log.info("keepDaysClsPriGain: check if yt_cls_pri has " + days + " days keep gain with threshold value:" + threshold);
+            int size = yt_cls_pri_lst.size();
+            if(size < days + 1 || days <= 0) {
+                return false;
+            }
+            
+            double pre_yt_cls_pri = 0;
+            double yt_cls_pri = 0;
+            for(int i = 0; i < days; i++) {
+            	pre_yt_cls_pri = yt_cls_pri_lst.get(size - i - 2);
+                yt_cls_pri = yt_cls_pri_lst.get(size - i - 1);
+                if (threshold <= (yt_cls_pri - pre_yt_cls_pri) / pre_yt_cls_pri) {
+                    log.info("pre_yt_cls_pri:" + pre_yt_cls_pri + " is less than yt_cls_pri:" + yt_cls_pri + " by" + threshold);
+                    continue;
+                }
+                else {
+                        log.info("pre_cls_pri > yt_cls_pri, lost return false");
+                        return false;
                 }
             }
             return true;
@@ -903,10 +925,6 @@ public class Stock2 implements Comparable<Stock2>{
     StockData sd;
     
     
-    public String getId() {
-        return id;
-    }
-
     public void setId(String id) {
         this.id = id;
     }

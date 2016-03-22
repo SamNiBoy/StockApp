@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 
 import com.sn.work.itf.IWork;
 import com.sn.work.WorkManager;
-import com.sn.work.fetcher.GzStockDataFetcher;
 
 public class TaskManager {
 
@@ -24,7 +23,6 @@ public class TaskManager {
     public static void main(String[] args) {
         // TODO Auto-generated method stub
 
-        startEvaStocks();
     }
     
     public static boolean startTasks()
@@ -42,26 +40,10 @@ public class TaskManager {
         return false;
     }
     
-    private static boolean startCalStkDDF()
-    {
-        CalStkDDF csd = new CalStkDDF(0, 0);
-        WorkManager.submitWork(csd);
-        tsks.put(csd.getWorkName(), csd);
-        return true;
-    }
-    
-    private static boolean startEvaStocks()
-    {
-        EvaStocks evs = new EvaStocks(0, 0, false);
-        WorkManager.submitWork(evs);
-        tsks.put(evs.getWorkName(), evs);
-        return true;
-    }
-    
-    
     private static boolean startGzStock()
     {
     	GzStockDataFetcher.start();
+    	SuggestStock.start();
         return true;
     }
     

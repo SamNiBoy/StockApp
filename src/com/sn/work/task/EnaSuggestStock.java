@@ -19,14 +19,14 @@ import com.sn.work.itf.IWork;
 import com.sn.work.WorkManager;
 import com.sn.work.fetcher.FetchStockData;
 
-public class EnaUsrBuySell implements IWork {
+public class EnaSuggestStock implements IWork {
 
     /*
      * Initial delay before executing work.
      */
     long initDelay = 0;
     String frmUsr = "";
-    static String resContent = "Initial AddMail result is not set.";
+    static String resContent = "Initial EnaSuggestStock result is not set.";
 
     public String bell = "this is notify use.";
 
@@ -37,18 +37,18 @@ public class EnaUsrBuySell implements IWork {
 
     TimeUnit tu = TimeUnit.MILLISECONDS;
 
-    static Logger log = Logger.getLogger(EnaUsrBuySell.class);
+    static Logger log = Logger.getLogger(EnaSuggestStock.class);
 
     /**
      * @param args
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-    	EnaUsrBuySell fsd = new EnaUsrBuySell(1, 0, "abc");
+    	EnaSuggestStock fsd = new EnaSuggestStock(1, 0, "abc");
         fsd.run();
     }
 
-    public EnaUsrBuySell(long id, long dbn, String fu) {
+    public EnaSuggestStock(long id, long dbn, String fu) {
         initDelay = id;
         delayBeforNxtStart = dbn;
         frmUsr = fu;
@@ -66,34 +66,33 @@ public class EnaUsrBuySell implements IWork {
         	Connection con = DBManager.getConnection();
             log.info("Now start EnaUsrBuySell work...");
             Statement mainStm = con.createStatement();
-            String sql = "update usr set buy_sell_enabled = 1 - buy_sell_enabled where openID = '" + frmUsr + "'";
-            
+            String sql = "update usr set suggest_stock_enabled = 1 - suggest_stock_enabled where openID = '" + frmUsr + "'";
             log.info("EnaUsrBuySell:" + sql);
             mainStm.executeUpdate(sql);
             con.commit();
             mainStm.close();
             
-            sql = "select buy_sell_enabled, mail from usr where openID = '" + frmUsr + "'";
+            sql = "select mail, suggest_stock_enabled from usr where openID = '" + frmUsr + "' and mail is not null";
             mainStm = con.createStatement();
             ResultSet rs = mainStm.executeQuery(sql);
             
             rs.next();
             
-            long buy_sell_enabled = rs.getLong("buy_sell_enabled");
+            long suggest_stock_enabled = rs.getLong("suggest_stock_enabled");
             String mail = rs.getString("mail");
             
             rs.close();
             mainStm.close();
             con.close();
             
-            if (buy_sell_enabled == 1 && (mail == null || mail.length() <= 0)) {
-                    resContent = "已经开启买卖信息提示，请发送邮箱地址进行订阅。";
-            }
-            else if (buy_sell_enabled == 1){
-            	resContent = "已经开启买卖信息提示，您的邮箱:" + mail + "将收到买卖提示信息。";
+            if (suggest_stock_enabled == 1 && (mail == null || mail.length() <= 0)) {
+                    resContent = "已经开启推荐股票，请发送邮箱地址进行买卖信息订阅。或输入1进行查询.";
+                }
+            else if (suggest_stock_enabled == 1){
+            	resContent = "已经开启推荐股票，您的邮箱:" + mail + "将收到被推荐股票买卖提示信息。";
             }
             else {
-            	resContent = "已停止买卖信息提示。";
+            	resContent = "已停止推荐股票。";
             }
         } catch (Exception e) {
             log.error("Error: " + e.getMessage());
@@ -113,7 +112,7 @@ public class EnaUsrBuySell implements IWork {
     }
 
     public String getWorkName() {
-        return "EnaUsrBuySell";
+        return "EnaSuggestStock";
     }
 
     public long getInitDelay() {

@@ -1,4 +1,4 @@
-package com.sn.work.fetcher;
+package com.sn.work.task;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.stock.RawStockData;
 import com.sn.work.WorkManager;
+import com.sn.work.fetcher.GzRawStockDataConsumer;
 import com.sn.work.itf.IWork;
 import com.sn.work.monitor.MonitorGzStockData;
 import com.sn.work.monitor.MonitorStockData;
@@ -111,7 +112,7 @@ public class GzStockDataFetcher implements IWork {
         ResultSet rs = null;
         String sql = "select distinct stk.area, stk.id from stk, usrStk where stk.id = usrStk.id and usrStk.gz_flg = 1";
 
-        String stkLst = "";
+        StringBuilder stkLst = new StringBuilder();
         
         int i = 0;
 
@@ -120,11 +121,11 @@ public class GzStockDataFetcher implements IWork {
             rs = stm.executeQuery(sql);
             while (rs.next()) {
                 i++;
-                stkLst += stkLst.length() > 0 ? "," : "";
-                stkLst += rs.getString("area") + rs.getString("id");
+                stkLst.append(stkLst.length() > 0 ? "," : "");
+                stkLst.append(rs.getString("area") + rs.getString("id"));
                 if (i %  maxLstNum == 0)
                 {
-                    stkLst += "#";
+                    stkLst.append("#");
                     i = 0;
                 }
             }
@@ -144,7 +145,7 @@ public class GzStockDataFetcher implements IWork {
         }
         log.info(stkLst);
 
-        return stkLst;
+        return stkLst.toString();
     }
 
     private String lstStkDat = "";

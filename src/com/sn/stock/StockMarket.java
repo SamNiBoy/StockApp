@@ -240,6 +240,13 @@ public class StockMarket{
 
         Connection con = DBManager.getConnection();
         Statement stm = null;
+        String deadline = null;
+        if (tm == null) {
+        	deadline = "sysdate";
+        }
+        else {
+        	deadline = "'" + tm.toLocaleString() + "'";
+        }
 
         int catagory = -2;
         try {
@@ -254,7 +261,7 @@ public class StockMarket{
                          "               when cur_pri = td_opn_pri then 0 end catagory " +
                          " from stkdat2 " +
                          " where td_opn_pri > 0 " +
-                         "   and dl_dt <= to_date('" + tm.toLocaleString() + "', 'yyyy-mm-dd HH24:MI:SS')" +
+                         "   and dl_dt <= to_date(" + deadline + ", 'yyyy-mm-dd HH24:MI:SS')" +
                          "   and not exists (select 'x' from stkdat2 skd where skd.id = stkdat2.id and ft_id > stkdat2.ft_id)" +
                          " group by case when cur_pri > td_opn_pri then 1 " +
                          "               when cur_pri < td_opn_pri then -1 " +
@@ -300,8 +307,8 @@ public class StockMarket{
     static public String getShortDesc() {
     	DecimalFormat df = new DecimalFormat("##.##");
         return "温度:" + df.format(Degree) + "[" + StkNum + "/" + df.format((totDecDlMny +totEqlDlMny + totIncDlMny)/100000000) + "亿 "
-    			+ TotInc + "/" + df.format(totIncDlMny/100000000) + "亿+ "
-                + TotDec + "/" + df.format(totDecDlMny/100000000) + "亿- "
+    			+ TotInc + "/" + df.format(AvgIncPct) + "/" + df.format(totIncDlMny/100000000) + "亿+ "
+                + TotDec + "/" + df.format(AvgDecPct) + "/" + df.format(totDecDlMny/100000000) + "亿- "
     			+ TotEql + "/" + df.format(totEqlDlMny/100000000) + "亿=]";
     }
     

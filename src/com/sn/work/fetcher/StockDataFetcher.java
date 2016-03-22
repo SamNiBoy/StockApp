@@ -110,7 +110,7 @@ public class StockDataFetcher implements IWork {
         ResultSet rs = null;
         String sql = "select area, id from stk";
 
-        String stkLst = "";
+        StringBuilder stkLst = new StringBuilder();
         
         int i = 0;
 
@@ -119,11 +119,11 @@ public class StockDataFetcher implements IWork {
             rs = stm.executeQuery(sql);
             while (rs.next()) {
                 i++;
-                stkLst += stkLst.length() > 0 ? "," : "";
-                stkLst += rs.getString("area") + rs.getString("id");
+                stkLst.append(stkLst.length() > 0 ? "," : "");
+                stkLst.append(rs.getString("area") + rs.getString("id"));
                 if (i %  maxLstNum == 0)
                 {
-                    stkLst += "#";
+                    stkLst.append("#");
                     i = 0;
                 }
             }
@@ -143,7 +143,7 @@ public class StockDataFetcher implements IWork {
         }
         log.info(stkLst);
 
-        return stkLst;
+        return stkLst.toString();
     }
 
     private String lstStkDat = "";

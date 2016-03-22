@@ -4,6 +4,7 @@ host_flg number not null,
 add_dt date not null,
 mail varchar2(100 byte),
 buy_sell_enabled number not null,
+suggest_stock_enabled number not null,
 CONSTRAINT "usr_PK" PRIMARY KEY (OpenID)
 );
 
@@ -11,6 +12,7 @@ create table usrStk(
 openID varchar2(100 byte) not null,
 id varchar2(6 byte) not null,
 gz_flg number not null,
+suggested_by varchar2(100 byte) not null,
 add_dt date not null,
 CONSTRAINT "usrStk_PK" PRIMARY KEY (OpenID, id)
 );

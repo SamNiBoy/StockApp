@@ -13,35 +13,28 @@ import com.sn.sim.strategy.imp.TradeStrategyImp;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 
-public class DefaultStockSelector implements IStockSelector {
+public class KeepGainStockSelector implements IStockSelector {
 
-    static Logger log = Logger.getLogger(DefaultStockSelector.class);
+    static Logger log = Logger.getLogger(KeepGainStockSelector.class);
     /**
      * @param args
      */
     public boolean isGoodStock(Stock2 s, ICashAccount ac) {
-    	if (s == null) {
-    		log.info("s is null!, possible?");
-    	}
-    	else {
-    		log.info("s is not null, s.getDl_dt() is:" + s.getDl_dt());
-    	}
-        if (StockMarket.isMarketTooCold(s.getDl_dt()) &&
-                !StockMarket.hasMoreIncStock()) {
-                    log.info("returned false because market is too cool.");
-                    return false;
+        if (s.getSd().keepDaysClsPriGain(3, 0.05)) {
+                    log.info("returned true because keep 3 days gain 0.05.");
+                    return true;
         }
-        log.info("returned true for isGoodStock()");
-        return true;
+        log.info("returned false for isGoodStock()");
+        return false;
     }
 	@Override
 	public boolean isORCriteria() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 	@Override
 	public boolean isMandatoryCriteria() {
 		// TODO Auto-generated method stub
-		return true;
+		return false;
 	}
 }

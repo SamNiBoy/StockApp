@@ -76,7 +76,7 @@ public class MACD {
 			DIF = difLst.get(0);
 			DEF = def / difLst.size();
 			MACD = 2 * (DEF - DIF);
-			log.info("Got MACD: dif[" + DIF + "] DEF[" + DEF + "] MACD[" + MACD + "] for stock:" + stk.getId());
+			log.info("Got MACD: dif[" + DIF + "] DEF[" + DEF + "] MACD[" + MACD + "] for stock:" + stk.getID());
 			return true;
 		}
 		else

@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 
 import com.sn.work.WorkManager;
 import com.sn.work.fetcher.FetchStockData;
-import com.sn.work.fetcher.GzStockDataFetcher;
 import com.sn.work.fetcher.StockDataFetcher;
 import com.sn.work.monitor.MonitorStockData;
 import com.sn.work.output.CalFetchStat;
@@ -14,7 +13,9 @@ import com.sn.work.output.ShutDownPC;
 import com.sn.work.output.TopTenBst;
 import com.sn.work.output.TopTenWst;
 import com.sn.work.task.AddMail;
+import com.sn.work.task.EnaSuggestStock;
 import com.sn.work.task.EnaUsrBuySell;
+import com.sn.work.task.GzStockDataFetcher;
 import com.sn.work.task.TaskManager;
 import com.sn.work.task.usrStock;
 
@@ -59,17 +60,18 @@ public class WeChatReporter extends BaseWCReporter{
     public String printHelp() {
     	if (is_admin_flg) {
         resContent = "你可以发送以下代码:\n"
-                + "1.获取关注的股票.\n" + "2.获取股票数据.\n"
+                + "1.获取关注/推荐的股票.\n" + "2.获取股票数据.\n"
                 + "3.停止获取股票数据.\n" + "4.报告数据情况.\n" 
-                + "5.监控关注股票买卖.\n" + "6.停止监控关注股票买卖.\n"
+                + "5.启用/停止关注股票买卖.\n" + "6.启用/停止推荐股票.\n"
                 + "7.关机.\n"
                 + "xxxxxx 关注/取消关注股票.\n"
                 + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
     	}
     	else {
             resContent = "你可以发送以下代码:\n"
-                    + "1.获取关注的股票.\n"
-                    + "2.监控关注股票买卖.\n" + "3.停止监控关注股票买卖.\n"
+                    + "1.获取关注/推荐的股票.\n"
+                    + "2.启用/停止关注股票买卖.\n"
+                    + "3.启用/停止推荐股票.\n"
                     + "xxxxxx 关注/取消关注股票.\n"
                     + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
     	}
@@ -115,20 +117,6 @@ public class WeChatReporter extends BaseWCReporter{
                     resContent = ttb.getWorkResult();
                 }
             }
-//            else if (content.equals("2")) {
-//                FetchStockData fsd = new FetchStockData(0, 30000);
-//                if (!WorkManager.submitWork(fsd)) {
-//                    resContent = "Work already scheduled, can not do it again!";
-//                }
-//                else {
-//                    resContent = "Started fetching stock data!";
-//                }
-//            }
-//            else if (content.equals("3")) {
-//                FetchStockData sfd = new FetchStockData(0, 0);
-//                WorkManager.cancelWork(sfd.getWorkName());
-//                resContent = "Stoped fetching stock data.";
-//            }
             else if (content.equals("2")) {
                 StockDataFetcher.start();
                 resContent = StockDataFetcher.getResMsg();
@@ -146,33 +134,19 @@ public class WeChatReporter extends BaseWCReporter{
                     resContent = cfs.getWorkResult();
                 }
             }
-//            else if (content.equals("5")) {
-//                MonitorStockData sdp = new MonitorStockData(0, 35000);
-//                if (!WorkManager.submitWork(sdp)) {
-//                    resContent = "Work already scheduled, can not do it again!";
-//                }
-//                else {
-//                    resContent = sdp.getWorkResult();
-//                }
-//            }
-//            else if (content.equals("6")) {
-//                MonitorStockData sdp = new MonitorStockData(0, 0);
-//                WorkManager.cancelWork(sdp.getWorkName());
-//                resContent = "Stoped monitoring stock data.";
-//            }
             else if (content.equals("5")) {
-            	EnaUsrBuySell us = new EnaUsrBuySell(0, 0, this.getFromUserName(), true);
+            	EnaUsrBuySell us = new EnaUsrBuySell(0, 0, this.getFromUserName());
                 if (!WorkManager.submitWork(us)) {
-                    resContent = "AddMail already scheduled, can not do it again!";
+                    resContent = "EnaUsrBuySell already scheduled, can not do it again!";
                 }
                 else {
                     resContent = us.getWorkResult();
                 }
             }
             else if (content.equals("6")) {
-            	EnaUsrBuySell us = new EnaUsrBuySell(0, 0, this.getFromUserName(), false);
+            	EnaSuggestStock us = new EnaSuggestStock(0, 0, this.getFromUserName());
                 if (!WorkManager.submitWork(us)) {
-                    resContent = "AddMail already scheduled, can not do it again!";
+                    resContent = "EnaSuggestStock already scheduled, can not do it again!";
                 }
                 else {
                     resContent = us.getWorkResult();

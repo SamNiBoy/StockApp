@@ -73,14 +73,14 @@ public class MonitorGzStockData implements IWork {
         while(true) {
         try {
             s = queueToMonitor.take();
-            log.info("check stock " + s.getId() + " for buy/sell point");
+            log.info("check stock " + s.getID() + " for buy/sell point");
             QtySellPointSelector sps = new QtySellPointSelector();
             QtyBuyPointSelector dbs = new QtyBuyPointSelector();
             if (sps.isGoodSellPoint(s, null)) {
-                stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(), s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), false, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
+                stockTomail.add(new StockBuySellEntry(s.getID(), s.getName(), s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), false, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
             }
             else if(dbs.isGoodBuyPoint(s, null)) {
-                stockTomail.add(new StockBuySellEntry(s.getId(), s.getName(),s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), true, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
+                stockTomail.add(new StockBuySellEntry(s.getID(), s.getName(),s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), true, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1).toLocaleString()));
             }
             if (!stockTomail.isEmpty()) {
                log.info("Now sending buy/sell stock information for " + stockTomail.size());
