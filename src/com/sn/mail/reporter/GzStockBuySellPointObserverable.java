@@ -110,13 +110,13 @@ public class GzStockBuySellPointObserverable extends Observable {
         SimpleDateFormat f = new SimpleDateFormat(" HH:mm:ss");  
         Date date = new Date();  
         returnStr = f.format(date);
-        String subject = StockMarket.getShortDesc() + returnStr;
+        String subject = StockMarket.getDegreeMny();
         StringBuffer body;
         boolean usr_need_mail = false;
         boolean generated_mail = false;
         
         for (MailSubscriber u : ms) {
-        	u.subject = subject;
+        	u.subject = "";
         	u.content = "";
         	body = new StringBuffer();
         	usr_need_mail = false;
@@ -130,6 +130,10 @@ public class GzStockBuySellPointObserverable extends Observable {
             DecimalFormat df = new DecimalFormat("##.##");
             for (StockBuySellEntry e : sbse) {
             	if (u.gzStk(e.id) && u.saveSend(e.id)) {
+            		
+            		if (u.subject.length() <= 0) {
+            			u.subject = e.id + df.format(e.price) + "/" + (e.is_buy_point ? "B" : "S") + subject + returnStr;
+            		}
                     body.append("<tr> <td>" + e.id + "</td>" +
                     "<td> " + e.name + "</td>" +
                     "<td> " + df.format(e.price) + "</td>" +
@@ -143,6 +147,7 @@ public class GzStockBuySellPointObserverable extends Observable {
                 u.content = body.toString();
             }
             else {
+            	u.subject = "";
             	u.content = "";
             }
         }

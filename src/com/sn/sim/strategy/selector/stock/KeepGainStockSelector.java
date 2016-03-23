@@ -20,8 +20,8 @@ public class KeepGainStockSelector implements IStockSelector {
      * @param args
      */
     public boolean isGoodStock(Stock2 s, ICashAccount ac) {
-        if (s.getSd().keepDaysClsPriGain(3, 0.05)) {
-                    log.info("returned true because keep 3 days gain 0.05.");
+        if (s.getSd().keepDaysClsPriGain(3, 0.01)) {
+                    log.info("returned true because keep 3 days gain 0.02.");
                     return true;
         }
         log.info("returned false for isGoodStock()");

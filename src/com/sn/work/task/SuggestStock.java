@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.selector.stock.ClosePriceTrendStockSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.sim.strategy.selector.stock.KeepGainStockSelector;
@@ -112,6 +113,7 @@ public class SuggestStock implements IWork {
 		delayBeforNxtStart = dbn;
 		selectors.add(new DefaultStockSelector());
 		selectors.add(new PriceStockSelector());
+		selectors.add(new ClosePriceTrendStockSelector());
 		selectors.add(new KeepGainStockSelector());
 		selectors.add(new KeepLostStockSelector());
 	}
@@ -165,6 +167,7 @@ public class SuggestStock implements IWork {
 					}
 					suggest_flg = false;
 				}
+				loop_nxt_stock = false;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

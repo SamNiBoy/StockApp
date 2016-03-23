@@ -17,6 +17,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.selector.stock.ClosePriceTrendStockSelector;
 
 public class Stock2 implements Comparable<Stock2>{
 
@@ -903,6 +904,53 @@ public class Stock2 implements Comparable<Stock2>{
 			}
 			return null;
 		}
+		
+		public Double getMaxYtClsPri(int Days) {
+			// TODO Auto-generated method stub
+			int sz = yt_cls_pri_lst.size();
+			double maxPri = 0;
+			
+			if (sz <= Days) {
+				log.info("no " + Days + " yt_cls_pri available, return null for getMaxYtClsPri().");
+				return null;
+			}
+			if (sz > 0) {
+				int cnt = 0;
+			    for (int i = sz - 1; i >= 0 && cnt < Days; i--, cnt++) {
+			    	if (maxPri < yt_cls_pri_lst.get(i)) {
+			    		maxPri = yt_cls_pri_lst.get(i);
+			    	}
+			    }
+			}
+			log.info("got max yt_cls_pri for stock:" + id + ":" + maxPri);
+			if (maxPri > 0) {
+				return maxPri;
+			}
+			return null;
+		}
+		
+		public Double getMinYtClsPri(int Days) {
+			// TODO Auto-generated method stub
+			int sz = yt_cls_pri_lst.size();
+			double minPri = 100000;
+			if (sz <= Days) {
+				log.info("no " + Days + " yt_cls_pri available, return null for getMinYtClsPri().");
+				return null;
+			}
+			if (sz > 0) {
+				int cnt = 0;
+			    for (int i = sz - 1; i >= 0 && cnt < Days; i--, cnt++) {
+			    	if (minPri > yt_cls_pri_lst.get(i) && yt_cls_pri_lst.get(i) > 0) {
+			    		minPri = yt_cls_pri_lst.get(i);
+			    	}
+			    }
+			}
+			log.info("got min yt_cls_pri for stock:" + id + ":" + minPri);
+			if (minPri > 0) {
+				return minPri;
+			}
+			return null;
+		}
 
 		public Double getYtClsPri() {
 			// TODO Auto-generated method stub
@@ -950,7 +998,7 @@ public class Stock2 implements Comparable<Stock2>{
         Connection con = DBManager.getConnection();
         try {
             Statement stm = con.createStatement();
-            String sql = "select id, name, gz_flg from stk where gz_flg = 1";
+            String sql = "select id, name, gz_flg from stk where id = '002654'";
             
             ResultSet rs = stm.executeQuery(sql);
             List<Stock2> sl = new LinkedList<Stock2>();
@@ -960,6 +1008,8 @@ public class Stock2 implements Comparable<Stock2>{
             }
             for (int i = 0; i < sl.size(); i++) {
                 Stock2 s = sl.get(i);
+                ClosePriceTrendStockSelector cs = new ClosePriceTrendStockSelector();
+                cs.isGoodStock(s, null);
                 s.printStockInfo();
             }
         }
@@ -1002,6 +1052,14 @@ public class Stock2 implements Comparable<Stock2>{
     
     public Double getMinCurPri() {
     	return sd.getMinCurPri();
+    }
+    
+    public Double getMaxYtClsPri(int days) {
+    	return sd.getMaxYtClsPri(days);
+    }
+    
+    public Double getMinYtClsPri(int days) {
+    	return sd.getMinYtClsPri(days);
     }
 
     public Double getYtClsPri() {

@@ -312,6 +312,11 @@ public class StockMarket{
     			+ TotEql + "/" + df.format(totEqlDlMny/100000000) + "亿=]";
     }
     
+    static public String getDegreeMny() {
+    	DecimalFormat df = new DecimalFormat("##.##");
+        return "温度:" + df.format(Degree) + "[" + StkNum + "/" + df.format((totDecDlMny +totEqlDlMny + totIncDlMny)/100000000) + "亿 ]";
+    }
+    
     static public String getLongDsc() {
         
     	DecimalFormat df = new DecimalFormat("##.##");
