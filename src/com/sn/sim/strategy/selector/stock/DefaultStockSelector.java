@@ -44,4 +44,10 @@ public class DefaultStockSelector implements IStockSelector {
 		// TODO Auto-generated method stub
 		return true;
 	}
+	@Override
+	public boolean adjustCriteria(boolean harder) {
+		// TODO Auto-generated method stub
+		log.info("Mandatory criteria can not be adjusted");
+		return true;
+	}
 }

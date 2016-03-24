@@ -11,7 +11,8 @@ import javax.mail.internet.AddressException;
 import org.apache.log4j.Logger;
 
 import com.sn.mail.reporter.MailSenderType;
-import com.sn.mail.reporter.GzStockBuySellPointObserverable.MailSubscriber;
+import com.sn.mail.reporter.RecommandStockObserverable.RecommandStockSubscriber;
+import com.sn.mail.reporter.GzStockBuySellPointObserverable.BuySellInfoSubscriber;
 import com.sn.mail.reporter.MailSenderFactory;
 import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.sim.SimTrader;
@@ -56,10 +57,32 @@ public class StockObserver implements Observer {
             // 发送邮件
             SimpleMailSender sms = MailSenderFactory.getSender();
             // recipients.add("samniboy@gmail.com");
-            List<MailSubscriber> ms = gso.getMailSubscribers();
+            List<BuySellInfoSubscriber> ms = gso.getMailSubscribers();
             
             try {
-                for (MailSubscriber u : ms) {
+                for (BuySellInfoSubscriber u : ms) {
+                	if (u.content.length() > 0) {
+                		log.info("now send mail:" + u.subject + "\n" + u.content + " for usr:" + u.openID + " to mail:" + u.mail);
+                        sms.send(u.mail, u.subject, u.content);
+                	}
+                }
+            } catch (AddressException e) {
+                e.printStackTrace();
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        
+        }
+        else if (obj instanceof RecommandStockObserverable) {
+
+        	RecommandStockObserverable gso = (RecommandStockObserverable) obj;
+            // 发送邮件
+            SimpleMailSender sms = MailSenderFactory.getSender();
+            // recipients.add("samniboy@gmail.com");
+            List<RecommandStockSubscriber> ms = gso.getRecommandStockSubscribers();
+            
+            try {
+                for (RecommandStockSubscriber u : ms) {
                 	if (u.content.length() > 0) {
                 		log.info("now send mail:" + u.subject + "\n" + u.content + " for usr:" + u.openID + " to mail:" + u.mail);
                         sms.send(u.mail, u.subject, u.content);

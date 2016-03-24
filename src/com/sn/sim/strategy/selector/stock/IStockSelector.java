@@ -17,4 +17,5 @@ public interface IStockSelector {
     public boolean isGoodStock(Stock2 s, ICashAccount ac);
     public boolean isORCriteria();
     public boolean isMandatoryCriteria();
+    public boolean adjustCriteria(boolean harder);
 }

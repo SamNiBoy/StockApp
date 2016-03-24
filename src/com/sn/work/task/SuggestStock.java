@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.mail.reporter.RecommandStockObserverable;
 import com.sn.sim.strategy.selector.stock.ClosePriceTrendStockSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
@@ -35,7 +36,6 @@ import com.sn.work.monitor.MonitorStockData;
 
 public class SuggestStock implements IWork {
 
-	Connection con = DBManager.getConnection();
 	/*
 	 * Initial delay before executing work.
 	 */
@@ -55,6 +55,10 @@ public class SuggestStock implements IWork {
 	List<IStockSelector> selectors = new LinkedList<IStockSelector>();
 
 	static SuggestStock self = null;
+	
+	static List<Stock2> stocksWaitForMail = new LinkedList<Stock2>();
+	
+	static RecommandStockObserverable rso = new RecommandStockObserverable();
 
 	static Logger log = Logger.getLogger(SuggestStock.class);
 
@@ -125,49 +129,69 @@ public class SuggestStock implements IWork {
 
 		try {
 			Map<String, Stock2> stks = StockMarket.getStocks();
-			for (String stk : stks.keySet()) {
-				Stock2 s = stks.get(stk);
-				for (IStockSelector slt : selectors) {
-					if (s == null) {
-						log.info(" s is NULL!!!");
-					}
-					else {
-						log.info("S.ID:" + s.getID());
-					}
-					if (slt.isMandatoryCriteria() && !slt.isGoodStock(s, null)) {
-						loop_nxt_stock = true;
-						break;
-					}
-				}
-				if (!loop_nxt_stock) {
-					for (IStockSelector slt : selectors) {
-						if (slt.isMandatoryCriteria()) {
-							continue;
-						}
-						if (slt.isGoodStock(s, null)) {
-							suggest_flg = true;
-							if (slt.isORCriteria()) {
-								log.info("Or criteria matched, suggest the stock:" + s.getID());
-								break;
-							}
-						}
-						else {
-							if (slt.isORCriteria()) {
-								log.info("Or criteria not matched, continue next criteira.");
-								suggest_flg = false;
-								continue;
-							} else {
-								suggest_flg = false;
-								break;
-							}
-						}
-					}
-					if (suggest_flg) {
-						suggestStock(s);
-					}
-					suggest_flg = false;
-				}
-				loop_nxt_stock = false;
+			int tryCnt = 10;
+			boolean tryHarderCriteria = false;
+			while(tryCnt-- > 0) {
+			    for (String stk : stks.keySet()) {
+			    	Stock2 s = stks.get(stk);
+			    	for (IStockSelector slt : selectors) {
+			    		if (slt.isMandatoryCriteria() && !slt.isGoodStock(s, null)) {
+			    			loop_nxt_stock = true;
+			    			break;
+			    		}
+			    	}
+			    	if (!loop_nxt_stock) {
+			    		for (IStockSelector slt : selectors) {
+			    			if (slt.isMandatoryCriteria()) {
+			    				continue;
+			    			}
+			    			if (slt.isGoodStock(s, null)) {
+			    				suggest_flg = true;
+			    				if (slt.isORCriteria()) {
+			    					log.info("Or criteria matched, suggest the stock:" + s.getID());
+			    					break;
+			    				}
+			    			}
+			    			else {
+			    				if (slt.isORCriteria()) {
+			    					log.info("Or criteria not matched, continue next criteira.");
+			    					suggest_flg = false;
+			    					continue;
+			    				} else {
+			    					suggest_flg = false;
+			    					break;
+			    				}
+			    			}
+			    		}
+			    		if (suggest_flg) {
+			    			stocksWaitForMail.add(s);
+			    		}
+			    		suggest_flg = false;
+			    	}
+			    	loop_nxt_stock = false;
+			    }
+			    if (stocksWaitForMail.size() == 0) {
+			    	log.info("stocksWaitForMail is empty, tryHarderCriteria set to false");
+			    	tryHarderCriteria = false;
+			    }
+			    else if (stocksWaitForMail.size() > 20) {
+			    	log.info("stocksWaitForMail has " + stocksWaitForMail.size() + " which is more than 20, tryHarderCriteria set to true");
+			    	tryHarderCriteria = true;
+			    	stocksWaitForMail.clear();
+			    }
+			    else {
+			    	for (Stock2 s2 : stocksWaitForMail) {
+		    			suggestStock(s2);
+			    	}
+			    	rso.addStockToSuggest(stocksWaitForMail);
+			    	rso.update();
+			    	stocksWaitForMail.clear();
+			    	break;
+			    }
+			    log.info("Now recommand result is not good, adjust criteris to recommand");
+			    for (IStockSelector slt : selectors) {
+			    	slt.adjustCriteria(tryHarderCriteria);
+			    }
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

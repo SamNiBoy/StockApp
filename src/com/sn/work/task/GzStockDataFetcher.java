@@ -104,6 +104,7 @@ public class GzStockDataFetcher implements IWork {
         initDelay = id;
         delayBeforNxtStart = dbn;
         cnsmr = sdcr;
+        monitor = new MonitorGzStockData(cnsmr.refreshedStocks);
     }
 
     private String getFetchLst()
@@ -164,9 +165,8 @@ public class GzStockDataFetcher implements IWork {
             log.info("GzStockDataFetcher consumer looks already running, skip resubmit...");
         }
         
-        MonitorGzStockData mgsd = new MonitorGzStockData(cnsmr.refreshedStocks);
-        if (WorkManager.canSubmitWork(mgsd.getWorkName())) {
-            WorkManager.submitWork(mgsd);
+        if (WorkManager.canSubmitWork(monitor.getWorkName())) {
+            WorkManager.submitWork(monitor);
             log.info("GzStockDataFetcher successfully lunched MonitorGzStockData...");
         }
         else {

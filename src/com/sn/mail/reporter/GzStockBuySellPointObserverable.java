@@ -31,16 +31,16 @@ public class GzStockBuySellPointObserverable extends Observable {
 
     static Connection con = DBManager.getConnection();
     private List<StockBuySellEntry> sbse = new ArrayList<StockBuySellEntry>();
-    private List<MailSubscriber> ms = new ArrayList<MailSubscriber>();
+    private List<BuySellInfoSubscriber> ms = new ArrayList<BuySellInfoSubscriber>();
 
-	public class MailSubscriber{
+	public class BuySellInfoSubscriber{
 		String openID;
 		String mail;
 		List<String> gzStkLst = new ArrayList<String>();
 		public boolean gzStk(String stkId) {
 			return gzStkLst.contains(stkId);
 		}
-		MailSubscriber(String oid, String ml, String stkId) {
+		BuySellInfoSubscriber(String oid, String ml, String stkId) {
 			openID = oid;
 			mail = ml;
 			gzStkLst.add(stkId);
@@ -71,7 +71,7 @@ public class GzStockBuySellPointObserverable extends Observable {
 		}
 	}
 	
-    public List<MailSubscriber> getMailSubscribers() {
+    public List<BuySellInfoSubscriber> getMailSubscribers() {
     	return ms;
     }
     private boolean loadMailScb() {
@@ -89,7 +89,7 @@ public class GzStockBuySellPointObserverable extends Observable {
     			mail = rs.getString("mail");
     			stkId = rs.getString("id");
     			log.info("loading mailsubscriber:" + openId + ", mail:" + mail + ", stock:" + stkId);
-    			ms.add(new MailSubscriber(openId, mail, stkId));
+    			ms.add(new BuySellInfoSubscriber(openId, mail, stkId));
     			load_success = true;
     		}
     		rs.close();
@@ -115,7 +115,7 @@ public class GzStockBuySellPointObserverable extends Observable {
         boolean usr_need_mail = false;
         boolean generated_mail = false;
         
-        for (MailSubscriber u : ms) {
+        for (BuySellInfoSubscriber u : ms) {
         	u.subject = "";
         	u.content = "";
         	body = new StringBuffer();
@@ -132,7 +132,7 @@ public class GzStockBuySellPointObserverable extends Observable {
             	if (u.gzStk(e.id) && u.saveSend(e.id)) {
             		
             		if (u.subject.length() <= 0) {
-            			u.subject = e.id + df.format(e.price) + "/" + (e.is_buy_point ? "B" : "S") + subject + returnStr;
+            			u.subject = e.id + "/" + df.format(e.price) + "/" + (e.is_buy_point ? "B " : "S ") + subject + returnStr;
             		}
                     body.append("<tr> <td>" + e.id + "</td>" +
                     "<td> " + e.name + "</td>" +

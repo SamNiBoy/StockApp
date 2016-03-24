@@ -16,12 +16,18 @@ import com.sn.stock.StockMarket;
 public class ClosePriceTrendStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(ClosePriceTrendStockSelector.class);
+    int days = 7;
+	double maxPctUpper = 2;
+	double maxPctLower = 0.1;
+	double curPctLowLvl = 0.2;
+	double curPctUpLvl = 0.8;
+	double maxPctLower2 = 0.02;
     /**
      * @param args
      */
     public boolean isGoodStock(Stock2 s, ICashAccount ac) {
-    	Double maxYtClsPri = s.getMaxYtClsPri(7);
-    	Double minYtClsPri = s.getMinYtClsPri(7);
+    	Double maxYtClsPri = s.getMaxYtClsPri(days);
+    	Double minYtClsPri = s.getMinYtClsPri(days);
     	Double curPri = s.getCur_pri();
     	
     	if (maxYtClsPri == null || minYtClsPri == null || curPri == null) {
@@ -34,11 +40,11 @@ public class ClosePriceTrendStockSelector implements IStockSelector {
     	
     	log.info("maxPct:" + maxPct + " curPct:" + curPct);
     	
-        if (maxPct < 1 && maxPct >= 0.1 && curPct <= maxPct * 0.5) {
+        if (maxPct < maxPctUpper && maxPct >= maxPctLower && curPct <= maxPct * curPctLowLvl) {
             log.info("Now, price plused by " + maxPct + " pct, and curPri is 1/2 close to minYtClsPri. return true.");
             return true;
         }
-        else if (maxPct <= 0.05 && curPct >= maxPct * 0.5) {
+        else if (maxPct <= maxPctLower2 && curPct >= maxPct * curPctUpLvl) {
             log.info("Now, price plused by " + maxPct + " pct, and curPri is more than 1/2 close to maxYtClsPri. return true.");
             return true;
         }
@@ -53,6 +59,71 @@ public class ClosePriceTrendStockSelector implements IStockSelector {
 	@Override
 	public boolean isMandatoryCriteria() {
 		// TODO Auto-generated method stub
+		return true;
+	}
+	@Override
+	public boolean adjustCriteria(boolean harder) {
+		// TODO Auto-generated method stub
+		log.info("maxPctUpper:" + maxPctUpper + "maxPctLower:" + maxPctLower + "curPctLowLvl:" + curPctLowLvl + "maxPctLower2:" + maxPctLower2 + "curPctUpLvl:" + curPctUpLvl);
+		if (harder) {
+			days--;
+			if (days < 3) {
+				days = 3;
+			}
+			maxPctUpper = maxPctUpper - 0.2;
+			if (maxPctUpper <= 1) {
+				maxPctUpper = 1;
+			}
+			maxPctLower = maxPctLower * 1.1;
+			if (maxPctLower >= 0.2) {
+				maxPctLower = 0.2;
+			}
+			curPctLowLvl = curPctLowLvl - 0.01;
+			if (curPctLowLvl <= 0.1) {
+				curPctLowLvl = 0.1;
+			}
+			maxPctLower2 = maxPctLower2 * 0.9;
+			if (maxPctLower2 <= 0.01) {
+				maxPctLower2 = 0.01;
+			}
+			curPctUpLvl = curPctUpLvl * 0.9;
+			if (curPctUpLvl <= 0.6) {
+				curPctUpLvl = 0.6;
+			}
+		}
+		else {
+			maxPctUpper = maxPctUpper + 0.2;
+			maxPctLower = maxPctLower * 0.9;
+			curPctLowLvl = curPctLowLvl + 0.01;
+			maxPctLower2 = maxPctLower2 * 1.1;
+			curPctUpLvl = curPctUpLvl * 0.9;
+			days++;
+			if (days >= 14) {
+				days = 14;
+			}
+			maxPctUpper = maxPctUpper + 0.2;
+			if (maxPctUpper >= 3) {
+				maxPctUpper = 3;
+			}
+			maxPctLower = maxPctLower * 0.9;
+			if (maxPctLower <= 0.01) {
+				maxPctLower = 0.01;
+			}
+			curPctLowLvl = curPctLowLvl + 0.01;
+			if (curPctLowLvl >= 0.3) {
+				curPctLowLvl = 0.3;
+			}
+			maxPctLower2 = maxPctLower2 * 1.1;
+			if (maxPctLower2 >= 0.05) {
+				maxPctLower2 = 0.05;
+			}
+			curPctUpLvl = curPctUpLvl * 1.1;
+			if (curPctUpLvl >= 0.9) {
+				curPctUpLvl = 0.9;
+			}
+		}
+		log.info("after try " + (harder ? " harder" : " loose"));
+		log.info("maxPctUpper:" + maxPctUpper + "maxPctLower:" + maxPctLower + "curPctLowLvl:" + curPctLowLvl + "maxPctLower2:" + maxPctLower2 + "curPctUpLvl:" + curPctUpLvl);
 		return true;
 	}
 }
