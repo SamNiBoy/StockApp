@@ -1,5 +1,8 @@
 package com.sn.mail.reporter;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,6 +27,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
+import com.sn.trader.StockTrader;
 
 public class GzStockBuySellPointObserverable extends Observable {
 
@@ -130,6 +134,9 @@ public class GzStockBuySellPointObserverable extends Observable {
             DecimalFormat df = new DecimalFormat("##.##");
             for (StockBuySellEntry e : sbse) {
             	if (u.gzStk(e.id) && u.saveSend(e.id)) {
+            		
+            		//Here we trade our stock!
+            		StockTrader.tradeStock(e);
             		
             		if (u.subject.length() <= 0) {
             			u.subject = e.id + "/" + df.format(e.price) + "/" + (e.is_buy_point ? "B " : "S ") + subject + returnStr;

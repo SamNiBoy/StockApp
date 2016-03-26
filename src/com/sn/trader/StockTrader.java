@@ -1,0 +1,198 @@
+package com.sn.trader;
+
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+import com.sn.db.DBManager;
+import com.sn.stock.StockBuySellEntry;
+
+public class StockTrader {
+
+	static final int MAX_TRADE_TIMES_PER_STOCK = 3;
+	static final int MAX_TRADE_TIMES_PER_DAY = 10;
+	static List<String> tradeStocks = new ArrayList<String>();
+	static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
+
+	static Logger log = Logger.getLogger(StockTrader.class);
+
+	static {
+		//loadStocksForTrade("osCWfs-ZVQZfrjRK0ml-eEpzeop0");
+	}
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+
+		StockBuySellEntry r1 = new StockBuySellEntry("600503", "abcdef", 6.5, true, "time1");
+		StockBuySellEntry r2 = new StockBuySellEntry("000975", "abcdef", 9.5, false, "time2");
+		StockBuySellEntry r3 = new StockBuySellEntry("600871", "abcdef", 9.5, false, "time2");
+		StockBuySellEntry r4 = new StockBuySellEntry("002269", "abcdef", 9.5, true, "time2");
+		StockBuySellEntry r5 = new StockBuySellEntry("000975", "abcdef", 9.5, true, "time2");
+		StockBuySellEntry r6 = new StockBuySellEntry("600503", "abcdef", 9.5, false, "time2");
+
+		try {
+			tradeStock(r1);
+			Thread.currentThread().sleep(7000);
+			tradeStock(r2);		
+			Thread.currentThread().sleep(7000);
+			tradeStock(r3);
+			Thread.currentThread().sleep(7000);
+			tradeStock(r4);	
+			Thread.currentThread().sleep(7000);
+			tradeStock(r5);	
+			Thread.currentThread().sleep(7000);
+			tradeStock(r6);	
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		printTradeInfor();
+	}
+	
+	public static void printTradeInfor() {
+		log.info("Print real trade record as:");
+		
+		LinkedList<StockBuySellEntry> tmp;
+		for (String id : tradeRecord.keySet()) {
+			tmp = tradeRecord.get(id);
+			for (StockBuySellEntry e : tmp) {
+				e.printStockInfo();
+			}
+		}
+		log.info("End print real trade record");
+	}
+
+	public static boolean loadStocksForTrade(String openID) {
+		String sql;
+		tradeStocks.clear();
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+			sql = "select s.*, u.* "
+			    + "from usrStk s,"
+			    + "     usr u "
+			    + "where s.openID = u.openID "
+			    + "and s.gz_flg = 1 "
+			    + "and u.openID = '" + openID + "' "
+			    + "and u.mail is not null "
+			    + "and s.suggested_by = 'osCWfs-ZVQZfrjRK0ml-eEpzeop0'"
+			    + "and u.buy_sell_enabled = 1";
+
+			log.info(sql);
+			ResultSet rs = stm.executeQuery(sql);
+			while (rs.next()) {
+				log.info("Loading stock:" + rs.getString("id") + " for user openID:" + rs.getString("openID"));
+				tradeStocks.add(rs.getString("id"));
+			}
+			rs.close();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	public static boolean tradeStock(StockBuySellEntry stk) {
+		
+		loadStocksForTrade("osCWfs-ZVQZfrjRK0ml-eEpzeop0");
+		
+		if (saveTradeRecord(stk)) {
+    		//Save string like "S600503" to clipboard for sell stock.
+    		String txt = "";
+    		Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
+    		if (stk.is_buy_point) {
+    			txt = "B" + stk.id;
+    		}
+    		else {
+    			txt = "S" + stk.id;
+    		}
+    		StringSelection sel = new StringSelection(txt);
+    		cpb.setContents(sel, null);
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	private static boolean saveTradeRecord(StockBuySellEntry stk) {
+		if (tradeStocks == null || !tradeStocks.contains(stk.id)) {
+			log.info("stock " + stk.id + " is not available for trade.");
+			return false;
+		}
+
+		int totalCnt = 0;
+		LinkedList<StockBuySellEntry> tmp;
+		for (String id : tradeRecord.keySet()) {
+			tmp = tradeRecord.get(id);
+			totalCnt += tmp.size();
+		}
+
+		log.info("Total traded " + totalCnt + " times.");
+
+		if (totalCnt >= MAX_TRADE_TIMES_PER_DAY) {
+			log.info("Trade limit for a day is: " + MAX_TRADE_TIMES_PER_DAY + " can not trade today!");
+			return false;
+		}
+
+		LinkedList<StockBuySellEntry> rcds = tradeRecord.get(stk.id);
+		if (rcds != null) {
+			if (rcds.size() >= MAX_TRADE_TIMES_PER_STOCK) {
+				log.info("stock " + stk.id + " alread trade " + rcds.size() + " times, can not trade today.");
+				return false;
+			} else {
+				int sellCnt = 0;
+				int buyCnt = 0;
+				for (StockBuySellEntry sd : rcds) {
+					if (sd.is_buy_point) {
+						buyCnt++;
+					}
+					else {
+						sellCnt++;
+					}
+				}
+				log.info("For stock " + stk.id + " total sellCnt:" + sellCnt + ", total buyCnt:" + buyCnt);
+				
+				// We won't buy if less sold.
+				if (buyCnt >= sellCnt && stk.is_buy_point) {
+					log.info("Bought more than sold, can won't buy again.");
+					return false;
+				}
+				log.info("Adding trade record for stock as: " + stk.id);
+				stk.printStockInfo();
+				rcds.add(stk);
+				return true;
+			}
+	    // When it's first record, make sure it's sell point.
+		} else if (!stk.is_buy_point){
+			log.info("Adding first sell record for stock as: " + stk.id);
+			stk.printStockInfo();
+			rcds = new LinkedList<StockBuySellEntry>();
+			rcds.add(stk);
+			tradeRecord.put(stk.id, rcds);
+			return true;
+		}
+		else {
+			log.info("SKip buying " + stk.id + " without sold.");
+		}
+		return false;
+	}
+}

@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.trader.StockTrader;
 import com.sn.work.itf.IWork;
 import com.sn.work.WorkManager;
 

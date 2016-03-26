@@ -46,7 +46,7 @@ public class StockBuySellEntry{
         log.info("========================================\n");
         log.info("Stock " + id + " data buy/sell information:\n");
         log.info("========================================\n");
-        log.info("ID\t|Name\t|IS_BUY_POINT\t|");
-        log.info(id + "\t|" + name + "\t|" + ((is_buy_point)? "TRUE" : "FALSE") + "\t|\n");
+        log.info("ID\t|Name\t|IS_BUY_POINT\t|Price\t|Time\t|");
+        log.info(id + "\t|" + name + "\t|" + ((is_buy_point)? "TRUE" : "FALSE") + "\t|" + price + "\t|" + timestamp + "\t|");
     }
 }
