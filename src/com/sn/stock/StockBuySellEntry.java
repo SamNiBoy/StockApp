@@ -29,17 +29,17 @@ public class StockBuySellEntry{
     public String name;
     public boolean is_buy_point;
     public double price;
-    public String timestamp;
+    public Timestamp dl_dt;
     
     public static void main(String[] args) {}
     
-    public StockBuySellEntry(String ids, String nm, double curpri, boolean ibp, String tm)
+    public StockBuySellEntry(String ids, String nm, double curpri, boolean ibp, Timestamp tm)
     {
         id = ids;
         name = nm;
         price = curpri;
         is_buy_point = ibp;
-        timestamp = tm;
+        dl_dt = tm;
     }
 
     public void printStockInfo() {
@@ -47,6 +47,6 @@ public class StockBuySellEntry{
         log.info("Stock " + id + " data buy/sell information:\n");
         log.info("========================================\n");
         log.info("ID\t|Name\t|IS_BUY_POINT\t|Price\t|Time\t|");
-        log.info(id + "\t|" + name + "\t|" + ((is_buy_point)? "TRUE" : "FALSE") + "\t|" + price + "\t|" + timestamp + "\t|");
+        log.info(id + "\t|" + name + "\t|" + ((is_buy_point)? "TRUE" : "FALSE") + "\t|" + price + "\t|" + dl_dt.toLocaleString() + "\t|");
     }
 }

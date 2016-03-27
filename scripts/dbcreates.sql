@@ -363,3 +363,19 @@ buy_flg number not null,
 CONSTRAINT "TradeDtl_PK" PRIMARY KEY (acntId, stkId, seqnum)
 );
 
+create table SellBuyRecord(
+sb_id number not null primary key,
+openId varchar2(30 byte) not null,
+stkId varchar2(6 byte) not null,
+price number not null,
+dl_dt date not null,
+buy_flg number not null,
+traded_flg number not null
+);
+
+create sequence SEQ_SBR_PK
+  minvalue 1
+  maxvalue 99999999
+  start with 1
+  increment by 1
+  cache 20;

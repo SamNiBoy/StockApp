@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,6 +24,8 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.stock.StockBuySellEntry;
+
+import oracle.sql.DATE;
 
 public class StockTrader {
 
@@ -40,12 +44,12 @@ public class StockTrader {
 	 */
 	public static void main(String[] args) {
 
-		StockBuySellEntry r1 = new StockBuySellEntry("600503", "abcdef", 6.5, true, "time1");
-		StockBuySellEntry r2 = new StockBuySellEntry("000975", "abcdef", 9.5, false, "time2");
-		StockBuySellEntry r3 = new StockBuySellEntry("600871", "abcdef", 9.5, false, "time2");
-		StockBuySellEntry r4 = new StockBuySellEntry("002269", "abcdef", 9.5, true, "time2");
-		StockBuySellEntry r5 = new StockBuySellEntry("000975", "abcdef", 9.5, true, "time2");
-		StockBuySellEntry r6 = new StockBuySellEntry("600503", "abcdef", 9.5, false, "time2");
+		StockBuySellEntry r1 = new StockBuySellEntry("600503", "abcdef", 6.5, true, Timestamp.valueOf(LocalDateTime.now()));
+		StockBuySellEntry r2 = new StockBuySellEntry("000975", "abcdef", 9.5, false, Timestamp.valueOf(LocalDateTime.now()));
+		StockBuySellEntry r3 = new StockBuySellEntry("600871", "abcdef", 9.5, false, Timestamp.valueOf(LocalDateTime.now()));
+		StockBuySellEntry r4 = new StockBuySellEntry("002269", "abcdef", 9.5, true, Timestamp.valueOf(LocalDateTime.now()));
+		StockBuySellEntry r5 = new StockBuySellEntry("000975", "abcdef", 9.5, true, Timestamp.valueOf(LocalDateTime.now()));
+		StockBuySellEntry r6 = new StockBuySellEntry("600503", "abcdef", 9.5, false, Timestamp.valueOf(LocalDateTime.now()));
 
 		try {
 			tradeStock(r1);
@@ -112,8 +116,10 @@ public class StockTrader {
 
 	public static boolean tradeStock(StockBuySellEntry stk) {
 		
-		loadStocksForTrade("osCWfs-ZVQZfrjRK0ml-eEpzeop0");
+		String openID = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
+		loadStocksForTrade(openID);
 		
+		createRecord(stk, openID);
 		if (saveTradeRecord(stk)) {
     		//Save string like "S600503" to clipboard for sell stock.
     		String txt = "";
@@ -126,11 +132,56 @@ public class StockTrader {
     		}
     		StringSelection sel = new StringSelection(txt);
     		cpb.setContents(sel, null);
+    		tradeRecord(stk, openID);
 			return true;
 		}
 		else {
 			return false;
 		}
+	}
+	
+	private static boolean createRecord(StockBuySellEntry stk, String openID) {
+		String sql;
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+			sql = "insert into SellBuyRecord values(SEQ_SBR_PK.nextval,'"
+			      + openID + "','"
+				  + stk.id + "',"
+			      +stk.price + ",to_date('"
+				  + stk.dl_dt.toString().substring(0, 19) + "', 'yyyy-mm-dd hh24:mi:ss'),"
+			      + (stk.is_buy_point ? 1 : 0) +
+			      ", 0)";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			con.commit();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+	
+	private static boolean tradeRecord(StockBuySellEntry stk, String openID) {
+		String sql;
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+			sql = "update SellBuyRecord set traded_flg = 1 "
+				  + "where stkid = '" + stk.id
+				  + "' and openID = '" + openID
+				  + "' and to_char(dl_dt, 'yyyy-mm-dd hh24:mi:ss') = '" + stk.dl_dt.toString().substring(0, 19) + "'";
+
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			con.commit();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
 	}
 
 	private static boolean saveTradeRecord(StockBuySellEntry stk) {

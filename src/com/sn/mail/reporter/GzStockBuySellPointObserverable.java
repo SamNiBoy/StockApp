@@ -145,7 +145,7 @@ public class GzStockBuySellPointObserverable extends Observable {
                     "<td> " + e.name + "</td>" +
                     "<td> " + df.format(e.price) + "</td>" +
                     "<td> " + (e.is_buy_point ? "B" : "S") + "</td>" +
-                    "<td> " + e.timestamp + "</td></tr>");
+                    "<td> " + e.dl_dt + "</td></tr>");
                     usr_need_mail = true;
                     generated_mail = true;
             	}
