@@ -48,8 +48,8 @@ public class StockTrader {
 		StockBuySellEntry r2 = new StockBuySellEntry("000975", "abcdef", 9.5, false, Timestamp.valueOf(LocalDateTime.now()));
 		StockBuySellEntry r3 = new StockBuySellEntry("600871", "abcdef", 9.5, false, Timestamp.valueOf(LocalDateTime.now()));
 		StockBuySellEntry r4 = new StockBuySellEntry("002269", "abcdef", 9.5, true, Timestamp.valueOf(LocalDateTime.now()));
-		StockBuySellEntry r5 = new StockBuySellEntry("000975", "abcdef", 9.5, true, Timestamp.valueOf(LocalDateTime.now()));
-		StockBuySellEntry r6 = new StockBuySellEntry("600503", "abcdef", 9.5, false, Timestamp.valueOf(LocalDateTime.now()));
+		StockBuySellEntry r5 = new StockBuySellEntry("000975", "abcdef", 9.3, true, Timestamp.valueOf(LocalDateTime.now()));
+		StockBuySellEntry r6 = new StockBuySellEntry("000975", "abcdef", 9.0, true, Timestamp.valueOf(LocalDateTime.now()));
 
 		try {
 			tradeStock(r1);
@@ -223,9 +223,16 @@ public class StockTrader {
 				log.info("For stock " + stk.id + " total sellCnt:" + sellCnt + ", total buyCnt:" + buyCnt);
 				
 				// We won't buy if less sold.
-				if (buyCnt >= sellCnt && stk.is_buy_point) {
+				if (buyCnt > sellCnt && stk.is_buy_point) {
 					log.info("Bought more than sold, can won't buy again.");
 					return false;
+				}
+				else if (stk.is_buy_point) {
+					StockBuySellEntry lst = rcds.getLast();
+					if (!lst.is_buy_point && lst.price <= stk.price) {
+						log.info("Skip buy with higher price than previous sell.");
+						return false;
+					}
 				}
 				log.info("Adding trade record for stock as: " + stk.id);
 				stk.printStockInfo();
