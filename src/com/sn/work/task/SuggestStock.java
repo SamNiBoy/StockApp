@@ -25,6 +25,7 @@ import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.sim.strategy.selector.stock.KeepGainStockSelector;
 import com.sn.sim.strategy.selector.stock.KeepLostStockSelector;
 import com.sn.sim.strategy.selector.stock.PriceStockSelector;
+import com.sn.sim.strategy.selector.stock.StddevStockSelector;
 import com.sn.stock.RawStockData;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
@@ -117,9 +118,10 @@ public class SuggestStock implements IWork {
 		delayBeforNxtStart = dbn;
 		selectors.add(new DefaultStockSelector());
 		selectors.add(new PriceStockSelector());
-		selectors.add(new ClosePriceTrendStockSelector());
-		selectors.add(new KeepGainStockSelector());
-		selectors.add(new KeepLostStockSelector());
+		selectors.add(new StddevStockSelector());
+//		selectors.add(new ClosePriceTrendStockSelector());
+//		selectors.add(new KeepGainStockSelector());
+//		selectors.add(new KeepLostStockSelector());
 	}
 
 	public void run() {
@@ -127,6 +129,8 @@ public class SuggestStock implements IWork {
 		boolean suggest_flg = false;
 		boolean loop_nxt_stock = false;
 
+		resetSuggestion();
+		
 		try {
 			Map<String, Stock2> stks = StockMarket.getStocks();
 			int tryCnt = 10;
@@ -138,6 +142,9 @@ public class SuggestStock implements IWork {
 			    		if (slt.isMandatoryCriteria() && !slt.isGoodStock(s, null)) {
 			    			loop_nxt_stock = true;
 			    			break;
+			    		}
+			    		else {
+			    			suggest_flg = true;
 			    		}
 			    	}
 			    	if (!loop_nxt_stock) {
@@ -174,7 +181,7 @@ public class SuggestStock implements IWork {
 			    	log.info("stocksWaitForMail is empty, tryHarderCriteria set to false");
 			    	tryHarderCriteria = false;
 			    }
-			    else if (stocksWaitForMail.size() > 20) {
+			    else if (stocksWaitForMail.size() > 10) {
 			    	log.info("stocksWaitForMail has " + stocksWaitForMail.size() + " which is more than 20, tryHarderCriteria set to true");
 			    	tryHarderCriteria = true;
 			    	stocksWaitForMail.clear();
@@ -235,6 +242,23 @@ public class SuggestStock implements IWork {
 				}
 			}
 			rs.close();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void resetSuggestion() {
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		try {
+			sql = "update usrStk set gz_flg = 0 where gz_flg = 1 and suggested_by in ('SYSTEM','SYSTEMUPDATE')";
+			log.info(sql);
+			stm = con.createStatement();
+			stm.execute(sql);
+			con.commit();
 			stm.close();
 			con.close();
 		} catch (Exception e) {

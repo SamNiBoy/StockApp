@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
@@ -32,7 +34,7 @@ public class ListGzStock implements IWork {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        ListGzStock lgs = new ListGzStock(0, 0, "abc");
+        ListGzStock lgs = new ListGzStock(0, 0, "osCWfs-ZVQZfrjRK0ml-eEpzeop0");
         lgs.run();
     }
 
@@ -65,6 +67,7 @@ public class ListGzStock implements IWork {
         String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "'";
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
+        DecimalFormat df = new DecimalFormat("##.###");
 
         try {
         	Connection con = DBManager.getConnection();
@@ -76,61 +79,27 @@ public class ListGzStock implements IWork {
             }
             rs.close();
             
-            long incPriCnt = 0, eqlPriCnt = 0;
-            long desPriCnt = 0;
-            long detQty = 0, qtyCnt = 0;
             for (String stock : Stocks.keySet()) {
-                double pre_cur_pri = 0, cur_pri = 0;
-                double pre_qty = 0, cur_qty = 0;
-                incPriCnt = eqlPriCnt = desPriCnt = 0;
-                detQty = qtyCnt = 0;
+                double dev = 0;
+                double cur_pri = 0;
 
                 content += stock + ":" + Stocks.get(stock) + "\n";
 
                 try {
-                    sql = "select cur_pri, dl_stk_num from stkdat2 where id ='"
-                            + stock
-                            + "' and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') order by ft_id";
+                    sql = "select avg(dev) dev from ("
+         				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
+        				   + "  from stkdat2 "
+        				   + " where id ='" + stock + "'"
+        				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - 7, 'yyyy-mm-dd')"
+        				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
                     log.info(sql);
                     rs = stm.executeQuery(sql);
-                    
-                    while (rs.next()) {
-                        cur_pri = rs.getDouble("cur_pri");
-                        cur_qty = rs.getDouble("dl_stk_num");
-                        if (pre_cur_pri != 0) {
-                            if (cur_pri > pre_cur_pri) {
-                                incPriCnt++;
-                            } else if (cur_pri == pre_cur_pri) {
-                                eqlPriCnt++;
-                            } else {
-                                desPriCnt++;
-                            }
-                        }
-                        pre_cur_pri = cur_pri;
-                    
-                        if (pre_qty != 0) {
-                            if (cur_qty > pre_qty) {
-                                detQty += cur_qty - pre_qty;
-                            }
-                            qtyCnt++;
-                        }
-                        pre_qty = cur_qty;
+                    if (rs.next()) {
+                    	dev = rs.getDouble("dev");
                     }
+                    cur_pri = StockMarket.getStocks().get(stock).getCur_pri();
+                    content += "价:" + df.format(cur_pri) + " stddev:" + df.format(dev) + "\n";
                     rs.close();
-
-                    if (qtyCnt > 0) {
-                        detQty = detQty / qtyCnt;
-                    }
-                    
-                    if (incPriCnt + eqlPriCnt + desPriCnt > 0) {
-                        double d0 = eqlPriCnt * 1.0
-                                / (incPriCnt + desPriCnt + eqlPriCnt);
-                        double d1 = Math.abs(incPriCnt - desPriCnt) * 1.0
-                                / Math.abs(Math.max(1,Math.max(incPriCnt, desPriCnt)));
-                        log.info("eqlRt:" + d0 + "\ndifRt:" + d1);
-                            content +=" 涨:" + incPriCnt + " 跌:" + desPriCnt
-                                    + " 平:" + eqlPriCnt + " 手:" + detQty/100 + "价:" + cur_pri + "\n";
-                    }
                 } catch(SQLException e0) {
                     log.info("No price infor for stock:" + stock + " continue...");
                     continue;
