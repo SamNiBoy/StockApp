@@ -29,7 +29,7 @@ import oracle.sql.DATE;
 
 public class StockTrader {
 
-	static final int MAX_TRADE_TIMES_PER_STOCK = 3;
+	static final int MAX_TRADE_TIMES_PER_STOCK = 4;
 	static final int MAX_TRADE_TIMES_PER_DAY = 10;
 	static List<String> tradeStocks = new ArrayList<String>();
 	static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
@@ -49,9 +49,10 @@ public class StockTrader {
 		StockBuySellEntry r3 = new StockBuySellEntry("600871", "abcdef", 9.5, false, Timestamp.valueOf(LocalDateTime.now()));
 		StockBuySellEntry r4 = new StockBuySellEntry("002269", "abcdef", 9.5, true, Timestamp.valueOf(LocalDateTime.now()));
 		StockBuySellEntry r5 = new StockBuySellEntry("000975", "abcdef", 9.3, true, Timestamp.valueOf(LocalDateTime.now()));
-		StockBuySellEntry r6 = new StockBuySellEntry("000975", "abcdef", 9.0, true, Timestamp.valueOf(LocalDateTime.now()));
+		StockBuySellEntry r6 = new StockBuySellEntry("000975", "abcdef", 9.28, true, Timestamp.valueOf(LocalDateTime.now()));
 
 		try {
+			Thread.currentThread().sleep(7000);
 			tradeStock(r1);
 			Thread.currentThread().sleep(7000);
 			tradeStock(r2);		
@@ -227,10 +228,18 @@ public class StockTrader {
 					log.info("Bought more than sold, can won't buy again.");
 					return false;
 				}
-				else if (stk.is_buy_point) {
+//				else if (stk.is_buy_point) {
+//					StockBuySellEntry lst = rcds.getLast();
+//					if (!lst.is_buy_point && lst.price <= stk.price) {
+//						log.info("Skip buy with higher price than previous sell.");
+//						return false;
+//					}
+//				}
+				else {
+					// If we just sold/buy it, and now the price has no significant change, we will not do the same trade.
 					StockBuySellEntry lst = rcds.getLast();
-					if (!lst.is_buy_point && lst.price <= stk.price) {
-						log.info("Skip buy with higher price than previous sell.");
+					if (stk.is_buy_point == lst.is_buy_point && Math.abs((stk.price - lst.price)) / lst.price <= 0.01) {
+						log.info("Just " +(stk.is_buy_point ? "buy":"sell") + " this stock with similar prices " + stk.price + "/" + lst.price + ", skip same trade.");
 						return false;
 					}
 				}

@@ -30,7 +30,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
 			double maxFlt = (maxPri - minPri) / yt_cls_pri;
-			if (maxFlt > 0.03 && (cur_pri - minPri) / yt_cls_pri > maxFlt * 9.0 / 10.0) {
+			if (maxFlt > 0.02 && (cur_pri - minPri) / yt_cls_pri > maxFlt * 9.0 / 10.0) {
 				log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + " maxPri:" + maxPri + " minPri:"
 						+ minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri);
 				return true;
