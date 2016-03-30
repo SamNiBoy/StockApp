@@ -54,12 +54,12 @@ public class GzStockBuySellPointObserverable extends Observable {
 		private Map<String, Long> lastSend = new HashMap<String, Long>();
 		
 		public boolean saveSend(String stk) {
-			//If already send within half an hour, will not send again.
-			Long gap = 30*60*1000L;
-			if (sentWithin(stk, gap)) {
-				log.info("Aleady sent mail to user:" + openID + "for stock:" + stk + " within:" + gap + " will not sent again.");
-				return false;
-			}
+//			//If already send within half an hour, will not send again.
+//			Long gap = 30*60*1000L;
+//			if (sentWithin(stk, gap)) {
+//				log.info("Aleady sent mail to user:" + openID + "for stock:" + stk + " within:" + gap + " will not sent again.");
+//				return false;
+//			}
 			lastSend.remove(stk);
 			lastSend.put(stk, System.currentTimeMillis());
 			return true;
@@ -133,11 +133,8 @@ public class GzStockBuySellPointObserverable extends Observable {
                     "<th> Time</th></tr>");
             DecimalFormat df = new DecimalFormat("##.##");
             for (StockBuySellEntry e : sbse) {
-            	if (u.gzStk(e.id) && u.saveSend(e.id)) {
-            		
-            		//Here we trade our stock!
-            		StockTrader.tradeStock(e);
-            		
+            	if (u.gzStk(e.id) && StockTrader.tradeStock(e)) {
+            		u.saveSend(e.id); 
             		if (u.subject.length() <= 0) {
             			u.subject = e.id + "/" + df.format(e.price) + "/" + (e.is_buy_point ? "B " : "S ") + subject + returnStr;
             		}

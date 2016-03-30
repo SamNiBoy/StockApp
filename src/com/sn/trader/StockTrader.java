@@ -29,8 +29,8 @@ import oracle.sql.DATE;
 
 public class StockTrader {
 
-	static final int MAX_TRADE_TIMES_PER_STOCK = 4;
-	static final int MAX_TRADE_TIMES_PER_DAY = 10;
+	static final int MAX_TRADE_TIMES_PER_STOCK = 8;
+	static final int MAX_TRADE_TIMES_PER_DAY = 40;
 	static List<String> tradeStocks = new ArrayList<String>();
 	static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
 
@@ -119,8 +119,7 @@ public class StockTrader {
 		
 		String openID = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
 		loadStocksForTrade(openID);
-		
-		createRecord(stk, openID);
+
 		if (saveTradeRecord(stk)) {
     		//Save string like "S600503" to clipboard for sell stock.
     		String txt = "";
@@ -133,6 +132,7 @@ public class StockTrader {
     		}
     		StringSelection sel = new StringSelection(txt);
     		cpb.setContents(sel, null);
+    		createRecord(stk, openID);
     		tradeRecord(stk, openID);
 			return true;
 		}
@@ -223,8 +223,8 @@ public class StockTrader {
 				}
 				log.info("For stock " + stk.id + " total sellCnt:" + sellCnt + ", total buyCnt:" + buyCnt);
 				
-				// We won't buy if less sold.
-				if (buyCnt > sellCnt && stk.is_buy_point) {
+				// We only allow buy 2 more than sell.
+				if (buyCnt > sellCnt + 1 && stk.is_buy_point) {
 					log.info("Bought more than sold, can won't buy again.");
 					return false;
 				}
@@ -248,8 +248,7 @@ public class StockTrader {
 				rcds.add(stk);
 				return true;
 			}
-	    // When it's first record, make sure it's sell point.
-		} else if (!stk.is_buy_point){
+		} else {
 			log.info("Adding first sell record for stock as: " + stk.id);
 			stk.printStockInfo();
 			rcds = new LinkedList<StockBuySellEntry>();
@@ -257,9 +256,5 @@ public class StockTrader {
 			tradeRecord.put(stk.id, rcds);
 			return true;
 		}
-		else {
-			log.info("SKip buying " + stk.id + " without sold.");
-		}
-		return false;
 	}
 }
