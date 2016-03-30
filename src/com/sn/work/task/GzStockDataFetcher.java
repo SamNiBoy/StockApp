@@ -56,7 +56,7 @@ public class GzStockDataFetcher implements IWork {
     static public boolean start() {
         if (self == null) {
             GzRawStockDataConsumer gsdc = new GzRawStockDataConsumer(0, 0);
-            self = new GzStockDataFetcher(0, 5000, gsdc);
+            self = new GzStockDataFetcher(0, 6000, gsdc);
             if (WorkManager.submitWork(self)) {
                 resMsg = "Newly created GzStockDataFetcher and started!";
                 return true;

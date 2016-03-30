@@ -29,7 +29,7 @@ import oracle.sql.DATE;
 
 public class StockTrader {
 
-	static final int MAX_TRADE_TIMES_PER_STOCK = 8;
+	static final int MAX_TRADE_TIMES_PER_STOCK = 10;
 	static final int MAX_TRADE_TIMES_PER_DAY = 40;
 	static List<String> tradeStocks = new ArrayList<String>();
 	static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
