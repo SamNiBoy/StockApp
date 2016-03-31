@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.stock.StockMarket;
 import com.sn.trader.StockTrader;
 import com.sn.work.itf.IWork;
 import com.sn.work.WorkManager;
@@ -72,6 +73,7 @@ public class GzStock implements com.sn.work.itf.IWork {
             	else {
             		msg = "成功关注:" + stockID;
             	}
+            	StockMarket.loadGzStocks();
             }
             else {
             	rs.close();
@@ -90,6 +92,7 @@ public class GzStock implements com.sn.work.itf.IWork {
             	    log.info(sql);
             	    stm.execute(sql);
         		    msg = "成功添加关注:" + stockID;
+        		    StockMarket.loadGzStocks();
             	}
             }
             con.commit();

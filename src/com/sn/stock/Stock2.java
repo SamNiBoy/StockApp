@@ -24,7 +24,7 @@ public class Stock2 implements Comparable<Stock2>{
     public class StockData{
 
     	static public final int BIG_SZ = 800;
-    	static public final int SMALL_SZ = 400;
+    	static public final int SMALL_SZ = 300;
         int MAX_SZ = 800;
         //Save all history data
         String stkid;

@@ -136,7 +136,7 @@ public class GzStockBuySellPointObserverable extends Observable {
             	if (u.gzStk(e.id) && StockTrader.tradeStock(e)) {
             		u.saveSend(e.id); 
             		if (u.subject.length() <= 0) {
-            			u.subject = e.id + "/" + df.format(e.price) + "/" + (e.is_buy_point ? "B " : "S ") + subject + returnStr;
+            			u.subject = e.name + "/" + df.format(e.price) + "/" + (e.is_buy_point ? "买 " : "卖 ") + subject + returnStr;
             		}
                     body.append("<tr> <td>" + e.id + "</td>" +
                     "<td> " + e.name + "</td>" +

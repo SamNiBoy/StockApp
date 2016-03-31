@@ -18,13 +18,13 @@ import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
-public class ListGzStock implements IWork {
+public class ListSuggestStock implements IWork {
 
-    Logger log = Logger.getLogger(ListGzStock.class);
+    Logger log = Logger.getLogger(ListSuggestStock.class);
 
     long initDelay = 0;
     long delayBeforNxtStart = 5;
-    static String res = "开始收集关注股票信息...";
+    static String res = "开始收集推荐股票信息...";
     String frmUsr;
 
     TimeUnit tu = TimeUnit.MILLISECONDS;
@@ -34,11 +34,11 @@ public class ListGzStock implements IWork {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        ListGzStock lgs = new ListGzStock(0, 0, "osCWfs-ZVQZfrjRK0ml-eEpzeop0");
+        ListSuggestStock lgs = new ListSuggestStock(0, 0, "osCWfs-ZVQZfrjRK0ml-eEpzeop0");
         lgs.run();
     }
 
-    public ListGzStock(long id, long dbn, String usr) {
+    public ListSuggestStock(long id, long dbn, String usr) {
         initDelay = id;
         delayBeforNxtStart = dbn;
         frmUsr = usr;
@@ -50,7 +50,7 @@ public class ListGzStock implements IWork {
         try {
             msg = getGzStockInfo();
             if (msg.length() <= 0) {
-                msg = "目前没有关注股票，请发送股票代码进行关注.";
+                msg = "目前没有系统推荐股票.";
             }
             log.info("list gzed stocks:" + msg);
 
@@ -64,7 +64,7 @@ public class ListGzStock implements IWork {
     private String getGzStockInfo()
     {
         Statement stm = null;
-        String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "' and u.openID = u.suggested_by";
+        String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "' and u.openID <> u.suggested_by";
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
         DecimalFormat df = new DecimalFormat("##.###");
@@ -138,7 +138,7 @@ public class ListGzStock implements IWork {
     }
 
     public String getWorkName() {
-        return "ListGzStock";
+        return "ListSuggestStock";
     }
 
     public boolean isCycleWork() {

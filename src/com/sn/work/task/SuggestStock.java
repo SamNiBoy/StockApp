@@ -31,6 +31,7 @@ import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
 import com.sn.work.fetcher.GzRawStockDataConsumer;
+import com.sn.work.fetcher.StockDataFetcher;
 import com.sn.work.itf.IWork;
 import com.sn.work.monitor.MonitorGzStockData;
 import com.sn.work.monitor.MonitorStockData;
@@ -128,6 +129,18 @@ public class SuggestStock implements IWork {
 		// TODO Auto-generated method stub
 		boolean suggest_flg = false;
 		boolean loop_nxt_stock = false;
+
+        StockDataFetcher.lock.lock();
+        try {
+            log.info("Waiting before start SuggestStock stocks...");
+            StockDataFetcher.finishedOneRoundFetch.await();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            StockDataFetcher.lock.unlock();
+        }
 
 		resetSuggestion();
 		

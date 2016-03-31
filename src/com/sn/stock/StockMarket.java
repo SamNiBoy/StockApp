@@ -25,8 +25,8 @@ public class StockMarket{
 
     static Logger log = Logger.getLogger(StockMarket.class);
     
-    static private ConcurrentHashMap<String, Stock2> stocks = null;
-    static private ConcurrentHashMap<String, Stock2> gzstocks = null;
+    static private ConcurrentHashMap<String, Stock2> stocks = new ConcurrentHashMap<String, Stock2>();
+    static private ConcurrentHashMap<String, Stock2> gzstocks = new ConcurrentHashMap<String, Stock2>();
     static private ConcurrentHashMap<String, Stock2> recomstocks = null;
     
     private static int StkNum = 0;
@@ -57,9 +57,9 @@ public class StockMarket{
         Statement stm = null;
         ResultSet rs = null;
         
-        stocks = new ConcurrentHashMap<String, Stock2>();
+        stocks.clear();
         Stock2 s = null;
-        int Total = 0, cnt = 0;
+        int cnt = 0;
         try {
             stm = con.createStatement();
             String sql = "select id, name, gz_flg from stk order by id";
@@ -83,7 +83,7 @@ public class StockMarket{
         {
             e.printStackTrace();
         }
-        log.info("StockMarket loadStock successed!");
+        log.info("StockMarket loadStock " + cnt + " successed!");
         return true;
     }
     
@@ -93,9 +93,9 @@ public class StockMarket{
         Statement stm = null;
         ResultSet rs = null;
         
-        gzstocks = new ConcurrentHashMap<String, Stock2>();
+        gzstocks.clear();
         Stock2 s = null;
-        int Total = 0, cnt = 0;
+        int cnt = 0;
         try {
             stm = con.createStatement();
             String sql = "select s.id, s.name, u.gz_flg from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 order by s.id";
@@ -119,14 +119,14 @@ public class StockMarket{
         {
             e.printStackTrace();
         }
-        log.info("StockMarket loadStock successed!");
+        log.info("StockMarket loadStock " + cnt + " successed!");
         return true;
     }
     
     
     public static ConcurrentHashMap<String, Stock2> getStocks() {
         synchronized (StockMarket.class) {
-            if (stocks == null) {
+            if (stocks.isEmpty()) {
                 loadStocks();
             }
             return stocks;
@@ -138,7 +138,7 @@ public class StockMarket{
     }
 
     public static ConcurrentHashMap<String, Stock2> getGzstocks() {
-        if (gzstocks == null) {
+        if (gzstocks.isEmpty()) {
             loadGzStocks();
         }
         return gzstocks;
@@ -235,7 +235,7 @@ public class StockMarket{
     public static void setDegree(double degree) {
         Degree = degree;
     }
-
+    
     static public boolean calIndex(Timestamp tm) {
 
         Connection con = DBManager.getConnection();

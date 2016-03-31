@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.work.itf.IWork;
 import com.sn.work.WorkManager;
+import com.sn.work.fetcher.StockDataFetcher;
 
 public class TaskManager {
 
@@ -31,6 +32,7 @@ public class TaskManager {
         {
             log.info("Starting tasks...");
             tskStarted = true;
+            StockDataFetcher.start();
             startGzStock();
             return true;
         }

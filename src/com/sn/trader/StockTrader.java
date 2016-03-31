@@ -223,8 +223,8 @@ public class StockTrader {
 				}
 				log.info("For stock " + stk.id + " total sellCnt:" + sellCnt + ", total buyCnt:" + buyCnt);
 				
-				// We only allow buy 2 more than sell.
-				if (buyCnt > sellCnt + 1 && stk.is_buy_point) {
+				// We only allow buy 1 more than sell.
+				if (buyCnt > sellCnt && stk.is_buy_point) {
 					log.info("Bought more than sold, can won't buy again.");
 					return false;
 				}

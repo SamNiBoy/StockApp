@@ -74,6 +74,7 @@ public class RawStockDataConsumer implements IWork {
         try {
             while (true) {
                 RawStockData srd = dd.take();
+                log.info("take return stock:" + srd.id);
                 Stock2 s = ss.get(srd.id);
                 if (s != null) {
                     cnt++;

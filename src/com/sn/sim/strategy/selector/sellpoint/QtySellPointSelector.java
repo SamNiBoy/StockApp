@@ -11,12 +11,14 @@ import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.stock.Stock2;
+import com.sn.stock.StockMarket;
 import com.sn.stock.indicator.MACD;
 
 public class QtySellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(QtySellPointSelector.class);
 
+	private double tradeThresh = 0.02;
 	/**
 	 * @param args
 	 */
@@ -29,10 +31,14 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
+			double marketDegree = StockMarket.getDegree();
+			
+			tradeThresh = getSellThreshValueByDegree(marketDegree);
+			
 			double maxFlt = (maxPri - minPri) / yt_cls_pri;
-			if (maxFlt > 0.02 && (cur_pri - minPri) / yt_cls_pri > maxFlt * 9.0 / 10.0) {
+			if (maxFlt > tradeThresh && (cur_pri - minPri) / yt_cls_pri > maxFlt * 9.0 / 10.0) {
 				log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + " maxPri:" + maxPri + " minPri:"
-						+ minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri);
+						+ minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
 				return true;
 			}
 		} else {
@@ -40,4 +46,32 @@ public class QtySellPointSelector implements ISellPointSelector {
 		}
 		return false;
 	}
+	
+    public double getSellThreshValueByDegree(double Degree) {
+    	double val = 0.02;
+    	if (Degree < 0) {
+    		if (Degree >= -10) {
+    			val = 0.02;
+    		}
+    		else if (Degree < -10 && Degree >= -20) {
+    	    	val = 0.015;
+    	    }
+    	    else if (Degree < -20) {
+    	    	val = 0.01;
+    	    }
+    	}
+    	else {
+    		if (Degree <= 10) {
+    			val = 0.02;
+    		}
+    		else if (Degree > 10 && Degree <= 20){
+    			val = 0.02;
+    		}
+    		else {
+    			val = 0.03;
+    		}
+    	}
+    	log.info("Degree is:" + Degree + " sell threshValue is:" + val);
+    	return val;
+    }
 }

@@ -9,6 +9,7 @@ import com.sn.work.monitor.MonitorStockData;
 import com.sn.work.output.CalFetchStat;
 import com.sn.work.output.GzStock;
 import com.sn.work.output.ListGzStock;
+import com.sn.work.output.ListSuggestStock;
 import com.sn.work.output.ShutDownPC;
 import com.sn.work.output.TopTenBst;
 import com.sn.work.output.TopTenWst;
@@ -60,18 +61,18 @@ public class WeChatReporter extends BaseWCReporter{
     public String printHelp() {
     	if (is_admin_flg) {
         resContent = "你可以发送以下代码:\n"
-                + "1.获取关注/推荐的股票.\n" + "2.获取股票数据.\n"
-                + "3.停止获取股票数据.\n" + "4.报告数据情况.\n" 
-                + "5.启用/停止关注股票买卖.\n" + "6.启用/停止推荐股票.\n"
-                + "7.关机.\n"
+                + "1.获取我关注的股票.\n" + "2.获取系统推荐股票.\n"
+                + "3.启用/停止买卖.\n" + "4.启用/停止推荐.\n"
+                + "5.报告数据情况.\n" + "6.关机.\n" 
                 + "xxxxxx 关注/取消关注股票.\n"
                 + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
     	}
     	else {
             resContent = "你可以发送以下代码:\n"
-                    + "1.获取关注/推荐的股票.\n"
-                    + "2.启用/停止关注股票买卖.\n"
-                    + "3.启用/停止推荐股票.\n"
+                    + "1.获取我关注的股票.\n"
+                    + "2.获取系统推荐股票数据.\n"
+                    + "3.启用/停止股票买卖.\n"
+                    + "4.启用/停止推荐.\n"
                     + "xxxxxx 关注/取消关注股票.\n"
                     + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
     	}
@@ -98,13 +99,7 @@ public class WeChatReporter extends BaseWCReporter{
         else {
         	// remap key for other user.
         	if (!is_admin_flg) {
-        		if (content.equals("2")) {
-        			content = "5";
-        		}
-        		else if (content.equals("3")) {
-        			content = "6";
-        		}
-        		else if (!content.equals("1") && content.length() == 1) {
+        		if (!content.equals("1") && content.length() == 1) {
         			content = "0";
         		}
         	}
@@ -118,23 +113,15 @@ public class WeChatReporter extends BaseWCReporter{
                 }
             }
             else if (content.equals("2")) {
-                StockDataFetcher.start();
-                resContent = StockDataFetcher.getResMsg();
-            }
-            else if (content.equals("3")) {
-                StockDataFetcher.stop();
-                resContent = StockDataFetcher.getResMsg();
-            }
-            else if (content.equals("4")) {
-                CalFetchStat cfs = new CalFetchStat(0, 3);
-                if (!WorkManager.submitWork(cfs)) {
-                    resContent = "CalFetchStat already scheduled, can not do it again!";
+            	ListSuggestStock ttb = new ListSuggestStock(0, 3, this.getFromUserName());
+                if (!WorkManager.submitWork(ttb)) {
+                    resContent = "ListSuggestStock already scheduled, can not do it again!";
                 }
                 else {
-                    resContent = cfs.getWorkResult();
+                    resContent = ttb.getWorkResult();
                 }
             }
-            else if (content.equals("5")) {
+            else if (content.equals("3")) {
             	EnaUsrBuySell us = new EnaUsrBuySell(0, 0, this.getFromUserName());
                 if (!WorkManager.submitWork(us)) {
                     resContent = "EnaUsrBuySell already scheduled, can not do it again!";
@@ -143,7 +130,7 @@ public class WeChatReporter extends BaseWCReporter{
                     resContent = us.getWorkResult();
                 }
             }
-            else if (content.equals("6")) {
+            else if (content.equals("4")) {
             	EnaSuggestStock us = new EnaSuggestStock(0, 0, this.getFromUserName());
                 if (!WorkManager.submitWork(us)) {
                     resContent = "EnaSuggestStock already scheduled, can not do it again!";
@@ -152,7 +139,16 @@ public class WeChatReporter extends BaseWCReporter{
                     resContent = us.getWorkResult();
                 }
             }
-            else if (content.equals("7")) {
+            else if (content.equals("5")) {
+                CalFetchStat cfs = new CalFetchStat(0, 3);
+                if (!WorkManager.submitWork(cfs)) {
+                    resContent = "CalFetchStat already scheduled, can not do it again!";
+                }
+                else {
+                    resContent = cfs.getWorkResult();
+                }
+            }
+            else if (content.equals("6")) {
                 ShutDownPC sdp = new ShutDownPC(0, 3);
                 if (!WorkManager.submitWork(sdp)) {
                     resContent = "ShutDownPC already scheduled, can not do it again!";

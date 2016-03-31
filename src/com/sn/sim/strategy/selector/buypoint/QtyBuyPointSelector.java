@@ -17,6 +17,8 @@ import com.sn.stock.indicator.MACD;
 public class QtyBuyPointSelector implements IBuyPointSelector {
 
 	static Logger log = Logger.getLogger(QtyBuyPointSelector.class);
+	
+	private double tradeThresh = 0.02;
 
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
@@ -29,15 +31,19 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
 			if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
+				double marketDegree = StockMarket.getDegree();
+				
+				tradeThresh = getBuyThreshValueByDegree(marketDegree);
+				
 				double maxFlt = (maxPri - minPri) / yt_cls_pri;
 
-				if (maxFlt > 0.02 && (cur_pri - minPri) / yt_cls_pri < maxFlt * 1.0 / 10.0) {
+				if (maxFlt >= tradeThresh && (cur_pri - minPri) / yt_cls_pri < maxFlt * 1.0 / 10.0) {
 					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
 							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri);
 					return true;
 				} else {
-					log.info("isGoodBuyPoint false says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
-							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri);
+					log.info("isGoodBuyPoint false Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
+							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
 				}
 			} else {
 				log.info("isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
@@ -61,4 +67,31 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 		}
 		return false;
 	}
+	
+    public double getBuyThreshValueByDegree(double Degree) {
+    	double val = 0.02;
+    	if (Degree < 0) {
+    		if (Degree >= -10) {
+    			val = 0.02;
+    		}
+    		else if (Degree < -10 && Degree >= -20) {
+    	    	val = 0.03;
+    	    }
+    	    else if (Degree < -20) {
+    	    	val = 0.04;
+    	    }
+    	}
+    	else {
+    		if (Degree < 10) {
+    			val = 0.02;
+    		}
+    		else {
+    			val = 0.02;
+    		}
+    	}
+    	log.info("Degree is:" + Degree + " buy threshValue is:" + val);
+    	return val;
+    }
+    
+
 }
