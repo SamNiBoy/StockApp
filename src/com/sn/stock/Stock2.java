@@ -64,6 +64,9 @@ public class Stock2 implements Comparable<Stock2>{
         List<Double> s5_pri_lst = null;
         List<Timestamp> dl_dt_lst =null;
         
+        boolean is_jumpping_water = false;
+        int tailSz_jumpping_water = 100;
+        double pct_jumpping_water = 0.8;
         
         
         public boolean keepDaysClsPriLost(int days, double threshold) {
@@ -509,6 +512,78 @@ public class Stock2 implements Comparable<Stock2>{
 
         public void setDl_dt_lst(List<Timestamp> dlDtLst) {
             dl_dt_lst = dlDtLst;
+        }
+        
+        //Check if cur price is jumping water, tailSz tells how many recent records should be check, and pct tells
+        //how many percentage price decrease determine jumping water.
+        public boolean isJumpWater(int tailSz, double pct) {
+        	if (tailSz >= cur_pri_lst.size()) {
+        		log.info("cur_pri_lst size is: " + cur_pri_lst.size() + " is small than tailSz/pct:" + tailSz + "/" + pct + " return false.");
+        		is_jumpping_water = false;
+        		return false;
+        	}
+        	int incCnt = 0, desCnt = 0;
+        	int idx = cur_pri_lst.size() - 1;
+        	while (tailSz > 0) {
+        		if (cur_pri_lst.get(idx) < cur_pri_lst.get(idx - 1)) {
+        			desCnt++;
+        		}
+        		else {
+        			incCnt++;
+        		}
+        		idx--;
+        		tailSz--;
+        	}
+        	log.info("check jumpWater, cur_pri_lst.size: " + cur_pri_lst.size() + " desCnt:" + desCnt
+        			+ " / incCnt:" + incCnt + ", desCnt pct:" + desCnt * 1.0 / (desCnt + incCnt) + " passed pct:" + pct);
+        	if (desCnt * 1.0 / (desCnt + incCnt) >= pct) {
+        		log.info("return true");
+                tailSz_jumpping_water = tailSz;
+                pct_jumpping_water = pct;
+        		is_jumpping_water = true;
+        		return true;
+        	}
+        	else {
+        		log.info("return false");
+                tailSz_jumpping_water = tailSz;
+                pct_jumpping_water = pct;
+        		is_jumpping_water = false;
+        	}
+        	return false;
+        }
+        
+        //Tells if cur price is recover from jump water, when decrease count is half less then pct then true.
+        public boolean isStoppingJumpWater() {
+        	if (tailSz_jumpping_water >= cur_pri_lst.size()) {
+        		log.info("cur_pri_lst size is: " + cur_pri_lst.size() + " is small than tailSz_jumpping_water/pct_jumpping_water:" + tailSz_jumpping_water + "/" + pct_jumpping_water + " return false.");
+        		return false;
+        	}
+
+        	if (!is_jumpping_water) {
+        		log.info("did not jump water, can not stopping jumpping water either.");
+        		return false;
+        	}
+        	int tailSz = tailSz_jumpping_water;
+        	int incCnt = 0, desCnt = 0;
+        	int idx = cur_pri_lst.size() - 1;
+        	while (tailSz > 0) {
+        		if (cur_pri_lst.get(idx) < cur_pri_lst.get(idx - 1)) {
+        			desCnt++;
+        		}
+        		else {
+        			incCnt++;
+        		}
+        		idx--;
+        		tailSz--;
+        	}
+        	log.info("check isStopJumpWater, cur_pri_lst.size: " + cur_pri_lst.size() + " desCnt:" + desCnt
+        			+ " / incCnt:" + incCnt + ", desCnt pct:" + desCnt * 1.0 / (desCnt + incCnt) + " passed pct:" + pct_jumpping_water);
+        	if (desCnt * 1.0 / (desCnt + incCnt) <= pct_jumpping_water / 2) {
+        		log.info("return true");
+        		is_jumpping_water = false;
+        		return true;
+        	}
+        	return false;
         }
 
         StockData(String stkId, int sz) {
@@ -1065,6 +1140,27 @@ public class Stock2 implements Comparable<Stock2>{
     public Double getYtClsPri() {
     	return sd.getYtClsPri();
     }
+    
+    public boolean isJumpWater(int tailSz, double pct) {
+    	if (sd.isJumpWater(tailSz, pct)) {
+    		sd.PrintStockData();
+    		return true;
+    	}
+    	else {
+    		return false;
+    	}
+    }
+    
+    public boolean isStoppingJumpWater() {
+    	if (sd.isStoppingJumpWater()) {
+    		sd.PrintStockData();
+    		return true;
+    	}
+    	else {
+    		return false;
+    	}
+    }
+    
     
     public boolean saveData(RawStockData rsd, Connection con) {
         

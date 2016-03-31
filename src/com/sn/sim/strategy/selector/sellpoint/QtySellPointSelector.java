@@ -41,6 +41,13 @@ public class QtySellPointSelector implements ISellPointSelector {
 						+ minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
 				return true;
 			}
+			// If cur price is 90% decrease with 100 time(about 10 minutes) then it means jump water.
+			else if (stk.isJumpWater(100, 0.9)) {
+				log.info("Stock " + stk.getID() + " cur price is jump water, a good sell point, return true.");
+				//for testing purpose, still return false;
+				return false;
+			}
+			log.info("common bad sell point.");
 		} else {
 			log.info("isGoodSellPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
 		}

@@ -133,7 +133,7 @@ public class StockTrader {
     		StringSelection sel = new StringSelection(txt);
     		cpb.setContents(sel, null);
     		createRecord(stk, openID);
-    		tradeRecord(stk, openID);
+    		//tradeRecord(stk, openID);
 			return true;
 		}
 		else {
@@ -152,7 +152,7 @@ public class StockTrader {
 			      +stk.price + ",to_date('"
 				  + stk.dl_dt.toString().substring(0, 19) + "', 'yyyy-mm-dd hh24:mi:ss'),"
 			      + (stk.is_buy_point ? 1 : 0) +
-			      ", 0)";
+			      ", 1)";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
@@ -164,26 +164,26 @@ public class StockTrader {
 		return true;
 	}
 	
-	private static boolean tradeRecord(StockBuySellEntry stk, String openID) {
-		String sql;
-		try {
-			Connection con = DBManager.getConnection();
-			Statement stm = con.createStatement();
-			sql = "update SellBuyRecord set traded_flg = 1 "
-				  + "where stkid = '" + stk.id
-				  + "' and openID = '" + openID
-				  + "' and to_char(dl_dt, 'yyyy-mm-dd hh24:mi:ss') = '" + stk.dl_dt.toString().substring(0, 19) + "'";
-
-			log.info(sql);
-			stm.execute(sql);
-			stm.close();
-			con.commit();
-			con.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return true;
-	}
+//	private static boolean tradeRecord(StockBuySellEntry stk, String openID) {
+//		String sql;
+//		try {
+//			Connection con = DBManager.getConnection();
+//			Statement stm = con.createStatement();
+//			sql = "update SellBuyRecord set traded_flg = 1 "
+//				  + "where stkid = '" + stk.id
+//				  + "' and openID = '" + openID
+//				  + "' and to_char(dl_dt, 'yyyy-mm-dd hh24:mi:ss') = '" + stk.dl_dt.toString().substring(0, 19) + "'";
+//
+//			log.info(sql);
+//			stm.execute(sql);
+//			stm.close();
+//			con.commit();
+//			con.close();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		return true;
+//	}
 
 	private static boolean saveTradeRecord(StockBuySellEntry stk) {
 		if (tradeStocks == null || !tradeStocks.contains(stk.id)) {
