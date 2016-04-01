@@ -33,22 +33,22 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
 				double marketDegree = StockMarket.getDegree();
 				
-				tradeThresh = getBuyThreshValueByDegree(marketDegree);
+				tradeThresh = getBuyThreshValueByDegree(marketDegree, stk);
 				
-				double maxFlt = (maxPri - minPri) / yt_cls_pri;
+				double maxPct = (maxPri - minPri) / yt_cls_pri;
 
-				if (maxFlt >= tradeThresh && (cur_pri - minPri) / yt_cls_pri < maxFlt * 1.0 / 10.0) {
+				if (maxPct >= tradeThresh && (cur_pri - minPri) / yt_cls_pri < maxPct * 1.0 / 10.0) {
 					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
-							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri);
+							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
 					return true;
-				} else if (stk.isStoppingJumpWater()) {
+				} else if (stk.isStoppingJumpWater() && !StockMarket.isJumpWater(50, 0.7, 0.8)) {
 					log.info("Stock cur price is stopping dumping, isGoodBuyPoint return true.");
 					//for testing purpose, still return false;
-					return false;
+					return true;
 				}
 				else {
 					log.info("isGoodBuyPoint false Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
-							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
+							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
 				}
 			} else {
 				log.info("isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
@@ -73,29 +73,60 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 		return false;
 	}
 	
-    public double getBuyThreshValueByDegree(double Degree) {
-    	double val = 0.02;
+    public double getBuyThreshValueByDegree(double Degree, Stock2 stk) {
+    	
+    	double baseThresh = 0.02;
+    	
+    	try {
+    		Connection con = DBManager.getConnection();
+    		Statement stm = con.createStatement();
+    		String sql = "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev "
+    				   + "  from stkdat2 "
+    				   + " where id ='" + stk.getID() + "'"
+    				   + "   and dl_dt >= sysdate - 1/24"
+    				   + "   and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd')";
+    		log.info(sql);
+    		ResultSet rs = stm.executeQuery(sql);
+    		if (rs.next()) {
+    			double dev = rs.getDouble("dev");
+    			if (dev >= 0.01 && dev <= 0.04) {
+    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + 0.02;
+    			}
+    		}
+    		else {
+    			baseThresh = 0.02;
+    		}
+    		rs.close();
+    		stm.close();
+    		con.close();
+    	}
+    	catch(Exception e) {
+    		e.printStackTrace();
+    	}
+    	
+    	double ratio = 1;
     	if (Degree < 0) {
     		if (Degree >= -10) {
-    			val = 0.02;
+    			ratio = 1;
     		}
     		else if (Degree < -10 && Degree >= -20) {
-    	    	val = 0.03;
+    			ratio = 0.9;
     	    }
     	    else if (Degree < -20) {
-    	    	val = 0.04;
+    	    	ratio = 0.8;
     	    }
     	}
     	else {
     		if (Degree < 10) {
-    			val = 0.02;
+    			ratio = 1;
     		}
     		else {
-    			val = 0.02;
+    			ratio = 1.1;
     		}
     	}
-    	log.info("Degree is:" + Degree + " buy threshValue is:" + val);
-    	return val;
+    	log.info("Calculate buy thresh value with Degree:" + Degree + ", baseThresh:" + baseThresh + " ratio:" + ratio + " final thresh value:" + ratio * baseThresh);
+
+    	return ratio * baseThresh;
     }
     
 

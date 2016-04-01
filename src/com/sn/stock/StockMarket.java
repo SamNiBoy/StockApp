@@ -288,6 +288,27 @@ public class StockMarket{
         Degree = degree;
     }
     
+    public static boolean isJumpWater(int tailSz, double jumpPct, double stockJumpCntPct) {
+    	int total = stocks.size();
+    	if (total == 0) {
+    		log.info("stocks is emtpy, can not check jump water for market.");
+    		return false;
+    	}
+    	int jumpCnt = 0;
+    	for(String s : stocks.keySet()) {
+    		Stock2 stk = stocks.get(s);
+    		if (stk.isJumpWater(tailSz, jumpPct)) {
+    			jumpCnt++;
+    		}
+    	}
+    	log.info("total stocks:" + total + " and jump water stocks:" + jumpCnt);
+    	double actPct = jumpCnt * 1.0 / total;
+    	log.info("Passed param [tailSz, stockJumpCntPct, jumpPct]=[" + tailSz + "," + stockJumpCntPct + "," + jumpPct + "] actPct:" + actPct + " return " + (actPct >= stockJumpCntPct ? "true" : "false"));
+    	if (actPct >= stockJumpCntPct) {
+    		return true;
+    	}
+    	return false;
+    }
     static public boolean calIndex(Timestamp tm) {
 
         Connection con = DBManager.getConnection();

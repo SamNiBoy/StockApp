@@ -31,6 +31,7 @@ public class StockTrader {
 
 	static final int MAX_TRADE_TIMES_PER_STOCK = 10;
 	static final int MAX_TRADE_TIMES_PER_DAY = 40;
+	static final int BUY_MORE_THEN_SELL_CNT = 2;
 	static List<String> tradeStocks = new ArrayList<String>();
 	static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
 
@@ -223,8 +224,8 @@ public class StockTrader {
 				}
 				log.info("For stock " + stk.id + " total sellCnt:" + sellCnt + ", total buyCnt:" + buyCnt);
 				
-				// We only allow buy 1 more than sell.
-				if (buyCnt > sellCnt && stk.is_buy_point) {
+				// We only allow buy BUY_MORE_THEN_SELL_CNT more than sell.
+				if (buyCnt >= sellCnt + BUY_MORE_THEN_SELL_CNT && stk.is_buy_point) {
 					log.info("Bought more than sold, can won't buy again.");
 					return false;
 				}

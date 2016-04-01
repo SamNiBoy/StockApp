@@ -33,7 +33,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 			double marketDegree = StockMarket.getDegree();
 			
-			tradeThresh = getSellThreshValueByDegree(marketDegree);
+			tradeThresh = getSellThreshValueByDegree(marketDegree, stk);
 			
 			double maxFlt = (maxPri - minPri) / yt_cls_pri;
 			if (maxFlt > tradeThresh && (cur_pri - minPri) / yt_cls_pri > maxFlt * 9.0 / 10.0) {
@@ -41,11 +41,11 @@ public class QtySellPointSelector implements ISellPointSelector {
 						+ minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
 				return true;
 			}
-			// If cur price is 90% decrease with 100 time(about 10 minutes) then it means jump water.
-			else if (stk.isJumpWater(100, 0.9)) {
+			// If current stock is 70% decrease, and market has 70% decrease for 80% stocks in last 50 times
+			else if (stk.isJumpWater(100, 0.7) && StockMarket.isJumpWater(50, 0.7, 0.8)) {
 				log.info("Stock " + stk.getID() + " cur price is jump water, a good sell point, return true.");
 				//for testing purpose, still return false;
-				return false;
+				return true;
 			}
 			log.info("common bad sell point.");
 		} else {
@@ -54,31 +54,63 @@ public class QtySellPointSelector implements ISellPointSelector {
 		return false;
 	}
 	
-    public double getSellThreshValueByDegree(double Degree) {
-    	double val = 0.02;
+    public double getSellThreshValueByDegree(double Degree, Stock2 stk) {
+    	
+    	double baseThresh = 0.02;
+    	
+    	try {
+    		Connection con = DBManager.getConnection();
+    		Statement stm = con.createStatement();
+    		String sql = "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev "
+    				   + "  from stkdat2 "
+    				   + " where id ='" + stk.getID() + "'"
+    				   + "   and dl_dt >= sysdate - 1/24"
+    				   + "   and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd')";
+    		log.info(sql);
+    		ResultSet rs = stm.executeQuery(sql);
+    		if (rs.next()) {
+    			double dev = rs.getDouble("dev");
+    			if (dev >= 0.01 && dev <= 0.04) {
+    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + 0.02;
+    			}
+    		}
+    		else {
+    			baseThresh = 0.02;
+    		}
+    		rs.close();
+    		stm.close();
+    		con.close();
+    	}
+    	catch(Exception e) {
+    		e.printStackTrace();
+    	}
+    	
+
+    	double ratio = 1;
+    	
     	if (Degree < 0) {
     		if (Degree >= -10) {
-    			val = 0.02;
+    			ratio = 1;
     		}
     		else if (Degree < -10 && Degree >= -20) {
-    	    	val = 0.015;
+    			ratio = 0.9;
     	    }
     	    else if (Degree < -20) {
-    	    	val = 0.01;
+    	    	ratio = 0.8;
     	    }
     	}
     	else {
     		if (Degree <= 10) {
-    			val = 0.02;
+    			ratio = 1;
     		}
     		else if (Degree > 10 && Degree <= 20){
-    			val = 0.02;
+    			ratio = 1.1;
     		}
     		else {
-    			val = 0.03;
+    			ratio = 1.2;
     		}
     	}
-    	log.info("Degree is:" + Degree + " sell threshValue is:" + val);
-    	return val;
+    	log.info("Calculate sell thresh value with Degree:" + Degree + ", baseThresh:" + baseThresh + " ratio:" + ratio + " final thresh value:" + ratio * baseThresh);
+    	return ratio * baseThresh;
     }
 }

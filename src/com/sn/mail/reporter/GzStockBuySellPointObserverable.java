@@ -169,6 +169,7 @@ public class GzStockBuySellPointObserverable extends Observable {
     }
     
     public boolean setData(List<StockBuySellEntry> dat) {
+    	sbse.clear();
         sbse.addAll(dat);
         return true;
     }
