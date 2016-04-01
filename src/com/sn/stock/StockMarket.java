@@ -123,6 +123,58 @@ public class StockMarket{
         return true;
     }
     
+    static public boolean addGzStocks(String stkId) {
+
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        ResultSet rs = null;
+        
+        Stock2 s = null;
+        try {
+            stm = con.createStatement();
+            String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and s.id = '" + stkId + "'";
+            rs = stm.executeQuery(sql);
+            
+            String id, name;
+            
+            if (rs.next()) {
+                id = rs.getString("id");
+                name = rs.getString("name");
+                s = new Stock2(id, name, 1, StockData.SMALL_SZ);
+                gzstocks.put(id, s);
+                log.info("addGzStocks completed for: " + stkId);
+            }
+            rs.close();
+            stm.close();
+            con.close();
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+        log.info("StockMarket addGzStocks " + stkId + " successed!");
+        return true;
+    }
+    
+    static public boolean removeGzStocks(String stkId) {
+
+        boolean removed = false;
+        if (!gzstocks.isEmpty()) {
+             Stock2 rm = gzstocks.remove(stkId);
+             if (rm != null) {
+                 removed = true;
+             }
+        }
+        if (removed) {
+            log.info("removeGzStocks success for: " + stkId);
+            return true;
+        }
+        else {
+            log.info("removeGzStocks failed for: " + stkId);
+            return false;
+        }
+    }
+    
     
     public static ConcurrentHashMap<String, Stock2> getStocks() {
         synchronized (StockMarket.class) {

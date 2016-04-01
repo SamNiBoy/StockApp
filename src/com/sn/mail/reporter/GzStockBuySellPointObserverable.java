@@ -80,6 +80,7 @@ public class GzStockBuySellPointObserverable extends Observable {
     }
     private boolean loadMailScb() {
     	boolean load_success = false;
+    	ms.clear();
     	try {
     		Statement stm = con.createStatement();
     		String sql = "select s.*, u.* from usrStk s, usr u where s.openID = u.openID and s.gz_flg = 1 and u.mail is not null and u.buy_sell_enabled = 1";
@@ -106,6 +107,9 @@ public class GzStockBuySellPointObserverable extends Observable {
     }
     
     private boolean buildMailforSubscribers() {
+        
+        loadMailScb();
+
         if (ms.size() == 0) {
         	log.info("No user subscribed an buy/sell, no need to send mail.");
         	return false;

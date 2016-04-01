@@ -69,11 +69,12 @@ public class GzStock implements com.sn.work.itf.IWork {
             	stm.execute(sql);
             	if (gz_flg == 1) {
             	    msg = "成功取消关注:" + stockID;
+            	    StockMarket.removeGzStocks(stockID);
             	}
             	else {
             		msg = "成功关注:" + stockID;
+            		StockMarket.addGzStocks(stockID);
             	}
-            	StockMarket.loadGzStocks();
             }
             else {
             	rs.close();
@@ -92,7 +93,7 @@ public class GzStock implements com.sn.work.itf.IWork {
             	    log.info(sql);
             	    stm.execute(sql);
         		    msg = "成功添加关注:" + stockID;
-        		    StockMarket.loadGzStocks();
+        		    StockMarket.addGzStocks(stockID);
             	}
             }
             con.commit();
