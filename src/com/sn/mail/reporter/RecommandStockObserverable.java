@@ -119,7 +119,7 @@ public class RecommandStockObserverable extends Observable {
             	if (!u.alreadySuggested(s)) {
                     body.append("<tr> <td>" + s.getID() + "</td>" +
                     "<td> " + s.getName() + "</td>" +
-                    "<td> " + df.format(s.getCur_pri()) + "</td></tr>");
+                    "<td> " + df.format(s.getCur_pri() == null ? 0 : s.getCur_pri()) + "</td></tr>");
                     usr_need_mail = true;
                     generated_mail = true;
                     u.setSuggested(s);

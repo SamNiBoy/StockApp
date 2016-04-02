@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.RecommandStockObserverable;
+import com.sn.sim.strategy.selector.stock.AvgClsPriStockSelector;
 import com.sn.sim.strategy.selector.stock.ClosePriceTrendStockSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
@@ -74,7 +75,7 @@ public class SuggestStock implements IWork {
 
 	static public boolean start() {
 		if (self == null) {
-			self = new SuggestStock(0, 60000);
+			self = new SuggestStock(0, 30 * 60000);
 			if (WorkManager.submitWork(self)) {
 				resMsg = "Newly created SuggestStock and started!";
 				return true;
@@ -118,8 +119,9 @@ public class SuggestStock implements IWork {
 		initDelay = id;
 		delayBeforNxtStart = dbn;
 		selectors.add(new DefaultStockSelector());
-		selectors.add(new PriceStockSelector());
+		//selectors.add(new PriceStockSelector());
 		selectors.add(new StddevStockSelector());
+		selectors.add(new AvgClsPriStockSelector());
 //		selectors.add(new ClosePriceTrendStockSelector());
 //		selectors.add(new KeepGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
@@ -130,17 +132,17 @@ public class SuggestStock implements IWork {
 		boolean suggest_flg = false;
 		boolean loop_nxt_stock = false;
 
-        StockDataFetcher.lock.lock();
-        try {
-            log.info("Waiting before start SuggestStock stocks...");
-            StockDataFetcher.finishedOneRoundFetch.await();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        finally {
-            StockDataFetcher.lock.unlock();
-        }
+//        StockDataFetcher.lock.lock();
+//        try {
+//            log.info("Waiting before start SuggestStock stocks...");
+//            StockDataFetcher.finishedOneRoundFetch.await();
+//        }
+//        catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        finally {
+//            StockDataFetcher.lock.unlock();
+//        }
 
 		resetSuggestion();
 		

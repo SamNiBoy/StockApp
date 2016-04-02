@@ -117,17 +117,17 @@ public class Stock2 implements Comparable<Stock2>{
             return true;
         }
         
-        public double getAvgYtClsPri(int days) {
-            log.info("getAvgYtClsPri: get avg yt_cls_pri for " + days + " days");
+        public double getAvgYtClsPri(int days, int shiftDays) {
+            log.info("getAvgYtClsPri: get avg yt_cls_pri for " + days + " days with shiftDays" + shiftDays);
             double avgPri = 0;
             int size = yt_cls_pri_lst.size();
-            if (size < days) {
+            if (size < days + shiftDays) {
                 log.info("Warning: there is no " + days + " yt_cls_pri data for stock:" + id + " using " + size + " days' data.");
-                days = size;
+                days = size - shiftDays;
             }
             
             for (int i = 0; i<days; i++) {
-                avgPri += yt_cls_pri_lst.get(size - i - 1);
+                avgPri += yt_cls_pri_lst.get(size - i - 1 - shiftDays);
             }
             
             avgPri = avgPri / days;
@@ -1135,6 +1135,10 @@ public class Stock2 implements Comparable<Stock2>{
     
     public Double getMinYtClsPri(int days) {
     	return sd.getMinYtClsPri(days);
+    }
+    
+    public Double getAvgYtClsPri(int days, int shiftDays) {
+    	return sd.getAvgYtClsPri(days, shiftDays);
     }
 
     public Double getYtClsPri() {
