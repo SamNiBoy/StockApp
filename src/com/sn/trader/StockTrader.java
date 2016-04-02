@@ -227,9 +227,13 @@ public class StockTrader {
                     log.info("Now both overall risk or risk for stock:" + stk.name + " reached, howeve it's sell trade, allow it!");
                 }
                 else {
-                    log.info("Skip trade for stock:" + stk.name + " afte eached it's risk.");
+                    log.info("Skip trade for stock:" + stk.name + " after eached it's risk.");
                     return false;
                 }
+            }
+            else if (overall_risk && stk.is_buy_point) {
+                log.info("No buy allowed, as overall risk reached, even single stock:" + stk.name + "'s risk is not reached yet.");
+                return false;
             }
         }
 
