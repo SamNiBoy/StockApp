@@ -205,13 +205,13 @@ public class StockTrader {
 		}
 
 		// If recently we lost continuously overall, stop trading.
-		if (stopTradeForPeriod(openID, 3)) {
+		if (stopTradeForPeriod(openID, 5)) {
 			log.info("Now account " + openID + " trade unsuccess for 3 days, stop trade.");
 			return false;
 		}
 		
 		// If recently we lost continuously for the stock, stop trading.
-		if (stopTradeForStock(openID, stk, 3)) {
+		if (stopTradeForStock(openID, stk, 5)) {
 			log.info("Now account " + openID + " trade unsuccess for 3 days for stock:" + stk.name + ", stop trade.");
 			return false;
 		}
