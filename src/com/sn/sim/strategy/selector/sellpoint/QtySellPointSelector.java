@@ -36,7 +36,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 			tradeThresh = getSellThreshValueByDegree(marketDegree, stk);
 			
 			double maxFlt = (maxPri - minPri) / yt_cls_pri;
-			if (maxFlt > tradeThresh && (cur_pri - minPri) / yt_cls_pri > maxFlt * 9.0 / 10.0) {
+			if (maxFlt > tradeThresh && (cur_pri - minPri) / yt_cls_pri > maxFlt * 9.0 / 10.0 && stk.isLstQtyPlused()) {
 				log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + " maxPri:" + maxPri + " minPri:"
 						+ minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
 				return true;

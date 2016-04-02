@@ -37,7 +37,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 				
 				double maxPct = (maxPri - minPri) / yt_cls_pri;
 
-				if (maxPct >= tradeThresh && (cur_pri - minPri) / yt_cls_pri < maxPct * 1.0 / 10.0) {
+				if (maxPct >= tradeThresh && (cur_pri - minPri) / yt_cls_pri < maxPct * 1.0 / 10.0 && stk.isLstQtyPlused()) {
 					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
 							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
 					return true;
@@ -59,7 +59,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 			Double cur_pri = stk.getCur_pri();
 			Double yt_cls_pri = stk.getYtClsPri();
 			if (lstBuy != null && cur_pri != null && yt_cls_pri != null) {
-				if ((lstBuy - cur_pri) / yt_cls_pri > 0.02) {
+				if ((lstBuy - cur_pri) / yt_cls_pri > tradeThresh && stk.isLstQtyPlused()) {
 					log.info("isGoodBuyPoint Buy true:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:"
 							+ lstBuy + " curPri:" + cur_pri + " yt_cls_pri:" + yt_cls_pri);
 					return true;

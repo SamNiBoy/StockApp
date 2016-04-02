@@ -514,6 +514,31 @@ public class Stock2 implements Comparable<Stock2>{
             dl_dt_lst = dlDtLst;
         }
         
+        public boolean isLstQtyPlused() {
+            int sz = dl_stk_num_lst.size();
+            if (sz <= 10) {
+                log.info("dl_stk_num_lst has less data, lstQtyPlused is false.");
+                return false;
+            }
+            long lstDetQty = dl_stk_num_lst.get(sz - 1) - dl_stk_num_lst.get(sz - 2);
+            log.info("lstDetQty is:" + lstDetQty + " size:" + sz);
+            long cnt = 0;
+            for (int i = 1; i<= sz -2; i++) {
+                long preDetQty = dl_stk_num_lst.get(sz - 1 - i) - dl_stk_num_lst.get(sz - 2 - i);
+                if (preDetQty < lstDetQty) {
+                    cnt++;
+                }
+            }
+            if (cnt * 1.0 / (sz - 1) > 0.8) {
+                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " big than 0.8, plused return true.");
+                return true;
+            }
+            else {
+                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " less than 0.8, plused return false.");
+                return false;
+            }
+        }
+        
         //Check if cur price is jumping water, tailSz tells how many recent records should be check, and pct tells
         //how many percentage price decrease determine jumping water.
         public boolean isJumpWater(int tailSz, double pct) {
@@ -1153,6 +1178,11 @@ public class Stock2 implements Comparable<Stock2>{
     	else {
     		return false;
     	}
+    }
+    
+    //this method tells if the lasted record has dl_stk_num qty plused.
+    public boolean isLstQtyPlused() {
+        return sd.isLstQtyPlused();
     }
     
     public boolean isStoppingJumpWater() {
