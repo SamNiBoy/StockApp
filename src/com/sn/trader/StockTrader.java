@@ -209,11 +209,13 @@ public class StockTrader {
         }
 
         if (!skipRiskCheck(openID, stk)) {
+            
+            boolean overall_risk = false;
             // If recently we lost continuously overall, stop trading.
             if (stopTradeForPeriod(openID, 5)) {
                 log.info("Now account " + openID
                         + " trade unsuccess for 3 days, stop trade.");
-                return false;
+                overall_risk = true;
             }
 
             // If recently we lost continuously for the stock, stop trading.
@@ -221,7 +223,13 @@ public class StockTrader {
                 log.info("Now account " + openID
                         + " trade unsuccess for 3 days for stock:" + stk.name
                         + ", stop trade.");
-                return false;
+                if (overall_risk && !stk.is_buy_point) {
+                    log.info("Now both overall risk or risk for stock:" + stk.name + " reached, howeve it's sell trade, allow it!");
+                }
+                else {
+                    log.info("Skip trade for stock:" + stk.name + " afte eached it's risk.");
+                    return false;
+                }
             }
         }
 
