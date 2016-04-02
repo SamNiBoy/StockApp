@@ -19,11 +19,14 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
+import com.sn.stock.StockMarket;
 
 import oracle.sql.DATE;
 
@@ -159,6 +162,14 @@ public class StockTrader {
 			stm.close();
 			con.commit();
 			con.close();
+			//Here once after we trade a stock, clear it's historic memory data.
+			ConcurrentHashMap<String, Stock2> chm = StockMarket
+	        .getGzstocks();
+			Stock2 s = chm.get(stk.id);
+			if (s != null) {
+				log.info("After trade " + s.getName() + " clear InjectedRaw Data...");
+				s.getSd().clearInjectRawData();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -928,6 +928,43 @@ public class Stock2 implements Comparable<Stock2>{
             return true;
         }
         
+        public boolean clearInjectRawData() {
+        	if (!cur_pri_lst.isEmpty()) {
+                cur_pri_lst.clear();
+                b1_bst_pri_lst.clear();
+                s1_bst_pri_lst.clear();
+                dl_stk_num_lst.clear();
+                dl_mny_num_lst.clear();
+                b1_num_lst.clear();
+                b1_pri_lst.clear();
+                b2_num_lst.clear();
+                b2_pri_lst.clear();
+                b3_num_lst.clear();
+                b3_pri_lst.clear();
+                b4_num_lst.clear();
+                b4_pri_lst.clear();
+                b5_num_lst.clear();
+                b5_pri_lst.clear();
+                s1_num_lst.clear();
+                s1_pri_lst.clear();
+                s2_num_lst.clear();
+                s2_pri_lst.clear();
+                s3_num_lst.clear();
+                s3_pri_lst.clear();
+                s4_num_lst.clear();
+                s4_pri_lst.clear();
+                s5_num_lst.clear();
+                s5_pri_lst.clear();
+                dl_dt_lst.clear();
+                log.info("Now clearInjectedRawData success...");
+                return true;
+        	}
+        	else {
+        		log.info("Now clearInjectedRawData fail...");
+        		return false;
+        	}
+        }
+        
         void PrintStockData() {
             log.info("Total get " + dt_lst.size() + " days data.");
             for (int i = 0; i < dt_lst.size(); i++) {
