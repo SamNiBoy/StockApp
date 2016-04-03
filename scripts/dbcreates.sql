@@ -368,9 +368,9 @@ sb_id number not null primary key,
 openId varchar2(30 byte) not null,
 stkId varchar2(6 byte) not null,
 price number not null,
-dl_dt date not null,
+qty number not null,
 buy_flg number not null,
-traded_flg number not null
+dl_dt date not null
 );
 
 create sequence SEQ_SBR_PK

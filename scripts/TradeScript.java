@@ -1,5 +1,5 @@
 Do
-    //Call Plugin.Sys.SetCLB("S600503")
+    //Call Plugin.Sys.SetCLB("B600503300")
     //Rem nextPoint
     stockMsg = Plugin.Sys.GetCLB()
     TracePrint stockMsg
@@ -13,8 +13,10 @@ Do
     //Goto nextPoint
 Loop
 Sub trade(stockMsg)
-    bs = left(stockMsg, 1)
-    stk = right(stockMsg, 6)
+    Msg1 = left(stockMsg, 7)
+    Qty = right(stockMsg, 3)
+    bs = left(Msg1, 1)
+    stk = right(Msg1, 6)
     If (bs = "B") Then 
         Hwnd = Plugin.Window.Find("TdxW_MainFrame_Class", 0)
         If (Hwnd = 1) Then 
@@ -40,9 +42,9 @@ Sub trade(stockMsg)
                 Delay 100
             Next
             KeyPress 13, 1
-            TracePrint "now buy 100 for " & stk
-            For i = 1 To len("100")
-                ch = mid("100", i, 1)
+            TracePrint "now buy " & Qty & " for " & stk
+            For i = 1 To len(Qty)
+                ch = mid(Qty, i, 1)
                 KeyPress ch, 1
                 Delay 100
             Next
@@ -51,6 +53,7 @@ Sub trade(stockMsg)
             Delay 100
             KeyPress 13, 1
             Delay 100
+            KeyPress 27, 1
             Plugin.Window.Min Hwnd
         End if
     End If
@@ -79,9 +82,9 @@ Sub trade(stockMsg)
                 Delay 100
             Next
             KeyPress 13, 1
-            TracePrint "now press 100 for to sell " & stk
-            For i = 1 To len("100")
-                ch = mid("100", i, 1)
+            TracePrint "now press " & Qty & " for to sell " & stk
+            For i = 1 To len(Qty)
+                ch = mid(Qty, i, 1)
                 KeyPress ch, 1
                 Delay 100
             Next
@@ -89,6 +92,7 @@ Sub trade(stockMsg)
             Delay 100
             KeyPress 13, 1
             Delay 100
+            KeyPress 27, 1
             Plugin.Window.Min Hwnd
         End if
     End If
