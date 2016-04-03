@@ -35,10 +35,16 @@ public class QtySellPointSelector implements ISellPointSelector {
 			
 			tradeThresh = getSellThreshValueByDegree(marketDegree, stk);
 			
-			double maxFlt = (maxPri - minPri) / yt_cls_pri;
-			if (maxFlt > tradeThresh && (cur_pri - minPri) / yt_cls_pri > maxFlt * 9.0 / 10.0 && stk.isLstQtyPlused()) {
-				log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + " maxPri:" + maxPri + " minPri:"
-						+ minPri + " maxFlg:" + maxFlt + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
+			double maxPct = (maxPri - minPri) / yt_cls_pri;
+			double curPct = (cur_pri - minPri) / yt_cls_pri;
+			
+			boolean con1 = maxPct > tradeThresh && curPct > maxPct * 9.0 / 10.0;
+			boolean con2 = stk.isLstQtyPlused();
+			
+			log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + "yt_cls_pri:" + yt_cls_pri + " maxPri:" + maxPri + " minPri:"
+					+ minPri + " maxPct:" + maxPct + " curPct:" + curPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
+			log.info("con1 is:" + con1 + " con2 is:" + con2);
+			if (con1 && con2) {
 				return true;
 			}
 			// If current stock is 70% decrease, and market has 70% decrease for 80% stocks in last 50 times
@@ -113,4 +119,34 @@ public class QtySellPointSelector implements ISellPointSelector {
     	log.info("Calculate sell thresh value with Degree:" + Degree + ", baseThresh:" + baseThresh + " ratio:" + ratio + " final thresh value:" + ratio * baseThresh);
     	return ratio * baseThresh;
     }
+
+	@Override
+	public int getSellQty(Stock2 s, ICashAccount ac) {
+		// TODO Auto-generated method stub
+        int sellMnt = 0;
+        
+        if (ac != null) {
+            String dt = s.getDl_dt().toString().substring(0, 10);
+            int sellableAmt = ac.getSellableAmt(s.getID(), dt);
+            
+            if (sellableAmt >= 400) {
+            	sellMnt = sellableAmt / 2;
+            	sellMnt = sellMnt - sellMnt % 100;
+            }
+            else {
+            	sellMnt = sellableAmt;
+            }
+            log.info("getSellQty, sellableAmt:" + sellableAmt + " sellMnt:" + sellMnt);
+        }
+        else {
+        	if (s.getCur_pri() <= 10) {
+        		sellMnt = 200;
+        	}
+        	else {
+        		sellMnt = 100;
+        	}
+        	log.info("getSellQty, cur_pri:" + s.getCur_pri() + " sellMnt:" + sellMnt);
+        }
+		return sellMnt;
+	}
 }

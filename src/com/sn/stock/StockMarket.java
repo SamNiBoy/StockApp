@@ -123,6 +123,12 @@ public class StockMarket{
         return true;
     }
     
+    static public boolean addGzStocks(Stock2 s) {
+        gzstocks.put(s.getID(), s);
+        log.info("StockMarket addGzStocks " + s.getID() + " successed!");
+        return true;
+    }
+    
     static public boolean addGzStocks(String stkId) {
 
         Connection con = DBManager.getConnection();
@@ -343,7 +349,7 @@ public class StockMarket{
             log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
 
-            while (rs.next()) {
+            if (rs.next()) {
                 catagory = rs.getInt("catagory");
                 if (catagory == -1)
                 {
@@ -362,7 +368,11 @@ public class StockMarket{
                     AvgIncPct = rs.getDouble("avgPct");
                     totIncDlMny = rs.getDouble("totDlMny");
                 }
+                
+                StkNum = TotDec + TotInc + TotEql;
+                Degree = (TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1);
             }
+            
             rs.close();
             stm.close();
             con.close();
@@ -371,9 +381,6 @@ public class StockMarket{
         {
             e.printStackTrace();
         }
-        StkNum = TotDec + TotInc + TotEql;
-        Degree = (TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1);
-        
         return true;
     }
     

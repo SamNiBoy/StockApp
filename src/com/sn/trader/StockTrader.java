@@ -23,19 +23,38 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
+import com.sn.cashAcnt.CashAcntManger;
+import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.ITradeStrategy;
+import com.sn.sim.strategy.selector.buypoint.IBuyPointSelector;
+import com.sn.sim.strategy.selector.buypoint.QtyBuyPointSelector;
+import com.sn.sim.strategy.selector.sellpoint.ISellPointSelector;
+import com.sn.sim.strategy.selector.sellpoint.QtySellPointSelector;
+import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
+import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
+import com.sn.stock.Stock2.StockData;
 
 import oracle.sql.DATE;
 
-public class StockTrader {
+public class StockTrader implements ITradeStrategy{
 
+	//interface vars.
+    static IStockSelector stock_selector = new DefaultStockSelector();
+    static IBuyPointSelector buypoint_selector = new QtyBuyPointSelector();;
+    static ISellPointSelector sellpoint_selector = new QtySellPointSelector();;
+    static Map<String, ICashAccount> cash_account_map = new HashMap<String, ICashAccount>();
+    
+    //class vars.
 	static final int MAX_TRADE_TIMES_PER_STOCK = 10;
 	static final int MAX_TRADE_TIMES_PER_DAY = 40;
 	static final int BUY_MORE_THEN_SELL_CNT = 2;
 	static List<String> tradeStocks = new ArrayList<String>();
+	static String openID = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
+	
 	static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
 
 	static Logger log = Logger.getLogger(StockTrader.class);
@@ -49,38 +68,155 @@ public class StockTrader {
 	 */
 	public static void main(String[] args) {
 
-		int seconds_to_delay = 4000;
-		StockBuySellEntry r1 = new StockBuySellEntry("600503", "abcdef", 6.5, true,
-				Timestamp.valueOf(LocalDateTime.now()));
-		StockBuySellEntry r2 = new StockBuySellEntry("000975", "abcdef", 9.0, false,
-				Timestamp.valueOf(LocalDateTime.now()));
-		StockBuySellEntry r3 = new StockBuySellEntry("600871", "abcdef", 9.5, false,
-				Timestamp.valueOf(LocalDateTime.now()));
-		StockBuySellEntry r4 = new StockBuySellEntry("002269", "abcdef", 9.9, true,
-				Timestamp.valueOf(LocalDateTime.now()));
-		StockBuySellEntry r5 = new StockBuySellEntry("002269", "abcdef", 9.4, true,
-				Timestamp.valueOf(LocalDateTime.now()));
-		StockBuySellEntry r6 = new StockBuySellEntry("000975", "abcdef", 8.2, true,
-				Timestamp.valueOf(LocalDateTime.now()));
-
+		int seconds_to_delay = 1000;
+		
+		resetTest();
+		
+		Stock2 s1 = new Stock2("600503", "abcdef", 1, StockData.SMALL_SZ);
+		Stock2 s2 = new Stock2("000975", "hijklmn", 1, StockData.SMALL_SZ);
+		Stock2 s3 = new Stock2("600871", "abcdef", 1, StockData.SMALL_SZ);
+		Stock2 s4 = new Stock2("002269", "lllll", 1, StockData.SMALL_SZ);
+		
+		StockMarket.addGzStocks(s1);
+		StockMarket.addGzStocks(s2);
+		StockMarket.addGzStocks(s3);
+		StockMarket.addGzStocks(s4);
+	
 		try {
+			StockBuySellEntry r1 = new StockBuySellEntry("600503", "A", 6.5, true,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
+			s1.getSd().getCur_pri_lst().add(6.5);
+			s1.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
+			
 			Thread.currentThread().sleep(seconds_to_delay);
 			tradeStock(r1);
+			
+			StockBuySellEntry r21 = new StockBuySellEntry("000975", "B1", 9.0, true,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
+			s2.getSd().getCur_pri_lst().add(9.0);
+			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
 			Thread.currentThread().sleep(seconds_to_delay);
-			tradeStock(r2);
+			tradeStock(r21);
+			
+			StockBuySellEntry r22 = new StockBuySellEntry("000975", "B2", 8.2, false,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
+			s2.getSd().getCur_pri_lst().add(8.2);
+			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
+			
+			Thread.currentThread().sleep(seconds_to_delay);
+			tradeStock(r22);
+			
+			StockBuySellEntry r23 = new StockBuySellEntry("000975", "B3", 8.4, true,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
+			s2.getSd().getCur_pri_lst().add(8.4);
+			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
+			
+			Thread.currentThread().sleep(seconds_to_delay);
+			tradeStock(r23);
+			
+			StockBuySellEntry r24 = new StockBuySellEntry("000975", "B4", 8.3, false,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 3, 10, 30)));
+			s2.getSd().getCur_pri_lst().add(8.3);
+			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 3, 10, 30)));
+			
+			Thread.currentThread().sleep(seconds_to_delay);
+			tradeStock(r24);
+			
+			StockBuySellEntry r25 = new StockBuySellEntry("000975", "B5", 8.7, true,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 3, 10, 30)));
+			s2.getSd().getCur_pri_lst().add(8.7);
+			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 3, 10, 30)));
+			
+			Thread.currentThread().sleep(seconds_to_delay);
+			tradeStock(r25);
+			
+			StockBuySellEntry r26 = new StockBuySellEntry("000975", "B6", 8.5, false,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 4, 10, 30)));
+			s2.getSd().getCur_pri_lst().add(8.5);
+			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 4, 10, 30)));
+			
+			Thread.currentThread().sleep(seconds_to_delay);
+			tradeStock(r26);
+			
+			StockBuySellEntry r27 = new StockBuySellEntry("000975", "B7", 8.9, true,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 5, 10, 30)));
+			s2.getSd().getCur_pri_lst().add(8.9);
+			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 5, 10, 30)));
+			
+			Thread.currentThread().sleep(seconds_to_delay);
+			tradeStock(r27);
+			
+			StockBuySellEntry r28 = new StockBuySellEntry("000975", "B8", 8.3, true,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 6, 10, 30)));
+			s2.getSd().getCur_pri_lst().add(8.3);
+			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 6, 10, 30)));
+			
+			Thread.currentThread().sleep(seconds_to_delay);
+			tradeStock(r28);
+			
+			StockBuySellEntry r3 = new StockBuySellEntry("600871", "C", 9.5, false,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
+			s3.getSd().getCur_pri_lst().add(9.5);
+			s3.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
 			Thread.currentThread().sleep(seconds_to_delay);
 			tradeStock(r3);
+			
+			StockBuySellEntry r41 = new StockBuySellEntry("002269", "D1", 9.9, true,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
+			s4.getSd().getCur_pri_lst().add(9.9);
+			s4.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
+			
+
 			Thread.currentThread().sleep(seconds_to_delay);
-			tradeStock(r4);
+			tradeStock(r41);
+			
+			StockBuySellEntry r42 = new StockBuySellEntry("002269", "D2", 9.4, false,
+					Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
+			s4.getSd().getCur_pri_lst().add(9.4);
+			s4.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
 			Thread.currentThread().sleep(seconds_to_delay);
-			tradeStock(r5);
-			Thread.currentThread().sleep(seconds_to_delay);
-			tradeStock(r6);
+			tradeStock(r42);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		printTradeInfor();
+	}
+	
+	private static void resetTest() {
+		String sql;
+		openID = "tester";
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+			sql = "delete from tradedtl where acntid in (select acntid from CashAcnt where dft_acnt_flg = 1)";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			
+			stm = con.createStatement();
+			sql = "delete from tradehdr where acntid in (select acntid from CashAcnt where dft_acnt_flg = 1)";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			
+			stm = con.createStatement();
+			sql = "delete from CashAcnt where  dft_acnt_flg = 1";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			
+			stm = con.createStatement();
+			sql = "delete from sellbuyrecord where  openID = '" + openID + "'";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	
 	}
 
 	public static void printTradeInfor() {
@@ -103,7 +239,7 @@ public class StockTrader {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 			sql = "select s.*, u.* " + "from usrStk s," + "     usr u " + "where s.openID = u.openID "
-					+ "and s.gz_flg = 1 " + "and u.openID = '" + openID + "' " + "and u.mail is not null "
+					+ "and s.gz_flg = 1 " + "and u.openID = 'osCWfs-ZVQZfrjRK0ml-eEpzeop0' " + "and u.mail is not null "
 					+ "and s.suggested_by = 'osCWfs-ZVQZfrjRK0ml-eEpzeop0'" + "and u.buy_sell_enabled = 1";
 
 			log.info(sql);
@@ -120,14 +256,46 @@ public class StockTrader {
 		}
 		return true;
 	}
+	
+	public static boolean shouldBuyStock(Stock2 s) {
+		ICashAccount cash_account = getVirtualCashAcntForStock(s.getID());
+        if(buypoint_selector.isGoodBuyPoint(s, cash_account)) {
+        	return true;
+        }
+        return false;
+	}
+	
+	public static boolean shouldSellStock(Stock2 s) {
+		ICashAccount cash_account = getVirtualCashAcntForStock(s.getID());
+        if (sellpoint_selector.isGoodSellPoint(s, cash_account)) {
+        	return true;
+        }
+        return false;
+	}
 
 	public static boolean tradeStock(StockBuySellEntry stk) {
 
-		String openID = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
 		loadStocksForTrade(openID);
 
-		if (saveTradeRecord(stk, openID)) {
-			String qtyToTrade = getTradeQty(stk, openID);
+		ICashAccount ac = getVirtualCashAcntForStock(stk.id);
+		Stock2 s = StockMarket.getGzstocks().get(stk.id);
+		int qtb = 0;
+		if (stk.is_buy_point) {
+			qtb = buypoint_selector.getBuyQty(s, ac);
+		}
+		else {
+			qtb = sellpoint_selector.getSellQty(s, ac);
+		}
+		
+		if (qtb <= 0) {
+			log.info("qty to buy/sell is zero by Virtual CashAccount, switch to sellbuyrecord to get qtyToTrade.");
+			qtb = Integer.valueOf(getTradeQty(stk, openID));
+		}
+		
+		if (canTradeRecord(stk, openID)) {
+			
+			String qtyToTrade = String.valueOf(qtb);
+			 
 			// Save string like "S600503" to clipboard for sell stock.
 			String txt = "";
 			Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -144,17 +312,53 @@ public class StockTrader {
 					txt = "S" + stk.id + qtyToTrade;
 				}
 			}
+			
 			StringSelection sel = new StringSelection(txt);
 			cpb.setContents(sel, null);
-			createRecord(stk, openID, qtyToTrade);
-			// tradeRecord(stk, openID);
+			
+			if (stk.is_buy_point) {
+				createBuyTradeRecord(s, qtyToTrade, ac);
+			}
+			else {
+				createSellTradeRecord(s, qtyToTrade, ac);
+			}
+			
+			Map<String, Stock2> sm = new HashMap<String, Stock2>();
+			sm.put(s.getID(), s);
+			ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
+			
+			createBuySellRecord(stk, openID, qtyToTrade);
+			
 			return true;
 		} else {
 			return false;
 		}
 	}
+	
+	private static ICashAccount getVirtualCashAcntForStock(String stk) {
+        String AcntForStk = "Acnt" + stk;
+        
+        ICashAccount acnt = cash_account_map.get(AcntForStk);
+        if (acnt == null) {
+        	log.info("No cashAccount for stock:" + stk + " in memory, load from db.");
+            acnt = CashAcntManger.loadAcnt(AcntForStk);
+            if (acnt == null) {
+            	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
+                CashAcntManger
+                .crtAcnt(AcntForStk, 20000.0, 0.0, 0.0, 4, 0.5, true);
+                acnt = CashAcntManger.loadAcnt(AcntForStk);
+            }
+            
+            if (acnt != null) {
+            	log.info("put the loaded/created virtual account into memory.");
+            	cash_account_map.put(AcntForStk, acnt);
+            }
+        }
+        
+        return acnt;
+	}
 
-	private static boolean createRecord(StockBuySellEntry stk, String openID, String qtyToTrade) {
+	private static boolean createBuySellRecord(StockBuySellEntry stk, String openID, String qtyToTrade) {
 		String sql;
 		try {
 			Connection con = DBManager.getConnection();
@@ -181,6 +385,134 @@ public class StockTrader {
 		}
 		return true;
 	}
+	
+	private static boolean createBuyTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac) {
+        
+		int buyMnt = Integer.valueOf(qtyToTrade);
+		double occupiedMny = buyMnt * s.getCur_pri();
+		
+        log.info("trying to buy amount:" + qtyToTrade + " with using Mny:" + occupiedMny);
+        
+        log.info("now start to bug stock " + s.getName()
+                + " price:" + s.getCur_pri()
+                + " with money: " + ac.getMaxAvaMny()
+                + " buy mount:" + qtyToTrade);
+
+        Connection con = DBManager.getConnection();
+        String sql = "select case when max(d.seqnum) is null then -1 else max(d.seqnum) end maxseq from TradeHdr h " +
+                "       join TradeDtl d " +
+                "         on h.stkId = d.stkId " +
+                "        and h.acntId = d.acntId " +
+                "      where h.stkId = '" + s.getID()+ "'" +
+                "        and h.acntId = '" + ac.getActId() + "'";
+        int seqnum = 0;
+        try {
+            Statement stm = con.createStatement();
+            ResultSet rs = stm.executeQuery(sql);
+            if (rs.next()) {
+                if (rs.getInt("maxseq") < 0) {
+                    sql = "insert into TradeHdr values('" + ac.getActId() + "','"
+                    + s.getID() + "',"
+                    + s.getCur_pri()*buyMnt + ","
+                    + buyMnt + ","
+                    + s.getCur_pri() + ",to_date('" + s.getDl_dt().toLocaleString() + "','yyyy-mm-dd hh24:mi:ss'))";
+                    log.info(sql);
+                    Statement stm2 = con.createStatement();
+                    stm2.execute(sql);
+                    stm2.close();
+                    stm2 = null;
+                }
+                seqnum = rs.getInt("maxseq") + 1;
+            }
+            stm.close();
+            stm = con.createStatement();
+            sql = "insert into TradeDtl values('"
+                + ac.getActId() + "','"
+                + s.getID() + "',"
+                + seqnum + ","
+                + s.getCur_pri() + ", "
+                + buyMnt
+                + ", to_date('" + s.getDl_dt().toLocaleString() + "','yyyy-mm-dd hh24:mi:ss'), 1)";
+            log.info(sql);
+            stm.execute(sql);
+            
+            //now sync used money
+            double usedMny = ac.getUsedMny();
+            usedMny += occupiedMny;
+            ac.setUsedMny(usedMny);
+            
+            stm.close();
+            stm = con.createStatement();
+            sql = "update CashAcnt set used_mny = " + usedMny + " where acntId = '" + ac.getActId() + "'";
+            stm.execute(sql);
+            con.commit();
+            con.close();
+            return true;
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+	
+	private static boolean createSellTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac) {
+
+        log.info("now start to sell stock " + s.getName()
+                + " price:" + s.getCur_pri()
+                + " against CashAcount: " + ac.getActId());
+
+        int sellableAmt = Integer.valueOf(qtyToTrade);
+        
+        double relasedMny = sellableAmt * s.getCur_pri();
+        Connection con = DBManager.getConnection();
+        int seqnum = 0;
+        try {
+            String sql = "select max(d.seqnum) maxseq " +
+            "       from TradeDtl d " +
+            "      where d.stkId = '" + s.getID()+ "'" +
+            "        and d.acntId = '" + ac.getActId() + "'";
+    
+            Statement stm = con.createStatement();
+            ResultSet rs = stm.executeQuery(sql);
+            if (!rs.next()) {
+                seqnum = 0;
+            }
+            else {
+                seqnum = rs.getInt("maxseq") + 1;
+            }
+            rs.close();
+            stm.close();
+            stm = con.createStatement();
+            sql = "insert into TradeDtl values( '"
+                + ac.getActId() + "','"
+                + s.getID() + "',"
+                + seqnum + ","
+                + s.getCur_pri() + ", "
+                + sellableAmt
+                + ", to_date('" + s.getDl_dt().toLocaleString() + "', 'yyyy-mm-dd hh24:mi:ss'), 0)";
+            log.info(sql);
+            stm.execute(sql);
+            
+            //now sync used money
+            double usedMny = ac.getUsedMny();
+            usedMny -= relasedMny;
+            ac.setUsedMny(usedMny);
+            
+            stm.close();
+            stm = con.createStatement();
+            sql = "update CashAcnt set used_mny = used_mny - " + relasedMny + " where acntId = '" + ac.getActId() + "'";
+            log.info(sql);
+            stm.execute(sql);
+            con.commit();
+            con.close();
+            return true;
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    
+    }
 
 	private static String getTradeQty(StockBuySellEntry stk, String openID) {
         String sql;
@@ -268,7 +600,7 @@ public class StockTrader {
 	// return true;
 	// }
 
-	private static boolean saveTradeRecord(StockBuySellEntry stk, String openID) {
+	private static boolean canTradeRecord(StockBuySellEntry stk, String openID) {
 		if (tradeStocks == null || !tradeStocks.contains(stk.id)) {
 			log.info("stock " + stk.id + " is not available for trade.");
 			return false;
@@ -429,6 +761,8 @@ public class StockTrader {
 				}
 			}
 
+			log.info("stopTradeForPeriod, incCnt:" + incCnt + " descCnt:" + descCnt);
+
 			// For all stocks traded, if there are 20 times fail, stop trading.
 			if ((incCnt + descCnt) > 20 && descCnt * 1.0 / (incCnt + descCnt) > 0.5) {
 				log.info("For passed " + days + " days, trade descCnt:" + descCnt + ", 50% more than incCnt:" + incCnt
@@ -509,6 +843,8 @@ public class StockTrader {
 					continue;
 				}
 			}
+			
+			log.info("stopTradeForStock, incCnt:" + incCnt + " descCnt:" + descCnt);
 
 			// For specific stock, if there are 50% lost, stop trading.
 			if ((incCnt + descCnt) > 5 && descCnt * 1.0 / (incCnt + descCnt) > 0.5) {
@@ -591,5 +927,65 @@ public class StockTrader {
 			e.printStackTrace();
 		}
 		return shouldSkipCheck;
+	}
+
+	@Override
+	public boolean isGoodStockToSelect(Stock2 s) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isGoodPointtoBuy(Stock2 s) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isGoodPointtoSell(Stock2 s) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean sellStock(Stock2 s) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean buyStock(Stock2 s) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean calProfit(String ForDt, Map<String, Stock2> stockSet) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean reportTradeStat() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public ICashAccount getCashAccount() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setCashAccount(ICashAccount ca) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean initAccount() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

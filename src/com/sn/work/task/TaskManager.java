@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.sn.work.itf.IWork;
+import com.sn.sim.SimTrader;
 import com.sn.work.WorkManager;
 import com.sn.work.fetcher.StockDataFetcher;
 
@@ -34,6 +35,7 @@ public class TaskManager {
             tskStarted = true;
             StockDataFetcher.start();
             startGzStock();
+            SimTrader.start();
             return true;
         }
         else {

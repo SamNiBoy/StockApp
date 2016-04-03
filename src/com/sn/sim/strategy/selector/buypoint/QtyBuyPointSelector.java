@@ -36,8 +36,13 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 				tradeThresh = getBuyThreshValueByDegree(marketDegree, stk);
 				
 				double maxPct = (maxPri - minPri) / yt_cls_pri;
+				double curPct =(cur_pri - minPri) / yt_cls_pri;
 
-				if (maxPct >= tradeThresh && (cur_pri - minPri) / yt_cls_pri < maxPct * 1.0 / 10.0 && stk.isLstQtyPlused()) {
+				boolean qtyPlused = stk.isLstQtyPlused();
+				
+				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", isQtyPlused:" + qtyPlused);
+				
+				if (maxPct >= tradeThresh && curPct < maxPct * 1.0 / 10.0 && stk.isLstQtyPlused()) {
 					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
 							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
 					return true;
@@ -128,6 +133,38 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
     	return ratio * baseThresh;
     }
+
+	@Override
+	public int getBuyQty(Stock2 s, ICashAccount ac) {
+		// TODO Auto-generated method stub
+        double useableMny = 0;
+        int buyMnt = 0;
+        int maxMnt = 0;
+        
+        if (ac != null) {
+            useableMny = ac.getMaxAvaMny();
+            maxMnt = (int)(useableMny/s.getCur_pri()) / 100 * 100;
+            
+            if (maxMnt >= 400) {
+            	buyMnt = maxMnt / 2;
+            	buyMnt = buyMnt - buyMnt % 100;
+            }
+            else {
+            	buyMnt = maxMnt;
+            }
+            log.info("getBuyQty, useableMny:" + useableMny + " buyMnt:" + buyMnt + " maxMnt:" + maxMnt);
+        }
+        else {
+        	if (s.getCur_pri() <= 10) {
+        		buyMnt = 200;
+        	}
+        	else {
+        		buyMnt = 100;
+        	}
+        	log.info("getBuyQty, cur_pri:" + s.getCur_pri() + " buyMnt:" + buyMnt);
+        }
+		return buyMnt;
+	}
     
 
 }

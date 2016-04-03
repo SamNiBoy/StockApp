@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -27,6 +28,7 @@ import com.sn.cashAcnt.CashAcntManger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.MailSenderType;
+import com.sn.mail.reporter.SimTraderObserverable;
 import com.sn.mail.reporter.MailSenderFactory;
 import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.mail.reporter.StockObserver;
@@ -39,11 +41,13 @@ import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
+import com.sn.work.task.SuggestStock;
 
 public class SimTrader implements IWork{
 
     static Logger log = Logger.getLogger(SimTrader.class);
 
+    SimTraderObserverable sto = new SimTraderObserverable();
     /*
      * Initial delay before executing work.
      */
@@ -63,7 +67,7 @@ public class SimTrader implements IWork{
     static Connection con = null;
     SimStockDriver ssd = new SimStockDriver();
 
-    public SimTrader(long id, long dbn, boolean onlyGzStk) throws Exception {
+    public SimTrader(long id, long dbn, boolean onlyGzStk) {
         initDelay = id;
         delayBeforNxtStart = dbn;
         simOnGzStk = onlyGzStk;
@@ -71,21 +75,84 @@ public class SimTrader implements IWork{
 
     static public void main(String[] args) throws Exception {
         SimTrader st = new SimTrader(0, 0, true);
+        
+        LocalDateTime lt = LocalDateTime.now();
+        int hr = lt.getHour();
+        
+        // Only run after 04:00 PM.
+        while (hr < 16) {
+            Thread.currentThread().sleep(30*60*1000);
+            lt = LocalDateTime.now();
+            hr = lt.getHour();
+        }
         st.run();
     }
 
+	private static void resetTest() {
+		String sql;
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+			sql = "delete from tradedtl where acntid in (select acntid from CashAcnt where dft_acnt_flg = 0)";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			
+			stm = con.createStatement();
+			sql = "delete from tradehdr where acntid in (select acntid from CashAcnt where dft_acnt_flg = 0)";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			
+			stm = con.createStatement();
+			sql = "delete from CashAcnt where  dft_acnt_flg = 0";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	
+	}
+	
+	public static void start() {
+        SimTrader st = new SimTrader(0, 0, false);
+	    WorkManager.submitWork(st);
+	}
+	
     public void run() {
+    	
+        LocalDateTime lt = LocalDateTime.now();
+        int hr = lt.getHour();
+        
+        // Only run after 04:00 PM.
+        while (hr < 16) {
+            try {
+				Thread.currentThread().sleep(30*60*1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            lt = LocalDateTime.now();
+            hr = lt.getHour();
+        }
+        
+        resetTest();
         // SimStockDriver.addStkToSim("000727");
         Connection con = DBManager.getConnection();
         String sql = "";
         if (simOnGzStk) {
-            sql = "select * from stk where gz_flg = 1 ";
+            sql = "select * from usrStk where id ='000975' and gz_flg = 1 and openID ='osCWfs-ZVQZfrjRK0ml-eEpzeop0'";
         }
         else {
-            sql = "select * from stk where rownum < 100";
+            sql = "select * from stk ";
         }
 
         ArrayList<String> stks = new ArrayList<String>();
+        
+        ArrayList<SimWorker> workers = new ArrayList<SimWorker>();
         try {
             Statement stm = con.createStatement();
             int batch = 0;
@@ -94,12 +161,13 @@ public class SimTrader implements IWork{
             while (rs.next()) {
                 stks.add(rs.getString("id"));
                 batch++;
-                if (batch == 50) {
+                if (batch == 250) {
                     batcnt++;
-                    log.info("Now have 10 stocks to sim, start a worker for it.");
+                    log.info("Now have 250 stocks to sim, start a worker for it.");
                     SimWorker sw;
                     try {
                         sw = new SimWorker(0, 0, "SimWorker" + batcnt);
+                        workers.add(sw);
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -118,6 +186,7 @@ public class SimTrader implements IWork{
                 SimWorker sw;
                 try {
                     sw = new SimWorker(0, 0, "SimWorker" + batcnt);
+                    workers.add(sw);
                 } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -134,12 +203,19 @@ public class SimTrader implements IWork{
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        try {
-            WorkManager.shutdownWorksAfterFinish();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        
+       try {
+            for (SimWorker sw : workers) {
+		        WorkManager.waitUntilWorkIsDone(sw.getWorkName());
+            }
+            //Send mail to user for top10 best and worst.
+            sto.update();
+            
+	   } catch (InterruptedException e) {
+		    // TODO Auto-generated catch block
+		    e.printStackTrace();
+	   }
+
     }
 
     @Override

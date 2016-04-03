@@ -166,21 +166,33 @@ public class CashAcntManger {
         String sql = "select * from CashAcnt where acntId = '" + acntId + "'";
         String id = "";
         ICashAccount a = null;
+        Statement stm = null;
+        ResultSet rs = null;
 
         log.info("start loading cashAccount information for " + acntId);
         try {
-        Statement stm = con.createStatement();
-        ResultSet rs = stm.executeQuery(sql);
-        
-        while (rs.next()) {
-            id = rs.getString("acntId");
-            a = new CashAcnt(id);
-        }
-        rs.close();
-        con.close();
+            stm = con.createStatement();
+            rs = stm.executeQuery(sql);
+            
+            while (rs.next()) {
+                id = rs.getString("acntId");
+                a = new CashAcnt(id);
+            }
+            rs.close();
+            stm.close();
+            con.close();
         }
         catch (SQLException e) {
             e.printStackTrace();
+            try {
+				rs.close();
+	            stm.close();
+	            con.close();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
         }
         log.info("Successed loading cashAccount information for " + acntId);
         return a;

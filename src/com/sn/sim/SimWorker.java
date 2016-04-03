@@ -25,6 +25,7 @@ import com.sn.sim.strategy.ITradeStrategy;
 import com.sn.sim.strategy.imp.TradeStrategyGenerator;
 import com.sn.stock.RawStockData;
 import com.sn.stock.Stock2;
+import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
@@ -52,8 +53,10 @@ public class SimWorker implements IWork {
 
     public String resMsg = "Initial msg for work SimWorker.";
     
-    private String workName = "DefaultWorker";
-
+    private String workName = "SimWorker";
+    
+    static volatile boolean marketDegree_refreshed = false;
+    
     static Logger log = Logger.getLogger(SimWorker.class);
 
     public boolean addStksToWorker(List<String> stkLst) {
@@ -76,7 +79,7 @@ public class SimWorker implements IWork {
     public static void main(String[] args) throws Exception {
 
         SimWorker sw = new SimWorker(0, 0, "testSimWorker");
-        sw.stkToSim.add("600891");
+        sw.stkToSim.add("002388");
         sw.startSim();
     }
 
@@ -86,6 +89,11 @@ public class SimWorker implements IWork {
 
         for (String stock : ssd.simstocks.keySet()) {
             Stock2 s = ssd.simstocks.get(stock);
+            
+            if (!marketDegree_refreshed) {
+            	StockMarket.calIndex(s.getDl_dt());
+            	marketDegree_refreshed = true;
+            }
             if (strategy.isGoodStockToSelect(s) && strategy.isGoodPointtoBuy(s)) {
                 if (strategy.buyStock(s)) {
                     hasBoughtStock = true;
@@ -106,6 +114,12 @@ public class SimWorker implements IWork {
 
         for (String stock : ssd.simstocks.keySet()) {
             Stock2 s = ssd.simstocks.get(stock);
+            
+            if (!marketDegree_refreshed) {
+            	StockMarket.calIndex(s.getDl_dt());
+            	marketDegree_refreshed = true;
+            }
+            
             if (strategy.isGoodPointtoSell(s)) {
                 if (strategy.sellStock(s)) {
                     hasSoldStock = true;
@@ -131,10 +145,33 @@ public class SimWorker implements IWork {
 
     public void startSim() throws Exception {
         // SimStockDriver.addStkToSim("000727");
+    	String start_dt = "";
+    	String end_dt = "";
+    	Connection con = null;
+    	Statement stm = null;
+    	ResultSet rs = null;
+    	String sql = "";
+    	try {
+    		con = DBManager.getConnection();
+    		stm = con.createStatement();
+    		sql = "select to_char(sysdate - 7, 'yyyy-mm-dd') sd, to_char(sysdate, 'yyyy-mm-dd') ed from dual ";
+    		log.info(sql);
+    		rs = stm.executeQuery(sql);
+    		rs.next();
+    		start_dt = rs.getString("sd");
+    		end_dt = rs.getString("ed");
+    		log.info("got start_dt:" + start_dt + " end_dt:" + end_dt);
+    	}
+    	finally {
+    		rs.close();
+    		stm.close();
+    		con.close();
+    	}
         for (String stk : stkToSim) {
             ssd.removeStkToSim();
             ssd.addStkToSim(stk);
-            ssd.setStartEndSimDt("2016-03-06", "2016-03-09");
+            //ssd.setStartEndSimDt("2016-03-02", "2016-04-02");
+            ssd.setStartEndSimDt(start_dt, end_dt);
             
             ssd.loadStocks();
 

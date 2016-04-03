@@ -46,4 +46,10 @@ public class DefaultSellPointSelector implements ISellPointSelector {
 		log.info("returned false");
 		return false;
 	}
+
+	@Override
+	public int getSellQty(Stock2 s, ICashAccount ac) {
+		// TODO Auto-generated method stub
+		return 100;
+	}
 }

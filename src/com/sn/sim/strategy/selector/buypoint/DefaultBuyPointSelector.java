@@ -52,4 +52,10 @@ public class DefaultBuyPointSelector implements IBuyPointSelector {
 		log.info("returned false for isGoodBuyPoint");
 		return false;
 	}
+
+	@Override
+	public int getBuyQty(Stock2 s, ICashAccount ac) {
+		// TODO Auto-generated method stub
+		return 100;
+	}
 }

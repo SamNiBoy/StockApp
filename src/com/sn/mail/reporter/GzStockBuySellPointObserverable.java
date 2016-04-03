@@ -137,7 +137,7 @@ public class GzStockBuySellPointObserverable extends Observable {
                     "<th> Time</th></tr>");
             DecimalFormat df = new DecimalFormat("##.##");
             for (StockBuySellEntry e : sbse) {
-            	if (u.gzStk(e.id) && StockTrader.tradeStock(e)) {
+            	if (u.gzStk(e.id)) {
             		u.saveSend(e.id); 
             		if (u.subject.length() <= 0) {
             			u.subject = e.name + "/" + df.format(e.price) + "/" + (e.is_buy_point ? "买 " : "卖 ") + subject + returnStr;

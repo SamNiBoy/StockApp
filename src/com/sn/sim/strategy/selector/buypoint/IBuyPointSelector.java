@@ -15,4 +15,5 @@ public interface IBuyPointSelector {
      * @param args
      */
     public boolean isGoodBuyPoint(Stock2 s, ICashAccount ac);
+    public int getBuyQty(Stock2 s, ICashAccount ac);
 }

@@ -24,6 +24,7 @@ import com.sn.sim.strategy.selector.sellpoint.DefaultSellPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.QtySellPointSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
+import com.sn.trader.StockTrader;
 import com.sn.mail.reporter.GzStockBuySellPointObserverable;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.mail.reporter.StockObserver;
@@ -40,6 +41,7 @@ public class MonitorGzStockData implements IWork {
     private ArrayBlockingQueue<Stock2> queueToMonitor = null;
     private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
     GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
+    StockTrader st = new StockTrader();
 
     /* Seconds delay befor executing next work.
      */
@@ -70,17 +72,24 @@ public class MonitorGzStockData implements IWork {
     {
         // TODO Auto-generated method stub
         Stock2 s;
+        StockBuySellEntry sbse = null;
         while(true) {
         try {
             s = queueToMonitor.take();
             log.info("check stock " + s.getID() + " for buy/sell point");
             QtySellPointSelector sps = new QtySellPointSelector();
             QtyBuyPointSelector dbs = new QtyBuyPointSelector();
-            if (sps.isGoodSellPoint(s, null)) {
-                stockTomail.add(new StockBuySellEntry(s.getID(), s.getName(), s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), false, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1)));
+            if (st.shouldBuyStock(s)) {
+            	sbse = new StockBuySellEntry(s.getID(), s.getName(), s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), false, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+            	if (st.tradeStock(sbse)) {
+                    stockTomail.add(sbse);
+            	}
             }
-            else if(dbs.isGoodBuyPoint(s, null)) {
-                stockTomail.add(new StockBuySellEntry(s.getID(), s.getName(),s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), true, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1)));
+            else if(st.shouldSellStock(s)) {
+            	sbse = new StockBuySellEntry(s.getID(), s.getName(),s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1), true, s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+            	if (st.tradeStock(sbse)) {
+                    stockTomail.add(sbse);
+            	}
             }
             if (!stockTomail.isEmpty()) {
                log.info("Now sending buy/sell stock information for " + stockTomail.size());

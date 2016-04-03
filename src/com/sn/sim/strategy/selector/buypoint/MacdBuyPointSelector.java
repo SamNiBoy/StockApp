@@ -38,4 +38,11 @@ public class MacdBuyPointSelector implements IBuyPointSelector {
 		log.info("MACD returned false for buy.");
 		return false;
 	}
+
+
+	@Override
+	public int getBuyQty(Stock2 s, ICashAccount ac) {
+		// TODO Auto-generated method stub
+		return 100;
+	}
 }

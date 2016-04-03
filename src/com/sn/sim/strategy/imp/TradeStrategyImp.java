@@ -94,8 +94,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 
     @Override
     public boolean buyStock(Stock2 s) {
-        double useableMny = cash_account.getMaxAvaMny();
-        int buyMnt = (int)(useableMny/s.getCur_pri()) / 100 * 100;
+    	int buyMnt = buypoint_selector.getBuyQty(s, cash_account);
         double occupiedMny = buyMnt * s.getCur_pri();
         
         //cash_account.printAcntInfo();
@@ -110,7 +109,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         
         log.info("now start to bug stock " + s.getName()
                 + " price:" + s.getCur_pri()
-                + " with money: " + useableMny
+                + " with money: " + cash_account.getMaxAvaMny()
                 + " buy mount:" + buyMnt);
 
         Connection con = DBManager.getConnection();
@@ -181,8 +180,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                 + " price:" + s.getCur_pri()
                 + " against CashAcount: " + cash_account.getActId());
 
-        String dt = s.getDl_dt().toString().substring(0, 10);
-        int sellableAmt = cash_account.getSellableAmt(s.getID(), dt);
+        int sellableAmt = sellpoint_selector.getSellQty(s, cash_account);
         
         if (sellableAmt <= 0) {
             return false;
