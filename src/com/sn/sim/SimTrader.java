@@ -74,7 +74,7 @@ public class SimTrader implements IWork{
     }
 
     static public void main(String[] args) throws Exception {
-        SimTrader st = new SimTrader(0, 0, false);
+        SimTrader st = new SimTrader(0, 0, true);
         st.run();
     }
 

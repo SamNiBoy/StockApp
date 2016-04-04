@@ -349,8 +349,7 @@ pft_mny number,
 split_num number not null,
 max_useable_pct number not null,
 dft_acnt_flg number not null,
-add_dt date not null,
-CONSTRAINT "arc_CashAcnt_PK" PRIMARY KEY (acntId, dft_acnt_flg)
+add_dt date not null
 );
 
 insert into cashacnt values('testCashAct001',20000,0,0,4,0.5,1,sysdate);
@@ -371,8 +370,7 @@ stkId varchar2(6 byte) not null,
 pft_mny number not null, /* the money of your stock */
 in_hand_qty number not null,
 pft_price number not null,
-add_dt date not null,
-CONSTRAINT "arc_TradeHdr_PK" PRIMARY KEY (acntId, stkId)
+add_dt date not null
 );
 
 create table TradeDtl(
@@ -394,7 +392,6 @@ price number not null,
 amount number not null,
 dl_dt date not null,
 buy_flg number not null,
-CONSTRAINT "arc_TradeDtl_PK" PRIMARY KEY (acntId, stkId, seqnum)
 );
 
 create table SellBuyRecord(

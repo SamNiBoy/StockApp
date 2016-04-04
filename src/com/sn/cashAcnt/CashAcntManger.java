@@ -20,8 +20,8 @@ public class CashAcntManger {
     
     //Default cash account attributes.
     public static double DFT_INIT_MNY = 20000.0;
-    public static int DFT_SPLIT = 4;
-    public static double DFT_MAX_USE_PCT = 1;
+    public static int DFT_SPLIT = 6;
+    public static double DFT_MAX_USE_PCT = 0.5;
     
     static private List<CashAcnt> acnts = new ArrayList<CashAcnt>();
     

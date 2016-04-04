@@ -68,7 +68,7 @@ public class StockTrader implements ITradeStrategy{
 	 */
 	public static void main(String[] args) {
 
-		int seconds_to_delay = 1000;
+		int seconds_to_delay = 5000;
 		
 		resetTest();
 		
