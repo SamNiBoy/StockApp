@@ -116,9 +116,10 @@ public class SimTrader implements IWork{
     	
         LocalDateTime lt = LocalDateTime.now();
         int hr = lt.getHour();
+        int mnt = lt.getMinute();
         
-        // Only run after 04:00 PM.
-        while (hr < 6) {
+        // Only run after 15:20 PM.
+        while (hr != 15 && mnt != 20) {
             try {
 				Thread.currentThread().sleep(30*60*1000);
 			} catch (InterruptedException e) {
@@ -134,7 +135,7 @@ public class SimTrader implements IWork{
         Connection con = DBManager.getConnection();
         String sql = "";
         if (simOnGzStk) {
-            sql = "select * from usrStk where id ='000975' and gz_flg = 1 and openID ='osCWfs-ZVQZfrjRK0ml-eEpzeop0'";
+            sql = "select * from usrStk where gz_flg = 1 and openID ='osCWfs-ZVQZfrjRK0ml-eEpzeop0'";
         }
         else {
             sql = "select * from stk where id in "

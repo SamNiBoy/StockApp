@@ -98,7 +98,14 @@ public class ListGzStock implements IWork {
                     if (rs.next()) {
                     	dev = rs.getDouble("dev");
                     }
-                    cur_pri = StockMarket.getStocks().get(stock).getCur_pri();
+                    Double cur_pri1 = StockMarket.getStocks().get(stock).getCur_pri();
+                    if (cur_pri1 != null) {
+                        cur_pri = cur_pri1;
+                    }
+                    else {
+                    	log.info("cur_pri for stock:" + stock + " is null, use -1.");
+                    	cur_pri = -1;
+                    }
                     content += "价:" + df.format(cur_pri) + " stddev:" + df.format(dev) + "\n";
                     rs.close();
                 } catch(SQLException e0) {

@@ -127,6 +127,45 @@ dl_tm varchar2(8 byte) not null,
 ft_dt date not null
 );
 
+create table arc_stkDat
+(
+ft_id number not null primary key,
+id varchar2(6 byte) not null,
+td_opn_pri number not null,
+yt_cls_pri number not null,
+cur_pri number not null,
+td_hst_pri number not null,
+td_lst_pri number not null,
+b1_bst_pri number not null,
+s1_bst_pri number not null,
+dl_stk_num number not null,
+dl_mny_num number not null,
+b1_num number not null,
+b1_pri number not null,
+b2_num number not null,
+b2_pri number not null,
+b3_num number not null,
+b3_pri number not null,
+b4_num number not null,
+b4_pri number not null,
+b5_num number not null,
+b5_pri number not null,
+s1_num number not null,
+s1_pri number not null,
+s2_num number not null,
+s2_pri number not null,
+s3_num number not null,
+s3_pri number not null,
+s4_num number not null,
+s4_pri number not null,
+s5_num number not null,
+s5_pri number not null,
+dl_dt date not null,
+dl_tm varchar2(8 byte) not null,
+ft_dt date not null
+) TABLESPACE HISDAT;
+
+
 /* stkDat2 stores data converted from stkdat by removing duplicates*/
 create table stkDat2(
 ft_id number not null primary key,
@@ -165,6 +204,41 @@ dl_dt date not null
 create index stkdat2_id_dldt_idx on stkdat2 (id, ft_id, dl_dt)
 create index stkdat2_idx3 on stkdat2 (id, ft_id, to_char(dl_dt, 'yyyy-mm-dd'), cur_pri, yt_cls_pri,dl_stk_num);
 
+create table arc_stkDat2
+(
+ft_id number not null primary key,
+id varchar2(6 byte) not null,
+td_opn_pri number not null,
+yt_cls_pri number not null,
+cur_pri number not null,
+td_hst_pri number not null,
+td_lst_pri number not null,
+b1_bst_pri number not null,
+s1_bst_pri number not null,
+dl_stk_num number not null,
+dl_mny_num number not null,
+b1_num number not null,
+b1_pri number not null,
+b2_num number not null,
+b2_pri number not null,
+b3_num number not null,
+b3_pri number not null,
+b4_num number not null,
+b4_pri number not null,
+b5_num number not null,
+b5_pri number not null,
+s1_num number not null,
+s1_pri number not null,
+s2_num number not null,
+s2_pri number not null,
+s3_num number not null,
+s3_pri number not null,
+s4_num number not null,
+s4_pri number not null,
+s5_num number not null,
+s5_pri number not null,
+dl_dt date not null
+) TABLESPACE HISDAT;
 
 create table stkDlyInfo(
 id varchar2(6 byte) not null,
@@ -205,13 +279,6 @@ select lst.id from stkdat2 fst, stkdat2 lst
      and (lst.cur_pri - fst.td_opn_pri)/decode(lst.td_opn_pri, 0, 1, lst.td_opn_pri) > 0.08
      and lst.td_opn_pri > 0
 
-/*usrStk stores user intrested stocks */
-create table usrStk(
-id varchar2(6 byte) not null,
-usrID varchar2(100 byte) not null,
-actTyp varchar2(5 byte) not null,
-CONSTRAINT "usrStk_PK" PRIMARY KEY (id, usrID)
-);
 /* stkDDF stores data diffs*/
 create table stkDDF(
 ft_id number not null,
@@ -391,7 +458,7 @@ seqnum number not null,
 price number not null,
 amount number not null,
 dl_dt date not null,
-buy_flg number not null,
+buy_flg number not null
 );
 
 create table SellBuyRecord(

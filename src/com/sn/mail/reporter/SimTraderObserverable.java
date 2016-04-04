@@ -277,6 +277,7 @@ public class SimTraderObserverable extends Observable {
             	u.subject = "";
             	u.content = "";
             }
+            log.info("end SimTraderObserver...");
         }
         return generated_mail;
     }

@@ -181,7 +181,6 @@ public class StockMarket{
         }
     }
     
-    
     public static ConcurrentHashMap<String, Stock2> getStocks() {
         synchronized (StockMarket.class) {
             if (stocks.isEmpty()) {

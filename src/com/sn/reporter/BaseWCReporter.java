@@ -146,7 +146,7 @@ public abstract class BaseWCReporter implements IWCMsg {
                 stm.close();
             } else {
                 sql = "insert into usr values ('" + usr + "',"
-                        + (hst_flg == true ? 1 : 0) + "," + "sysdate, '', 0)";
+                        + (hst_flg == true ? 1 : 0) + "," + "sysdate, '', 0, 0)";
                 stm.executeUpdate(sql);
                 log.info("User:" + frmUsr + " added as "
                         + (hst_flg == true ? 1 : 0));
