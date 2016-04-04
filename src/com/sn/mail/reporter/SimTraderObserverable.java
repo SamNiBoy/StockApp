@@ -113,17 +113,18 @@ public class SimTraderObserverable extends Observable {
             int ACNTCNT = 0;
             double avgPft = 0.0;
             double avgPP = 0.0;
-            int avgBuyCnt = 0;
-            int avgSellCnt = 0;
+            double avgBuyCnt = 0;
+            double avgSellCnt = 0;
             
             try {
         		Connection con = DBManager.getConnection();
         		Statement stm = con.createStatement();
         		String sql = "select count(distinct(ac.acntid)) ACNTCNT, "
         				   + "       avg(ac.pft_mny - ac.used_mny) avgPft, "
-        				   + "       avg((ac.pft_mny - ac.used_mny) / case when ac.used_mny = 0 then 1 else ac.used_mny end) avgPP,"
+        				   + "       avg((ac.pft_mny - ac.used_mny) / ac.init_mny) avgPP,"
         				   + "       avg(tmp.buyCnt) buyCnt,"
-        				   + "       avg(tmp.sellCnt) sellCnt "
+        				   + "       avg(tmp.sellCnt) sellCnt, "
+        				   + "       case when ac.pft_mny > ac.used_mny then 1 when ac.pft_mny = ac.used_mny then 0 else -1 end cat"
         				   + " from cashacnt ac, "
         				   + "      (select sum(case when td.buy_flg = 1 then 1 else 0 end) buyCnt, "
         				   + "              sum(case when td.buy_flg  = 1 then 0 else 1 end) sellCnt, "
@@ -133,35 +134,34 @@ public class SimTraderObserverable extends Observable {
         			       + "          and th.stkid = td.stkid "
         			       + "         group by th.acntid ) tmp"
         			       + " where ac.acntid = tmp.acntid"
-        			       + "   and ac.dft_acnt_flg = 0";
+        			       + "   and ac.dft_acnt_flg = 0"
+        			       + "   group by case when ac.pft_mny > ac.used_mny then 1 when ac.pft_mny = ac.used_mny then 0 else -1 end "
+        			       + "   order by cat";
         		
         		log.info(sql);
         		
         		ResultSet rs = stm.executeQuery(sql);
         		
-        		if (rs.next()) {
+        		while (rs.next()) {
+        			
         			ACNTCNT = rs.getInt("ACNTCNT");
         			avgPft = rs.getDouble("avgPft");
         			avgPP = rs.getDouble("avgPP");
-        			avgBuyCnt = rs.getInt("buyCnt");
-        			avgSellCnt = rs.getInt("sellCnt");
+        			avgBuyCnt = rs.getDouble("buyCnt");
+        			avgSellCnt = rs.getDouble("sellCnt");
+        			
+        		    if (ACNTCNT > 0) {
+        		    	usr_need_mail = true;
+                        if (usr_need_mail) {
+                            body.append("<tr> <td>" + ACNTCNT + "</td>" +
+                            "<td> " + df.format(avgPft) + "</td>" +
+                            "<td> " + df.format(avgPP) + "</td>" +
+                            "<td> " + df.format(avgBuyCnt) + "</td>" +
+                            "<td> " + df.format(avgSellCnt) + "</td></tr>");
+                            generated_mail = true;
+                        }
+        		    }
         		}
-        		
-        		if (ACNTCNT > 0) {
-        			usr_need_mail = true;
-        		}
-        		else {
-        			usr_need_mail = false;
-        		}
-        		
-                if (usr_need_mail) {
-                    body.append("<tr> <td>" + ACNTCNT + "</td>" +
-                    "<td> " + df.format(avgPft) + "</td>" +
-                    "<td> " + df.format(avgPP) + "</td>" +
-                    "<td> " + avgBuyCnt + "</td>" +
-                    "<td> " + avgSellCnt + "</td></tr>");
-                    generated_mail = true;
-                }
                 
         		if (usr_need_mail) {
         			rs.close();
@@ -186,7 +186,7 @@ public class SimTraderObserverable extends Observable {
         			stm = con.createStatement();
         			
         			sql = "select ca.pft_mny - ca.used_mny profit, "
-        			    + "       (ca.pft_mny - ca.used_mny) / case when ca.used_mny = 0 then 1 else ca.used_mny end PP, "
+        			    + "       (ca.pft_mny - ca.used_mny) / ca.init_mny PP, "
         			    + "       to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') add_dte, "
         			    + "       ca.* "
         			    + "  from cashacnt ca "
@@ -235,7 +235,7 @@ public class SimTraderObserverable extends Observable {
         			stm = con.createStatement();
         			
         			sql = "select ca.pft_mny - ca.used_mny profit, "
-        			    + "       (ca.pft_mny - ca.used_mny) / case when ca.used_mny = 0 then 1 else ca.used_mny end PP, "
+        			    + "       (ca.pft_mny - ca.used_mny) / ca.init_mny PP, "
         			    + "       to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') add_dte, "
         			    + "       ca.* "
         			    + "  from cashacnt ca "

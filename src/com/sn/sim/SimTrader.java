@@ -139,7 +139,7 @@ public class SimTrader implements IWork{
         else {
             sql = "select * from stk where id in "
             	+ "(select s.id from stkdlyinfo s "
-            	+ "  where s.yt_cls_pri <= 30 "
+            	+ "  where s.yt_cls_pri <= 20 and s.yt_cls_pri >= 10 "
             	+ "    and not exists (select 'x' from stkdlyinfo s2 where s2.id = s.id and s2.dt > s.dt))";
         }
 

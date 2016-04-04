@@ -341,6 +341,18 @@ add_dt date not null,
 CONSTRAINT "CashAcnt_PK" PRIMARY KEY (acntId, dft_acnt_flg)
 );
 
+create table arc_CashAcnt(
+acntId varchar2(20 byte) not null,
+init_mny number not null,
+used_mny number not null,
+pft_mny number,
+split_num number not null,
+max_useable_pct number not null,
+dft_acnt_flg number not null,
+add_dt date not null,
+CONSTRAINT "arc_CashAcnt_PK" PRIMARY KEY (acntId, dft_acnt_flg)
+);
+
 insert into cashacnt values('testCashAct001',20000,0,0,4,0.5,1,sysdate);
   
 create table TradeHdr(
@@ -351,6 +363,16 @@ in_hand_qty number not null,
 pft_price number not null,
 add_dt date not null,
 CONSTRAINT "TradeHdr_PK" PRIMARY KEY (acntId, stkId)
+);
+
+create table arc_TradeHdr(
+acntId varchar2(20 byte) not null,
+stkId varchar2(6 byte) not null,
+pft_mny number not null, /* the money of your stock */
+in_hand_qty number not null,
+pft_price number not null,
+add_dt date not null,
+CONSTRAINT "arc_TradeHdr_PK" PRIMARY KEY (acntId, stkId)
 );
 
 create table TradeDtl(
@@ -364,7 +386,28 @@ buy_flg number not null,
 CONSTRAINT "TradeDtl_PK" PRIMARY KEY (acntId, stkId, seqnum)
 );
 
+create table arc_TradeDtl(
+acntId varchar2(20 byte) not null,
+stkId varchar2(6 byte) not null,
+seqnum number not null,
+price number not null,
+amount number not null,
+dl_dt date not null,
+buy_flg number not null,
+CONSTRAINT "arc_TradeDtl_PK" PRIMARY KEY (acntId, stkId, seqnum)
+);
+
 create table SellBuyRecord(
+sb_id number not null primary key,
+openId varchar2(30 byte) not null,
+stkId varchar2(6 byte) not null,
+price number not null,
+qty number not null,
+buy_flg number not null,
+dl_dt date not null
+);
+
+create table arc_SellBuyRecord(
 sb_id number not null primary key,
 openId varchar2(30 byte) not null,
 stkId varchar2(6 byte) not null,
@@ -380,3 +423,81 @@ create sequence SEQ_SBR_PK
   start with 1
   increment by 1
   cache 20;
+
+//////Start script for backup trade records.
+ declare 
+day_to_purge number := 6;
+begin
+insert into arc_TradeHdr 
+select * 
+from TradeHdr 
+where acntId in (select acntid from CashAcnt where dft_acnt_flg = 1);
+delete from TradeHdr where  acntId in (select acntid from CashAcnt where dft_acnt_flg = 1);
+commit;
+
+insert into arc_Tradedtl
+select * 
+from Tradedtl
+where acntId in (select acntid from CashAcnt where dft_acnt_flg = 1);
+delete from Tradedtl where acntId in (select acntid from CashAcnt where dft_acnt_flg = 1);
+commit;
+
+insert into arc_sellbuyrecord
+select * 
+from sellbuyrecord
+where 'Acnt' || stkid in (select acntid from CashAcnt where dft_acnt_flg = 1);
+delete from sellbuyrecord where 'Acnt' || stkid in (select acntid from CashAcnt where dft_acnt_flg = 1);
+commit;
+
+insert into arc_CashAcnt select * from CashAcnt where dft_acnt_flg =1;
+delete from CashAcnt where dft_acnt_flg = 1;
+commit;
+exception when others then 
+dbms_output.put_line('arc trade records insert exception');
+rollback;
+end;
+//////End script for backup trade records.
+
+//////Start create stkdlyinfo
+declare 
+day_to_purge number := 6;
+begin
+insert into stkDlyInfo (select id, 
+        	                     to_char(dl_dt, 'yyyy-mm-dd'),  
+        	                     yt_cls_pri,
+        	                     cur_pri,
+                               td_opn_pri,
+                               td_hst_pri,
+                               td_lst_pri,
+                               dl_stk_num,
+                               dl_mny_num
+        	   from stkdat2  
+        	   where not exists (select 'x' from stkDlyInfo scp where scp.id = stkdat2.id and to_char(stkdat2.dl_dt,'yyyy-mm-dd') = scp.dt) 
+               and not exists (select 'x' from stkdat2 s2 where s2.id = stkdat2.id  and s2.ft_id > stkdat2.ft_id and to_char(s2.dl_dt,'yyyy-mm-dd') = to_char(stkdat2.dl_dt,'yyyy-mm-dd'))
+             ); 
+end;
+////End create stkdlyinfo.
+
+/////Start backup stkdat data.
+declare 
+day_to_purge number := 6;
+begin
+insert into arc_stkdat select * from stkdat;
+delete from stkdat;
+commit;
+insert into arc_stkdat2 
+select * 
+from stkdat2 
+where dl_dt < sysdate - day_to_purge
+and not exists (
+select 'x' 
+from arc_stkdat2 s2 
+where s2.ft_id = stkdat2.ft_id);
+delete from stkdat2 where dl_dt < sysdate - day_to_purge;
+commit;
+exception when others then 
+dbms_output.put_line('arc_stkdat2 insert exception');
+rollback;
+end;
+
+////End backup stkdat data.
