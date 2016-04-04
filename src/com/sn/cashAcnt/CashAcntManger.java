@@ -18,6 +18,11 @@ public class CashAcntManger {
 
     static Logger log = Logger.getLogger(CashAcntManger.class);
     
+    //Default cash account attributes.
+    public static double DFT_INIT_MNY = 2000.0;
+    public static int DFT_SPLIT = 4;
+    public static double DFT_MAX_USE_PCT = 0.5;
+    
     static private List<CashAcnt> acnts = new ArrayList<CashAcnt>();
     
     static public List<CashAcnt> getAllAcnts() {

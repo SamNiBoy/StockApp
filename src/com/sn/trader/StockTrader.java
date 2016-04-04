@@ -345,7 +345,7 @@ public class StockTrader implements ITradeStrategy{
             if (acnt == null) {
             	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
                 CashAcntManger
-                .crtAcnt(AcntForStk, 20000.0, 0.0, 0.0, 4, 0.5, true);
+                .crtAcnt(AcntForStk, CashAcntManger.DFT_INIT_MNY, 0.0, 0.0, CashAcntManger.DFT_SPLIT, CashAcntManger.DFT_MAX_USE_PCT, true);
                 acnt = CashAcntManger.loadAcnt(AcntForStk);
             }
             

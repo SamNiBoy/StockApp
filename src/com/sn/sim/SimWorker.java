@@ -154,7 +154,7 @@ public class SimWorker implements IWork {
     	try {
     		con = DBManager.getConnection();
     		stm = con.createStatement();
-    		sql = "select to_char(sysdate - 7, 'yyyy-mm-dd') sd, to_char(sysdate, 'yyyy-mm-dd') ed from dual ";
+    		sql = "select to_char(sysdate - 5, 'yyyy-mm-dd') sd, to_char(sysdate, 'yyyy-mm-dd') ed from dual ";
     		log.info(sql);
     		rs = stm.executeQuery(sql);
     		rs.next();
@@ -182,7 +182,7 @@ public class SimWorker implements IWork {
 
             String AcntForStk = "Acnt" + stk;
             CashAcntManger
-                    .crtAcnt(AcntForStk, 20000.0, 0.0, 0.0, 4, 0.5, false);
+                    .crtAcnt(AcntForStk, CashAcntManger.DFT_INIT_MNY, 0.0, 0.0, CashAcntManger.DFT_SPLIT, CashAcntManger.DFT_MAX_USE_PCT, false);
             ICashAccount acnt = CashAcntManger.loadAcnt(AcntForStk);
 
             for (ITradeStrategy cs : strategies) {

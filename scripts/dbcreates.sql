@@ -330,14 +330,15 @@ group by s2.id, t.lst_pri, t.hst_pri
 
 
 create table CashAcnt(
-acntId varchar2(20 byte) not null primary key,
+acntId varchar2(20 byte) not null,
 init_mny number not null,
 used_mny number not null,
 pft_mny number,
 split_num number not null,
 max_useable_pct number not null,
 dft_acnt_flg number not null,
-add_dt date not null
+add_dt date not null,
+CONSTRAINT "CashAcnt_PK" PRIMARY KEY (acntId, dft_acnt_flg)
 );
 
 insert into cashacnt values('testCashAct001',20000,0,0,4,0.5,1,sysdate);

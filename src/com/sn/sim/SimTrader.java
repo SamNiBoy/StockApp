@@ -74,17 +74,7 @@ public class SimTrader implements IWork{
     }
 
     static public void main(String[] args) throws Exception {
-        SimTrader st = new SimTrader(0, 0, true);
-        
-        LocalDateTime lt = LocalDateTime.now();
-        int hr = lt.getHour();
-        
-        // Only run after 04:00 PM.
-        while (hr < 16) {
-            Thread.currentThread().sleep(30*60*1000);
-            lt = LocalDateTime.now();
-            hr = lt.getHour();
-        }
+        SimTrader st = new SimTrader(0, 0, false);
         st.run();
     }
 
@@ -128,7 +118,7 @@ public class SimTrader implements IWork{
         int hr = lt.getHour();
         
         // Only run after 04:00 PM.
-        while (hr < 16) {
+        while (hr < 6) {
             try {
 				Thread.currentThread().sleep(30*60*1000);
 			} catch (InterruptedException e) {
@@ -147,7 +137,10 @@ public class SimTrader implements IWork{
             sql = "select * from usrStk where id ='000975' and gz_flg = 1 and openID ='osCWfs-ZVQZfrjRK0ml-eEpzeop0'";
         }
         else {
-            sql = "select * from stk ";
+            sql = "select * from stk where id in "
+            	+ "(select s.id from stkdlyinfo s "
+            	+ "  where s.yt_cls_pri <= 30 "
+            	+ "    and not exists (select 'x' from stkdlyinfo s2 where s2.id = s.id and s2.dt > s.dt))";
         }
 
         ArrayList<String> stks = new ArrayList<String>();
@@ -157,6 +150,7 @@ public class SimTrader implements IWork{
             Statement stm = con.createStatement();
             int batch = 0;
             int batcnt = 0;
+            log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
             while (rs.next()) {
                 stks.add(rs.getString("id"));
