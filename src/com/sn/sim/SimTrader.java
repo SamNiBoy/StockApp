@@ -104,7 +104,6 @@ public class SimTrader implements IWork{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	
 	}
 	
 	public static void start() {
@@ -118,8 +117,9 @@ public class SimTrader implements IWork{
         int hr = lt.getHour();
         int mnt = lt.getMinute();
         
+        int time = hr*100 + mnt;
         // Only run after 15:20 PM.
-        while (hr != 15 && mnt != 20) {
+        while (time < 1530) {
             try {
 				Thread.currentThread().sleep(30*60*1000);
 			} catch (InterruptedException e) {
@@ -128,6 +128,7 @@ public class SimTrader implements IWork{
 			}
             lt = LocalDateTime.now();
             hr = lt.getHour();
+            time = hr*100 + mnt;
         }
         
         resetTest();

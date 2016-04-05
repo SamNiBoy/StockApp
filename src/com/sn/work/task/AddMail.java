@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.work.itf.IWork;
 import com.sn.work.WorkManager;
-import com.sn.work.fetcher.FetchStockData;
 
 public class AddMail implements IWork {
 

@@ -19,7 +19,6 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.stock.Stock2.StockData;
-import com.sn.work.fetcher.FetchStockData;
 
 public class StockMarket{
 

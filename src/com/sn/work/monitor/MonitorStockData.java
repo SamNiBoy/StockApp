@@ -18,7 +18,6 @@ import com.sn.sim.SimTrader;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.mail.reporter.StockObserver;
 import com.sn.work.WorkManager;
-import com.sn.work.fetcher.FetchStockData;
 import com.sn.work.fetcher.StockDataFetcher;
 import com.sn.work.itf.IWork;
 

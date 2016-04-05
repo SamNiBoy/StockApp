@@ -1,47 +1,42 @@
-package com.sn.work.task;
+package com.sn.work.fetcher;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.stock.RawStockData;
+import com.sn.stock.Stock2;
 import com.sn.work.WorkManager;
-import com.sn.work.fetcher.GzRawStockDataConsumer;
 import com.sn.work.itf.IWork;
-import com.sn.work.monitor.MonitorGzStockData;
-import com.sn.work.monitor.MonitorStockData;
 
 public class GzStockDataFetcher implements IWork {
 
-    Connection con = DBManager.getConnection();
+    static Connection con = DBManager.getConnection();
     /* Initial delay before executing work.
      */
-    long initDelay = 0;
+    static long initDelay = 0;
 
     /* Seconds delay befor executing next work.
      */
-    long delayBeforNxtStart = 5;
+    static long delayBeforNxtStart = 5;
 
-    TimeUnit tu = TimeUnit.MILLISECONDS;
+    static TimeUnit tu = TimeUnit.MILLISECONDS;
     
-    int maxLstNum = 50;
+    static int maxLstNum = 50;
     
     static public String resMsg = "Initial msg for work GzStockDataFetcher.";
     
     static GzStockDataFetcher self = null;
-    GzRawStockDataConsumer cnsmr = null;
-    MonitorGzStockData monitor = null;
+    static GzStockDataConsumer cnsmr = null;
     
     static Logger log = Logger.getLogger(GzStockDataFetcher.class);
     
@@ -54,38 +49,23 @@ public class GzStockDataFetcher implements IWork {
     }
 
     static public boolean start() {
-        if (self == null) {
-            GzRawStockDataConsumer gsdc = new GzRawStockDataConsumer(0, 0);
-            self = new GzStockDataFetcher(0, 6000, gsdc);
-            if (WorkManager.submitWork(self)) {
-                resMsg = "Newly created GzStockDataFetcher and started!";
-                return true;
-            }
+        self = new GzStockDataFetcher(0, Stock2.StockData.SECONDS_PER_FETCH * 1000);
+        if (WorkManager.submitWork(self)) {
+            log.info("Newly created GzStockDataFetcher and started!");
+            cnsmr = new GzStockDataConsumer(0, 0);
+            WorkManager.submitWork(cnsmr);
+            return true;
         }
-        else if (WorkManager.canSubmitWork(self.getWorkName())) {
-            if (WorkManager.submitWork(self)) {
-                resMsg = "Resubmitted GzStockDataFetcher and started!";
-                return true;
-            }
-        }
-        resMsg = "Work GzStockDataFetcher is started, can not start again!";
+        log.info("can not submit GzStockDataFetcher!");
         return false;
     }
     
     static public boolean stop() {
-        if (self == null) {
-            resMsg = "GzStockDataFetcher is null, how did you stop it?";
+        if (WorkManager.cancelWork(self.getWorkName())) {
+            log.info("GzStockDataFetcher is cancelled successfully.");
             return true;
         }
-        else if (WorkManager.canSubmitWork(self.getWorkName())) {
-            resMsg = "GzStockDataFetcher is stopped, but can submit again.";
-            return true;
-        }
-        else if (WorkManager.cancelWork(self.getWorkName())) {
-            resMsg = "GzStockDataFetcher is cancelled successfully.";
-            return true;
-        }
-        resMsg = "GzStockDataFetcher can not be cancelled!, this is unexpected";
+        log.info("GzStockDataFetcher can not be cancelled!, this is unexpected");
         return false;
     }
     /**
@@ -93,18 +73,16 @@ public class GzStockDataFetcher implements IWork {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        GzRawStockDataConsumer gsdc = new GzRawStockDataConsumer(0, 0);
-        GzStockDataFetcher fsd = new GzStockDataFetcher(0, 10, gsdc);
+        GzStockDataConsumer gsdc = new GzStockDataConsumer(0, 0);
+        GzStockDataFetcher fsd = new GzStockDataFetcher(0, 10);
         log.info("Main exit");
         WorkManager.submitWork(fsd);
     }
 
-    public GzStockDataFetcher(long id, long dbn, GzRawStockDataConsumer sdcr)
+    public GzStockDataFetcher(long id, long dbn)
     {
         initDelay = id;
         delayBeforNxtStart = dbn;
-        cnsmr = sdcr;
-        monitor = new MonitorGzStockData(cnsmr.refreshedStocks);
     }
 
     private String getFetchLst()
@@ -157,22 +135,7 @@ public class GzStockDataFetcher implements IWork {
         // TODO Auto-generated method stub
         String str;
 
-        if (WorkManager.canSubmitWork(cnsmr.getWorkName())) {
-            WorkManager.submitWork(cnsmr);
-            log.info("GzStockDataFetcher successfully lunched consumer...");
-        }
-        else {
-            log.info("GzStockDataFetcher consumer looks already running, skip resubmit...");
-        }
-        
-        if (WorkManager.canSubmitWork(monitor.getWorkName())) {
-            WorkManager.submitWork(monitor);
-            log.info("GzStockDataFetcher successfully lunched MonitorGzStockData...");
-        }
-        else {
-            log.info("GzStockDataFetcher MonitorGzStockData looks already running, skip resubmit...");
-        }
-        
+        log.info("GzStockDataFetcher started!!!");
         try {
             String fs [] = getFetchLst().split("#"), cs;
             RawStockData srd = null;
@@ -203,7 +166,7 @@ public class GzStockDataFetcher implements IWork {
                 
                     log.info(str);
                     srd = RawStockData.createStockData(str);
-                    cnsmr.getRdq().getDatque().put(srd);
+                    cnsmr.getDq().put(srd);
                 }
                 br.close();
                 if (failCnt > 0)

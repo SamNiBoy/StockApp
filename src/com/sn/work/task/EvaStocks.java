@@ -21,7 +21,6 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.stock.Stock2;
 import com.sn.work.itf.IWork;
-import com.sn.work.fetcher.FetchStockData;
 
 public class EvaStocks implements IWork {
 
@@ -72,17 +71,6 @@ public class EvaStocks implements IWork {
         while (true) {
 
             if (!onTimeRun) {
-                synchronized (FetchStockData.bellForWork) {
-                    try {
-                        log.info("Waiting before start evaluating stocks...");
-                        FetchStockData.bellForWork.wait();
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        log.error("EvaStocks Can not wait on bellForWork:"
-                                + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
             }
             
             con = DBManager.getConnection();

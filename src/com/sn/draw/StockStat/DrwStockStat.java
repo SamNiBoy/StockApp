@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 
 import com.sn.draw.itf.Draw;
 import com.sn.work.WorkManager;
-import com.sn.work.fetcher.FetchStockData;
 import com.sn.work.task.EvaStocks;
 
 public class DrwStockStat implements Draw{

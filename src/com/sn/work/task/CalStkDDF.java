@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.work.itf.IWork;
-import com.sn.work.fetcher.FetchStockData;
 
 public class CalStkDDF implements IWork {
 
@@ -59,17 +58,6 @@ public class CalStkDDF implements IWork {
     public void run() {
         // TODO Auto-generated method stub
         while (true) {
-            synchronized (FetchStockData.bellForWork) {
-                try {
-                    log.info("Waiting before start CalStkDDF work...");
-                    FetchStockData.bellForWork.wait();
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    log.info("CalStkDDF can not get wait on bellForWork"
-                            + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
             con = DBManager.getConnection();
             try {
                 log.info("Now start CalStkDDF work...");

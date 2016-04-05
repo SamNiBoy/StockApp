@@ -23,10 +23,12 @@ import com.sn.stock.RawStockData;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
-public class RawStockDataConsumer implements IWork {
+public class StockDataConsumer implements IWork {
 
     private int MAX_QUEUE_SIZE = 10000;
-    public RawStockDataQueue dq = new RawStockDataQueue(MAX_QUEUE_SIZE);
+    
+    private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
+    
     static Connection con = DBManager.getConnection();
     /* Initial delay before executing work.
      */
@@ -40,45 +42,44 @@ public class RawStockDataConsumer implements IWork {
     
     static int maxLstNum = 50;
     
-    static Logger log = Logger.getLogger(RawStockDataConsumer.class);
+    static Logger log = Logger.getLogger(StockDataConsumer.class);
     /**
      * @param args
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        RawStockDataConsumer fsd = new RawStockDataConsumer(1, 3);
+        StockDataConsumer fsd = new StockDataConsumer(1, 3);
         fsd.run();
     }
 
-    public RawStockDataConsumer(long id, long dbn)
+    public StockDataConsumer(long id, long dbn)
     {
         initDelay = id;
         delayBeforNxtStart = dbn;
     }
 
-    public RawStockDataQueue getDq() {
-        return dq;
+    public ArrayBlockingQueue<RawStockData> getDq() {
+        return dataqueue;
     }
 
-    public void setDq(RawStockDataQueue dq) {
-        this.dq = dq;
+    public void setDq(ArrayBlockingQueue<RawStockData> dq) {
+        this.dataqueue = dq;
     }
 
     public void run()
     {
-        log.info("Now about to run RawStockConsumer's run...");
+        log.info("Now about to run StockConsumer's run...");
         ConcurrentHashMap<String, Stock2> ss = StockMarket
         .getStocks();
-        ArrayBlockingQueue<RawStockData> dd = dq.getDatque();
         int cnt = 0;
         try {
             while (true) {
-                RawStockData srd = dd.take();
+                RawStockData srd = dataqueue.take();
                 log.info("take return stock:" + srd.id);
                 Stock2 s = ss.get(srd.id);
                 if (s != null) {
                     cnt++;
-                    log.info("About to consume RawData from RawStockDataConsume, queue size:" + dd.size());
+                    log.info("About to consume RawData from RawStockDataConsume, queue size:" + dataqueue.size());
                     s.saveData(srd, con);
                 }
                 if (cnt >= ss.size()) {
@@ -86,7 +87,7 @@ public class RawStockDataConsumer implements IWork {
                     ExactDatForstkDat2();
                     con.commit();
                 }
-                if ((cnt >= ss.size() && s != null) || dd.isEmpty()) {
+                if ((cnt >= ss.size() && s != null) || dataqueue.isEmpty()) {
                 	log.info("after fetch:" + cnt + " rows, and calIndex at:" + s.getDl_dt());
                     Timestamp ts = s.getDl_dt();
                     StockMarket.calIndex(ts);
@@ -162,7 +163,7 @@ public class RawStockDataConsumer implements IWork {
 
     public String getWorkName()
     {
-        return "RawStockDataConsumer";
+        return "StockDataConsumer";
     }
 
     public long getInitDelay()

@@ -20,7 +20,6 @@ import org.json.JSONObject;
 
 import com.sn.db.DBManager;
 import com.sn.work.itf.IWork;
-import com.sn.work.fetcher.FetchStockData;
 
 public class sndStkStat implements IWork {
 

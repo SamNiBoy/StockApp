@@ -1,18 +1,11 @@
 package com.sn.work.task;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -20,22 +13,14 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.RecommandStockObserverable;
 import com.sn.sim.strategy.selector.stock.AvgClsPriStockSelector;
-import com.sn.sim.strategy.selector.stock.ClosePriceTrendStockSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
-import com.sn.sim.strategy.selector.stock.KeepGainStockSelector;
-import com.sn.sim.strategy.selector.stock.KeepLostStockSelector;
 import com.sn.sim.strategy.selector.stock.PriceStockSelector;
 import com.sn.sim.strategy.selector.stock.StddevStockSelector;
-import com.sn.stock.RawStockData;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
-import com.sn.work.fetcher.GzRawStockDataConsumer;
-import com.sn.work.fetcher.StockDataFetcher;
 import com.sn.work.itf.IWork;
-import com.sn.work.monitor.MonitorGzStockData;
-import com.sn.work.monitor.MonitorStockData;
 
 public class SuggestStock implements IWork {
 

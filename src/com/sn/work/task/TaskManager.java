@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import com.sn.work.itf.IWork;
 import com.sn.sim.SimTrader;
 import com.sn.work.WorkManager;
+import com.sn.work.fetcher.GzStockDataFetcher;
 import com.sn.work.fetcher.StockDataFetcher;
 
 public class TaskManager {
@@ -34,7 +35,8 @@ public class TaskManager {
             log.info("Starting tasks...");
             tskStarted = true;
             StockDataFetcher.start();
-            startGzStock();
+            GzStockDataFetcher.start();
+        	SuggestStock.start();
             SimTrader.start();
             return true;
         }
@@ -42,13 +44,6 @@ public class TaskManager {
             log.info("Tasks already started...");
         }
         return false;
-    }
-    
-    private static boolean startGzStock()
-    {
-    	GzStockDataFetcher.start();
-    	SuggestStock.start();
-        return true;
     }
     
     public static boolean stopTasks()

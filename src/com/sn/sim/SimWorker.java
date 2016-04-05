@@ -180,7 +180,7 @@ public class SimWorker implements IWork {
                 return;
             }
 
-            String AcntForStk = "Acnt" + stk;
+            String AcntForStk = "SimAcnt" + stk;
             CashAcntManger
                     .crtAcnt(AcntForStk, CashAcntManger.DFT_INIT_MNY, 0.0, 0.0, CashAcntManger.DFT_SPLIT, CashAcntManger.DFT_MAX_USE_PCT, false);
             ICashAccount acnt = CashAcntManger.loadAcnt(AcntForStk);

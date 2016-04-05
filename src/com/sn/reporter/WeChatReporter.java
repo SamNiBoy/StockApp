@@ -3,7 +3,7 @@ package com.sn.reporter;
 import org.apache.log4j.Logger;
 
 import com.sn.work.WorkManager;
-import com.sn.work.fetcher.FetchStockData;
+import com.sn.work.fetcher.GzStockDataFetcher;
 import com.sn.work.fetcher.StockDataFetcher;
 import com.sn.work.monitor.MonitorStockData;
 import com.sn.work.output.CalFetchStat;
@@ -16,7 +16,6 @@ import com.sn.work.output.TopTenWst;
 import com.sn.work.task.AddMail;
 import com.sn.work.task.EnaSuggestStock;
 import com.sn.work.task.EnaUsrBuySell;
-import com.sn.work.task.GzStockDataFetcher;
 import com.sn.work.task.TaskManager;
 import com.sn.work.task.usrStock;
 

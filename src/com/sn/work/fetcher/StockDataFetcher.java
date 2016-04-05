@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.stock.RawStockData;
+import com.sn.stock.Stock2;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
@@ -26,20 +27,20 @@ public class StockDataFetcher implements IWork {
     Connection con = DBManager.getConnection();
     /* Initial delay before executing work.
      */
-    long initDelay = 0;
+    static long initDelay = 0;
 
     /* Seconds delay befor executing next work.
      */
-    long delayBeforNxtStart = 5;
+    static long delayBeforNxtStart = 5;
 
-    TimeUnit tu = TimeUnit.MILLISECONDS;
+    static TimeUnit tu = TimeUnit.MILLISECONDS;
     
-    int maxLstNum = 50;
+    static int maxLstNum = 50;
     
     static public String resMsg = "Initial msg for work StockDataFetcher.";
     
     static StockDataFetcher self = null;
-    RawStockDataConsumer cnsmr = null;
+    static StockDataConsumer cnsmr = null;
     
     public static ReentrantLock lock = new ReentrantLock();
     public static Condition finishedOneRoundFetch = lock.newCondition();
@@ -55,38 +56,23 @@ public class StockDataFetcher implements IWork {
     }
 
     static public boolean start() {
-        if (self == null) {
-            RawStockDataConsumer gsdc = new RawStockDataConsumer(0, 0);
-            self = new StockDataFetcher(0, 35000, gsdc);
-            if (WorkManager.submitWork(self)) {
-                resMsg = "开始收集股票数据!";
-                return true;
-            }
+        self = new StockDataFetcher(0, Stock2.StockData.SECONDS_PER_FETCH * 1000);
+        if (WorkManager.submitWork(self)) {
+            log.info("开始收集股票数据!");
+            cnsmr = new StockDataConsumer(0, 0);
+            WorkManager.submitWork(cnsmr);
+            return true;
         }
-        else if (WorkManager.canSubmitWork(self.getWorkName())) {
-            if (WorkManager.submitWork(self)) {
-                resMsg = "重新开始股票数据收集!";
-                return true;
-            }
-        }
-        resMsg = "正在收集股票数据，不能再启动任务!";
         return false;
     }
     
     static public boolean stop() {
-        if (self == null) {
-            resMsg = "StockDataFetcher is null, how did you stop it?";
+        if (WorkManager.cancelWork(self.getWorkName())) {
+            log.info("成功取消数据收集器.");
+            WorkManager.cancelWork(cnsmr.getWorkName());
             return true;
         }
-        else if (WorkManager.canSubmitWork(self.getWorkName())) {
-            resMsg = "数据收集器已经停止.";
-            return true;
-        }
-        else if (WorkManager.cancelWork(self.getWorkName())) {
-            resMsg = "成功取消数据收集器.";
-            return true;
-        }
-        resMsg = "StockDataFetcher can not be cancelled!, this is unexpected";
+        log.info("StockDataFetcher can not be cancelled!, this is unexpected");
         return false;
     }
     /**
@@ -97,11 +83,10 @@ public class StockDataFetcher implements IWork {
         start();
     }
 
-    public StockDataFetcher(long id, long dbn, RawStockDataConsumer sdcr)
+    public StockDataFetcher(long id, long dbn)
     {
         initDelay = id;
         delayBeforNxtStart = dbn;
-        cnsmr = sdcr;
     }
 
     private String getFetchLst()
@@ -154,14 +139,7 @@ public class StockDataFetcher implements IWork {
         // TODO Auto-generated method stub
         String str;
 
-        if (WorkManager.canSubmitWork(cnsmr.getWorkName())) {
-            WorkManager.submitWork(cnsmr);
-            log.info("StockDataFetcher successfully lunched consumer...");
-        }
-        else {
-            log.info("StockDataFetcher consumer looks already running, skip resubmit...");
-        }
-        
+        log.info("Now StockDataFetcher start!!!");
         try {
             String fs [] = getFetchLst().split("#"), cs;
             RawStockData srd = null;
@@ -197,8 +175,8 @@ public class StockDataFetcher implements IWork {
                         log.info("can not create rawdata for " + str + " continue...");
                         continue;
                     }
-                    log.info("StockDataFetcher put rawdata to queue with size:" + cnsmr.getDq().getDatque().size());
-                    cnsmr.getDq().getDatque().put(srd);
+                    log.info("StockDataFetcher put rawdata to queue with size:" + cnsmr.getDq().size());
+                    cnsmr.getDq().put(srd);
                 }
                 br.close();
                 if (failCnt == 1) {
@@ -228,7 +206,7 @@ public class StockDataFetcher implements IWork {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        log.info("Now fetcher exit!!!");
+        log.info("Now StockDataFetcher exit!!!");
     }
 
     public String getWorkResult()

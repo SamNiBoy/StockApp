@@ -17,7 +17,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.work.fetcher.FetchStockData;
 
 public class RawStockData{
 

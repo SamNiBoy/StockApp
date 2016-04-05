@@ -259,7 +259,7 @@ public class StockTrader implements ITradeStrategy{
 	
 	public static boolean shouldBuyStock(Stock2 s) {
 		ICashAccount cash_account = getVirtualCashAcntForStock(s.getID());
-        if(buypoint_selector.isGoodBuyPoint(s, cash_account)) {
+        if(buypoint_selector.isGoodBuyPoint(s, null)) {
         	return true;
         }
         return false;
@@ -267,7 +267,7 @@ public class StockTrader implements ITradeStrategy{
 	
 	public static boolean shouldSellStock(Stock2 s) {
 		ICashAccount cash_account = getVirtualCashAcntForStock(s.getID());
-        if (sellpoint_selector.isGoodSellPoint(s, cash_account)) {
+        if (sellpoint_selector.isGoodSellPoint(s, null)) {
         	return true;
         }
         return false;
