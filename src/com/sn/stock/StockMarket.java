@@ -347,7 +347,7 @@ public class StockMarket{
             log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
 
-            if (rs.next()) {
+            while (rs.next()) {
                 catagory = rs.getInt("catagory");
                 if (catagory == -1)
                 {
@@ -366,10 +366,10 @@ public class StockMarket{
                     AvgIncPct = rs.getDouble("avgPct");
                     totIncDlMny = rs.getDouble("totDlMny");
                 }
-                
-                StkNum = TotDec + TotInc + TotEql;
-                Degree = (TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1);
             }
+            
+            StkNum = TotDec + TotInc + TotEql;
+            Degree = (TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1);
             
             rs.close();
             stm.close();
@@ -383,20 +383,31 @@ public class StockMarket{
     }
     
     static public String getShortDesc() {
+    	if (Degree == 0.0) {
+    		calIndex(null);
+    	}
     	DecimalFormat df = new DecimalFormat("##.##");
         return "温度:" + df.format(Degree) + "[" + StkNum + "/" + df.format((totDecDlMny +totEqlDlMny + totIncDlMny)/100000000) + "亿 "
-    			+ TotInc + "/" + df.format(AvgIncPct) + "/" + df.format(totIncDlMny/100000000) + "亿+ "
-                + TotDec + "/" + df.format(AvgDecPct) + "/" + df.format(totDecDlMny/100000000) + "亿- "
-    			+ TotEql + "/" + df.format(totEqlDlMny/100000000) + "亿=]";
+    			+ TotInc + "/" + df.format(AvgIncPct) + "/" + df.format(totIncDlMny/100000000) + "亿涨 "
+                + TotDec + "/" + df.format(AvgDecPct) + "/" + df.format(totDecDlMny/100000000) + "亿跌 "
+    			+ TotEql + "/" + df.format(totEqlDlMny/100000000) + "亿平]";
     }
     
     static public String getDegreeMny() {
+    	if (Degree == 0.0) {
+    		calIndex(null);
+    	}
+    	
     	DecimalFormat df = new DecimalFormat("##.##");
         return "温度:" + df.format(Degree) + "[" + StkNum + "/" + df.format((totDecDlMny +totEqlDlMny + totIncDlMny)/100000000) + "亿 ]";
     }
     
     static public String getLongDsc() {
         
+    	if (Degree == 0.0) {
+    		calIndex(null);
+    	}
+    	
     	DecimalFormat df = new DecimalFormat("##.##");
         String index = "<table border = 1>" +
         "<tr>" +
