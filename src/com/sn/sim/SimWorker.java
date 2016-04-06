@@ -151,6 +151,7 @@ public class SimWorker implements IWork {
     	Statement stm = null;
     	ResultSet rs = null;
     	String sql = "";
+    	CashAcntManger.ACNT_PREFIX = "SimAcnt";
     	try {
     		con = DBManager.getConnection();
     		stm = con.createStatement();
@@ -180,7 +181,7 @@ public class SimWorker implements IWork {
                 return;
             }
 
-            String AcntForStk = "SimAcnt" + stk;
+            String AcntForStk = CashAcntManger.ACNT_PREFIX + stk;
             CashAcntManger
                     .crtAcnt(AcntForStk, CashAcntManger.DFT_INIT_MNY, 0.0, 0.0, CashAcntManger.DFT_SPLIT, CashAcntManger.DFT_MAX_USE_PCT, false);
             ICashAccount acnt = CashAcntManger.loadAcnt(AcntForStk);

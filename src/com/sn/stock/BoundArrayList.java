@@ -40,4 +40,10 @@ public class BoundArrayList<T> extends ArrayList<T>{
         return super.size();
     }
     
+    public void clear() {
+    	log.info("now clear BoundArrayList, set act_sz = 0.");
+    	act_sz = 0;
+    	super.clear();
+    }
+    
 }

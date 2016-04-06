@@ -8,8 +8,9 @@ Do
         Call trade(stockMsg)
     Else 
         //Call keepWindowAlive()
-        Delay 100
+        Delay 200
     End If
+    //Call Plugin.Sys.SetCLB("S002431600")
     //Goto nextPoint
 Loop
 Sub trade(stockMsg)
@@ -35,12 +36,16 @@ Sub trade(stockMsg)
             Next
             //enter
             KeyPress 13, 1
-            TracePrint "now press 21 to buy"
-            For i = 1 To len("21")
-                ch = mid("21", i, 1)
-                KeyPress ch, 1
-                Delay 100
-            Next
+            
+            TracePrint "now press .+1 to buy with sell 1 price."
+            
+            KeyPress 110, 1
+            Delay 100
+            KeyPress 107, 1
+            Delay 100
+            KeyPress 97, 1
+            Delay 100
+
             KeyPress 13, 1
             TracePrint "now buy " & Qty & " for " & stk
             For i = 1 To len(Qty)
@@ -74,13 +79,18 @@ Sub trade(stockMsg)
                 KeyPress ch, 1
                 Delay 100
             Next
+            
             KeyPress 13, 1
-            TracePrint "now press 23 for S"
-            For i = 1 To len("23")
-                ch = mid("23", i, 1)
-                KeyPress ch, 1
-                Delay 100
-            Next
+            
+            TracePrint "now press .-1 for S"
+            
+            KeyPress 110, 1
+            Delay 100
+            KeyPress 109, 1
+            Delay 100
+            KeyPress 97, 1
+            Delay 100
+            
             KeyPress 13, 1
             TracePrint "now press " & Qty & " for to sell " & stk
             For i = 1 To len(Qty)

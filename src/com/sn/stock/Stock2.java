@@ -1307,7 +1307,7 @@ public class Stock2 implements Comparable<Stock2>{
             + "to_date('" + rsd.dl_dt.toString() +" " + rsd.dl_tm +"', 'yyyy-mm-dd hh24:mi:ss')" + ", '"
             + rsd.dl_tm + "'," +"sysdate)";
         
-        log.info(sql);
+        //log.info(sql);
         try {
             Statement stm = con.createStatement();
             stm.execute(sql);

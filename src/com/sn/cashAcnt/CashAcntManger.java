@@ -23,6 +23,8 @@ public class CashAcntManger {
     public static int DFT_SPLIT = 6;
     public static double DFT_MAX_USE_PCT = 0.5;
     
+    public static String ACNT_PREFIX = "ACNT";
+    
     static private List<CashAcnt> acnts = new ArrayList<CashAcnt>();
     
     static public List<CashAcnt> getAllAcnts() {

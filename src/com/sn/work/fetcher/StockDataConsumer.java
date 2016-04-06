@@ -25,9 +25,9 @@ import com.sn.work.itf.IWork;
 
 public class StockDataConsumer implements IWork {
 
-    private int MAX_QUEUE_SIZE = 10000;
+    static private int MAX_QUEUE_SIZE = 10000;
     
-    private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
+    static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
     
     static Connection con = DBManager.getConnection();
     /* Initial delay before executing work.

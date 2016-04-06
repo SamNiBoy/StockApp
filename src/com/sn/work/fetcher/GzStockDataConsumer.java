@@ -18,7 +18,8 @@ import com.sn.work.itf.IWork;
 
 public class GzStockDataConsumer implements IWork {
 
-	static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(5000, false);
+	static private int MAX_QUEUE_SIZE = 10000;
+	static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
     static private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
     static private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
     
@@ -64,51 +65,51 @@ public class GzStockDataConsumer implements IWork {
         ConcurrentHashMap<String, Stock2> gzs = StockMarket
         .getGzstocks();
         StockBuySellEntry sbse = null;
-        try {
-            while (true) {
-            	
-                RawStockData srd = dataqueue.take();
-                
-                Stock2 s = gzs.get(srd.id);
-                if (s != null) {
-                	
-                    log.info("Now consuming StockRawData " + srd.id + " Name" + srd.name);
-                    
-                    s.injectData(srd);
-                    
-                    log.info("check stock " + s.getID() + " for buy/sell point");
-                    
-                    if (StockTrader.shouldBuyStock(s)) {
-                    	sbse = new StockBuySellEntry(s.getID(),
-                    			                     s.getName(),
-                    			                     s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
-                    			                     true,
-                    			                     s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
-                    	if (StockTrader.tradeStock(sbse)) {
-                            stockTomail.add(sbse);
-                    	}
-                    }
-                    else if(StockTrader.shouldSellStock(s)) {
-                    	sbse = new StockBuySellEntry(s.getID(),
-                    			                     s.getName(),
-                    			                     s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
-                    			                     false,
-                    			                     s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
-                    	if (StockTrader.tradeStock(sbse)) {
-                            stockTomail.add(sbse);
-                    	}
-                    }
-                    if (!stockTomail.isEmpty()) {
-                       log.info("Now sending buy/sell stock information for " + stockTomail.size());
-                       gsbsob.setData(stockTomail);
-                       gsbsob.update();
-                       stockTomail.clear();
-                    }
-                }
+        while (true) {
+        	
+        	RawStockData srd = null;
+        	try {
+                 srd= dataqueue.take();
+        	}
+        	catch(Exception e) {
+        		e.printStackTrace();
+        		log.info("Unexpected exception happened from GzStockDataConsumer take()");
+        	}
+            
+            Stock2 s = gzs.get(srd.id);
+           
+            log.info("Now consuming StockRawData " + srd.id + " Name" + srd.name + "dq size:" + dataqueue.size());
+            
+            s.injectData(srd);
+            
+            log.info("check stock " + s.getID() + " for buy/sell point");
+            
+            if (StockTrader.shouldBuyStock(s)) {
+            	sbse = new StockBuySellEntry(s.getID(),
+            			                     s.getName(),
+            			                     s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
+            			                     true,
+            			                     s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+            	if (StockTrader.tradeStock(sbse)) {
+                    stockTomail.add(sbse);
+            	}
             }
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            else if(StockTrader.shouldSellStock(s)) {
+            	sbse = new StockBuySellEntry(s.getID(),
+            			                     s.getName(),
+            			                     s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
+            			                     false,
+            			                     s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+            	if (StockTrader.tradeStock(sbse)) {
+                    stockTomail.add(sbse);
+            	}
+            }
+            if (!stockTomail.isEmpty()) {
+               log.info("Now sending buy/sell stock information for " + stockTomail.size());
+               gsbsob.setData(stockTomail);
+               gsbsob.update();
+               stockTomail.clear();
+            }
         }
     }
 

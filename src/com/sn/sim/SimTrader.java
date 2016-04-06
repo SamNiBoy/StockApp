@@ -118,6 +118,7 @@ public class SimTrader implements IWork{
         int mnt = lt.getMinute();
         
         int time = hr*100 + mnt;
+        log.info("SimWork, time:" + time);
         // Only run after 15:20 PM.
         while (time < 1530) {
             try {
@@ -128,7 +129,9 @@ public class SimTrader implements IWork{
 			}
             lt = LocalDateTime.now();
             hr = lt.getHour();
+            mnt = lt.getMinute();
             time = hr*100 + mnt;
+            log.info("SimWork, time2:" + time);
         }
         
         resetTest();

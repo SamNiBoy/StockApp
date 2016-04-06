@@ -70,13 +70,16 @@ public class GzStockDataFetcher implements IWork {
     }
     /**
      * @param args
+     * @throws InterruptedException 
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         // TODO Auto-generated method stub
         GzStockDataConsumer gsdc = new GzStockDataConsumer(0, 0);
         GzStockDataFetcher fsd = new GzStockDataFetcher(0, 10);
         log.info("Main exit");
-        WorkManager.submitWork(fsd);
+        //WorkManager.submitWork(fsd);
+        fsd.start();
+        WorkManager.waitUntilWorkIsDone(fsd.getWorkName());
     }
 
     public GzStockDataFetcher(long id, long dbn)
@@ -164,9 +167,10 @@ public class GzStockDataFetcher implements IWork {
                     }
                     j++;
                 
-                    log.info(str);
+                    //log.info(str);
                     srd = RawStockData.createStockData(str);
                     cnsmr.getDq().put(srd);
+                    log.info("GzStockDataFetcher put stock data to queue:" + srd.id + " size is:" + cnsmr.getDq().size());
                 }
                 br.close();
                 if (failCnt > 0)
