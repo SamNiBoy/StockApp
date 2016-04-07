@@ -103,6 +103,7 @@ public class GzStockBuySellPointObserverable extends Observable {
     	catch (Exception e) {
     		e.printStackTrace();
     	}
+    	log.info("loadMailScb return:"+load_success);
     	return load_success;
     }
     

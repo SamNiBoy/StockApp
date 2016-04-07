@@ -50,10 +50,10 @@ public class GzStockDataFetcher implements IWork {
 
     static public boolean start() {
         self = new GzStockDataFetcher(0, Stock2.StockData.SECONDS_PER_FETCH * 1000);
+        cnsmr = new GzStockDataConsumer(0, 0);
         if (WorkManager.submitWork(self)) {
             log.info("Newly created GzStockDataFetcher and started!");
-            cnsmr = new GzStockDataConsumer(0, 0);
-            WorkManager.submitWork(cnsmr);
+            //WorkManager.submitWork(cnsmr);
             return true;
         }
         log.info("can not submit GzStockDataFetcher!");
@@ -74,12 +74,12 @@ public class GzStockDataFetcher implements IWork {
      */
     public static void main(String[] args) throws InterruptedException {
         // TODO Auto-generated method stub
-        GzStockDataConsumer gsdc = new GzStockDataConsumer(0, 0);
-        GzStockDataFetcher fsd = new GzStockDataFetcher(0, 10);
-        log.info("Main exit");
-        //WorkManager.submitWork(fsd);
-        fsd.start();
-        WorkManager.waitUntilWorkIsDone(fsd.getWorkName());
+    	GzStockDataFetcher fsd = new GzStockDataFetcher(0,4000);
+    	cnsmr = new GzStockDataConsumer(0, 0);
+        WorkManager.submitWork(fsd);
+        //GzStockDataFetcher.start();
+    	//fsd.run();
+        WorkManager.waitUntilWorkIsDone("GzStockDataFetcher");
     }
 
     public GzStockDataFetcher(long id, long dbn)
@@ -137,8 +137,12 @@ public class GzStockDataFetcher implements IWork {
     {
         // TODO Auto-generated method stub
         String str;
-
         log.info("GzStockDataFetcher started!!!");
+        
+        if (WorkManager.canSubmitWork(cnsmr.getWorkName())) {
+        	WorkManager.submitWork(cnsmr);
+        }
+
         try {
             String fs [] = getFetchLst().split("#"), cs;
             RawStockData srd = null;
@@ -175,9 +179,9 @@ public class GzStockDataFetcher implements IWork {
                 br.close();
                 if (failCnt > 0)
                 {
+                    log.info("Stock data is same " + failCnt + " times, breaking loop from GzStockDataFetcher...");
                     failCnt = 0;
-                    log.info("Stock data is same 50 times, sleep 1 minute GzStockDataFetcher...");
-                    Thread.currentThread().sleep(60*1000);
+                    //Thread.currentThread().sleep(60*1000);
                     //WorkManager.cancelWork(this.getWorkName());
                     break;
                 }

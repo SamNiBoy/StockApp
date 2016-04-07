@@ -66,7 +66,7 @@ public class GzStockDataConsumer implements IWork {
         .getGzstocks();
         StockBuySellEntry sbse = null;
         while (true) {
-        	
+        	log.info("after while, dataqueue.take()...");
         	RawStockData srd = null;
         	try {
                  srd= dataqueue.take();

@@ -296,39 +296,49 @@ public class StockTrader implements ITradeStrategy{
 		if (canTradeRecord(stk, openID)) {
 			
 			String qtyToTrade = String.valueOf(qtb);
-			 
-			// Save string like "S600503" to clipboard for sell stock.
-			String txt = "";
-			Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
-			if (stk.is_buy_point) {
-				if (stk.price < 10) {
-					txt = "B" + stk.id + qtyToTrade;
-				} else {
-					txt = "B" + stk.id + qtyToTrade;
-				}
-			} else {
-				if (stk.price < 10) {
-					txt = "S" + stk.id + qtyToTrade;
-				} else {
-					txt = "S" + stk.id + qtyToTrade;
-				}
+			LocalDateTime lt = LocalDateTime.now();
+			int mnt = lt.getMinute();
+			while(true) {
+			    try {
+			        // Save string like "S600503" to clipboard for sell stock.
+			        String txt = "";
+			        Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
+			        if (stk.is_buy_point) {
+			        	txt = "B" + stk.id + qtyToTrade;
+			        } else {
+			        	txt = "S" + stk.id + qtyToTrade;
+			        }
+			        
+			        StringSelection sel = new StringSelection(txt);
+			        cpb.setContents(sel, null);
+			        
+			        if (stk.is_buy_point) {
+			        	createBuyTradeRecord(s, qtyToTrade, ac);
+			        }
+			        else {
+			        	createSellTradeRecord(s, qtyToTrade, ac);
+			        }
+			        
+			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
+			        sm.put(s.getID(), s);
+			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
+			        
+			        createBuySellRecord(stk, openID, qtyToTrade);
+			        break;
+			    }
+			    catch (Exception e) {
+			    	//e.printStackTrace();
+			    	log.info("TradeStock Exception:" + e.getMessage());
+			    	LocalDateTime lt2 = LocalDateTime.now();
+			    	if (lt2.getMinute() != mnt) {
+			    		log.info("Out of one minute scope, skip trading for:" +stk.id);
+			    		return false;
+			    	}
+			    	else {
+			    		log.info("Try again tradeStock after exception happened within one minute.");
+			    	}
+			    }
 			}
-			
-			StringSelection sel = new StringSelection(txt);
-			cpb.setContents(sel, null);
-			
-			if (stk.is_buy_point) {
-				createBuyTradeRecord(s, qtyToTrade, ac);
-			}
-			else {
-				createSellTradeRecord(s, qtyToTrade, ac);
-			}
-			
-			Map<String, Stock2> sm = new HashMap<String, Stock2>();
-			sm.put(s.getID(), s);
-			ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
-			
-			createBuySellRecord(stk, openID, qtyToTrade);
 			
 			return true;
 		} else {

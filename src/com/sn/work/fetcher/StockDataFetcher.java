@@ -179,16 +179,10 @@ public class StockDataFetcher implements IWork {
                     cnsmr.getDq().put(srd);
                 }
                 br.close();
-                if (failCnt == 1) {
-                    log.info("Stock data is same 1 times, cancel current loop...");
-                    break;
-                }
-                if (failCnt > 1)
+                if (failCnt > 0)
                 {
                     failCnt = 0;
-                    log.info("Stock data is same 2 times, Sleeping 1 minute...");
-                    Thread.currentThread().sleep(60*1000);
-                    //WorkManager.cancelWork(this.getWorkName());
+                    log.info("Stock data is same, break loop from StockDataFetcher...");
                     break;
                 }
             }
