@@ -94,6 +94,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     		ResultSet rs = stm.executeQuery(sql);
     		if (rs.next()) {
     			double dev = rs.getDouble("dev");
+    			log.info("dev calculated for stock:" + stk.getID() + " is:" + dev);
     			if (dev >= 0.01 && dev <= 0.04) {
     				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + 0.02;
     			}
@@ -115,10 +116,10 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     			ratio = 1;
     		}
     		else if (Degree < -10 && Degree >= -20) {
-    			ratio = 0.9;
+    			ratio = 1.2;
     	    }
     	    else if (Degree < -20) {
-    	    	ratio = 0.8;
+    	    	ratio = 1.3;
     	    }
     	}
     	else {

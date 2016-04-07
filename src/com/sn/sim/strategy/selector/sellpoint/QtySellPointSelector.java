@@ -76,6 +76,7 @@ public class QtySellPointSelector implements ISellPointSelector {
     		ResultSet rs = stm.executeQuery(sql);
     		if (rs.next()) {
     			double dev = rs.getDouble("dev");
+    			log.info("dev calculated for stock:" + stk.getID() + " is:" + dev);
     			if (dev >= 0.01 && dev <= 0.04) {
     				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + 0.02;
     			}
