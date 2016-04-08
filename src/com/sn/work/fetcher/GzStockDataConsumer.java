@@ -18,7 +18,7 @@ import com.sn.work.itf.IWork;
 
 public class GzStockDataConsumer implements IWork {
 
-	static private int MAX_QUEUE_SIZE = 10000;
+	static private int MAX_QUEUE_SIZE = 1;
 	static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
     static private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
     static private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
@@ -114,6 +114,10 @@ public class GzStockDataConsumer implements IWork {
             }
             else {
             	log.info("Stock:" + srd.id + " is not in gzstock list!");
+            }
+            synchronized (srd) {
+            	log.info("After GzStockDataConsumer consume the srd:" + srd.id + " call notify() to wakeup GzStockDataFetcher.");
+                srd.notify();
             }
         }
     }

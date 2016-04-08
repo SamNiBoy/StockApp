@@ -70,7 +70,6 @@ public class QtySellPointSelector implements ISellPointSelector {
     		String sql = "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev "
     				   + "  from stkdat2 "
     				   + " where id ='" + stk.getID() + "'"
-    				   + "   and dl_dt >= sysdate - 1/24"
     				   + "   and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd')";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);

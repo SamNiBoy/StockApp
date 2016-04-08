@@ -78,6 +78,7 @@ public class GzStockDataFetcher implements IWork {
     	GzStockDataFetcher fsd = new GzStockDataFetcher(0,4000);
     	cnsmr = new GzStockDataConsumer(0, 0);
         WorkManager.submitWork(fsd);
+        WorkManager.submitWork(cnsmr);
         //GzStockDataFetcher.start();
     	//fsd.run();
         WorkManager.waitUntilWorkIsDone("GzStockDataFetcher");
@@ -170,8 +171,20 @@ public class GzStockDataFetcher implements IWork {
                 
                     //log.info(str);
                     srd = RawStockData.createStockData(str);
+
+                    if (srd.td_opn_pri <= 0) {
+                    	log.info("market not open yet. td_opn_pri <= 0 for gzstock:" + srd.id + " can not trade based on it, continue");
+                    	continue;
+                    }
                     cnsmr.getDq().put(srd);
+                    
                     log.info("GzStockDataFetcher put stock data to queue:" + srd.id + " size is:" + cnsmr.getDq().size());
+                    
+                    synchronized (srd) {
+                    	log.info("now wait GzStockDataConsumer consume the srd:" + srd.id);
+                        srd.wait();
+                    }
+                    log.info("returned from wait GzStockDataConsumer consume the srd:" + srd.id);
                 }
                 br.close();
                 if (failCnt > 0)
