@@ -53,7 +53,8 @@ public class GzStockDataFetcher implements IWork {
         cnsmr = new GzStockDataConsumer(0, 0);
         if (WorkManager.submitWork(self)) {
             log.info("Newly created GzStockDataFetcher and started!");
-            //WorkManager.submitWork(cnsmr);
+            WorkManager.submitWork(cnsmr);
+            log.info("Submitted GzStockDataConsumer as next step.");
             return true;
         }
         log.info("can not submit GzStockDataFetcher!");
@@ -92,7 +93,7 @@ public class GzStockDataFetcher implements IWork {
     {
         Statement stm = null;
         ResultSet rs = null;
-        String sql = "select distinct stk.area, stk.id from stk, usrStk where stk.id = usrStk.id and usrStk.gz_flg = 1";
+        String sql = "select distinct stk.area, stk.id from stk, usrStk where stk.id = usrStk.id and usrStk.gz_flg = 1 and usrStk.suggested_by ='osCWfs-ZVQZfrjRK0ml-eEpzeop0'";
 
         StringBuilder stkLst = new StringBuilder();
         
@@ -139,10 +140,6 @@ public class GzStockDataFetcher implements IWork {
         String str;
         log.info("GzStockDataFetcher started!!!");
         
-        if (WorkManager.canSubmitWork(cnsmr.getWorkName())) {
-        	WorkManager.submitWork(cnsmr);
-        }
-
         try {
             String fs [] = getFetchLst().split("#"), cs;
             RawStockData srd = null;

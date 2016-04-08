@@ -18,7 +18,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(QtySellPointSelector.class);
 
-	private double tradeThresh = 0.02;
+	private double tradeThresh = 0.03;
 	/**
 	 * @param args
 	 */
@@ -62,7 +62,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 	
     public double getSellThreshValueByDegree(double Degree, Stock2 stk) {
     	
-    	double baseThresh = 0.02;
+    	double baseThresh = 0.03;
     	
     	try {
     		Connection con = DBManager.getConnection();
@@ -78,11 +78,11 @@ public class QtySellPointSelector implements ISellPointSelector {
     			double dev = rs.getDouble("dev");
     			log.info("dev calculated for stock:" + stk.getID() + " is:" + dev);
     			if (dev >= 0.01 && dev <= 0.04) {
-    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + 0.02;
+    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + 0.03;
     			}
     		}
     		else {
-    			baseThresh = 0.02;
+    			baseThresh = 0.03;
     		}
     		rs.close();
     		stm.close();

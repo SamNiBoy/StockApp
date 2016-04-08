@@ -78,37 +78,42 @@ public class GzStockDataConsumer implements IWork {
             
             Stock2 s = gzs.get(srd.id);
            
-            log.info("Now consuming StockRawData " + srd.id + " Name" + srd.name + "dq size:" + dataqueue.size());
-            
-            s.injectData(srd);
-            
-            log.info("check stock " + s.getID() + " for buy/sell point");
-            
-            if (StockTrader.shouldBuyStock(s)) {
-            	sbse = new StockBuySellEntry(s.getID(),
-            			                     s.getName(),
-            			                     s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
-            			                     true,
-            			                     s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
-            	if (StockTrader.tradeStock(sbse)) {
-                    stockTomail.add(sbse);
-            	}
+            if (s != null) {
+                log.info("Now consuming StockRawData " + srd.id + " Name" + srd.name + "dq size:" + dataqueue.size());
+                
+                s.injectData(srd);
+                
+                log.info("check stock " + s.getID() + " for buy/sell point");
+                
+                if (StockTrader.shouldBuyStock(s)) {
+                	sbse = new StockBuySellEntry(s.getID(),
+                			                     s.getName(),
+                			                     s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
+                			                     true,
+                			                     s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+                	if (StockTrader.tradeStock(sbse)) {
+                        stockTomail.add(sbse);
+                	}
+                }
+                else if(StockTrader.shouldSellStock(s)) {
+                	sbse = new StockBuySellEntry(s.getID(),
+                			                     s.getName(),
+                			                     s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
+                			                     false,
+                			                     s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+                	if (StockTrader.tradeStock(sbse)) {
+                        stockTomail.add(sbse);
+                	}
+                }
+                if (!stockTomail.isEmpty()) {
+                   log.info("Now sending buy/sell stock information for " + stockTomail.size());
+                   gsbsob.setData(stockTomail);
+                   gsbsob.update();
+                   stockTomail.clear();
+                }
             }
-            else if(StockTrader.shouldSellStock(s)) {
-            	sbse = new StockBuySellEntry(s.getID(),
-            			                     s.getName(),
-            			                     s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
-            			                     false,
-            			                     s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
-            	if (StockTrader.tradeStock(sbse)) {
-                    stockTomail.add(sbse);
-            	}
-            }
-            if (!stockTomail.isEmpty()) {
-               log.info("Now sending buy/sell stock information for " + stockTomail.size());
-               gsbsob.setData(stockTomail);
-               gsbsob.update();
-               stockTomail.clear();
+            else {
+            	log.info("Stock:" + srd.id + " is not in gzstock list!");
             }
         }
     }
