@@ -25,7 +25,7 @@ public class ClosePriceTrendStockSelector implements IStockSelector {
     /**
      * @param args
      */
-    public boolean isGoodStock(Stock2 s, ICashAccount ac) {
+    public boolean isTargetStock(Stock2 s, ICashAccount ac) {
     	Double maxYtClsPri = s.getMaxYtClsPri(days);
     	Double minYtClsPri = s.getMinYtClsPri(days);
     	Double curPri = s.getCur_pri();

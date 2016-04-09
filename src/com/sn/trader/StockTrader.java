@@ -72,10 +72,10 @@ public class StockTrader implements ITradeStrategy{
 		
 		resetTest();
 		
-		Stock2 s1 = new Stock2("600503", "abcdef", 1, StockData.SMALL_SZ);
-		Stock2 s2 = new Stock2("002431", "hijklmn", 1, StockData.SMALL_SZ);
-		Stock2 s3 = new Stock2("600871", "abcdef", 1, StockData.SMALL_SZ);
-		Stock2 s4 = new Stock2("002269", "lllll", 1, StockData.SMALL_SZ);
+		Stock2 s1 = new Stock2("600503", "abcdef", StockData.SMALL_SZ);
+		Stock2 s2 = new Stock2("002448", "hijklmn", StockData.SMALL_SZ);
+		Stock2 s3 = new Stock2("600871", "abcdef", StockData.SMALL_SZ);
+		Stock2 s4 = new Stock2("002269", "lllll", StockData.SMALL_SZ);
 		
 		StockMarket.addGzStocks(s1);
 		StockMarket.addGzStocks(s2);
@@ -91,14 +91,14 @@ public class StockTrader implements ITradeStrategy{
 //			Thread.currentThread().sleep(seconds_to_delay);
 //			tradeStock(r1);
 			
-			StockBuySellEntry r21 = new StockBuySellEntry("002431", "B1", 19.0, true,
+			StockBuySellEntry r21 = new StockBuySellEntry("002448", "B1", 19.0, true,
 					Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
 			s2.getSd().getCur_pri_lst().add(19.0);
 			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
 			Thread.currentThread().sleep(seconds_to_delay);
 			tradeStock(r21);
 			
-			StockBuySellEntry r22 = new StockBuySellEntry("002431", "B2", 18.2, false,
+			StockBuySellEntry r22 = new StockBuySellEntry("002448", "B2", 18.2, false,
 					Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
 			s2.getSd().getCur_pri_lst().add(18.2);
 			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
@@ -616,6 +616,11 @@ public class StockTrader implements ITradeStrategy{
 			log.info("stock " + stk.id + " is not available for trade.");
 			return false;
 		}
+		
+		if (isInSellMode(openID, stk) && stk.is_buy_point) {
+			log.info("Stock:" + stk.id + " is in sell mode, can not buy it!");
+			return false;
+		}
 
 		if (!skipRiskCheck(openID, stk)) {
 
@@ -940,6 +945,36 @@ public class StockTrader implements ITradeStrategy{
 		return shouldSkipCheck;
 	}
 
+	private static boolean isInSellMode(String openID, StockBuySellEntry stk) {
+
+		String sql;
+		int sell_mode_flg = 0;
+		
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+
+			// get last trade record.
+			sql = "select sell_mode_flg from usrStk " + " where id ='" + stk.id
+					+ "'";
+			log.info(sql);
+			ResultSet rs = stm.executeQuery(sql);
+
+			if (rs.next()) {
+				sell_mode_flg = rs.getInt("sell_mode_flg");
+			    log.info("stock:" + stk.id + "'s sell mode:" + sell_mode_flg);
+			} else {
+				log.info("Looks stock:" + stk.id + " is not in usrStk usr:" + openID + ", can not judge sell mode.");
+				sell_mode_flg = 0;
+			}
+			rs.close();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return sell_mode_flg == 1;
+	}
 	@Override
 	public boolean isGoodStockToSelect(Stock2 s) {
 		// TODO Auto-generated method stub

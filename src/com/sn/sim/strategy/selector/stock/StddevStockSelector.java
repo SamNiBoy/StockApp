@@ -22,7 +22,7 @@ public class StddevStockSelector implements IStockSelector {
     /**
      * @param args
      */
-    public boolean isGoodStock(Stock2 s, ICashAccount ac) {
+    public boolean isTargetStock(Stock2 s, ICashAccount ac) {
     	boolean isgood = false;
     	double dev = -1;
     	try {

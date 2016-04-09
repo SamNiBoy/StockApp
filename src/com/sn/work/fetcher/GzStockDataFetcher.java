@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.stock.RawStockData;
 import com.sn.stock.Stock2;
+import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
@@ -94,7 +95,6 @@ public class GzStockDataFetcher implements IWork {
     {
         Statement stm = null;
         ResultSet rs = null;
-        String sql = "select distinct stk.area, stk.id from stk, usrStk where stk.id = usrStk.id and usrStk.gz_flg = 1 and usrStk.suggested_by ='osCWfs-ZVQZfrjRK0ml-eEpzeop0'";
 
         StringBuilder stkLst = new StringBuilder();
         
@@ -102,7 +102,7 @@ public class GzStockDataFetcher implements IWork {
 
         try{
             stm = con.createStatement();
-            rs = stm.executeQuery(sql);
+            rs = stm.executeQuery(StockMarket.GZ_STOCK_SELECT);
             while (rs.next()) {
                 i++;
                 stkLst.append(stkLst.length() > 0 ? "," : "");

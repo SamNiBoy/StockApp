@@ -22,7 +22,7 @@ public class AvgClsPriStockSelector implements IStockSelector {
     /**
      * @param args
      */
-    public boolean isGoodStock(Stock2 s, ICashAccount ac) {
+    public boolean isTargetStock(Stock2 s, ICashAccount ac) {
     	double yt_shtAvgPri = s.getAvgYtClsPri(shortPrd, shortPrd / 2);
     	double yt_midAvgPri = s.getAvgYtClsPri(midPrd, shortPrd / 2);
     	double yt_longAvgPri = s.getAvgYtClsPri(longPrd, shortPrd / 2);

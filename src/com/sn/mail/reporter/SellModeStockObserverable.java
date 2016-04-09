@@ -26,42 +26,46 @@ import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 
-public class RecommandStockObserverable extends Observable {
+public class SellModeStockObserverable extends Observable {
 
-    static Logger log = Logger.getLogger(RecommandStockObserverable.class);
+    static Logger log = Logger.getLogger(SellModeStockObserverable.class);
 
-    private List<Stock2> stocksToSuggest = new ArrayList<Stock2>();
-    private List<RecommandStockSubscriber> ms = new ArrayList<RecommandStockSubscriber>();
+    private List<Stock2> stocksToSellMode = new ArrayList<Stock2>();
+    private List<Stock2> stocksToUnSellMode = new ArrayList<Stock2>();
+    private List<SellModeStockSubscriber> ms = new ArrayList<SellModeStockSubscriber>();
 
-    public void addStockToSuggest(List<Stock2> lst) {
-    	stocksToSuggest.clear();
-    	stocksToSuggest.addAll(lst);
+    public void addStockToSellMode(List<Stock2> lst) {
+    	stocksToSellMode.clear();
+    	stocksToSellMode.addAll(lst);
     }
-    
-	public class RecommandStockSubscriber{
+    public void addStockToUnsellMode(List<Stock2> lst) {
+    	stocksToUnSellMode.clear();
+    	stocksToUnSellMode.addAll(lst);
+    }
+	public class SellModeStockSubscriber{
 		String openID;
 		String mail;
-		List<Stock2> stockSuggested = new ArrayList<Stock2>();
-		RecommandStockSubscriber(String oid, String ml) {
+		List<Stock2> stockMailed = new ArrayList<Stock2>();
+		SellModeStockSubscriber(String oid, String ml) {
 			openID = oid;
 			mail = ml;
 		}
 		public String subject;
 		public String content;
-		boolean alreadySuggested(Stock2 s) {
-			if (stockSuggested.contains(s)) {
-				log.info("Stock:" + s.getID() + " already suggested to user:" + openID);
+		boolean alreadyMailed(Stock2 s) {
+			if (stockMailed.contains(s)) {
+				log.info("Stock:" + s.getID() + " already Mailed to user:" + openID);
 				return true;
 			}
 			return false;
 		}
-		public boolean setSuggested(Stock2 s) {
-			stockSuggested.add(s);
+		public boolean setMailed(Stock2 s) {
+			stockMailed.add(s);
 			return true;
 		}
 	}
 	
-    public List<RecommandStockSubscriber> getRecommandStockSubscribers() {
+    public List<SellModeStockSubscriber> getSellModeStockSubscribers() {
     	return ms;
     }
     private boolean loadMailScb() {
@@ -78,7 +82,7 @@ public class RecommandStockObserverable extends Observable {
     			openId = rs.getString("openID");
     			mail = rs.getString("mail");
     			log.info("loading mailsubscriber:" + openId + ", mail:" + mail);
-    			ms.add(new RecommandStockSubscriber(openId, mail));
+    			ms.add(new SellModeStockSubscriber(openId, mail));
     			load_success = true;
     		}
     		rs.close();
@@ -92,20 +96,20 @@ public class RecommandStockObserverable extends Observable {
     }
     
     private boolean buildMailforSubscribers() {
-        if (ms.size() == 0 || stocksToSuggest.size() == 0) {
-        	log.info("No user subscribed or no stocks to suggest, no need to send mail.");
+        if (ms.size() == 0 || (stocksToSellMode.size() == 0 && stocksToUnSellMode.size() == 0)) {
+        	log.info("No user subscribed or no stocks to for sell/unsell mode, no need to send mail.");
         	return false;
         }
         String returnStr = "";
         SimpleDateFormat f = new SimpleDateFormat(" HH:mm:ss");  
         Date date = new Date();  
         returnStr = f.format(date);
-        String subject = "推荐信" + returnStr;
+        String subject = "买卖模式变化" + returnStr;
         StringBuffer body;
         boolean usr_need_mail = false;
         boolean generated_mail = false;
         
-        for (RecommandStockSubscriber u : ms) {
+        for (SellModeStockSubscriber u : ms) {
         	u.subject = subject;
         	u.content = "";
         	body = new StringBuffer();
@@ -114,18 +118,33 @@ public class RecommandStockObserverable extends Observable {
                     "<tr>" +
                     "<th> ID</th> " +
                     "<th> Name</th> " +
+                    "<th> Is Sell Mode</th> " +
                     "<th> Price</th></tr>");
             DecimalFormat df = new DecimalFormat("##.##");
-            for (Stock2 s : stocksToSuggest) {
-            	if (!u.alreadySuggested(s)) {
+            for (Stock2 s : stocksToSellMode) {
+            	if (!u.alreadyMailed(s)) {
                     body.append("<tr> <td>" + s.getID() + "</td>" +
                     "<td> " + s.getName() + "</td>" +
+                    "<td>  1 </td>" +
                     "<td> " + df.format(s.getCur_pri() == null ? 0 : s.getCur_pri()) + "</td></tr>");
                     usr_need_mail = true;
                     generated_mail = true;
-                    u.setSuggested(s);
+                    u.setMailed(s);
             	}
             }
+            
+            for (Stock2 s : stocksToUnSellMode) {
+            	if (!u.alreadyMailed(s)) {
+                    body.append("<tr> <td>" + s.getID() + "</td>" +
+                    "<td> " + s.getName() + "</td>" +
+                    "<td>  0 </td>" +
+                    "<td> " + df.format(s.getCur_pri() == null ? 0 : s.getCur_pri()) + "</td></tr>");
+                    usr_need_mail = true;
+                    generated_mail = true;
+                    u.setMailed(s);
+            	}
+            }
+            
             if (usr_need_mail) {
                 u.content = body.toString();
             }
@@ -137,7 +156,7 @@ public class RecommandStockObserverable extends Observable {
         return generated_mail;
     }
 
-    public RecommandStockObserverable() {
+    public SellModeStockObserverable() {
         this.addObserver(StockObserver.globalObs);
         loadMailScb();
     }

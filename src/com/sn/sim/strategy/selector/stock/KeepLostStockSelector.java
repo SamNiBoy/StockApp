@@ -21,7 +21,7 @@ public class KeepLostStockSelector implements IStockSelector {
     /**
      * @param args
      */
-    public boolean isGoodStock(Stock2 s, ICashAccount ac) {
+    public boolean isTargetStock(Stock2 s, ICashAccount ac) {
         if (s.getSd().keepDaysClsPriLost(days, dayPct)) {
                     log.info("returned true because keep "+ days + " days lost " + dayPct);
                     return true;

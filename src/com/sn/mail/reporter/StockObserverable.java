@@ -642,7 +642,7 @@ public class StockObserverable extends Observable {
 		int Total = 0, cnt = 0;
 		try {
 			stm = con.createStatement();
-			String sql = "select id, name, gz_flg from stk order by id";
+			String sql = "select id, name from stk order by id";
 			rs = stm.executeQuery(sql);
 
 			String id, name;
@@ -650,7 +650,7 @@ public class StockObserverable extends Observable {
 			while (rs.next()) {
 				id = rs.getString("id");
 				name = rs.getString("name");
-				s = new Stock2(id, name, rs.getLong("gz_flg"), StockData.BIG_SZ);
+				s = new Stock2(id, name, StockData.BIG_SZ);
 				// s.setCur_pri(7.8);
 				// s.constructFollowers();
 				// stocks.put(id, s);

@@ -20,7 +20,7 @@ public class PriceStockSelector implements IStockSelector {
     /**
      * @param args
      */
-    public boolean isGoodStock(Stock2 s, ICashAccount ac) {
+    public boolean isTargetStock(Stock2 s, ICashAccount ac) {
         if (s.getCur_pri() != null && s.getCur_pri() <= HighestPrice) {
                     log.info("returned true because price is <= 20.");
                     return true;

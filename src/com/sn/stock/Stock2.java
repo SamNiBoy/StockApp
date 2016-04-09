@@ -1136,18 +1136,18 @@ public class Stock2 implements Comparable<Stock2>{
         Connection con = DBManager.getConnection();
         try {
             Statement stm = con.createStatement();
-            String sql = "select id, name, gz_flg from stk where id = '002654'";
+            String sql = "select id, name from stk where id = '002654'";
             
             ResultSet rs = stm.executeQuery(sql);
             List<Stock2> sl = new LinkedList<Stock2>();
             while(rs.next()) {
-                Stock2 s = new Stock2(rs.getString("id"), rs.getString("name"), 1, StockData.SMALL_SZ);
+                Stock2 s = new Stock2(rs.getString("id"), rs.getString("name"), StockData.SMALL_SZ);
                 sl.add(s);
             }
             for (int i = 0; i < sl.size(); i++) {
                 Stock2 s = sl.get(i);
                 ClosePriceTrendStockSelector cs = new ClosePriceTrendStockSelector();
-                cs.isGoodStock(s, null);
+                cs.isTargetStock(s, null);
                 s.printStockInfo();
             }
         }
@@ -1156,14 +1156,14 @@ public class Stock2 implements Comparable<Stock2>{
         }
     }
     
-    public Stock2(String ids, String nm, long gzflg, int sz)
+    public Stock2(String ids, String nm, int sz)
     {
         id = ids;
         name = nm;
         sd = new StockData(id, sz);
     }
     
-    public Stock2(String ids, String nm, long gzflg, String start_dte, String end_dte, int sz)
+    public Stock2(String ids, String nm, String start_dte, String end_dte, int sz)
     {
         id = ids;
         name = nm;
@@ -1327,7 +1327,7 @@ public class Stock2 implements Comparable<Stock2>{
         log.info("========================================\n");
         log.info("Stock " + id + " data information:\n");
         log.info("========================================\n");
-        log.info("ID\t|Name\t|GZ_FLG\t|");
+        log.info("ID\t|Name\t|");
         log.info(id + "\t|" + name + "\t|\n");
         sd.PrintStockData();
     }
@@ -1348,7 +1348,10 @@ public class Stock2 implements Comparable<Stock2>{
         	log.info("Got cur_pri:" + cur_pri + " for stock:" + id);
             return cur_pri;
         }
-        return cur_pri;
+        else {
+        	log.info("return null as cur_pri");
+            return cur_pri;
+        }
     }
     
     public Double getOpen_pri() {

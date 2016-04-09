@@ -39,6 +39,12 @@ public class StockMarket{
     private static double totEqlDlMny = 0.0;
     private static double Degree = 0.0;
     
+    public static String GZ_STOCK_SELECT = "select distinct s.id, s.name, s.area "
+    		                             + "from stk s, usrStk u "
+    		                             + "where s.id = u.id "
+    		                             + "  and u.gz_flg = 1 "
+    		                             + "  and u.suggested_by ='osCWfs-ZVQZfrjRK0ml-eEpzeop0' "
+    		                             + "order by s.id";
     /**
      * @param args
      */
@@ -61,7 +67,7 @@ public class StockMarket{
         int cnt = 0;
         try {
             stm = con.createStatement();
-            String sql = "select id, name, gz_flg from stk order by id";
+            String sql = "select id, name from stk order by id";
             rs = stm.executeQuery(sql);
             
             String id, name;
@@ -69,7 +75,7 @@ public class StockMarket{
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, rs.getLong("gz_flg"), StockData.BIG_SZ);
+                s = new Stock2(id, name, StockData.BIG_SZ);
                 stocks.put(id, s);
                 cnt++;
                 log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -97,15 +103,14 @@ public class StockMarket{
         int cnt = 0;
         try {
             stm = con.createStatement();
-            String sql = "select s.id, s.name, u.gz_flg from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.suggested_by ='osCWfs-ZVQZfrjRK0ml-eEpzeop0' order by s.id";
-            rs = stm.executeQuery(sql);
+            rs = stm.executeQuery(GZ_STOCK_SELECT);
             
             String id, name;
             
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, rs.getLong("gz_flg"), StockData.SMALL_SZ);
+                s = new Stock2(id, name, StockData.SMALL_SZ);
                 gzstocks.put(id, s);
                 cnt++;
                 log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -145,7 +150,7 @@ public class StockMarket{
             if (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, 1, StockData.SMALL_SZ);
+                s = new Stock2(id, name, StockData.SMALL_SZ);
                 gzstocks.put(id, s);
                 log.info("addGzStocks completed for: " + stkId);
             }

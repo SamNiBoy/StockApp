@@ -64,9 +64,10 @@ public class ListGzStock implements IWork {
     private String getGzStockInfo()
     {
         Statement stm = null;
-        String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "' and u.openID = u.suggested_by";
+        String sql = "select s.id, s.name, u.sell_mode_flg from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "' and u.openID = u.suggested_by";
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
+        Map<String, Integer> sellmodes = new HashMap<String, Integer> ();
         DecimalFormat df = new DecimalFormat("##.###");
 
         try {
@@ -76,6 +77,7 @@ public class ListGzStock implements IWork {
             
             while (rs.next()) {
                 Stocks.put(rs.getString("id"), rs.getString("name"));
+                sellmodes.put(rs.getString("id"), rs.getInt("sell_mode_flg"));
             }
             rs.close();
             
@@ -84,6 +86,8 @@ public class ListGzStock implements IWork {
                 double cur_pri = 0;
 
                 content += stock + ":" + Stocks.get(stock) + "\n";
+                
+                String sellMode = (sellmodes.get(stock) == 1) ? "Yes" : "No";
 
                 try {
                     sql = "select avg(dev) dev from ("
@@ -106,7 +110,7 @@ public class ListGzStock implements IWork {
                     	log.info("cur_pri for stock:" + stock + " is null, use -1.");
                     	cur_pri = -1;
                     }
-                    content += "价:" + df.format(cur_pri) + " stddev:" + df.format(dev) + "\n";
+                    content += "价:" + df.format(cur_pri) + " stddev:" + df.format(dev) + " sellMode: " + sellMode + "\n";
                     rs.close();
                 } catch(SQLException e0) {
                     log.info("No price infor for stock:" + stock + " continue...");

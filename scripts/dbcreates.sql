@@ -12,6 +12,7 @@ create table usrStk(
 openID varchar2(100 byte) not null,
 id varchar2(6 byte) not null,
 gz_flg number not null,
+sell_mode_flg number not null,
 suggested_by varchar2(100 byte) not null,
 add_dt date not null,
 CONSTRAINT "usrStk_PK" PRIMARY KEY (OpenID, id)
@@ -47,8 +48,7 @@ id varchar2(6 byte) not null primary key,
 area varchar2(2 byte) not null,
 name varchar2(20 byte) not null,
 py varchar2(4 byte),
-bu varchar2(12 byte),
-gz_flg number not null
+bu varchar2(12 byte)
 );
 
 create sequence SEQ_STKDAT_PK

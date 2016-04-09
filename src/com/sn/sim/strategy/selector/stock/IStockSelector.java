@@ -14,7 +14,7 @@ public interface IStockSelector {
     /**
      * @param args
      */
-    public boolean isGoodStock(Stock2 s, ICashAccount ac);
+    public boolean isTargetStock(Stock2 s, ICashAccount ac);
     public boolean isORCriteria();
     public boolean isMandatoryCriteria();
     public boolean adjustCriteria(boolean harder);

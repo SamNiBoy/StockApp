@@ -68,7 +68,7 @@ public class TradeStrategyImp implements ITradeStrategy {
      * @param args
      */
     public boolean isGoodStockToSelect(Stock2 s) {
-        return stock_selector.isGoodStock(s, cash_account);
+        return stock_selector.isTargetStock(s, cash_account);
     }
 
     public boolean isGoodPointtoBuy(Stock2 s) {

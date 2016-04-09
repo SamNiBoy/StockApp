@@ -96,12 +96,12 @@ public class LoadStk {
                         log.info("Whats wrong here!");
                     }
                     
-                    String sql = "insert into stk (id, area, name, py, bu, gz_flg) values('"
+                    String sql = "insert into stk (id, area, name, py, bu) values('"
                             + stkID + "', '"
                             + area + "', '"
                             + stkName + "', '"
                             + "py" + "', '"
-                            + "NoDef" + "',0)";
+                            + "NoDef" + "')";
                     log.info(sql);
                     stm.executeUpdate(sql);
                     loadedCnt++;
@@ -141,12 +141,12 @@ public class LoadStk {
                     
                     String stkName = str.substring(21, idx);
                     
-                    String sql = "insert into stk (id, area, name, py, bu, gz_flg) values('"
+                    String sql = "insert into stk (id, area, name, py, bu) values('"
                             + stkID + "', '"
                             + area + "', '"
                             + stkName + "', '"
                             + "py" + "', '"
-                            + "NoDef" + "',0)";
+                            + "NoDef" + "')";
                     log.info(sql);
                     stm.executeUpdate(sql);
                     loadedCnt++;
@@ -186,12 +186,12 @@ public class LoadStk {
                     
                     String stkName = str.substring(21, idx);
                     
-                    String sql = "insert into stk (id, area, name, py, bu, gz_flg) values('"
+                    String sql = "insert into stk (id, area, name, py, bu) values('"
                             + stkID + "', '"
                             + area + "', '"
                             + stkName + "', '"
                             + "py" + "', '"
-                            + "NoDef" + "',0)";
+                            + "NoDef" + "')";
                     log.info(sql);
                     stm.executeUpdate(sql);
                     loadedCnt++;

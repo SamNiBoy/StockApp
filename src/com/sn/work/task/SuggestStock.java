@@ -139,7 +139,7 @@ public class SuggestStock implements IWork {
 			    for (String stk : stks.keySet()) {
 			    	Stock2 s = stks.get(stk);
 			    	for (IStockSelector slt : selectors) {
-			    		if (slt.isMandatoryCriteria() && !slt.isGoodStock(s, null)) {
+			    		if (slt.isMandatoryCriteria() && !slt.isTargetStock(s, null)) {
 			    			loop_nxt_stock = true;
 			    			break;
 			    		}
@@ -152,7 +152,7 @@ public class SuggestStock implements IWork {
 			    			if (slt.isMandatoryCriteria()) {
 			    				continue;
 			    			}
-			    			if (slt.isGoodStock(s, null)) {
+			    			if (slt.isTargetStock(s, null)) {
 			    				suggest_flg = true;
 			    				if (slt.isORCriteria()) {
 			    					log.info("Or criteria matched, suggest the stock:" + s.getID());

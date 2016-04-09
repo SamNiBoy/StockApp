@@ -13,41 +13,36 @@ import com.sn.sim.strategy.imp.TradeStrategyImp;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 
-public class DefaultStockSelector implements IStockSelector {
+public class AvgClsPriSellModeSelector implements IStockSelector {
 
-    static Logger log = Logger.getLogger(DefaultStockSelector.class);
+    static Logger log = Logger.getLogger(AvgClsPriSellModeSelector.class);
     /**
      * @param args
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
-    	if (s == null) {
-    		log.info("s is null!, possible?");
-    	}
-    	else {
-    		log.info("s is not null, s.getDl_dt() is:" + s.getDl_dt());
-    	}
-        if (StockMarket.isMarketTooCold(s.getDl_dt()) &&
-                !StockMarket.hasMoreIncStock()) {
-                    log.info("returned false because market is too cool.");
-                    return false;
+    	Double avgPri = s.getAvgYtClsPri(10, 0);
+    	Double curPri = s.getCur_pri();
+        if ((avgPri != null && curPri != null) && (avgPri >= curPri)) {
+            log.info("cur price is lower than 10 days avg cls price, set to sell mode.");
+            return true;
         }
-        log.info("returned true for isGoodStock()");
-        return true;
+        log.info("cur price is not lower then 10 days avg cls price, do not set to sell mode.");
+        return false;
     }
 	@Override
 	public boolean isORCriteria() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 	@Override
 	public boolean isMandatoryCriteria() {
 		// TODO Auto-generated method stub
-		return true;
+		return false;
 	}
 	@Override
 	public boolean adjustCriteria(boolean harder) {
 		// TODO Auto-generated method stub
-		log.info("Mandatory criteria can not be adjusted");
+		log.info("10 days cls avg price can not be adjusted");
 		return true;
 	}
 }
