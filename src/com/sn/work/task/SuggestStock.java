@@ -228,7 +228,7 @@ public class SuggestStock implements IWork {
 								+ "' and id = '" + s.getID() + "'";
 					}
 				} else {
-					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,'SYSTEM',sysdate)";
+					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'SYSTEM',sysdate)";
 				}
 				rs2.close();
 				stm2.close();
