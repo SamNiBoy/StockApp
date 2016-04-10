@@ -16,6 +16,7 @@ import com.sn.mail.reporter.RecommandStockObserverable;
 import com.sn.mail.reporter.SellModeStockObserverable;
 import com.sn.sim.strategy.selector.stock.AvgClsPriSellModeSelector;
 import com.sn.sim.strategy.selector.stock.AvgClsPriStockSelector;
+import com.sn.sim.strategy.selector.stock.CurPriLostSellModeSelector;
 import com.sn.sim.strategy.selector.stock.DefaultSellModeSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
@@ -93,6 +94,7 @@ public class SellModeWatchDog implements IWork {
 		delayBeforNxtStart = dbn;
 		selectors.add(new DefaultSellModeSelector());
 		selectors.add(new AvgClsPriSellModeSelector());
+		selectors.add(new CurPriLostSellModeSelector());
 	}
 
 	public void run() {
@@ -162,7 +164,7 @@ public class SellModeWatchDog implements IWork {
         }
         return suggest_flg;
 	}
-	
+	 
 	private boolean stockMatchUnSellMode(Stock2 s) {
         boolean suggest_flg = false;
 
