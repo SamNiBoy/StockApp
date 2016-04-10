@@ -64,7 +64,7 @@ public class SellModeWatchDog implements IWork {
 	}
 
 	static public boolean start() {
-		self = new SellModeWatchDog(0, 30 * 60000);
+		self = new SellModeWatchDog(0, 5 * 60000);
 		if (WorkManager.submitWork(self)) {
 			resMsg = "Newly created TradeWatchDog and started!";
 			return true;

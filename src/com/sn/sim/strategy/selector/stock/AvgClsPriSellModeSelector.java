@@ -20,13 +20,23 @@ public class AvgClsPriSellModeSelector implements IStockSelector {
      * @param args
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
-    	Double avgPri = s.getAvgYtClsPri(10, 0);
+    	Double avgPri1 = s.getAvgYtClsPri(10, 0);
+    	Double avgPri2 = s.getAvgYtClsPri(10, 1);
     	Double curPri = s.getCur_pri();
-        if ((avgPri != null && curPri != null) && (avgPri >= curPri)) {
-            log.info("cur price is lower than 10 days avg cls price, set to sell mode.");
+        if ((avgPri1 != null && curPri != null && avgPri2 != null) && (avgPri1 >= curPri) && (avgPri2 <= curPri)) {
+            log.info("cur price is crossover 10 days avg cls price, set to sell mode.");
             return true;
         }
-        log.info("cur price is not lower then 10 days avg cls price, do not set to sell mode.");
+        
+    	avgPri1 = s.getAvgYtClsPri(20, 0);
+    	avgPri2 = s.getAvgYtClsPri(20, 1);
+    	
+        if ((avgPri1 != null && curPri != null && avgPri2 != null) && (avgPri1 >= curPri) && (avgPri2 <= curPri)) {
+            log.info("cur price is crossover 20 days avg cls price, set to sell mode.");
+            return true;
+        }
+        
+        log.info("cur price is not crossover 10/20 days avg cls price, do not set to sell mode.");
         return false;
     }
 	@Override
@@ -42,7 +52,7 @@ public class AvgClsPriSellModeSelector implements IStockSelector {
 	@Override
 	public boolean adjustCriteria(boolean harder) {
 		// TODO Auto-generated method stub
-		log.info("10 days cls avg price can not be adjusted");
+		log.info("10/20 days cls avg price can not be adjusted");
 		return true;
 	}
 }
