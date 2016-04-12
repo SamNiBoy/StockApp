@@ -22,6 +22,7 @@ public class GzStockDataConsumer implements IWork {
 	static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
     static private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
     static private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
+    static private StockTrader st = new StockTrader();
     
     /*
      * Initial delay before executing work.
@@ -64,7 +65,6 @@ public class GzStockDataConsumer implements IWork {
     public void run() {
         ConcurrentHashMap<String, Stock2> gzs = StockMarket
         .getGzstocks();
-        StockBuySellEntry sbse = null;
         while (true) {
         	log.info("after while, dataqueue.take()...");
         	RawStockData srd = null;
@@ -85,25 +85,15 @@ public class GzStockDataConsumer implements IWork {
                 
                 log.info("check stock " + s.getID() + " for buy/sell point");
                 
-                if (StockTrader.shouldBuyStock(s)) {
-                	sbse = new StockBuySellEntry(s.getID(),
-                			                     s.getName(),
-                			                     s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
-                			                     true,
-                			                     s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
-                	if (StockTrader.tradeStock(sbse)) {
-                        stockTomail.add(sbse);
-                	}
+                if (st.isGoodPointtoBuy(s) && st.buyStock(s)) {
+                	StockBuySellEntry rc = st.tradeRecord.get(s.getID()).getLast();
+                	rc.printStockInfo();
+                    stockTomail.add(rc);
                 }
-                else if(StockTrader.shouldSellStock(s)) {
-                	sbse = new StockBuySellEntry(s.getID(),
-                			                     s.getName(),
-                			                     s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
-                			                     false,
-                			                     s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
-                	if (StockTrader.tradeStock(sbse)) {
-                        stockTomail.add(sbse);
-                	}
+                else if(st.isGoodPointtoSell(s) && st.sellStock(s)) {
+                	StockBuySellEntry rc = st.tradeRecord.get(s.getID()).getLast();
+                	rc.printStockInfo();
+                    stockTomail.add(rc);
                 }
                 if (!stockTomail.isEmpty()) {
                    log.info("Now sending buy/sell stock information for " + stockTomail.size());

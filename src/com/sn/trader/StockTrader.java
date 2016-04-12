@@ -55,7 +55,7 @@ public class StockTrader implements ITradeStrategy{
 	static List<String> tradeStocks = new ArrayList<String>();
 	static String openID = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
 	
-	static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
+	static public Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
 
 	static Logger log = Logger.getLogger(StockTrader.class);
 
@@ -69,6 +69,8 @@ public class StockTrader implements ITradeStrategy{
 	public static void main(String[] args) {
 
 		int seconds_to_delay = 5000;
+		
+		StockTrader st = new StockTrader();
 		
 		resetTest();
 		
@@ -96,7 +98,7 @@ public class StockTrader implements ITradeStrategy{
 			s2.getSd().getCur_pri_lst().add(19.0);
 			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
 			Thread.currentThread().sleep(seconds_to_delay);
-			tradeStock(r21);
+			st.buyStock(s2);
 			
 			StockBuySellEntry r22 = new StockBuySellEntry("002448", "B2", 18.2, false,
 					Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
@@ -104,7 +106,7 @@ public class StockTrader implements ITradeStrategy{
 			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
 			
 			Thread.currentThread().sleep(seconds_to_delay);
-			tradeStock(r22);
+			st.sellStock(s2);
 			
 //			StockBuySellEntry r23 = new StockBuySellEntry("002431", "B3", 8.4, true,
 //					Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
@@ -258,94 +260,6 @@ public class StockTrader implements ITradeStrategy{
 		return true;
 	}
 	
-	public static boolean shouldBuyStock(Stock2 s) {
-		ICashAccount cash_account = getVirtualCashAcntForStock(s.getID());
-        if(buypoint_selector.isGoodBuyPoint(s, null)) {
-        	return true;
-        }
-        return false;
-	}
-	
-	public static boolean shouldSellStock(Stock2 s) {
-		ICashAccount cash_account = getVirtualCashAcntForStock(s.getID());
-        if (sellpoint_selector.isGoodSellPoint(s, null)) {
-        	return true;
-        }
-        return false;
-	}
-
-	public static boolean tradeStock(StockBuySellEntry stk) {
-
-		loadStocksForTrade(openID);
-
-		ICashAccount ac = getVirtualCashAcntForStock(stk.id);
-		Stock2 s = StockMarket.getGzstocks().get(stk.id);
-		int qtb = 0;
-		if (stk.is_buy_point) {
-			qtb = buypoint_selector.getBuyQty(s, ac);
-		}
-		else {
-			qtb = sellpoint_selector.getSellQty(s, ac);
-		}
-		
-		if (qtb <= 0) {
-			log.info("qty to buy/sell is zero by Virtual CashAccount, switch to sellbuyrecord to get qtyToTrade.");
-			qtb = Integer.valueOf(getTradeQty(stk, openID));
-		}
-		
-		if (canTradeRecord(stk, openID)) {
-			
-			String qtyToTrade = String.valueOf(qtb);
-			LocalDateTime lt = LocalDateTime.now();
-			int mnt = lt.getMinute();
-			while(true) {
-			    try {
-			        // Save string like "S600503" to clipboard for sell stock.
-			        String txt = "";
-			        Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
-			        if (stk.is_buy_point) {
-			        	txt = "B" + stk.id + qtyToTrade;
-			        } else {
-			        	txt = "S" + stk.id + qtyToTrade;
-			        }
-			        
-			        StringSelection sel = new StringSelection(txt);
-			        cpb.setContents(sel, null);
-			        
-			        if (stk.is_buy_point) {
-			        	createBuyTradeRecord(s, qtyToTrade, ac);
-			        }
-			        else {
-			        	createSellTradeRecord(s, qtyToTrade, ac);
-			        }
-			        
-			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
-			        sm.put(s.getID(), s);
-			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
-			        
-			        createBuySellRecord(stk, openID, qtyToTrade);
-			        break;
-			    }
-			    catch (Exception e) {
-			    	//e.printStackTrace();
-			    	log.info("TradeStock Exception:" + e.getMessage());
-			    	LocalDateTime lt2 = LocalDateTime.now();
-			    	if (lt2.getMinute() != mnt) {
-			    		log.info("Out of one minute scope, skip trading for:" +stk.id);
-			    		return false;
-			    	}
-			    	else {
-			    		log.info("Try again tradeStock after exception happened within one minute.");
-			    	}
-			    }
-			}
-			
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
 	private static ICashAccount getVirtualCashAcntForStock(String stk) {
         String AcntForStk = CashAcntManger.ACNT_PREFIX + stk;
         
@@ -369,15 +283,15 @@ public class StockTrader implements ITradeStrategy{
         return acnt;
 	}
 
-	private static boolean createBuySellRecord(StockBuySellEntry stk, String openID, String qtyToTrade) {
+	private static boolean createBuySellRecord(Stock2 s, String openID, boolean is_buy_flg, String qtyToTrade) {
 		String sql;
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "insert into SellBuyRecord values(SEQ_SBR_PK.nextval,'" + openID + "','" + stk.id + "'," + stk.price
+			sql = "insert into SellBuyRecord values(SEQ_SBR_PK.nextval,'" + openID + "','" + s.getID() + "'," + s.getCur_pri()
 					+ "," + qtyToTrade + ","
-					+ (stk.is_buy_point ? 1 : 0)
-					+ ",to_date('" + stk.dl_dt.toString().substring(0, 19) + "', 'yyyy-mm-dd hh24:mi:ss'))";
+					+ (is_buy_flg ? 1 : 0)
+					+ ",to_date('" + s.getDl_dt().toString().substring(0, 19) + "', 'yyyy-mm-dd hh24:mi:ss'))";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
@@ -385,8 +299,6 @@ public class StockTrader implements ITradeStrategy{
 			con.close();
 			// Here once after we trade a stock, clear it's historic memory
 			// data.
-			ConcurrentHashMap<String, Stock2> chm = StockMarket.getGzstocks();
-			Stock2 s = chm.get(stk.id);
 			if (s != null) {
 				log.info("After trade " + s.getName() + " clear InjectedRaw Data...");
 				s.getSd().clearInjectRawData();
@@ -525,7 +437,7 @@ public class StockTrader implements ITradeStrategy{
     
     }
 
-	private static String getTradeQty(StockBuySellEntry stk, String openID) {
+	private static String getTradeQty(Stock2 s, boolean is_buy_flg, String openID) {
         String sql;
         String qtyToTrade = "100";
         try {
@@ -534,7 +446,7 @@ public class StockTrader implements ITradeStrategy{
             
             sql = "select count(*) cnt, buy_flg from SellBuyRecord "
                 + " where openID = '"  + openID + "'"
-            	+ " and stkid ='" + stk.id + "'"
+            	+ " and stkid ='" + s.getID() + "'"
             	+ " group by buy_flg";
             
             log.info(sql);
@@ -558,11 +470,11 @@ public class StockTrader implements ITradeStrategy{
             stm.close();
             con.close();
             
-            if (stk.is_buy_point) {
+            if (is_buy_flg) {
                 if (buyCnt > sellCnt) {
                 	qtyToTrade = "100";
                 }
-                else if (stk.price <= 10) {
+                else if (s.getCur_pri() <= 10) {
                 	qtyToTrade = "200";
                 }
                 else {
@@ -574,14 +486,14 @@ public class StockTrader implements ITradeStrategy{
                 if (buyCnt < sellCnt) {
                 	qtyToTrade = "100";
                 }
-                else if (stk.price <= 10) {
+                else if (s.getCur_pri() <= 10) {
                 	qtyToTrade = "200";
                 }
                 else {
                 	qtyToTrade = "100";
                 }
             }
-            log.info("For stock:" + stk.name + " will " + (stk.is_buy_point ? "buy " : "sell ") + qtyToTrade + " with buyCnt:" + buyCnt + " sellCnt:" + sellCnt);
+            log.info("For stock:" + s.getName() + " will " + (is_buy_flg ? "buy " : "sell ") + qtyToTrade + " with buyCnt:" + buyCnt + " sellCnt:" + sellCnt);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -611,18 +523,18 @@ public class StockTrader implements ITradeStrategy{
 	// return true;
 	// }
 
-	private static boolean canTradeRecord(StockBuySellEntry stk, String openID) {
-		if (tradeStocks == null || !tradeStocks.contains(stk.id)) {
-			log.info("stock " + stk.id + " is not available for trade.");
+	private static boolean canTradeRecord(Stock2 s, boolean is_buy_flg, String openID) {
+		if (tradeStocks == null || !tradeStocks.contains(s.getID())) {
+			log.info("stock " + s.getID() + " is not available for trade.");
 			return false;
 		}
 		
-		if (isInSellMode(openID, stk) && stk.is_buy_point) {
-			log.info("Stock:" + stk.id + " is in sell mode, can not buy it!");
+		if (isInSellMode(openID, s) && is_buy_flg) {
+			log.info("Stock:" + s.getID() + " is in sell mode, can not buy it!");
 			return false;
 		}
 
-		if (!skipRiskCheck(openID, stk)) {
+		if (!skipRiskCheck(openID, is_buy_flg, s)) {
 
 			boolean overall_risk = false;
 			// If recently we lost continuously overall, stop trading.
@@ -632,18 +544,18 @@ public class StockTrader implements ITradeStrategy{
 			}
 
 			// If recently we lost continuously for the stock, stop trading.
-			if (stopTradeForStock(openID, stk, 5)) {
-				log.info("Now account " + openID + " trade unsuccess for 3 days for stock:" + stk.name
+			if (stopTradeForStock(openID, s, 5)) {
+				log.info("Now account " + openID + " trade unsuccess for 3 days for stock:" + s.getName()
 						+ ", stop trade.");
-				if (overall_risk && !stk.is_buy_point) {
-					log.info("Now both overall risk or risk for stock:" + stk.name
+				if (overall_risk && !is_buy_flg) {
+					log.info("Now both overall risk or risk for stock:" + s.getName()
 							+ " reached, howeve it's sell trade, allow it!");
 				} else {
-					log.info("Skip trade for stock:" + stk.name + " after eached it's risk.");
+					log.info("Skip trade for stock:" + s.getName() + " after eached it's risk.");
 					return false;
 				}
-			} else if (overall_risk && stk.is_buy_point) {
-				log.info("No buy allowed, as overall risk reached, even single stock:" + stk.name
+			} else if (overall_risk && is_buy_flg) {
+				log.info("No buy allowed, as overall risk reached, even single stock:" + s.getName()
 						+ "'s risk is not reached yet.");
 				return false;
 			}
@@ -663,10 +575,10 @@ public class StockTrader implements ITradeStrategy{
 			return false;
 		}
 
-		LinkedList<StockBuySellEntry> rcds = tradeRecord.get(stk.id);
+		LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
 		if (rcds != null) {
 			if (rcds.size() >= MAX_TRADE_TIMES_PER_STOCK) {
-				log.info("stock " + stk.id + " alread trade " + rcds.size() + " times, can not trade today.");
+				log.info("stock " + s.getID() + " alread trade " + rcds.size() + " times, can not trade today.");
 				return false;
 			} else {
 				int sellCnt = 0;
@@ -678,10 +590,10 @@ public class StockTrader implements ITradeStrategy{
 						sellCnt++;
 					}
 				}
-				log.info("For stock " + stk.id + " total sellCnt:" + sellCnt + ", total buyCnt:" + buyCnt);
+				log.info("For stock " + s.getID() + " total sellCnt:" + sellCnt + ", total buyCnt:" + buyCnt);
 
 				// We only allow buy BUY_MORE_THEN_SELL_CNT more than sell.
-				if (buyCnt >= sellCnt + BUY_MORE_THEN_SELL_CNT && stk.is_buy_point) {
+				if (buyCnt >= sellCnt + BUY_MORE_THEN_SELL_CNT && is_buy_flg) {
 					log.info("Bought more than sold, can won't buy again.");
 					return false;
 				}
@@ -696,19 +608,29 @@ public class StockTrader implements ITradeStrategy{
 					// If we just sold/buy it, and now the price has no
 					// significant change, we will not do the same trade.
 					StockBuySellEntry lst = rcds.getLast();
-					if (stk.is_buy_point == lst.is_buy_point && Math.abs((stk.price - lst.price)) / lst.price <= 0.01) {
-						log.info("Just " + (stk.is_buy_point ? "buy" : "sell") + " this stock with similar prices "
-								+ stk.price + "/" + lst.price + ", skip same trade.");
+					if (is_buy_flg == lst.is_buy_point && Math.abs((s.getCur_pri() - lst.price)) / lst.price <= 0.01) {
+						log.info("Just " + (is_buy_flg ? "buy" : "sell") + " this stock with similar prices "
+								+ s.getCur_pri() + "/" + lst.price + ", skip same trade.");
 						return false;
 					}
 				}
-				log.info("Adding trade record for stock as: " + stk.id);
+				log.info("Adding trade record for stock as: " + s.getID());
+				StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
+                                                              s.getName(),
+                                                              s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
+                                                              is_buy_flg,
+                                                              s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
 				stk.printStockInfo();
-				rcds.add(stk);
+			    rcds.add(stk);
 				return true;
 			}
 		} else {
-			log.info("Adding first sell record for stock as: " + stk.id);
+			log.info("Adding first trade record for stock as: " + s.getID());
+			StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
+                    s.getName(),
+                    s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
+                    is_buy_flg,
+                    s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
 			stk.printStockInfo();
 			rcds = new LinkedList<StockBuySellEntry>();
 			rcds.add(stk);
@@ -801,14 +723,13 @@ public class StockTrader implements ITradeStrategy{
 		return shouldStopTrade;
 	}
 
-	private static boolean stopTradeForStock(String openID, StockBuySellEntry stk, int days) {
+	private static boolean stopTradeForStock(String openID, Stock2 s, int days) {
 		String sql;
 		boolean shouldStopTrade = false;
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and stkid ='" + stk.id
-					+ "'  and dl_dt >= sysdate - " + days
+			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and stkid ='" + s.getID() + "'  and dl_dt >= sysdate - " + days
 					// + " and to_char(dl_dt, 'hh24:mi:ss') > '08:00:00'"
 					// + " and to_char(dl_dt, 'hh24:mi:ss') < '16:00:00'"
 					+ " order by stkid, sb_id";
@@ -833,7 +754,7 @@ public class StockTrader implements ITradeStrategy{
 				buy_flg = rs.getInt("buy_flg");
 
 				if (pre_stkID.length() > 0) {
-					log.info("stock:" + stk.name + " buy_flg:" + buy_flg + " with price:" + price + " and pre_buy_flg:"
+					log.info("stock:" + s.getName() + " buy_flg:" + buy_flg + " with price:" + price + " and pre_buy_flg:"
 							+ pre_buy_flg + " with price:" + pre_price);
 					if (buy_flg == 1 && pre_buy_flg == 0) {
 						if (price < pre_price) {
@@ -864,11 +785,11 @@ public class StockTrader implements ITradeStrategy{
 
 			// For specific stock, if there are 50% lost, stop trading.
 			if ((incCnt + descCnt) > 5 && descCnt * 1.0 / (incCnt + descCnt) > 0.5) {
-				log.info("For passed " + days + " days, for stock:" + stk.name + " trade descCnt:" + descCnt
+				log.info("For passed " + days + " days, for stock:" + s.getName() + " trade descCnt:" + descCnt
 						+ " 50 % more than incCnt:" + incCnt + " stop trade!");
 				shouldStopTrade = true;
 			} else {
-				log.info("For passed " + days + " days, for stock:" + stk.name + " trade descCnt:" + descCnt
+				log.info("For passed " + days + " days, for stock:" + s.getName() + " trade descCnt:" + descCnt
 						+ " less than 50% incCnt:" + incCnt + " continue trade!");
 				if ((incCnt + descCnt) <= 5) {
 					log.info("because total trade times is less or equal than 5!");
@@ -884,7 +805,7 @@ public class StockTrader implements ITradeStrategy{
 		return shouldStopTrade;
 	}
 
-	private static boolean skipRiskCheck(String openID, StockBuySellEntry stk) {
+	private static boolean skipRiskCheck(String openID, boolean is_buy_flg, Stock2 s) {
 
 		String sql;
 		boolean shouldSkipCheck = false;
@@ -894,7 +815,7 @@ public class StockTrader implements ITradeStrategy{
 			Statement stm = con.createStatement();
 
 			// get last trade record.
-			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and stkid ='" + stk.id
+			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and stkid ='" + s.getID()
 					+ "' order by sb_id desc";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
@@ -906,10 +827,10 @@ public class StockTrader implements ITradeStrategy{
 				price = rs.getDouble("price");
 				buy_flg = rs.getInt("buy_flg");
 
-				if (!(stk.is_buy_point == (buy_flg == 1))) {
-					if (!stk.is_buy_point && buy_flg == 1) {
-						if (stk.price > price) {
-							log.info("stock:" + stk.name + " buy_flg:" + buy_flg + " with price:" + price
+				if (!(is_buy_flg == (buy_flg == 1))) {
+					if (!is_buy_flg && buy_flg == 1) {
+						if (s.getCur_pri() > price) {
+							log.info("stock:" + s.getName() + " buy_flg:" + buy_flg + " with price:" + price
 									+ " which is good than previous buy with price:" + price + " skip risk check.");
 							shouldSkipCheck = true;
 						} else {
@@ -919,7 +840,7 @@ public class StockTrader implements ITradeStrategy{
 					} else {
 
 						// Now buy, previous sold.
-						if (stk.price > price) {
+						if (s.getCur_pri() > price) {
 							log.info("previously sold with lower price, now want buy, need to check risk.");
 							shouldSkipCheck = false;
 						} else {
@@ -945,7 +866,7 @@ public class StockTrader implements ITradeStrategy{
 		return shouldSkipCheck;
 	}
 
-	private static boolean isInSellMode(String openID, StockBuySellEntry stk) {
+	private static boolean isInSellMode(String openID, Stock2 s) {
 
 		String sql;
 		int sell_mode_flg = 0;
@@ -955,16 +876,16 @@ public class StockTrader implements ITradeStrategy{
 			Statement stm = con.createStatement();
 
 			// get last trade record.
-			sql = "select sell_mode_flg from usrStk " + " where id ='" + stk.id
+			sql = "select sell_mode_flg from usrStk " + " where id ='" + s.getID()
 					+ "'";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
 			if (rs.next()) {
 				sell_mode_flg = rs.getInt("sell_mode_flg");
-			    log.info("stock:" + stk.id + "'s sell mode:" + sell_mode_flg);
+			    log.info("stock:" + s.getID() + "'s sell mode:" + sell_mode_flg);
 			} else {
-				log.info("Looks stock:" + stk.id + " is not in usrStk usr:" + openID + ", can not judge sell mode.");
+				log.info("Looks stock:" + s.getID() + " is not in usrStk usr:" + openID + ", can not judge sell mode.");
 				sell_mode_flg = 0;
 			}
 			rs.close();
@@ -984,25 +905,135 @@ public class StockTrader implements ITradeStrategy{
 	@Override
 	public boolean isGoodPointtoBuy(Stock2 s) {
 		// TODO Auto-generated method stub
-		return false;
+		ICashAccount cash_account = getVirtualCashAcntForStock(s.getID());
+        if(buypoint_selector.isGoodBuyPoint(s, null)) {
+        	return true;
+        }
+        return false;
 	}
 
 	@Override
 	public boolean isGoodPointtoSell(Stock2 s) {
 		// TODO Auto-generated method stub
-		return false;
+		ICashAccount cash_account = getVirtualCashAcntForStock(s.getID());
+        if (sellpoint_selector.isGoodSellPoint(s, null)) {
+        	return true;
+        }
+        return false;
 	}
 
 	@Override
 	public boolean sellStock(Stock2 s) {
 		// TODO Auto-generated method stub
-		return false;
+		loadStocksForTrade(openID);
+		ICashAccount ac = getVirtualCashAcntForStock(s.getID());
+		int qtb = 0;
+		
+		qtb = sellpoint_selector.getSellQty(s, ac);
+		
+		if (qtb <= 0) {
+			log.info("qty to buy/sell is zero by Virtual CashAccount, switch to sellbuyrecord to get qtyToTrade.");
+			qtb = Integer.valueOf(getTradeQty(s, false, openID));
+		}
+		
+		if (canTradeRecord(s, false, openID)) {
+			
+			String qtyToTrade = String.valueOf(qtb);
+			LocalDateTime lt = LocalDateTime.now();
+			int mnt = lt.getMinute();
+			while(true) {
+			    try {
+			        // Save string like "S600503" to clipboard for sell stock.
+			        String txt = "";
+			        Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
+			        txt = "S" + s.getID() + qtyToTrade;
+			        
+			        StringSelection sel = new StringSelection(txt);
+			        cpb.setContents(sel, null);
+			        
+			        createSellTradeRecord(s, qtyToTrade, ac);
+			        
+			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
+			        sm.put(s.getID(), s);
+			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
+			        
+			        createBuySellRecord(s, openID, false, qtyToTrade);
+			        break;
+			    }
+			    catch (Exception e) {
+			    	//e.printStackTrace();
+			    	log.info("TradeStock Exception:" + e.getMessage());
+			    	LocalDateTime lt2 = LocalDateTime.now();
+			    	if (lt2.getMinute() != mnt) {
+			    		log.info("Out of one minute scope, skip trading for:" +s.getID());
+			    		return false;
+			    	}
+			    	else {
+			    		log.info("Try again tradeStock after exception happened within one minute.");
+			    	}
+			    }
+			}
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean buyStock(Stock2 s) {
 		// TODO Auto-generated method stub
-		return false;
+		loadStocksForTrade(openID);
+		ICashAccount ac = getVirtualCashAcntForStock(s.getID());
+		int qtb = 0;
+		
+		qtb = buypoint_selector.getBuyQty(s, ac);
+		
+		if (qtb <= 0) {
+			log.info("qty to buy/sell is zero by Virtual CashAccount, switch to sellbuyrecord to get qtyToTrade.");
+			qtb = Integer.valueOf(getTradeQty(s, true, openID));
+		}
+		
+		if (canTradeRecord(s, true, openID)) {
+			
+			String qtyToTrade = String.valueOf(qtb);
+			LocalDateTime lt = LocalDateTime.now();
+			int mnt = lt.getMinute();
+			while(true) {
+			    try {
+			        // Save string like "B600503" to clipboard for buy stock.
+			        String txt = "";
+			        Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
+			        txt = "B" + s.getID() + qtyToTrade;
+			        
+			        StringSelection sel = new StringSelection(txt);
+			        cpb.setContents(sel, null);
+			        
+			        createBuyTradeRecord(s, qtyToTrade, ac);
+			        
+			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
+			        sm.put(s.getID(), s);
+			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
+			        
+			        createBuySellRecord(s, openID, true, qtyToTrade);
+			        break;
+			    }
+			    catch (Exception e) {
+			    	//e.printStackTrace();
+			    	log.info("TradeStock Exception:" + e.getMessage());
+			    	LocalDateTime lt2 = LocalDateTime.now();
+			    	if (lt2.getMinute() != mnt) {
+			    		log.info("Out of one minute scope, skip trading for:" +s.getID());
+			    		return false;
+			    	}
+			    	else {
+			    		log.info("Try again tradeStock after exception happened within one minute.");
+			    	}
+			    }
+			}
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
