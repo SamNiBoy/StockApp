@@ -34,7 +34,6 @@ public class Stock2 implements Comparable<Stock2>{
         List<Double> td_hst_pri_lst = null;
         List<Double> td_lst_pri_lst = null;
         List<String> dt_lst = null;
-        
 
         //Save today's data
         List<Integer> ft_id_lst =  null;

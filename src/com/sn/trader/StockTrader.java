@@ -390,17 +390,29 @@ public class StockTrader implements ITradeStrategy{
         Connection con = DBManager.getConnection();
         int seqnum = 0;
         try {
-            String sql = "select max(d.seqnum) maxseq " +
-            "       from TradeDtl d " +
-            "      where d.stkId = '" + s.getID()+ "'" +
-            "        and d.acntId = '" + ac.getActId() + "'";
+            String sql = "select case when max(d.seqnum) is null then -1 else max(d.seqnum) end maxseq from TradeHdr h " +
+                    "       join TradeDtl d " +
+                    "         on h.stkId = d.stkId " +
+                    "        and h.acntId = d.acntId " +
+                    "      where h.stkId = '" + s.getID()+ "'" +
+                    "        and h.acntId = '" + ac.getActId() + "'";
     
             Statement stm = con.createStatement();
+            log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
-            if (!rs.next()) {
-                seqnum = 0;
-            }
-            else {
+            if (rs.next()) {
+                if (rs.getInt("maxseq") < 0) {
+                    sql = "insert into TradeHdr values('" + ac.getActId() + "','"
+                    + s.getID() + "',"
+                    + s.getCur_pri()*sellableAmt + ","
+                    + sellableAmt + ","
+                    + s.getCur_pri() + ",to_date('" + s.getDl_dt().toLocaleString() + "','yyyy-mm-dd hh24:mi:ss'))";
+                    log.info(sql);
+                    Statement stm2 = con.createStatement();
+                    stm2.execute(sql);
+                    stm2.close();
+                    stm2 = null;
+                }
                 seqnum = rs.getInt("maxseq") + 1;
             }
             rs.close();

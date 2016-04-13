@@ -18,11 +18,12 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
 	static Logger log = Logger.getLogger(QtyBuyPointSelector.class);
 	
-	private double tradeThresh = 0.03;
+	private double BASE_TRADE_THRESH = 0.03;
 
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
 
+		double tradeThresh = BASE_TRADE_THRESH;
 		if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {
 			Double maxPri = stk.getMaxCurPri();
 			Double minPri = stk.getMinCurPri();
@@ -80,7 +81,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 	
     public double getBuyThreshValueByDegree(double Degree, Stock2 stk) {
     	
-    	double baseThresh = 0.03;
+    	double baseThresh = BASE_TRADE_THRESH;
     	
     	try {
     		Connection con = DBManager.getConnection();
@@ -95,11 +96,11 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     			double dev = rs.getDouble("dev");
     			log.info("dev calculated for stock:" + stk.getID() + " is:" + dev);
     			if (dev >= 0.01 && dev <= 0.04) {
-    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + 0.03;
+    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + BASE_TRADE_THRESH;
     			}
     		}
     		else {
-    			baseThresh = 0.03;
+    			baseThresh = BASE_TRADE_THRESH;
     		}
     		rs.close();
     		stm.close();
