@@ -121,7 +121,7 @@ public class SimTrader implements IWork{
         int time = hr*100 + mnt;
         log.info("SimWork, time:" + time);
         // Only run after 22:30 PM.
-        while (time < 2230) {
+        while (time < 2230 && time >700) {
             try {
 				Thread.currentThread().sleep(30*60*1000);
 			} catch (InterruptedException e) {
