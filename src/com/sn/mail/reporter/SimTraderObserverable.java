@@ -269,6 +269,7 @@ public class SimTraderObserverable extends Observable {
             	e.printStackTrace();
             }
             
+            log.info("Need mail?" + generated_mail);
             if (generated_mail) {
                 u.content = body.toString();
                 u.subject = subject;

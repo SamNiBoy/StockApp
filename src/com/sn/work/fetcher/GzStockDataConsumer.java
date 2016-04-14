@@ -20,9 +20,7 @@ public class GzStockDataConsumer implements IWork {
 
 	static private int MAX_QUEUE_SIZE = 1;
 	static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
-    static private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
-    static private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
-    static private StockTrader st = new StockTrader();
+    static private StockTrader st = new StockTrader(false);
     
     /*
      * Initial delay before executing work.
@@ -85,22 +83,7 @@ public class GzStockDataConsumer implements IWork {
                 
                 log.info("check stock " + s.getID() + " for buy/sell point");
                 
-                if (st.isGoodPointtoBuy(s) && st.buyStock(s)) {
-                	StockBuySellEntry rc = st.tradeRecord.get(s.getID()).getLast();
-                	rc.printStockInfo();
-                    stockTomail.add(rc);
-                }
-                else if(st.isGoodPointtoSell(s) && st.sellStock(s)) {
-                	StockBuySellEntry rc = st.tradeRecord.get(s.getID()).getLast();
-                	rc.printStockInfo();
-                    stockTomail.add(rc);
-                }
-                if (!stockTomail.isEmpty()) {
-                   log.info("Now sending buy/sell stock information for " + stockTomail.size());
-                   gsbsob.setData(stockTomail);
-                   gsbsob.update();
-                   stockTomail.clear();
-                }
+                st.performTrade(s);
             }
             else {
             	log.info("Stock:" + srd.id + " is not in gzstock list!");

@@ -26,6 +26,7 @@ import com.sn.sim.strategy.imp.TradeStrategyGenerator;
 import com.sn.stock.RawStockData;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
+import com.sn.trader.StockTrader;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
@@ -34,14 +35,14 @@ public class SimWorker implements IWork {
     /*
      * Initial delay before executing work.
      */
-    private long initDelay = 0;
+    static private long initDelay = 0;
 
     /*
      * Seconds delay befor executing next work.
      */
-    private long delayBeforNxtStart = 5;
+    static private long delayBeforNxtStart = 5;
 
-    private TimeUnit tu = TimeUnit.MILLISECONDS;
+    static private TimeUnit tu = TimeUnit.MILLISECONDS;
 
     private List<ITradeStrategy> strategies = new ArrayList<ITradeStrategy>();
 
@@ -49,6 +50,8 @@ public class SimWorker implements IWork {
 
     private List<String> stkToSim = new ArrayList<String>();
 
+    private StockTrader st = new StockTrader(true);
+    
     SimStockDriver ssd = new SimStockDriver();
 
     public String resMsg = "Initial msg for work SimWorker.";
@@ -181,20 +184,26 @@ public class SimWorker implements IWork {
                 return;
             }
 
-            String AcntForStk = CashAcntManger.ACNT_PREFIX + stk;
-            CashAcntManger
-                    .crtAcnt(AcntForStk, CashAcntManger.DFT_INIT_MNY, 0.0, 0.0, CashAcntManger.DFT_SPLIT, CashAcntManger.DFT_MAX_USE_PCT, false);
-            ICashAccount acnt = CashAcntManger.loadAcnt(AcntForStk);
+//            String AcntForStk = CashAcntManger.ACNT_PREFIX + stk;
+//            CashAcntManger
+//                    .crtAcnt(AcntForStk, CashAcntManger.DFT_INIT_MNY, 0.0, 0.0, CashAcntManger.DFT_SPLIT, CashAcntManger.DFT_MAX_USE_PCT, false);
+//            ICashAccount acnt = CashAcntManger.loadAcnt(AcntForStk);
 
             for (ITradeStrategy cs : strategies) {
                 strategy = cs;
-                strategy.setCashAccount(acnt);
+                ICashAccount acnt = null;
+                
                 int StepCnt = 0;
                 log.info("Now start simulate trading...");
                 while (ssd.step()) {
                     log.info("Simulate step:" + (++StepCnt));
-                    if (buyStock() || sellStock()) {
-                        reportTradeStat();
+                    for (String stock : ssd.simstocks.keySet()) {
+                        Stock2 s = ssd.simstocks.get(stock);
+                        acnt = StockTrader.getVirtualCashAcntForStock(s.getID());
+                        strategy.setCashAccount(acnt);
+                        if (st.performTrade(s)) {
+                            reportTradeStat();
+                        }
                     }
                 }
                 strategy.reportTradeStat();

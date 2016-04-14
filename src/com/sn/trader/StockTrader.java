@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.CashAcntManger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
+import com.sn.mail.reporter.GzStockBuySellPointObserverable;
 import com.sn.sim.strategy.ITradeStrategy;
 import com.sn.sim.strategy.selector.buypoint.IBuyPointSelector;
 import com.sn.sim.strategy.selector.buypoint.QtyBuyPointSelector;
@@ -48,12 +49,17 @@ public class StockTrader implements ITradeStrategy{
     static ISellPointSelector sellpoint_selector = new QtySellPointSelector();;
     static Map<String, ICashAccount> cash_account_map = new HashMap<String, ICashAccount>();
     
+    static private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
+    static private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
+    
     //class vars.
 	static final int MAX_TRADE_TIMES_PER_STOCK = 10;
 	static final int MAX_TRADE_TIMES_PER_DAY = 40;
 	static final int BUY_MORE_THEN_SELL_CNT = 2;
 	static List<String> tradeStocks = new ArrayList<String>();
 	static String openID = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
+	
+	private boolean sim_mode = false;
 	
 	static public Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
 
@@ -63,6 +69,9 @@ public class StockTrader implements ITradeStrategy{
 		// loadStocksForTrade("osCWfs-ZVQZfrjRK0ml-eEpzeop0");
 	}
 
+	public StockTrader(boolean is_simulation_mode) {
+		sim_mode = is_simulation_mode;
+    }
 	/**
 	 * @param args
 	 */
@@ -70,7 +79,7 @@ public class StockTrader implements ITradeStrategy{
 
 		int seconds_to_delay = 5000;
 		
-		StockTrader st = new StockTrader();
+		StockTrader st = new StockTrader(true);
 		
 		resetTest();
 		
@@ -260,8 +269,14 @@ public class StockTrader implements ITradeStrategy{
 		return true;
 	}
 	
-	private static ICashAccount getVirtualCashAcntForStock(String stk) {
+	public static ICashAccount getVirtualCashAcntForStock(String stk) {
         String AcntForStk = CashAcntManger.ACNT_PREFIX + stk;
+        
+        // Default account is not for SimTrader.
+        boolean crt_sim_acnt = false;
+        if (CashAcntManger.ACNT_PREFIX.startsWith("Sim")) {
+        	crt_sim_acnt = true;
+        }
         
         ICashAccount acnt = cash_account_map.get(AcntForStk);
         if (acnt == null) {
@@ -270,7 +285,7 @@ public class StockTrader implements ITradeStrategy{
             if (acnt == null) {
             	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
                 CashAcntManger
-                .crtAcnt(AcntForStk, CashAcntManger.DFT_INIT_MNY, 0.0, 0.0, CashAcntManger.DFT_SPLIT, CashAcntManger.DFT_MAX_USE_PCT, true);
+                .crtAcnt(AcntForStk, CashAcntManger.DFT_INIT_MNY, 0.0, 0.0, CashAcntManger.DFT_SPLIT, CashAcntManger.DFT_MAX_USE_PCT, !crt_sim_acnt);
                 acnt = CashAcntManger.loadAcnt(AcntForStk);
             }
             
@@ -908,6 +923,35 @@ public class StockTrader implements ITradeStrategy{
 		}
 		return sell_mode_flg == 1;
 	}
+	
+	// This method perform real trade and sending mail.
+	public boolean performTrade(Stock2 s) {
+        
+		if (isGoodPointtoBuy(s) && buyStock(s)) {
+        	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
+        	rc.printStockInfo();
+            stockTomail.add(rc);
+        }
+        else if(isGoodPointtoSell(s) && sellStock(s)) {
+        	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
+        	rc.printStockInfo();
+            stockTomail.add(rc);
+        }
+        
+        if (!stockTomail.isEmpty() && !sim_mode) {
+           log.info("Now sending buy/sell stock information for " + stockTomail.size());
+           gsbsob.setData(stockTomail);
+           gsbsob.update();
+           stockTomail.clear();
+           return true;
+        }
+        
+        if (sim_mode && stockTomail.size() > 0) {
+        	stockTomail.clear();
+        	return true;
+        }
+        return false;
+	}
 	@Override
 	public boolean isGoodStockToSelect(Stock2 s) {
 		// TODO Auto-generated method stub
@@ -943,9 +987,13 @@ public class StockTrader implements ITradeStrategy{
 		
 		qtb = sellpoint_selector.getSellQty(s, ac);
 		
-		if (qtb <= 0) {
+		if (qtb <= 0 && !sim_mode) {
 			log.info("qty to buy/sell is zero by Virtual CashAccount, switch to sellbuyrecord to get qtyToTrade.");
 			qtb = Integer.valueOf(getTradeQty(s, false, openID));
+		}
+		else if (qtb <= 0 && sim_mode) {
+			log.info("Simulation mode, can not sell before buy!");
+			return false;
 		}
 		
 		if (canTradeRecord(s, false, openID)) {

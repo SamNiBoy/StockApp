@@ -39,6 +39,7 @@ import com.sn.sim.strategy.imp.TradeStrategyGenerator;
 import com.sn.sim.strategy.imp.TradeStrategyImp;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
+import com.sn.trader.StockTrader;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 import com.sn.work.task.SuggestStock;
@@ -74,7 +75,7 @@ public class SimTrader implements IWork{
     }
 
     static public void main(String[] args) throws Exception {
-        SimTrader st = new SimTrader(0, 0, true);
+        SimTrader st = new SimTrader(0, 0, false);
         st.run();
     }
 
@@ -83,19 +84,19 @@ public class SimTrader implements IWork{
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "delete from tradedtl where acntid in (select acntid from CashAcnt where dft_acnt_flg = 0)";
+			sql = "delete from tradedtl where acntid in (select acntid from CashAcnt where dft_acnt_flg = 0 and acntid like 'Sim%')";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
 			
 			stm = con.createStatement();
-			sql = "delete from tradehdr where acntid in (select acntid from CashAcnt where dft_acnt_flg = 0)";
+			sql = "delete from tradehdr where acntid in (select acntid from CashAcnt where dft_acnt_flg = 0 and acntid like 'Sim%')";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
 			
 			stm = con.createStatement();
-			sql = "delete from CashAcnt where  dft_acnt_flg = 0";
+			sql = "delete from CashAcnt where  dft_acnt_flg = 0 and acntid like 'Sim%'";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
@@ -214,6 +215,8 @@ public class SimTrader implements IWork{
 		    // TODO Auto-generated catch block
 		    e.printStackTrace();
 	   }
+       
+       WorkManager.shutdownWorks();
 
     }
 
