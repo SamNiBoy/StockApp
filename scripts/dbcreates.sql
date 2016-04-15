@@ -542,12 +542,11 @@ insert into stkDlyInfo (select id,
 end;
 ////End create stkdlyinfo.
 
-/////Start backup stkdat data.
+/////Start backup stkdat2 data.
 declare 
 day_to_purge number := 6;
 begin
-insert into arc_stkdat select * from stkdat;
-delete from stkdat;
+delete from stkdat2 s1 where exists (select 'x' from stkdat2 s2 where s2.id = s1.id and s2.dl_dt = s1.dl_dt and s2.ft_id < s1.ft_id);
 commit;
 insert into arc_stkdat2 
 select * 

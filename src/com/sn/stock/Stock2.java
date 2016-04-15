@@ -1232,13 +1232,31 @@ public class Stock2 implements Comparable<Stock2>{
     	}
     }
     
-    
+    private static Map<String, String> pre_data = new HashMap<String, String>();
+
     public boolean saveData(RawStockData rsd, Connection con) {
-        
+
         if (rsd == null || con == null) {
             return false;
         }
-        String sql = "insert into stkDat (ft_id,"
+        
+        if (rsd.cur_pri <= 0) {
+        	log.info("rsd.cur_pri is 0, skip insert stkdat2");
+        	return false;
+        }
+        
+        String pre_value = pre_data.get(rsd.id);
+    	String cur_value = rsd.dl_dt.toString() + "|" + rsd.dl_tm;
+    	
+    	if (pre_value != null && pre_value.equals(cur_value)) {
+    		log.info("skip creating same data into stkdat2 for " + rsd.id);
+    		return false;
+    	}
+    	else {
+    		pre_data.put(rsd.id, cur_value);
+    	}
+
+        String sql = "insert into stkDat2 (ft_id,"
             + " id,"
             + " td_opn_pri,"
             + " yt_cls_pri,"

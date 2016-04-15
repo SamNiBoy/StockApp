@@ -40,9 +40,9 @@ public class TopTenWst implements IWork {
         Connection con = DBManager.getConnection();
         sql = "select stk.area || df.id id, df.cur_pri_df, stk.name, std.cur_pri "
                 + "  from curpri_df_vw df, stk, (select id, cur_pri"
-                + "                                from stkDat "
+                + "                                from stkDat2 "
                 + "                               where not exists(select 'x' "
-                + "                                                  from stkDat sd2 "
+                + "                                                  from stkDat2 sd2 "
                 + "                                                 where sd2.id = stkDat.id "
                 + "                                                   and sd2.ft_id > stkDat.ft_id)) std "
                 + " where df.id = stk.id "
@@ -51,12 +51,12 @@ public class TopTenWst implements IWork {
                 + "  order by df.cur_pri_df ";
 
         sql = "select distinct stkdat.id, stk.name, stkdat.cur_pri - avt.avp pd from stkdat, "
-                + "(select id, avg(cur_pri) avp from stkdat where stkdat.cur_pri > 0 group by id) avt, "
+                + "(select id, avg(cur_pri) avp from stkdat2 where stkdat.cur_pri > 0 group by id) avt, "
                 + "stk "
                 + "where stkdat.id = avt.id "
                 + "and stkdat.cur_pri < avt.avp "
                 + "and stkdat.id = stk.id "
-                + "and not exists(select 'x' from stkdat sd1 where sd1.id = stkdat.id and sd1.ft_id > stkdat.ft_id having(count(sd1.ft_id)) > 0) "
+                + "and not exists(select 'x' from stkdat2 sd1 where sd1.id = stkdat.id and sd1.ft_id > stkdat.ft_id having(count(sd1.ft_id)) > 0) "
                 + "order by stkdat.cur_pri - avt.avp";
 
         try {

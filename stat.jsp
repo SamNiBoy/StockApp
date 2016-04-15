@@ -43,7 +43,7 @@ try {
     sql = "select to_char(sd.dl_dt, 'yyyy/mm/dd') Day,"
             + "       to_char(sd.dl_dt, 'HH24:MI:SS') Time,"
             + "       sd.*, " + "       sdf.* "
-            + "  from stkdat sd " + "  left join "
+            + "  from stkdat2 sd " + "  left join "
             + "  stkddf sdf " + "    on sd.id = sdf.id "
             + "   and sd.ft_id = sdf.ft_id " + " where sd.id = '"
             + ID + "'" + "  order by sd.ft_id desc ";
