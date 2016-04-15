@@ -86,58 +86,6 @@ public class SimWorker implements IWork {
         sw.startSim();
     }
 
-    private boolean buyStock() {
-        log.info("strat buyStock...");
-        boolean hasBoughtStock = false;
-
-        for (String stock : ssd.simstocks.keySet()) {
-            Stock2 s = ssd.simstocks.get(stock);
-            
-            if (!marketDegree_refreshed) {
-            	StockMarket.calIndex(s.getDl_dt());
-            	marketDegree_refreshed = true;
-            }
-            if (strategy.isGoodStockToSelect(s) && strategy.isGoodPointtoBuy(s)) {
-                if (strategy.buyStock(s)) {
-                    hasBoughtStock = true;
-                }
-            }
-            if (strategy.getCashAccount().hasStockInHand(s)) {
-                String dt = s.getDl_dt().toString().substring(0, 10);
-                strategy.calProfit(dt, ssd.simstocks);
-            }
-        }
-        log.info("end buyStock...");
-        return hasBoughtStock;
-    }
-
-    private boolean sellStock() {
-        log.info("start sellStock...");
-        boolean hasSoldStock = false;
-
-        for (String stock : ssd.simstocks.keySet()) {
-            Stock2 s = ssd.simstocks.get(stock);
-            
-            if (!marketDegree_refreshed) {
-            	StockMarket.calIndex(s.getDl_dt());
-            	marketDegree_refreshed = true;
-            }
-            
-            if (strategy.isGoodPointtoSell(s)) {
-                if (strategy.sellStock(s)) {
-                    hasSoldStock = true;
-                }
-            }
-            //we may have no qty in hand after sell.
-            if (strategy.getCashAccount().hasStockInHand(s) || hasSoldStock) {
-                String dt = s.getDl_dt().toString().substring(0, 10);
-                strategy.calProfit(dt, ssd.simstocks);
-            }
-        }
-        log.info("end sellStock...");
-        return hasSoldStock;
-    }
-
     private boolean reportTradeStat() {
         log.info("reportBuySellStat...");
 
@@ -191,16 +139,13 @@ public class SimWorker implements IWork {
 
             for (ITradeStrategy cs : strategies) {
                 strategy = cs;
-                ICashAccount acnt = null;
-                
                 int StepCnt = 0;
                 log.info("Now start simulate trading...");
                 while (ssd.step()) {
                     log.info("Simulate step:" + (++StepCnt));
                     for (String stock : ssd.simstocks.keySet()) {
                         Stock2 s = ssd.simstocks.get(stock);
-                        acnt = StockTrader.getVirtualCashAcntForStock(s.getID());
-                        strategy.setCashAccount(acnt);
+                        st.setStrategy(strategy);
                         if (st.performTrade(s)) {
                             reportTradeStat();
                         }

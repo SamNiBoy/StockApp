@@ -28,7 +28,6 @@ public class TradeStrategyGenerator {
     static public List<ITradeStrategy> generatorStrategies() throws Exception {
         List<ITradeStrategy> res = new ArrayList<ITradeStrategy>();
         
-        IStockSelector ss = new DefaultStockSelector();
         IBuyPointSelector bs = new QtyBuyPointSelector();
         ISellPointSelector ses = new QtySellPointSelector();
 //        IBuyPointSelector bs = new MacdBuyPointSelector();
@@ -38,10 +37,20 @@ public class TradeStrategyGenerator {
         ICashAccount ca = null;
         //CashAcntManger.getDftAcnt();
         //ca.initAccount();
-        ITradeStrategy its = new TradeStrategyImp(ss, bs, ses, ca);
+        ITradeStrategy its = new TradeStrategyImp(bs, ses, ca);
         
         res.add(its);
         
         return res;
+    }
+    
+    static public ITradeStrategy generatorDefaultStrategy() {
+        
+        IBuyPointSelector bs = new QtyBuyPointSelector();
+        ISellPointSelector ses = new QtySellPointSelector();
+        ICashAccount ca = null;
+        ITradeStrategy its = new TradeStrategyImp(bs, ses, ca);
+        
+        return its;
     }
 }

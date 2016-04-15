@@ -42,10 +42,8 @@ public class SimStockDriver {
 
     static Logger log = Logger.getLogger(SimStockDriver.class);
 
-    Connection con = null;
-
     ArrayList<String> stk_list = new ArrayList<String>();
-    
+    Connection con = DBManager.getConnection();
     String start_dt = ""; // format 'yyyy-mm-dd'
     String end_dt = "";
     Statement SimStm = null;
@@ -74,14 +72,13 @@ public class SimStockDriver {
         end_dt = e;
         //SimpleDateFormat df = new SimpleDateFormat("YYYY-MM-DD");
         log.info("end_dt string:" + end_dt);
-        if (con == null) {
-            con = DBManager.getConnection();
-        }
+        Statement stm = null;
+        ResultSet rs = null;
 
         String sql = "select 'x' from dual where to_char(sysdate, 'yyyy-mm-dd') = '" + end_dt + "'";
         try {
-            Statement stm = con.createStatement();
-            ResultSet rs = stm.executeQuery(sql);
+            stm = con.createStatement();
+            rs = stm.executeQuery(sql);
             if (rs.next()) {
                 log.info("Sim on today's data, set is_sim_on_today to true");
                 is_sim_on_today = true;
@@ -90,11 +87,18 @@ public class SimStockDriver {
                 is_sim_on_today = false;
                 log.info("Sim not cover today's data, set is_sim_on_today to false");
             }
-            rs.close();
-            stm.close();
         }
         catch (SQLException ee) {
             ee.printStackTrace();
+        }
+        finally {
+        	try {
+                rs.close();
+                stm.close();
+        	}
+        	catch(Exception e2) {
+        		log.info(e2.getMessage());
+        	}
         }
         return true;
     }
@@ -116,9 +120,6 @@ public class SimStockDriver {
         Stock2 s = null;
         int cnt = 0;
         
-        if (con == null) {
-            con = DBManager.getConnection();
-        }
         try {
             if (stk_list.isEmpty()) {
                 stm = con.createStatement();
@@ -163,6 +164,7 @@ public class SimStockDriver {
         {
             e.printStackTrace();
         }
+        
         log.info("SimStockDriver loadStock successed!");
         return true;
     
@@ -176,10 +178,6 @@ public class SimStockDriver {
         if (start_dt.equals("") || end_dt.equals("")) {
             log.info("start date or end date is not specificed, can not initData!");
             return false;
-        }
-        
-        if (con == null) {
-            con = DBManager.getConnection();
         }
         
         String idClause = "";
@@ -227,10 +225,6 @@ public class SimStockDriver {
         else if(!is_sim_on_today) {
             log.info("is_sim_on_today is false, can not run initWithTodayData.");
             return false;
-        }
-        
-        if (con == null) {
-            con = DBManager.getConnection();
         }
         
         String idClause = " and id = '" + stkId + "'";

@@ -1232,8 +1232,6 @@ public class Stock2 implements Comparable<Stock2>{
     	}
     }
     
-    private static Map<String, String> pre_data = new HashMap<String, String>();
-
     public boolean saveData(RawStockData rsd, Connection con) {
 
         if (rsd == null || con == null) {
@@ -1245,17 +1243,6 @@ public class Stock2 implements Comparable<Stock2>{
         	return false;
         }
         
-        String pre_value = pre_data.get(rsd.id);
-    	String cur_value = rsd.dl_dt.toString() + "|" + rsd.dl_tm;
-    	
-    	if (pre_value != null && pre_value.equals(cur_value)) {
-    		log.info("skip creating same data into stkdat2 for " + rsd.id);
-    		return false;
-    	}
-    	else {
-    		pre_data.put(rsd.id, cur_value);
-    	}
-
         String sql = "insert into stkDat2 (ft_id,"
             + " id,"
             + " td_opn_pri,"
@@ -1287,9 +1274,7 @@ public class Stock2 implements Comparable<Stock2>{
             + " s4_pri,"
             + " s5_num,"
             + " s5_pri,"
-            + " dl_dt,"
-            + " dl_tm,"
-            + " ft_dt)"
+            + " dl_dt)"
             + " values (SEQ_STKDAT_PK.nextval," +
             "'" + rsd.id + "',"
                 + rsd.td_opn_pri + ","
@@ -1321,8 +1306,7 @@ public class Stock2 implements Comparable<Stock2>{
                 + rsd.s4_pri + ","
                 + rsd.s5_num + ", "
                 + rsd.s5_pri + ","
-            + "to_date('" + rsd.dl_dt.toString() +" " + rsd.dl_tm +"', 'yyyy-mm-dd hh24:mi:ss')" + ", '"
-            + rsd.dl_tm + "'," +"sysdate)";
+            + "to_date('" + rsd.dl_dt.toString() +" " + rsd.dl_tm +"', 'yyyy-mm-dd hh24:mi:ss'))";
         
         //log.info(sql);
         try {

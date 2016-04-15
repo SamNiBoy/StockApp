@@ -35,6 +35,7 @@ import com.sn.mail.reporter.StockObserver;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.reporter.WCMsgSender;
 import com.sn.sim.strategy.ITradeStrategy;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.sim.strategy.imp.TradeStrategyGenerator;
 import com.sn.sim.strategy.imp.TradeStrategyImp;
 import com.sn.stock.Stock2;
@@ -75,7 +76,7 @@ public class SimTrader implements IWork{
     }
 
     static public void main(String[] args) throws Exception {
-        SimTrader st = new SimTrader(0, 0, false);
+        SimTrader st = new SimTrader(0, 0, true);
         st.run();
     }
 
@@ -138,9 +139,11 @@ public class SimTrader implements IWork{
         resetTest();
         // SimStockDriver.addStkToSim("000727");
         Connection con = DBManager.getConnection();
+        Statement stm = null;
+        ResultSet rs = null;
         String sql = "";
         if (simOnGzStk) {
-            sql = "select * from usrStk where gz_flg = 1 and openID ='osCWfs-ZVQZfrjRK0ml-eEpzeop0'";
+            sql = "select * from usrStk where gz_flg = 1 and openID ='" + STConstants.openID + "'";
         }
         else {
             sql = "select * from stk where id in "
@@ -153,11 +156,11 @@ public class SimTrader implements IWork{
         
         ArrayList<SimWorker> workers = new ArrayList<SimWorker>();
         try {
-            Statement stm = con.createStatement();
+            stm = con.createStatement();
             int batch = 0;
             int batcnt = 0;
             log.info(sql);
-            ResultSet rs = stm.executeQuery(sql);
+            rs = stm.executeQuery(sql);
             while (rs.next()) {
                 stks.add(rs.getString("id"));
                 batch++;
@@ -196,12 +199,19 @@ public class SimTrader implements IWork{
                 WorkManager.submitWork(sw);
                 batch = 0;
             }
-            rs.close();
-            stm.close();
-            con.close();
             log.info("Now end simulate trading.");
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+        finally {
+        	try {
+                rs.close();
+                stm.close();
+                con.close();
+        	}
+        	catch(Exception e2) {
+        		log.info(e2.getMessage());
+        	}
         }
         
        try {

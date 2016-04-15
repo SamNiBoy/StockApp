@@ -3,6 +3,7 @@ package com.sn.sim.strategy;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Observable;
 import java.util.concurrent.TimeUnit;
@@ -10,13 +11,13 @@ import java.util.concurrent.TimeUnit;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.stock.Stock2;
+import com.sn.stock.StockBuySellEntry;
 
 public interface ITradeStrategy {
 
     /**
      * @param args
      */
-    public boolean isGoodStockToSelect(Stock2 s);
     public boolean isGoodPointtoBuy(Stock2 s);
     public boolean isGoodPointtoSell(Stock2 s);
     
@@ -28,4 +29,8 @@ public interface ITradeStrategy {
     public ICashAccount getCashAccount();
     public void setCashAccount(ICashAccount ca);
     public boolean initAccount();
+    
+    public boolean performTrade(Stock2 s);
+    public StockBuySellEntry getLstTradeRecord(Stock2 s);
+    public void enableSimulationMode(boolean yes);
 }
