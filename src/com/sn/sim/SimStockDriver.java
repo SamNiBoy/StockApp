@@ -263,6 +263,7 @@ public class SimStockDriver {
         }
         boolean nxt_stk = false;
         boolean need_cal_index = true;
+        boolean has_data_loaded = false;
         try {
             for (String stkId : stk_list) {
                 
@@ -311,12 +312,13 @@ public class SimStockDriver {
                         StockMarket.calIndex(s.getDl_dt());
                         need_cal_index = false;
                     }
+                    has_data_loaded = true;
                 }
 
                 pointer.put(stkId, ft_id);
             }
             log.info("end step with true!");
-            return true;
+            return has_data_loaded;
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
