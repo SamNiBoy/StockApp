@@ -46,8 +46,6 @@ public class SimWorker implements IWork {
 
     private List<ITradeStrategy> strategies = new ArrayList<ITradeStrategy>();
 
-    private ITradeStrategy strategy = null;
-
     private List<String> stkToSim = new ArrayList<String>();
 
     private StockTrader st = new StockTrader(true);
@@ -86,14 +84,6 @@ public class SimWorker implements IWork {
         sw.startSim();
     }
 
-    private boolean reportTradeStat() {
-        log.info("reportBuySellStat...");
-
-        boolean rs = strategy.reportTradeStat();
-
-        return rs;
-    }
-
     public void startSim() throws Exception {
         // SimStockDriver.addStkToSim("000727");
     	String start_dt = "";
@@ -119,41 +109,37 @@ public class SimWorker implements IWork {
     		stm.close();
     		con.close();
     	}
+    	
+        ssd.removeStkToSim();
         for (String stk : stkToSim) {
-            ssd.removeStkToSim();
             ssd.addStkToSim(stk);
-            //ssd.setStartEndSimDt("2016-03-02", "2016-04-02");
-            ssd.setStartEndSimDt(start_dt, end_dt);
-            
-            ssd.loadStocks();
+        }
+        //ssd.setStartEndSimDt("2016-03-02", "2016-04-02");
+        ssd.setStartEndSimDt(start_dt, end_dt);
+        
+        ssd.loadStocks();
 
-            if (!ssd.initData()) {
-                log.info("can not init SimStockDriver...");
-                return;
-            }
+        if (!ssd.initData()) {
+            log.info("can not init SimStockDriver...");
+            return;
+        }
 
-//            String AcntForStk = CashAcntManger.ACNT_PREFIX + stk;
-//            CashAcntManger
-//                    .crtAcnt(AcntForStk, CashAcntManger.DFT_INIT_MNY, 0.0, 0.0, CashAcntManger.DFT_SPLIT, CashAcntManger.DFT_MAX_USE_PCT, false);
-//            ICashAccount acnt = CashAcntManger.loadAcnt(AcntForStk);
+        for (ITradeStrategy cs : strategies) {
+            st.setStrategy(cs);
+            int StepCnt = 0;
+            log.info("Now start simulate trading...");
+            while (ssd.step()) {
+                log.info("Simulate step:" + (++StepCnt));
+                for (String stock : ssd.simstocks.keySet()) {
+                    Stock2 s = ssd.simstocks.get(stock);
 
-            for (ITradeStrategy cs : strategies) {
-                strategy = cs;
-                int StepCnt = 0;
-                log.info("Now start simulate trading...");
-                while (ssd.step()) {
-                    log.info("Simulate step:" + (++StepCnt));
-                    for (String stock : ssd.simstocks.keySet()) {
-                        Stock2 s = ssd.simstocks.get(stock);
-                        st.setStrategy(strategy);
-                        if (st.performTrade(s)) {
-                            reportTradeStat();
-                        }
+                    if (st.performTrade(s)) {
+                        cs.reportTradeStat();
                     }
                 }
-                strategy.reportTradeStat();
-                ssd.startOver();
             }
+            cs.reportTradeStat();
+            ssd.startOver();
         }
         ssd.finishStep();
         log.info("Now end simulate trading.");

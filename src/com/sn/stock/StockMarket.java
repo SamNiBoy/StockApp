@@ -344,7 +344,7 @@ public class StockMarket{
                          " from stkdat2 " +
                          " where td_opn_pri > 0 " +
                          "   and dl_dt <= " + deadline +
-                         "   and not exists (select 'x' from stkdat2 skd where skd.id = stkdat2.id and ft_id > stkdat2.ft_id)" +
+                         "   and not exists (select 'x' from stkdat2 skd where skd.id = stkdat2.id and skd.ft_id > stkdat2.ft_id and skd.dl_dt <= " + deadline + ")" +
                          " group by case when cur_pri > td_opn_pri then 1 " +
                          "               when cur_pri < td_opn_pri then -1 " +
                          "               when cur_pri = td_opn_pri then 0 end" +

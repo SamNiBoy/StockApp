@@ -3,6 +3,7 @@ package com.sn.sim.strategy.selector.buypoint;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -83,13 +84,22 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     	
     	double baseThresh = BASE_TRADE_THRESH;
     	
+    	Timestamp tm = stk.getDl_dt();
+        String deadline = null;
+        if (tm == null) {
+        	deadline = "sysdate";
+        }
+        else {
+        	deadline = "to_date('" + tm.toLocaleString() + "', 'yyyy-mm-dd HH24:MI:SS')";
+        }
+        
     	try {
     		Connection con = DBManager.getConnection();
     		Statement stm = con.createStatement();
     		String sql = "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev "
     				   + "  from stkdat2 "
     				   + " where id ='" + stk.getID() + "'"
-    				   + "   and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd')";
+    				   + "   and to_char(dl_dt, 'yyyy-mm-dd') = to_char(" + deadline + ", 'yyyy-mm-dd')";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
     		if (rs.next()) {

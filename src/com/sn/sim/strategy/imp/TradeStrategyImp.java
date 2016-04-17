@@ -298,8 +298,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return true;
 	}
 	
-	private static boolean canTradeRecord(Stock2 s, boolean is_buy_flg, String openID) {
-		if (tradeStocks == null || !tradeStocks.contains(s.getID())) {
+	private boolean canTradeRecord(Stock2 s, boolean is_buy_flg, String openID) {
+		//For sim_mode, we don't care if user gzed the stock.
+		if ((tradeStocks == null || !tradeStocks.contains(s.getID())) && !sim_mode) {
 			log.info("stock " + s.getID() + " is not available for trade.");
 			return false;
 		}

@@ -76,7 +76,7 @@ public class SimTrader implements IWork{
     }
 
     static public void main(String[] args) throws Exception {
-        SimTrader st = new SimTrader(0, 0, true);
+        SimTrader st = new SimTrader(0, 0, false);
         st.run();
     }
 
@@ -166,7 +166,7 @@ public class SimTrader implements IWork{
                 batch++;
                 if (batch == 250) {
                     batcnt++;
-                    log.info("Now have 250 stocks to sim, start a worker for it.");
+                    log.info("Now have 250 stocks to sim, start a worker for batcnt:" + batcnt);
                     SimWorker sw;
                     try {
                         sw = new SimWorker(0, 0, "SimWorker" + batcnt);
@@ -185,7 +185,7 @@ public class SimTrader implements IWork{
 
             if (batch > 0) {
                 batcnt++;
-                log.info("Now have " + batch + " stocks to sim, start a worker for it.");
+                log.info("Last have " + batch + " stocks to sim, start a worker for batcnt:" + batcnt);
                 SimWorker sw;
                 try {
                     sw = new SimWorker(0, 0, "SimWorker" + batcnt);

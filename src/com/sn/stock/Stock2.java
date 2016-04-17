@@ -887,7 +887,7 @@ public class Stock2 implements Comparable<Stock2>{
                 e.printStackTrace();
             }
             
-            log.info("Loaded data success from rs for Stock2.");
+            log.info("Loaded data success from rs for stock:" + this.getStkid() + " with size:" + cur_pri_lst.size());
             return true;
         }
         

@@ -61,6 +61,7 @@ public class StockTrader {
 	}
 	public void setStrategy(ITradeStrategy s) {
 		strategy = s;
+		strategy.enableSimulationMode(sim_mode);
 	}
 	public StockTrader(boolean is_simulation_mode) {
 		sim_mode = is_simulation_mode;

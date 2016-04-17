@@ -81,7 +81,7 @@ public class SimStockDriver {
             rs = stm.executeQuery(sql);
             if (rs.next()) {
                 log.info("Sim on today's data, set is_sim_on_today to true");
-                is_sim_on_today = true;
+                is_sim_on_today = false;
             }
             else {
                 is_sim_on_today = false;
@@ -261,6 +261,8 @@ public class SimStockDriver {
             log.info("DtRs is null, can not step");
             return false;
         }
+        boolean nxt_stk = false;
+        boolean need_cal_index = true;
         try {
             for (String stkId : stk_list) {
                 
@@ -277,8 +279,8 @@ public class SimStockDriver {
                 }
                 
                 if (!DtRs.next()) {
-                    log.info("There is no data to simTrader...");
-                    return false;
+                    log.info("There is no data to simTrader for:" + stkId + " continue...");
+                    continue;
                 }
                 
                 String sid = DtRs.getString("id");
@@ -287,19 +289,28 @@ public class SimStockDriver {
                 while (!sid.equals(stkId) || (pt > 0 && ft_id <= pt)) {
                     
                     if (!DtRs.next()) {
-                        log.info("No more row in DtRs, finished step()!");
-                        return false;
+                        log.info("No more row in DtRs, for:" + stkId + " continue!");
+                        nxt_stk = true;
+                        break;
                     }
                     
                     sid = DtRs.getString("id");
                     ft_id = DtRs.getInt("ft_id");
                 }
                 
+                if (nxt_stk) {
+                	nxt_stk = false;
+                	continue;
+                }
+                
                 Stock2 s = simstocks.get(stkId);
                 if (s != null) {
                     log.info("Now, loading DtRs for stock:" + s.getID());
                     s.getSd().loadDataFromRs(DtRs);
-                    //StockMarket.calIndex(s.getDl_dt());
+                    if (need_cal_index) {
+                        StockMarket.calIndex(s.getDl_dt());
+                        need_cal_index = false;
+                    }
                 }
 
                 pointer.put(stkId, ft_id);
