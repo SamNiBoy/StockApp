@@ -85,13 +85,13 @@ public class SimTrader implements IWork{
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "delete from tradedtl where acntid in (select acntid from CashAcnt where dft_acnt_flg = 0 and acntid like 'Sim%')";
+			sql = "delete from tradedtl where acntid like 'Sim%'";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
 			
 			stm = con.createStatement();
-			sql = "delete from tradehdr where acntid in (select acntid from CashAcnt where dft_acnt_flg = 0 and acntid like 'Sim%')";
+			sql = "delete from tradehdr where acntid like 'Sim%'";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
@@ -101,7 +101,7 @@ public class SimTrader implements IWork{
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
-			
+			con.commit();
 			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -122,7 +122,7 @@ public class SimTrader implements IWork{
         int time = hr*100 + mnt;
         log.info("SimWork, time:" + time);
         // Only run after 22:30 PM.
-        while (time < 2230 && time >700) {
+        while (time < 2230 && time >800) {
             try {
 				Thread.currentThread().sleep(30*60*1000);
 			} catch (InterruptedException e) {
@@ -143,7 +143,7 @@ public class SimTrader implements IWork{
         ResultSet rs = null;
         String sql = "";
         if (simOnGzStk) {
-            sql = "select * from usrStk where gz_flg = 1 and openID ='" + STConstants.openID + "'";
+            sql = "select * from usrStk where gz_flg = 1 and openID ='" + STConstants.openID + "' and openID = suggested_by ";
         }
         else {
             sql = "select * from stk where id in "

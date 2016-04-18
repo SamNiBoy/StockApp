@@ -126,12 +126,14 @@ public class TradeStrategyImp implements ITradeStrategy {
 			while(true) {
 			    try {
 			        // Save string like "B600503" to clipboard for buy stock.
-			        String txt = "";
-			        Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
-			        txt = "B" + s.getID() + qtyToTrade;
-			        
-			        StringSelection sel = new StringSelection(txt);
-			        cpb.setContents(sel, null);
+			    	if (!sim_mode) {
+			            String txt = "";
+			            Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
+			            txt = "B" + s.getID() + qtyToTrade;
+			            
+			            StringSelection sel = new StringSelection(txt);
+			            cpb.setContents(sel, null);
+			    	}
 			        
 			        createBuyTradeRecord(s, qtyToTrade, ac);
 			        
@@ -187,12 +189,14 @@ public class TradeStrategyImp implements ITradeStrategy {
 			while(true) {
 			    try {
 			        // Save string like "S600503" to clipboard for sell stock.
-			        String txt = "";
-			        Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
-			        txt = "S" + s.getID() + qtyToTrade;
-			        
-			        StringSelection sel = new StringSelection(txt);
-			        cpb.setContents(sel, null);
+			    	if (!sim_mode) {
+			            String txt = "";
+			            Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
+			            txt = "S" + s.getID() + qtyToTrade;
+			            
+			            StringSelection sel = new StringSelection(txt);
+			            cpb.setContents(sel, null);
+			    	}
 			        
 			        createSellTradeRecord(s, qtyToTrade, ac);
 			        

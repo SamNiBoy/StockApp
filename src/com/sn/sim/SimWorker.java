@@ -9,8 +9,11 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -124,6 +127,9 @@ public class SimWorker implements IWork {
             return;
         }
 
+        Map<String, Timestamp> lst_stmp = new HashMap<String, Timestamp>();
+        Timestamp lststp = null;
+        Timestamp curstp = null;
         for (ITradeStrategy cs : strategies) {
             st.setStrategy(cs);
             int StepCnt = 0;
@@ -133,9 +139,17 @@ public class SimWorker implements IWork {
                 for (String stock : ssd.simstocks.keySet()) {
                     Stock2 s = ssd.simstocks.get(stock);
 
-                    if (st.performTrade(s)) {
+                    lststp = lst_stmp.get(s.getID());
+                    curstp = s.getDl_dt();
+                    
+                    if (((lststp != null && curstp.after(lststp)) || lststp == null) && st.performTrade(s)) {
                         cs.reportTradeStat();
                     }
+                    else if (lststp != null && !curstp.after(lststp)) {
+                    	log.info("skip trading same record for:" + s.getID() + " at:" + lststp.toLocaleString());
+                    }
+                    
+                    lst_stmp.put(s.getID(), curstp);
                 }
             }
             cs.reportTradeStat();
