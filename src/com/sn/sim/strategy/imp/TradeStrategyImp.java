@@ -285,7 +285,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			Statement stm = con.createStatement();
 			sql = "select s.*, u.* " + "from usrStk s," + "     usr u " + "where s.openID = u.openID "
 					+ "and s.gz_flg = 1 " + "and u.openID = '" + STConstants.openID + "' and u.mail is not null "
-					+ "and s.suggested_by = '" + STConstants.openID +"' and u.buy_sell_enabled = 1";
+					+ "and s.suggested_by in ('" + STConstants.openID +"','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "') and u.buy_sell_enabled = 1";
 
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);

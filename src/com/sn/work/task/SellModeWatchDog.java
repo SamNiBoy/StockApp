@@ -14,8 +14,10 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.RecommandStockObserverable;
 import com.sn.mail.reporter.SellModeStockObserverable;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.sim.strategy.selector.stock.AvgClsPriSellModeSelector;
 import com.sn.sim.strategy.selector.stock.AvgClsPriStockSelector;
+import com.sn.sim.strategy.selector.stock.BadTradeSellModeSelector;
 import com.sn.sim.strategy.selector.stock.CurPriLostSellModeSelector;
 import com.sn.sim.strategy.selector.stock.DefaultSellModeSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
@@ -46,8 +48,6 @@ public class SellModeWatchDog implements IWork {
 	static List<IStockSelector> selectors = new LinkedList<IStockSelector>();
 
 	static SellModeWatchDog self = null;
-	
-	static String openID = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
 	
 	static List<Stock2> stocksSellModeWaitForMail = new LinkedList<Stock2>();
 	static List<Stock2> stocksUnSellModeWaitForMail = new LinkedList<Stock2>();
@@ -95,6 +95,7 @@ public class SellModeWatchDog implements IWork {
 		selectors.add(new DefaultSellModeSelector());
 		selectors.add(new AvgClsPriSellModeSelector());
 		selectors.add(new CurPriLostSellModeSelector());
+		selectors.add(new BadTradeSellModeSelector());
 	}
 
 	public void run() {
@@ -199,7 +200,7 @@ public class SellModeWatchDog implements IWork {
 		Statement stm = null;
 		boolean is_in_sell_mode = false;
 		try {
-			sql = "select sell_mode_flg from usrStk where openID = '" + openID + "' and id = '" + s.getID() + "'";
+			sql = "select sell_mode_flg from usrStk where openID = '" + STConstants.openID + "' and id = '" + s.getID() + "'";
 			log.info(sql);
 			stm = con.createStatement();
 			ResultSet rs = stm.executeQuery(sql);
@@ -230,7 +231,7 @@ public class SellModeWatchDog implements IWork {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		try {
-			sql = "update usrStk set sell_mode_flg = " + (to_sell_mode ?  "1": "0") + " where openID = '" + openID + "' and id = '" + s.getID() + "'";
+			sql = "update usrStk set sell_mode_flg = " + (to_sell_mode ?  "1": "0") + " where openID = '" + STConstants.openID + "' and id = '" + s.getID() + "'";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

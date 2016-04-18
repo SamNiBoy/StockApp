@@ -3,15 +3,19 @@ package com.sn.work.task;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.RecommandStockObserverable;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.sim.strategy.selector.stock.AvgClsPriStockSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
@@ -190,9 +194,12 @@ public class SuggestStock implements IWork {
 			    	for (Stock2 s2 : stocksWaitForMail) {
 		    			suggestStock(s2);
 			    	}
-			    	rso.addStockToSuggest(stocksWaitForMail);
-			    	rso.update();
-			    	stocksWaitForMail.clear();
+			    	electStockforTrade();
+			    	if (stocksWaitForMail.size() > 0) {
+			    	    rso.addStockToSuggest(stocksWaitForMail);
+			    	    rso.update();
+			    	    stocksWaitForMail.clear();
+			    	}
 			    	break;
 			    }
 			    log.info("Now recommand result is not good, adjust criteris to recommand");
@@ -224,7 +231,7 @@ public class SuggestStock implements IWork {
 				sql = "";
 				if (rs2.next()) {
 					if (rs2.getLong("gz_flg") == 0) {
-						sql = "update usrStk set gz_flg = 1, suggested_by = 'SYSTEMUPDATE' where openID = '" + openID
+						sql = "update usrStk set gz_flg = 1, suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "' where openID = '" + openID
 								+ "' and id = '" + s.getID() + "'";
 					}
 				} else {
@@ -249,12 +256,167 @@ public class SuggestStock implements IWork {
 		}
 	}
 	
+	private void electStockforTrade() {
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		ResultSet rs = null;
+		int exiter = 0;
+		try {
+			sql = "select * from usr where suggest_stock_enabled = 1";
+			log.info(sql);
+			stm = con.createStatement();
+			rs = stm.executeQuery(sql);
+			while (rs.next()) {
+				String openID = rs.getString("openID");
+				sql = "select id from usrStk where openID = '" + openID + "' and sell_mode_flg = 0 and suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "','" + STConstants.SUGGESTED_BY_FOR_USER + "') and gz_flg = 1 order by id";
+				Statement stm2 = con.createStatement();
+				ResultSet rs2 = stm2.executeQuery(sql);
+				sql = "";
+				if (rs2.next()) {
+					String stkid = rs2.getString("id");
+					if (shouldStockExitTrade(stkid)) {
+						exiter++;
+						putStockToSellMode(stkid);
+					}
+				}
+				rs2.close();
+				stm2.close();
+			}
+			rs.close();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		if (exiter > 0) {
+			moveStockToTrade(exiter);
+		}
+	}
+	
+	private void moveStockToTrade(int maxCnt) {
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		ResultSet rs = null;
+		Set<String> stockMoved = new HashSet<String>();
+		int grantCnt = 0;
+		if (maxCnt <= 0) {
+			log.info("maxCnt must be > 0 for move stockToTrade.");
+			return;
+		}
+		try {
+			sql = "select distinct s.id from usrStk s, stkdlyinfo i "
+				+ "where s.id = i.id "
+				+ "  and s.gz_flg = 1 "
+				+ "  and s.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "') "
+				+ "  and not exists (select 'x' from stkdlyinfo i2 where i2.id = i.id and i2.dt > i.dt) "
+				+ "  order by i.td_cls_pri ";
+			log.info(sql);
+			stm = con.createStatement();
+			rs = stm.executeQuery(sql);
+			while (rs.next() && maxCnt-- > 0) {
+				String id = rs.getString("id");
+				sql = "update usrStk set suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "',  gz_flg = 1, sell_mode_flg = 0, add_dt = sysdate where id ='" + id + "'";
+				Statement stm2 = con.createStatement();
+				stm2.execute(sql);
+				con.commit();
+				stm2.close();
+				grantCnt++;
+				stockMoved.add(id);
+			}
+			rs.close();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		Iterator<Stock2> it = stocksWaitForMail.iterator();
+		while(it.hasNext())
+		{
+			Stock2 s = it.next();
+			if (!stockMoved.contains(s.getID())) {
+				log.info("remove stock:" + s.getID() + " as it is not moved for trade.");
+				it.remove();
+			}
+		}
+		log.info("Total granted:" + grantCnt + " stocks for trading.");
+	}
+	
+	private void putStockToSellMode(String stkid) {
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		try {
+			sql = "update usrStk set sell_mode_flg = 1 where id = '" + stkid + "'";
+			log.info(sql);
+			stm = con.createStatement();
+			stm.execute(sql);
+			con.commit();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean shouldStockExitTrade(String stkid) {
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		ResultSet rs = null;
+		int lost_cnt = 0;
+		int gain_cnt = 0;
+		try {
+			sql = "select * from tradedtl where stkid = '" + stkid + "' order by seqnum";
+			log.info(sql);
+			stm = con.createStatement();
+			rs = stm.executeQuery(sql);
+			int pre_buy_flg = -1;
+			double pre_pri = 0.0;
+			while (rs.next()) {
+				int buy_flg = rs.getInt("buy_flg");
+				double cur_pri = rs.getDouble("price");
+				
+				if (pre_buy_flg != -1 && pre_buy_flg != buy_flg) {
+					if (pre_buy_flg == 1 && cur_pri < pre_pri) {
+						lost_cnt++;
+					}
+					else {
+						gain_cnt++;
+					}
+					if (pre_buy_flg == 0 && cur_pri > pre_pri) {
+						lost_cnt++;
+					}
+					else {
+						gain_cnt++;
+					}
+				}
+				pre_buy_flg = buy_flg;
+				pre_pri = cur_pri;
+			}
+			rs.close();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		log.info("Stock:" + stkid + " lost_cnt:" + lost_cnt + " gain_cnt:" + gain_cnt);
+		if (lost_cnt > 3 * gain_cnt && gain_cnt > 0) {
+			log.info("Lost cnt is tripple than gain_cnt, should exit trade.");
+			return true;
+		}
+		return false;
+	}
+	
 	private void resetSuggestion() {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		try {
-			sql = "update usrStk set gz_flg = 0 where gz_flg = 1 and suggested_by in ('SYSTEM','SYSTEMUPDATE')";
+			sql = "update usrStk set gz_flg = 0 where gz_flg = 1 and suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "')";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
@@ -64,7 +65,12 @@ public class ListGzStock implements IWork {
     private String getGzStockInfo()
     {
         Statement stm = null;
-        String sql = "select s.id, s.name, u.sell_mode_flg from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "' and u.openID = u.suggested_by";
+        String sql = "select s.id, s.name, u.sell_mode_flg "
+        		+ "     from stk s, usrStk u "
+        		+ "    where s.id = u.id "
+        		+ "      and u.gz_flg = 1 "
+        		+ "      and u.openID ='" + frmUsr + "' "
+        	    + "      and u.suggested_by in ('" + frmUsr + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "')";
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
         Map<String, Integer> sellmodes = new HashMap<String, Integer> ();

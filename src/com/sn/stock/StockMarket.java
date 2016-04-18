@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.stock.Stock2.StockData;
 
 public class StockMarket{
@@ -43,7 +44,7 @@ public class StockMarket{
     		                             + "from stk s, usrStk u "
     		                             + "where s.id = u.id "
     		                             + "  and u.gz_flg = 1 "
-    		                             + "  and u.suggested_by ='osCWfs-ZVQZfrjRK0ml-eEpzeop0' "
+    		                             + "  and u.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_USER + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "') "
     		                             + "order by s.id";
     /**
      * @param args
