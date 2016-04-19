@@ -408,7 +408,7 @@ public class SuggestStock implements IWork {
 			
 			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "' and acntid like 'ACNT%' "
 				+ "   and dl_dt >= sysdate - " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + ")"
-				+ " or exists (select 'y' from usrStk where id = '" + stkid +  "' and add_dt > sysdate - " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + ")";
+				+ " or exists (select 'y' from usrStk where gz_flg = 1 and id = '" + stkid +  "' and add_dt > sysdate - " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + ")";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
