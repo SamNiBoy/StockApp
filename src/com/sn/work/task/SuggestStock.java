@@ -370,7 +370,7 @@ public class SuggestStock implements IWork {
 		int lost_cnt = 0;
 		int gain_cnt = 0;
 		try {
-			sql = "select * from tradedtl where stkid = '" + stkid + "' order by seqnum";
+			sql = "select * from tradedtl where stkid = '" + stkid + "' and acntid like 'ACNT%' order by seqnum";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
@@ -384,13 +384,13 @@ public class SuggestStock implements IWork {
 					if (pre_buy_flg == 1 && cur_pri < pre_pri) {
 						lost_cnt++;
 					}
-					else {
+					else if (pre_buy_flg == 1 && cur_pri > pre_pri){
 						gain_cnt++;
 					}
 					if (pre_buy_flg == 0 && cur_pri > pre_pri) {
 						lost_cnt++;
 					}
-					else {
+					else if (pre_buy_flg == 0 && cur_pri < pre_pri) {
 						gain_cnt++;
 					}
 				}
@@ -399,15 +399,30 @@ public class SuggestStock implements IWork {
 			}
 			rs.close();
 			stm.close();
+			
+			log.info("Stock:" + stkid + " lost_cnt:" + lost_cnt + " gain_cnt:" + gain_cnt);
+			if (lost_cnt - gain_cnt > STConstants.MAX_LOST_TIME_BEFORE_EXIT_TRADE) {
+				log.info("Lost cnt is " + STConstants.MAX_LOST_TIME_BEFORE_EXIT_TRADE + " times more than gain_cnt, should exit trade.");
+				return true;
+			}
+			
+			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "' and acntid like 'ACNT%' "
+				+ "   and dl_dt >= sysdate - " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + ")";
+			log.info(sql);
+			stm = con.createStatement();
+			rs = stm.executeQuery(sql);
+			if (!rs.next()) {
+				log.info("Stock:" + stkid + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + " days without trade record, should exit trade.");
+				return true;
+			}
+			
+			rs.close();
+			stm.close();
 			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		log.info("Stock:" + stkid + " lost_cnt:" + lost_cnt + " gain_cnt:" + gain_cnt);
-		if (lost_cnt > 3 * gain_cnt && gain_cnt > 0) {
-			log.info("Lost cnt is tripple than gain_cnt, should exit trade.");
-			return true;
-		}
+
 		return false;
 	}
 	

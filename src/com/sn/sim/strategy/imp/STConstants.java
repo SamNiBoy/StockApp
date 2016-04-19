@@ -16,5 +16,9 @@ public class STConstants {
 	public static final String SUGGESTED_BY_FOR_SYSTEMGRANTED = "SYSTEMGRANTED";
 	public static final String SUGGESTED_BY_FOR_SYSTEM = "SYSTEM";
 	public static final String SUGGESTED_BY_FOR_SYSTEMUPDATE = "SYSTEMUPDATE";
+	
+	
+	public static final int MAX_LOST_TIME_BEFORE_EXIT_TRADE = 2;
+	public static final int MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE = 3;
     
 }
