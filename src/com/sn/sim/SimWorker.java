@@ -95,7 +95,6 @@ public class SimWorker implements IWork {
     	Statement stm = null;
     	ResultSet rs = null;
     	String sql = "";
-    	CashAcntManger.ACNT_PREFIX = "SimAcnt";
     	try {
     		con = DBManager.getConnection();
     		stm = con.createStatement();

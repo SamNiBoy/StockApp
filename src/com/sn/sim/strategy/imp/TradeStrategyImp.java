@@ -115,7 +115,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		
 		if (qtb <= 0) {
 			log.info("qty to buy/sell is zero by Virtual CashAccount, switch to sellbuyrecord to get qtyToTrade.");
-			qtb = Integer.valueOf(getTradeQty(s, true, STConstants.openID));
+			qtb = getTradeQty(s, true, STConstants.openID);
 		}
 		
 		if (canTradeRecord(s, true, STConstants.openID)) {
@@ -140,8 +140,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
 			        sm.put(s.getID(), s);
 			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
-			        
-			        createBuySellRecord(s, STConstants.openID, true, qtyToTrade);
+			    	if (!sim_mode) {
+			            createBuySellRecord(s, STConstants.openID, true, qtyToTrade);
+			    	}
 			        break;
 			    }
 			    catch (Exception e) {
@@ -174,7 +175,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		
 		if (qtb <= 0 && !sim_mode) {
 			log.info("qty to buy/sell is zero by Virtual CashAccount, switch to sellbuyrecord to get qtyToTrade.");
-			qtb = Integer.valueOf(getTradeQty(s, false, STConstants.openID));
+			qtb = getTradeQty(s, false, STConstants.openID);
 		}
 		else if (qtb <= 0 && sim_mode) {
 			log.info("Simulation mode, can not sell before buy!");
@@ -203,8 +204,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
 			        sm.put(s.getID(), s);
 			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
-			        
-			        createBuySellRecord(s, STConstants.openID, false, qtyToTrade);
+			    	if (!sim_mode) {
+			            createBuySellRecord(s, STConstants.openID, false, qtyToTrade);
+			    	}
 			        break;
 			    }
 			    catch (Exception e) {
@@ -405,7 +407,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 				return true;
 			}
 		} else {
-			log.info("Adding first trade record for stock as: " + s.getID());
+			log.info("Adding today first trade record for stock as: " + s.getID());
 			StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
                     s.getName(),
                     s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
@@ -749,9 +751,9 @@ public class TradeStrategyImp implements ITradeStrategy {
     
     }
 	
-	private static String getTradeQty(Stock2 s, boolean is_buy_flg, String openID) {
+	private static int getTradeQty(Stock2 s, boolean is_buy_flg, String openID) {
         String sql;
-        String qtyToTrade = "100";
+        int qtyToTrade = 100;
         try {
             Connection con = DBManager.getConnection();
             Statement stm = con.createStatement();
@@ -784,25 +786,22 @@ public class TradeStrategyImp implements ITradeStrategy {
             
             if (is_buy_flg) {
                 if (buyCnt > sellCnt) {
-                	qtyToTrade = "100";
+                	qtyToTrade = 100;
                 }
-                else if (s.getCur_pri() <= 10) {
-                	qtyToTrade = "200";
+                else if (s.getCur_pri() <= 20) {
+                	qtyToTrade = 200;
                 }
                 else {
-                	qtyToTrade = "100";
+                	qtyToTrade = 100;
                 }
             }
             else {
             	//is sell trade.
-                if (buyCnt < sellCnt) {
-                	qtyToTrade = "100";
-                }
-                else if (s.getCur_pri() <= 10) {
-                	qtyToTrade = "200";
+                if (s.getCur_pri() <= 20) {
+                	qtyToTrade = 200;
                 }
                 else {
-                	qtyToTrade = "100";
+                	qtyToTrade = 100;
                 }
             }
             log.info("For stock:" + s.getName() + " will " + (is_buy_flg ? "buy " : "sell ") + qtyToTrade + " with buyCnt:" + buyCnt + " sellCnt:" + sellCnt);
@@ -907,13 +906,11 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return true;
 	}
 	
-	public static ICashAccount getVirtualCashAcntForStock(String stk) {
-        String AcntForStk = CashAcntManger.ACNT_PREFIX + stk;
+	public ICashAccount getVirtualCashAcntForStock(String stk) {
+        String AcntForStk = STConstants.ACNT_TRADE_PREFIX + stk;
         
-        // Default account is not for SimTrader.
-        boolean crt_sim_acnt = false;
-        if (CashAcntManger.ACNT_PREFIX.startsWith("Sim")) {
-        	crt_sim_acnt = true;
+        if (sim_mode) {
+        	AcntForStk = STConstants.ACNT_SIM_PREFIX + stk;
         }
         
         ICashAccount acnt = cash_account_map.get(AcntForStk);
@@ -923,7 +920,7 @@ public class TradeStrategyImp implements ITradeStrategy {
             if (acnt == null) {
             	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
                 CashAcntManger
-                .crtAcnt(AcntForStk, CashAcntManger.DFT_INIT_MNY, 0.0, 0.0, CashAcntManger.DFT_SPLIT, CashAcntManger.DFT_MAX_USE_PCT, !crt_sim_acnt);
+                .crtAcnt(AcntForStk, STConstants.DFT_INIT_MNY, 0.0, 0.0, STConstants.DFT_SPLIT, STConstants.DFT_MAX_USE_PCT, !sim_mode);
                 acnt = CashAcntManger.loadAcnt(AcntForStk);
             }
             

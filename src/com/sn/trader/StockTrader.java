@@ -192,7 +192,6 @@ public class StockTrader {
 	private static void resetTest() {
 		String sql;
 		String openID = "tester";
-		CashAcntManger.ACNT_PREFIX = "StockTrader";
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
