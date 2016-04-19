@@ -26,6 +26,6 @@ public class STConstants {
 	
 	
 	public static final int MAX_LOST_TIME_BEFORE_EXIT_TRADE = 2;
-	public static final int MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE = 3;
+	public static final int MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE = 7;
     
 }
