@@ -87,6 +87,7 @@ public class StockDataConsumer implements IWork {
                     Timestamp ts = s.getDl_dt();
                     StockMarket.calIndex(ts);
                     cnt = 0;
+                    con.commit();
                 }
             }
         } catch (Exception e) {

@@ -180,6 +180,7 @@ public abstract class BaseWCReporter implements IWCMsg {
             int crted = stm.executeUpdate(sql);
             if (crted == 1) {
                 log.info("Msg from user:" + frmUsr + " already being added!");
+                con.commit();
             } else {
                 log.info("Msg from user:" + frmUsr + " NOT being added!");
             }
