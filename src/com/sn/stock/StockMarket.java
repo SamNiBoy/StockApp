@@ -319,6 +319,32 @@ public class StockMarket{
     	}
     	return false;
     }
+    
+    public static boolean isGzStocksJumpWater(int tailSz, double jumpPct, double stockJumpCntPct) {
+    	if (gzstocks.isEmpty()) {
+    		getGzstocks();
+    	}
+    	int total = gzstocks.size();
+    	if (total == 0) {
+    		log.info("stocks is emtpy, can not check jump water for gz stocks.");
+    		return false;
+    	}
+    	int jumpCnt = 0;
+    	for(String s : gzstocks.keySet()) {
+    		Stock2 stk = gzstocks.get(s);
+    		if (stk.isJumpWater(tailSz, jumpPct)) {
+    			jumpCnt++;
+    		}
+    	}
+    	log.info("total Gz stocks:" + total + " and jump water stocks:" + jumpCnt);
+    	double actPct = jumpCnt * 1.0 / total;
+    	log.info("Passed param [tailSz, stockJumpCntPct, jumpPct]=[" + tailSz + "," + stockJumpCntPct + "," + jumpPct + "] actPct:" + actPct + " return " + (actPct >= stockJumpCntPct ? "true" : "false"));
+    	if (actPct >= stockJumpCntPct) {
+    		return true;
+    	}
+    	return false;
+    }
+    
     static public boolean calIndex(Timestamp tm) {
 
         Connection con = DBManager.getConnection();

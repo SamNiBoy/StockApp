@@ -49,9 +49,9 @@ public class QtySellPointSelector implements ISellPointSelector {
 			if (con1 && con2) {
 				return true;
 			}
-			// If there are 40% stock dropped 0.1 in laster 10 minutes, then return true.
-			else if (StockMarket.isJumpWater(10, 0.1, 0.4)) {
-				log.info("Stock " + stk.getID() + " cur price, Market is jumping water, a good sell point, return true.");
+			// If there are 80% gz stock dropped 0.01 in laster 5 minutes, then return true.
+			else if (stk.isJumpWater(5, 0.01) && StockMarket.isGzStocksJumpWater(5, 0.01, 0.8)) {
+				log.info("Stock " + stk.getID() + " cur price, gz stocks are jumping water, a good sell point, return true.");
 				//for testing purpose, still return false;
 				return true;
 			}

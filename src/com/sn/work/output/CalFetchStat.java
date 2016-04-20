@@ -48,7 +48,7 @@ public class CalFetchStat implements com.sn.work.itf.IWork {
         String msg = "";
         Connection con = DBManager.getConnection();
         String sql = "select count(*) totCnt, count(*)/case when count(distinct id) = 0 then 1 else count(distinct id) end cntPerStk "
-                + "  from stkDat";
+                + "  from stkDat2 where to_char(dl_dt,'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') ";
         try {
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery(sql);

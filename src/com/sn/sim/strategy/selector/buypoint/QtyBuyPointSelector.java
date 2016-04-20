@@ -48,7 +48,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
 							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
 					return true;
-				} else if (stk.isStoppingJumpWater() && !StockMarket.isJumpWater(50, 0.7, 0.8)) {
+				} else if (stk.isStoppingJumpWater() && !StockMarket.isGzStocksJumpWater(5, 0.01, 0.5)) {
 					log.info("Stock cur price is stopping dumping, isGoodBuyPoint return true.");
 					//for testing purpose, still return false;
 					return true;
