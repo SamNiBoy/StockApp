@@ -49,9 +49,9 @@ public class QtySellPointSelector implements ISellPointSelector {
 			if (con1 && con2) {
 				return true;
 			}
-			// If current stock is 70% decrease, and market has 70% decrease for 80% stocks in last 50 times
-			else if (stk.isJumpWater(100, 0.7) && StockMarket.isJumpWater(50, 0.7, 0.8)) {
-				log.info("Stock " + stk.getID() + " cur price is jump water, a good sell point, return true.");
+			// If there are 40% stock dropped 0.1 in laster 10 minutes, then return true.
+			else if (StockMarket.isJumpWater(10, 0.1, 0.4)) {
+				log.info("Stock " + stk.getID() + " cur price, Market is jumping water, a good sell point, return true.");
 				//for testing purpose, still return false;
 				return true;
 			}
@@ -110,10 +110,10 @@ public class QtySellPointSelector implements ISellPointSelector {
     			ratio = 1;
     		}
     		else if (Degree < -10 && Degree >= -20) {
-    			ratio = 0.9;
+    			ratio = 0.5;
     	    }
     	    else if (Degree < -20) {
-    	    	ratio = 0.8;
+    	    	ratio = 0.4;
     	    }
     	}
     	else {
@@ -121,10 +121,10 @@ public class QtySellPointSelector implements ISellPointSelector {
     			ratio = 1;
     		}
     		else if (Degree > 10 && Degree <= 20){
-    			ratio = 1.1;
+    			ratio = 1.3;
     		}
     		else {
-    			ratio = 1.2;
+    			ratio = 1.5;
     		}
     	}
     	log.info("Calculate sell thresh value with Degree:" + Degree + ", baseThresh:" + baseThresh + " ratio:" + ratio + " final thresh value:" + ratio * baseThresh);

@@ -126,10 +126,10 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     			ratio = 1;
     		}
     		else if (Degree < -10 && Degree >= -20) {
-    			ratio = 1.2;
+    			ratio = 1.5;
     	    }
     	    else if (Degree < -20) {
-    	    	ratio = 1.3;
+    	    	ratio = 2;
     	    }
     	}
     	else {

@@ -547,29 +547,29 @@ public class Stock2 implements Comparable<Stock2>{
         		is_jumpping_water = false;
         		return false;
         	}
-        	int incCnt = 0, desCnt = 0;
         	int idx = cur_pri_lst.size() - 1;
-        	while (tailSz > 0) {
+        	double yt_cls_pri = this.getYtClsPri();
+        	double detPri = 0;
+        	int ts = tailSz;
+        	while (ts > 0) {
         		if (cur_pri_lst.get(idx) < cur_pri_lst.get(idx - 1)) {
-        			desCnt++;
-        		}
-        		else {
-        			incCnt++;
+        			detPri += cur_pri_lst.get(idx) - cur_pri_lst.get(idx - 1);
         		}
         		idx--;
-        		tailSz--;
+        		ts--;
         	}
-        	log.info("check jumpWater, cur_pri_lst.size: " + cur_pri_lst.size() + " desCnt:" + desCnt
-        			+ " / incCnt:" + incCnt + ", desCnt pct:" + desCnt * 1.0 / (desCnt + incCnt) + " passed pct:" + pct);
-        	if (desCnt * 1.0 / (desCnt + incCnt) >= pct) {
-        		log.info("return true");
+        	
+        	log.info("check jumpWater, cur_pri_lst.size: " + cur_pri_lst.size() + " TailSz:" + tailSz + " yt_cls_pri:" + yt_cls_pri
+        			+ " detPri:" + detPri + ", detPri/yt_cls_pri pct:" + detPri * 1.0 / yt_cls_pri + " passed pct:" + pct);
+        	if (detPri * 1.0 / yt_cls_pri <= -pct) {
+        		log.info("jump water return true");
                 tailSz_jumpping_water = tailSz;
                 pct_jumpping_water = pct;
         		is_jumpping_water = true;
         		return true;
         	}
         	else {
-        		log.info("return false");
+        		log.info("jump water return false");
                 tailSz_jumpping_water = tailSz;
                 pct_jumpping_water = pct;
         		is_jumpping_water = false;
@@ -589,22 +589,21 @@ public class Stock2 implements Comparable<Stock2>{
         		return false;
         	}
         	int tailSz = tailSz_jumpping_water;
-        	int incCnt = 0, desCnt = 0;
         	int idx = cur_pri_lst.size() - 1;
+        	double yt_cls_pri = this.getYtClsPri();
+        	int ts = tailSz;
+        	double detPri = 0;
         	while (tailSz > 0) {
         		if (cur_pri_lst.get(idx) < cur_pri_lst.get(idx - 1)) {
-        			desCnt++;
-        		}
-        		else {
-        			incCnt++;
+        			detPri += cur_pri_lst.get(idx) - cur_pri_lst.get(idx - 1);
         		}
         		idx--;
-        		tailSz--;
+        		ts--;
         	}
-        	log.info("check isStopJumpWater, cur_pri_lst.size: " + cur_pri_lst.size() + " desCnt:" + desCnt
-        			+ " / incCnt:" + incCnt + ", desCnt pct:" + desCnt * 1.0 / (desCnt + incCnt) + " passed pct:" + pct_jumpping_water);
-        	if (desCnt * 1.0 / (desCnt + incCnt) <= pct_jumpping_water / 2) {
-        		log.info("return true");
+        	log.info("check isStopjumpWater, cur_pri_lst.size: " + cur_pri_lst.size() + " TailSz:" + tailSz + " yt_cls_pri:" + yt_cls_pri
+        			+ " detPri:" + detPri + ", detPri/yt_cls_pri pct:" + detPri * 1.0 / yt_cls_pri + " passed pct/2:" + pct_jumpping_water/2);
+        	if (detPri * 1.0 / yt_cls_pri >= pct_jumpping_water / 2) {
+        		log.info("isStopjumpWater return true");
         		is_jumpping_water = false;
         		return true;
         	}
