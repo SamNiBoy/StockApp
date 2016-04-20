@@ -50,7 +50,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 				return true;
 			}
 			// If there are 80% gz stock dropped 0.01 in laster 5 minutes, then return true.
-			else if (stk.isJumpWater(5, 0.01) && StockMarket.isGzStocksJumpWater(5, 0.01, 0.8)) {
+			else if (stk.isJumpWater(5, 0.01) && StockMarket.isGzStocksJumpWater(5, 0.01, 0.8) && StockMarket.getDegree() < 0) {
 				log.info("Stock " + stk.getID() + " cur price, gz stocks are jumping water, a good sell point, return true.");
 				//for testing purpose, still return false;
 				return true;

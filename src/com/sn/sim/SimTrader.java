@@ -226,7 +226,7 @@ public class SimTrader implements IWork{
 		    e.printStackTrace();
 	   }
        
-       WorkManager.shutdownWorks();
+       //WorkManager.shutdownWorks();
 
     }
 
