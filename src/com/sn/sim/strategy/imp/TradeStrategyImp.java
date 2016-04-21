@@ -372,6 +372,11 @@ public class TradeStrategyImp implements ITradeStrategy {
 						sellCnt++;
 					}
 				}
+				
+				if (buyCnt >= STConstants.MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK || sellCnt >= STConstants.MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK) {
+					log.info("Stock:" + s.getID() + " buy/sell reached limit:" + STConstants.MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK);
+					return false;
+				}
 				log.info("For stock " + s.getID() + " total sellCnt:" + sellCnt + ", total buyCnt:" + buyCnt);
 
 				// We only allow buy BUY_MORE_THEN_SELL_CNT more than sell.

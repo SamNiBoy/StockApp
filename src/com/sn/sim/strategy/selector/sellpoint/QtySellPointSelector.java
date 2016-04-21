@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -14,12 +16,14 @@ import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.stock.indicator.MACD;
+import com.sn.work.task.SellModeWatchDog;
 
 public class QtySellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(QtySellPointSelector.class);
 
 	private double BASE_TRADE_THRESH = 0.03;
+	Map<String, Boolean> preSellMode = new HashMap<String, Boolean>();
 	/**
 	 * @param args
 	 */
@@ -30,6 +34,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 		Double yt_cls_pri = stk.getYtClsPri();
 		Double cur_pri = stk.getCur_pri();
 		double tradeThresh = BASE_TRADE_THRESH;
+		
 
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
@@ -49,10 +54,15 @@ public class QtySellPointSelector implements ISellPointSelector {
 			if (con1 && con2) {
 				return true;
 			}
-			// If there are 80% gz stock dropped 0.01 in laster 5 minutes, then return true.
-			else if (stk.isJumpWater(5, 0.01) && StockMarket.isGzStocksJumpWater(5, 0.01, 0.8) && StockMarket.getDegree() < 0) {
-				log.info("Stock " + stk.getID() + " cur price, gz stocks are jumping water, a good sell point, return true.");
-				//for testing purpose, still return false;
+			
+			Boolean psd = preSellMode.get(stk.getID());
+			Boolean csd = SellModeWatchDog.isStockInSellMode(stk);
+			
+			preSellMode.put(stk.getID(), csd);
+
+			//If we switched to sell mode, make sure sell once.
+			if (csd == true && (psd == null || psd != csd)) {
+				log.info("Stock " + stk.getID() + " is in sell mode, at sell point, return true.");
 				return true;
 			}
 			log.info("common bad sell point.");

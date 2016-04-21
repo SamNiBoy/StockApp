@@ -14,6 +14,7 @@ public class STConstants {
     public static final String ACNT_SIM_PREFIX = "SIM";
     
     //class vars.
+    public static final int MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK = 3;
 	public static final int MAX_TRADE_TIMES_PER_STOCK = 10;
 	public static final int MAX_TRADE_TIMES_PER_DAY = 40;
 	public static final int BUY_MORE_THEN_SELL_CNT = 2;

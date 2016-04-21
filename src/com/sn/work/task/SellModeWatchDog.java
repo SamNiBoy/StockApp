@@ -92,7 +92,7 @@ public class SellModeWatchDog implements IWork {
 	public SellModeWatchDog(long id, long dbn) {
 		initDelay = id;
 		delayBeforNxtStart = dbn;
-		selectors.add(new DefaultSellModeSelector());
+		//selectors.add(new DefaultSellModeSelector());
 		selectors.add(new AvgClsPriSellModeSelector());
 		selectors.add(new CurPriLostSellModeSelector());
 		selectors.add(new BadTradeSellModeSelector());
@@ -169,32 +169,17 @@ public class SellModeWatchDog implements IWork {
 	private boolean stockMatchUnSellMode(Stock2 s) {
         boolean suggest_flg = false;
 
-        for (IStockSelector slt : selectors) {
-           	if (slt.isMandatoryCriteria() && slt.isTargetStock(s, null)) {
-           		log.info("stockMatchSellMode mandatory criteria matched, unset sell mode return false.");
-           		suggest_flg = false;
-           		break;
-           	}
-           	else {
-           		suggest_flg = true;
-           	}
-        }
-        if (suggest_flg) {
-        	for (IStockSelector slt : selectors) {
-        		if (slt.isMandatoryCriteria()) {
-        			continue;
-        		}
-        		if (slt.isTargetStock(s, null)) {
-        			log.info("unset sell mode return false for non mandatory criteria.");
-        			suggest_flg = false;
-        			break;
-        		}
-        	}
-        }
+       for (IStockSelector slt : selectors) {
+       	   if (slt.isTargetStock(s, null)) {
+       	   	   log.info("unset sell mode return false for non mandatory criteria.");
+       	   	   suggest_flg = false;
+       	   	   break;
+       	   }
+       }
         return suggest_flg;
 	}
 	
-	private boolean isStockInSellMode(Stock2 s) {
+	public static boolean isStockInSellMode(Stock2 s) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
