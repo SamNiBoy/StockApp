@@ -1208,7 +1208,7 @@ public class Stock2 implements Comparable<Stock2>{
     
     public boolean isJumpWater(int tailSz, double pct) {
     	if (sd.isJumpWater(tailSz, pct)) {
-    		sd.PrintStockData();
+    		//sd.PrintStockData();
     		return true;
     	}
     	else {
