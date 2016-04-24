@@ -19,6 +19,8 @@ import com.sn.sim.strategy.imp.STConstants;
 import com.sn.sim.strategy.selector.stock.AvgClsPriStockSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
+import com.sn.sim.strategy.selector.stock.KeepGainStockSelector;
+import com.sn.sim.strategy.selector.stock.PriceStockSelector;
 import com.sn.sim.strategy.selector.stock.StddevStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
