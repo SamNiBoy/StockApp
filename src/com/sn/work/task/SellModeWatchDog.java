@@ -12,18 +12,12 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.mail.reporter.RecommandStockObserverable;
 import com.sn.mail.reporter.SellModeStockObserverable;
 import com.sn.sim.strategy.imp.STConstants;
 import com.sn.sim.strategy.selector.stock.AvgClsPriSellModeSelector;
-import com.sn.sim.strategy.selector.stock.AvgClsPriStockSelector;
 import com.sn.sim.strategy.selector.stock.BadTradeSellModeSelector;
 import com.sn.sim.strategy.selector.stock.CurPriLostSellModeSelector;
-import com.sn.sim.strategy.selector.stock.DefaultSellModeSelector;
-import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
-import com.sn.sim.strategy.selector.stock.PriceStockSelector;
-import com.sn.sim.strategy.selector.stock.StddevStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
@@ -167,14 +161,32 @@ public class SellModeWatchDog implements IWork {
 	}
 	 
 	private boolean stockMatchUnSellMode(Stock2 s) {
-        boolean suggest_flg = false;
+        boolean suggest_flg = true;
 
+        boolean pre_sell_mode = isStockInSellMode(s);
        for (IStockSelector slt : selectors) {
        	   if (slt.isTargetStock(s, null)) {
        	   	   log.info("unset sell mode return false for non mandatory criteria.");
        	   	   suggest_flg = false;
        	   	   break;
        	   }
+       }
+       
+       //If we are going to disable sell mode, make more safe check.
+       if (pre_sell_mode && suggest_flg) {
+           Double ytclspri = s.getYtClsPri();
+           Double curPri = s.getCur_pri();
+           Double opnPri = s.getOpen_pri();
+           double incPct = 0.0;
+           
+           if (ytclspri != null && curPri != null && opnPri != null && ytclspri > 0) {
+               incPct = (curPri - opnPri)/ ytclspri;
+               log.info("got incPct:" + incPct);
+           }
+           if (incPct < STConstants.MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE) {
+               log.info("cur price is incPct:" + incPct + " which is less 5% yt_cls_pri, not suggest disable sell mode.");
+               suggest_flg = false;
+           }
        }
         return suggest_flg;
 	}

@@ -1,17 +1,9 @@
 package com.sn.sim.strategy.selector.stock;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
-import com.sn.db.DBManager;
-import com.sn.sim.strategy.imp.TradeStrategyImp;
 import com.sn.stock.Stock2;
-import com.sn.stock.StockMarket;
 import com.sn.work.task.SuggestStock;
 
 public class BadTradeSellModeSelector implements IStockSelector {

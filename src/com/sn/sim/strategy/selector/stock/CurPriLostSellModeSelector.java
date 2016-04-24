@@ -1,17 +1,9 @@
 package com.sn.sim.strategy.selector.stock;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.log4j.Logger;
-
 import com.sn.cashAcnt.ICashAccount;
-import com.sn.db.DBManager;
-import com.sn.sim.strategy.imp.TradeStrategyImp;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.stock.Stock2;
-import com.sn.stock.StockMarket;
 
 public class CurPriLostSellModeSelector implements IStockSelector {
 
@@ -22,14 +14,15 @@ public class CurPriLostSellModeSelector implements IStockSelector {
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
     	Double ytclspri = s.getYtClsPri();
     	Double curPri = s.getCur_pri();
+    	Double opnPri = s.getOpen_pri();
     	double lostPct = 0.0;
     	
-    	if (ytclspri != null && curPri != null && ytclspri > 0) {
-    		lostPct = (curPri - ytclspri)/ ytclspri;
+    	if (ytclspri != null && curPri != null && opnPri != null && ytclspri > 0) {
+    		lostPct = (curPri - opnPri)/ ytclspri;
     		log.info("got lost:" + lostPct);
     	}
-        if (lostPct < -0.05) {
-            log.info("cur price is lost:" + lostPct + " which is over 5% yt_cls_pri, set to sell mode.");
+        if (lostPct < STConstants.MAX_LOST_PCT_FOR_SELL_MODE) {
+            log.info("cur price is lost:" + lostPct + " which is over " + STConstants.MAX_LOST_PCT_FOR_SELL_MODE + " yt_cls_pri, set to sell mode.");
             return true;
         }
         
