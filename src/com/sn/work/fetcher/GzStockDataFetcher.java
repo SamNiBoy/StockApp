@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -169,6 +170,13 @@ public class GzStockDataFetcher implements IWork {
                     }
                     j++;
                 
+                    LocalDateTime lt = LocalDateTime.now();
+                    int hr = lt.getHour();
+                    
+                    if (hr <= 8 || hr >= 16) {
+                        log.info(" hour is not in market time: " + hr + ", will not save the data!");
+                        continue;
+                    }
                     //log.info(str);
                     srd = RawStockData.createStockData(str);
 

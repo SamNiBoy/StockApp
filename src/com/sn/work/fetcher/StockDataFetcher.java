@@ -9,6 +9,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -168,6 +169,14 @@ public class StockDataFetcher implements IWork {
                     }
                     j++;
                 
+                    LocalDateTime lt = LocalDateTime.now();
+                    int hr = lt.getHour();
+                    
+                    if (hr <= 8 || hr >= 15) {
+                        log.info(" hour is not in market time: " + hr + ", will not save the data!");
+                        continue;
+                    }
+                    
                     log.info(str);
                     srd = RawStockData.createStockData(str);
                     
@@ -175,6 +184,12 @@ public class StockDataFetcher implements IWork {
                         log.info("can not create rawdata for " + str + " continue...");
                         continue;
                     }
+                    
+                    if (srd.td_opn_pri <= 0) {
+                        log.info("market not open yet. td_opn_pri <= 0 for gzstock:" + srd.id + " can not trade based on it, continue");
+                        continue;
+                    }
+                    
                     log.info("StockDataFetcher put rawdata to queue with size:" + cnsmr.getDq().size());
                     cnsmr.getDq().put(srd);
                 }
