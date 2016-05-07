@@ -14,8 +14,7 @@ public class IncStopSellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(IncStopSellPointSelector.class);
 
-	private double BASE_TRADE_THRESH = 0.03;
-	Map<String, Boolean> preSellMode = new HashMap<String, Boolean>();
+	private double BASE_TRADE_THRESH = 0.05;
 	
     private boolean matchIncStopMode(Stock2 s){
 
@@ -74,15 +73,14 @@ public class IncStopSellPointSelector implements ISellPointSelector {
 			double curPct = (cur_pri - minPri) / yt_cls_pri;
 			
 			boolean con1 = maxPct > tradeThresh && curPct > maxPct * 9.0 / 10.0;
-			boolean con2 = stk.isLstQtyPlused();
 			
 			log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + "yt_cls_pri:" + yt_cls_pri + " maxPri:" + maxPri + " minPri:"
 					+ minPri + " maxPct:" + maxPct + " curPct:" + curPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
-			log.info("con1 is:" + con1 + " con2 is:" + con2);
-			if (con1 && con2) {
+			log.info("con1 is:" + con1);
+			if (con1) {
 				return true;
 			}
-			log.info("common bad sell point.");
+			log.info("IncStopSellPointSelector common bad sell point.");
 		} else {
 			log.info("isGoodSellPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
 		}
