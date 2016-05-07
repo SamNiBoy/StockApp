@@ -29,6 +29,10 @@ public class QtySellPointSelector implements ISellPointSelector {
 	 */
 	public boolean isGoodSellPoint(Stock2 stk, ICashAccount ac) {
 
+	    if (IncStopSellPointSelector.matchIncStopMode(stk)) {
+	        log.info("QtySellPointerSelector skip stock which should be handled by IncStopSellPointSelector");
+	        return false;
+	    }
 		Double maxPri = stk.getMaxCurPri();
 		Double minPri = stk.getMinCurPri();
 		Double yt_cls_pri = stk.getYtClsPri();

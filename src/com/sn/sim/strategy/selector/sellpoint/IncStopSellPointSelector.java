@@ -16,7 +16,7 @@ public class IncStopSellPointSelector implements ISellPointSelector {
 
 	private double BASE_TRADE_THRESH = 0.05;
 	
-    private boolean matchIncStopMode(Stock2 s){
+    public static boolean matchIncStopMode(Stock2 s){
 
 	    TopGainStockSelector selector = new TopGainStockSelector();
 	    if (selector.isTargetStock(s, null)) {
