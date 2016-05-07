@@ -309,7 +309,7 @@ public class SuggestStock implements IWork {
 			return;
 		}
 		try {
-			sql = "select distinct s.id from usrStk s, stkdlyinfo i "
+			sql = "select s.id from usrStk s, stkdlyinfo i "
 				+ "where s.id = i.id "
 				+ "  and s.gz_flg = 1 "
 				+ "  and s.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "') "
