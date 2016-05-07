@@ -65,7 +65,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 			preSellMode.put(stk.getID(), csd);
 
 			//If we switched to sell mode, make sure sell once.
-			if (csd == true && (psd == null || psd != csd)) {
+			if (csd == true && psd == false) {
 				log.info("Stock " + stk.getID() + " is in sell mode, at sell point, return true.");
 				return true;
 			}
