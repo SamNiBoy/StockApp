@@ -16,7 +16,7 @@ import com.sn.stock.StockMarket;
 public class PriceStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(PriceStockSelector.class);
-    double HighestPrice = 20;
+    double HighestPrice = 40;
     /**
      * @param args
      */

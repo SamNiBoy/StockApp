@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.PrimitiveIterator.OfDouble;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
@@ -45,7 +47,7 @@ import oracle.sql.DATE;
 public class StockTrader {
 
 	//interface vars.
-    ITradeStrategy strategy = TradeStrategyGenerator.generatorDefaultStrategy();
+    static Set<ITradeStrategy> strategies = TradeStrategyGenerator.generatorDefaultStrategies();
     static private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
     static private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
 	private boolean sim_mode = false;
@@ -56,16 +58,18 @@ public class StockTrader {
 		// loadStocksForTrade("osCWfs-ZVQZfrjRK0ml-eEpzeop0");
 	}
 
-	public ITradeStrategy getStrategy() {
-		return strategy;
+	public Set<ITradeStrategy> getStrategies() {
+		return strategies;
 	}
 	public void setStrategy(ITradeStrategy s) {
-		strategy = s;
-		strategy.enableSimulationMode(sim_mode);
+	    s.enableSimulationMode(sim_mode);
+	    strategies.add(s);
 	}
 	public StockTrader(boolean is_simulation_mode) {
 		sim_mode = is_simulation_mode;
-		strategy.enableSimulationMode(is_simulation_mode);
+		for (ITradeStrategy s : strategies) {
+		    s.enableSimulationMode(is_simulation_mode);
+		}
     }
 	/**
 	 * @param args
@@ -102,7 +106,8 @@ public class StockTrader {
 			s2.getSd().getCur_pri_lst().add(19.0);
 			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
 			Thread.currentThread().sleep(seconds_to_delay);
-			st.strategy.buyStock(s2);
+			for (ITradeStrategy s : strategies)
+			    s.buyStock(s2);
 			
 			StockBuySellEntry r22 = new StockBuySellEntry("002448", "B2", 18.2, false,
 					Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
@@ -110,7 +115,8 @@ public class StockTrader {
 			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
 			
 			Thread.currentThread().sleep(seconds_to_delay);
-			st.strategy.sellStock(s2);
+			for (ITradeStrategy s : strategies)
+			    s.sellStock(s2);
 			
 //			StockBuySellEntry r23 = new StockBuySellEntry("002431", "B3", 8.4, true,
 //					Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
@@ -186,7 +192,9 @@ public class StockTrader {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		st.strategy.reportTradeStat();
+		
+		for (ITradeStrategy s : strategies)
+		    s.reportTradeStat();
 	}
 	
 	private static void resetTest() {
@@ -227,12 +235,13 @@ public class StockTrader {
 
 	// This method perform real trade and sending mail.
 	public boolean performTrade(Stock2 s) {
-        
-		if (strategy.performTrade(s)) {
-        	StockBuySellEntry rc = strategy.getLstTradeRecord(s);
-        	rc.printStockInfo();
-            stockTomail.add(rc);
-        }
+	    for (ITradeStrategy stg : strategies) {
+		    if (stg.performTrade(s)) {
+            	StockBuySellEntry rc = stg.getLstTradeRecord(s);
+            	rc.printStockInfo();
+                stockTomail.add(rc);
+            }
+	    }
         
         if (!stockTomail.isEmpty() && !sim_mode) {
            log.info("Now sending buy/sell stock information for " + stockTomail.size());
