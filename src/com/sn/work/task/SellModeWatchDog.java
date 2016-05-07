@@ -13,13 +13,13 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.SellModeStockObserverable;
-import com.sn.sim.strategy.imp.STConstants;
-import com.sn.sim.strategy.selector.stock.AvgClsPriSellModeSelector;
-import com.sn.sim.strategy.selector.stock.BadTradeSellModeSelector;
-import com.sn.sim.strategy.selector.stock.CurPriLostSellModeSelector;
-import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
+import com.sn.trade.strategy.imp.STConstants;
+import com.sn.trade.strategy.selector.stock.AvgClsPriSellModeSelector;
+import com.sn.trade.strategy.selector.stock.BadTradeSellModeSelector;
+import com.sn.trade.strategy.selector.stock.CurPriLostSellModeSelector;
+import com.sn.trade.strategy.selector.stock.IStockSelector;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 

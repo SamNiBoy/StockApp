@@ -12,7 +12,7 @@ import com.sn.mail.reporter.GzStockBuySellPointObserverable;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
-import com.sn.trader.StockTrader;
+import com.sn.trade.StockTrader;
 import com.sn.stock.RawStockData;
 import com.sn.work.itf.IWork;
 

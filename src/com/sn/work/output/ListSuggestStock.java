@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.sim.strategy.imp.STConstants;
 import com.sn.stock.StockMarket;
+import com.sn.trade.strategy.imp.STConstants;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 

@@ -24,12 +24,12 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.CashAcntManger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.sim.strategy.ITradeStrategy;
-import com.sn.sim.strategy.imp.TradeStrategyGenerator;
 import com.sn.stock.RawStockData;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
-import com.sn.trader.StockTrader;
+import com.sn.trade.StockTrader;
+import com.sn.trade.strategy.ITradeStrategy;
+import com.sn.trade.strategy.imp.TradeStrategyGenerator;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
