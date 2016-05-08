@@ -22,7 +22,7 @@ import com.sn.work.task.usrStock;
 public class WeChatReporter extends BaseWCReporter{
 
     static Logger log = Logger.getLogger(WeChatReporter.class);
-
+    
     /**
      * @param args
      */
@@ -83,12 +83,12 @@ public class WeChatReporter extends BaseWCReporter{
             return printHelp();
         }
         
-        log.info("got input:[" + content + "], firstly let's check tasks");
-        if (!TaskManager.isTasksStarted())
-        {
-            TaskManager.startTasks();
-        }
-
+            log.info("Firstly let's check tasks");
+            if (!TaskManager.isTasksStarted())
+            {
+                TaskManager.startTasks();
+            }
+        
         if (msgType.equals("event")) {
         	if (content.equals("subscribe")) {
         		resContent = "欢迎关注微信:\n"

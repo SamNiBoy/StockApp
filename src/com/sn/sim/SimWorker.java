@@ -98,7 +98,7 @@ public class SimWorker implements IWork {
     	try {
     		con = DBManager.getConnection();
     		stm = con.createStatement();
-    		sql = "select to_char(sysdate - 5, 'yyyy-mm-dd') sd, to_char(sysdate, 'yyyy-mm-dd') ed from dual ";
+    		sql = "select to_char(sysdate - 3, 'yyyy-mm-dd') sd, to_char(sysdate, 'yyyy-mm-dd') ed from dual ";
     		log.info(sql);
     		rs = stm.executeQuery(sql);
     		rs.next();

@@ -89,7 +89,7 @@ public class SellModeWatchDog implements IWork {
 		//selectors.add(new DefaultSellModeSelector());
 		selectors.add(new AvgClsPriSellModeSelector());
 		selectors.add(new CurPriLostSellModeSelector());
-		selectors.add(new BadTradeSellModeSelector());
+		//selectors.add(new BadTradeSellModeSelector());
 	}
 
 	public void run() {
