@@ -18,8 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.sim.strategy.imp.STConstants;
 import com.sn.stock.Stock2.StockData;
+import com.sn.trade.strategy.imp.STConstants;
 
 public class StockMarket{
 

@@ -15,16 +15,16 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.RecommandStockObserverable;
-import com.sn.sim.strategy.imp.STConstants;
-import com.sn.sim.strategy.selector.stock.AvgClsPriStockSelector;
-import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
-import com.sn.sim.strategy.selector.stock.IStockSelector;
-import com.sn.sim.strategy.selector.stock.KeepGainStockSelector;
-import com.sn.sim.strategy.selector.stock.PriceStockSelector;
-import com.sn.sim.strategy.selector.stock.StddevStockSelector;
-import com.sn.sim.strategy.selector.stock.TopGainStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
+import com.sn.trade.strategy.imp.STConstants;
+import com.sn.trade.strategy.selector.stock.AvgClsPriStockSelector;
+import com.sn.trade.strategy.selector.stock.DefaultStockSelector;
+import com.sn.trade.strategy.selector.stock.IStockSelector;
+import com.sn.trade.strategy.selector.stock.KeepGainStockSelector;
+import com.sn.trade.strategy.selector.stock.PriceStockSelector;
+import com.sn.trade.strategy.selector.stock.StddevStockSelector;
+import com.sn.trade.strategy.selector.stock.TopGainStockSelector;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 

@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.stock.StockMarket;
-import com.sn.trader.StockTrader;
+import com.sn.trade.StockTrader;
 import com.sn.work.itf.IWork;
 import com.sn.work.WorkManager;
 
