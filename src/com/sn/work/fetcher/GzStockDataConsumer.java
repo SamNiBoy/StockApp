@@ -83,7 +83,12 @@ public class GzStockDataConsumer implements IWork {
                 
                 log.info("check stock " + s.getID() + " for buy/sell point");
                 
-                st.performTrade(s);
+                try {
+                    st.performTrade(s);
+                }
+                catch (Exception e) {
+                    log.error("Got error with:" + e.getMessage());
+                }
             }
             else {
             	log.info("Stock:" + srd.id + " is not in gzstock list!");
