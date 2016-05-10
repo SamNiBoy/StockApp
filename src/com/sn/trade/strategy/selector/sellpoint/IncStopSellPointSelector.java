@@ -53,8 +53,8 @@ public class IncStopSellPointSelector implements ISellPointSelector {
 	            int hr = lt.getHour();
 	            int mnt = lt.getMinute();
 	            int timeStm = hr*100 + mnt;
-	            //For incStopMode, we only sell on morning, buy after 14:30.
-	            if (timeStm > 1100) {
+	            //For incStopMode, we only sell before 14:59, buy after 14:30.
+	            if (timeStm >= 1459) {
 	                log.info("good time passed for stock: " + stk.getID() + ", sell it anyway.");
 	                return true;
 	            }

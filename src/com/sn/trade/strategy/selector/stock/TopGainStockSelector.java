@@ -49,6 +49,7 @@ public class TopGainStockSelector implements IStockSelector {
             		     "        sum(case when (td_cls_pri - yt_cls_pri)/yt_cls_pri >=0.09 then 1 else 0 end) incStopCnt" +
             		     "   from stkdlyinfo " +
             		     "  where yt_cls_pri > 0 " +
+            		     "    and (td_cls_pri - td_opn_pri) / yt_cls_pri >= 0.06 " +
             		     "    and dt >= to_char(sysdate - 14, 'yyyy-mm-dd') " +
             		     "  group by id " +
             		     "  having sum(case when (td_cls_pri - yt_cls_pri)/yt_cls_pri >=0.09 then 1 else 0 end) >=  " + MIN_INC_STOP_CNT +

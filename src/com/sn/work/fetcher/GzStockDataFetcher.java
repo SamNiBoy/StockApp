@@ -172,8 +172,10 @@ public class GzStockDataFetcher implements IWork {
                 
                     LocalDateTime lt = LocalDateTime.now();
                     int hr = lt.getHour();
+                    int mnt = lt.getMinute();
                     
-                    if (hr <= 8 || hr >= 16) {
+                    // start trade at 9:20AM
+                    if (hr <= 8|| (hr == 9 && mnt < 20) || hr >= 16) {
                         log.info(" hour is not in market time: " + hr + ", will not save the data!");
                         continue;
                     }
