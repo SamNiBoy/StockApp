@@ -8,14 +8,13 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.stock.Stock2;
+import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.selector.stock.TopGainStockSelector;
 
 public class IncStopSellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(IncStopSellPointSelector.class);
 
-	private double BASE_TRADE_THRESH = 0.05;
-	
     public static boolean matchIncStopMode(Stock2 s){
 
 	    TopGainStockSelector selector = new TopGainStockSelector();
@@ -65,7 +64,7 @@ public class IncStopSellPointSelector implements ISellPointSelector {
 		Double minPri = stk.getMinCurPri();
 		Double yt_cls_pri = stk.getYtClsPri();
 		Double cur_pri = stk.getCur_pri();
-		double tradeThresh = BASE_TRADE_THRESH;
+		double tradeThresh = STConstants.TOP_INCSTOP_BASE_TRADE_THRESH;
 		
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
