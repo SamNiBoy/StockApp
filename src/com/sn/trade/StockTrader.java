@@ -106,7 +106,7 @@ public class StockTrader {
 			s2.getSd().getCur_pri_lst().add(19.0);
 			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
 			Thread.currentThread().sleep(seconds_to_delay);
-			for (ITradeStrategy s : strategies)
+			for (ITradeStrategy s : st.strategies)
 			    s.buyStock(s2);
 			
 			StockBuySellEntry r22 = new StockBuySellEntry("002448", "B2", 18.2, false,
@@ -115,7 +115,7 @@ public class StockTrader {
 			s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
 			
 			Thread.currentThread().sleep(seconds_to_delay);
-			for (ITradeStrategy s : strategies)
+			for (ITradeStrategy s : st.strategies)
 			    s.sellStock(s2);
 			
 //			StockBuySellEntry r23 = new StockBuySellEntry("002431", "B3", 8.4, true,
@@ -193,7 +193,7 @@ public class StockTrader {
 			e.printStackTrace();
 		}
 		
-		for (ITradeStrategy s : strategies)
+		for (ITradeStrategy s : st.strategies)
 		    s.reportTradeStat();
 	}
 	
