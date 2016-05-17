@@ -47,9 +47,9 @@ import oracle.sql.DATE;
 public class StockTrader {
 
 	//interface vars.
-    static Set<ITradeStrategy> strategies = TradeStrategyGenerator.generatorDefaultStrategies();
-    static private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
-    static private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
+    Set<ITradeStrategy> strategies = TradeStrategyGenerator.generatorDefaultStrategies();
+    private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
+    private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
 	private boolean sim_mode = false;
 	
 	static Logger log = Logger.getLogger(StockTrader.class);
