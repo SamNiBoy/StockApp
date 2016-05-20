@@ -101,7 +101,7 @@ public class QtySellPointSelector implements ISellPointSelector {
     			double dev = rs.getDouble("dev");
     			log.info("dev calculated for stock:" + stk.getID() + " is:" + dev);
     			if (dev >= 0.01 && dev <= 0.04) {
-    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + STConstants.BASE_TRADE_THRESH;
+    				baseThresh = STConstants.BASE_TRADE_THRESH * (dev - 0.01) / (0.04 - 0.01) + STConstants.BASE_TRADE_THRESH;
     			}
     		}
     		else {
