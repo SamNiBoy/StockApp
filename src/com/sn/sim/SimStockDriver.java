@@ -131,7 +131,7 @@ public class SimStockDriver {
                 while (rs.next()) {
                     id = rs.getString("id");
                     name = rs.getString("name");
-                    s = new Stock2(id, name, start_dt, end_dt, StockData.BIG_SZ);
+                    s = new Stock2(id, name, start_dt, end_dt, StockData.SMALL_SZ);
                     simstocks.put(id, s);
                     cnt++;
                     log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -150,7 +150,7 @@ public class SimStockDriver {
                     if (rs.next()) {
                         id = rs.getString("id");
                         name = rs.getString("name");
-                        s = new Stock2(id, name, start_dt, end_dt, StockData.BIG_SZ);
+                        s = new Stock2(id, name, start_dt, end_dt, StockData.SMALL_SZ);
                         simstocks.put(id, s);
                         cnt++;
                         log.info("LoadStocks completed:" + cnt * 1.0 / stk_list.size());

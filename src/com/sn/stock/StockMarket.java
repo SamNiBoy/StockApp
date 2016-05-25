@@ -132,7 +132,7 @@ public class StockMarket{
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, StockData.BIG_SZ);
+                s = new Stock2(id, name, StockData.SMALL_SZ);
                 gzstocks.put(id, s);
                 cnt++;
                 log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -172,7 +172,7 @@ public class StockMarket{
             if (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, StockData.BIG_SZ);
+                s = new Stock2(id, name, StockData.SMALL_SZ);
                 gzstocks.put(id, s);
                 log.info("addGzStocks completed for: " + stkId);
             }
