@@ -5,6 +5,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+
 import org.apache.log4j.Logger;
 
 import com.sn.work.itf.IWork;
@@ -13,9 +18,19 @@ import com.sn.work.WorkManager;
 import com.sn.work.fetcher.GzStockDataFetcher;
 import com.sn.work.fetcher.StockDataFetcher;
 
-public class TaskManager {
+/* Below section needs to be added into web.xml file in tomcat:
+<listener>  
+<listener-class>com.sn.work.task.TaskManager</listener-class>  
+</listener>
+*/
+public class TaskManager implements ServletContextListener{
 
-    static Logger log = Logger.getLogger(TaskManager.class);
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	static Logger log = Logger.getLogger(TaskManager.class);
     
     private volatile static boolean tskStarted = false;
     
@@ -76,5 +91,21 @@ public class TaskManager {
     {
         return tskStarted;
     }
+
+	@Override
+	public void contextDestroyed(ServletContextEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void contextInitialized(ServletContextEvent arg0) {
+		// TODO Auto-generated method stub
+
+        log.info("Auto start tasks begin...");
+        startTasks();
+        log.info("Auto start tasks ended!");
+    
+	}
 
 }
