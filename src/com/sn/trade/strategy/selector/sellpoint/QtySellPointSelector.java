@@ -123,10 +123,10 @@ public class QtySellPointSelector implements ISellPointSelector {
     			ratio = 1;
     		}
     		else if (Degree < -10 && Degree >= -20) {
-    			ratio = 0.5;
+    			ratio = 0.9;
     	    }
     	    else if (Degree < -20) {
-    	    	ratio = 0.4;
+    	    	ratio = 0.8;
     	    }
     	}
     	else {

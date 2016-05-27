@@ -186,11 +186,11 @@ public class GzStockDataFetcher implements IWork {
                     	log.info("market not open yet. td_opn_pri <= 0 for gzstock:" + srd.id + " can not trade based on it, continue");
                     	continue;
                     }
-                    cnsmr.getDq().put(srd);
-                    
-                    log.info("GzStockDataFetcher put stock data to queue:" + srd.id + " size is:" + cnsmr.getDq().size());
-                    
                     synchronized (srd) {
+                        cnsmr.getDq().put(srd);
+                        
+                        log.info("GzStockDataFetcher put stock data to queue:" + srd.id + " size is:" + cnsmr.getDq().size());
+                    
                     	log.info("now wait GzStockDataConsumer consume the srd:" + srd.id);
                         srd.wait();
                     }

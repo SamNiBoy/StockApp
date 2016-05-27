@@ -73,27 +73,28 @@ public class GzStockDataConsumer implements IWork {
         		e.printStackTrace();
         		log.info("Unexpected exception happened from GzStockDataConsumer take()");
         	}
-            
-            Stock2 s = gzs.get(srd.id);
-           
-            if (s != null) {
-                log.info("Now consuming StockRawData " + srd.id + " Name" + srd.name + "dq size:" + dataqueue.size());
-                
-                s.injectData(srd);
-                
-                log.info("check stock " + s.getID() + " for buy/sell point");
-                
-                try {
-                    st.performTrade(s);
-                }
-                catch (Exception e) {
-                    log.error("Got error with:" + e.getMessage());
-                }
-            }
-            else {
-            	log.info("Stock:" + srd.id + " is not in gzstock list!");
-            }
             synchronized (srd) {
+                Stock2 s = gzs.get(srd.id);
+                
+                if (s != null) {
+                    log.info("Now consuming StockRawData " + srd.id + " Name" + srd.name + "dq size:" + dataqueue.size());
+                    
+                    s.injectData(srd);
+                    
+                    log.info("check stock " + s.getID() + " for buy/sell point");
+                    
+                    try {
+                        st.performTrade(s);
+                    }
+                    catch (Exception e) {
+                        log.error("Got error with:" + e.getMessage());
+                    }
+                }
+                else {
+                	log.info("Stock:" + srd.id + " is not in gzstock list, adding to gz list!");
+                	StockMarket.addGzStocks(srd.id);
+                }
+
             	log.info("After GzStockDataConsumer consume the srd:" + srd.id + " call notify() to wakeup GzStockDataFetcher.");
                 srd.notify();
             }
