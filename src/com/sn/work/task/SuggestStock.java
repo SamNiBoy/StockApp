@@ -264,6 +264,7 @@ public class SuggestStock implements IWork {
 		Statement stm = null;
 		ResultSet rs = null;
 		int exiter = 0;
+		int totCnt = 0;
 		try {
 			sql = "select * from usr where suggest_stock_enabled = 1";
 			log.info(sql);
@@ -276,6 +277,7 @@ public class SuggestStock implements IWork {
 				ResultSet rs2 = stm2.executeQuery(sql);
 				sql = "";
 				if (rs2.next()) {
+					totCnt++;
 					String stkid = rs2.getString("id");
 					if (shouldStockExitTrade(stkid)) {
 						exiter++;
@@ -292,8 +294,12 @@ public class SuggestStock implements IWork {
 			e.printStackTrace();
 		}
 		
-		if (exiter > 0) {
-			moveStockToTrade(exiter);
+		int newStocksNum = (exiter < (STConstants.MAX_NUM_STOCKS_FOR_TRADE - totCnt) ? (STConstants.MAX_NUM_STOCKS_FOR_TRADE - totCnt) : exiter);
+		
+		log.info("MAX_NUM_STOCKS_FOR_TRADE:" + STConstants.MAX_NUM_STOCKS_FOR_TRADE + ", totCnt: " + totCnt + ", exiter:" + exiter + ", newStocksNum:" + newStocksNum);
+		
+		if (newStocksNum > 0) {
+			moveStockToTrade(newStocksNum);
 		}
 	}
 	
