@@ -23,35 +23,35 @@ public class IncStopBuyPointSelector implements IBuyPointSelector {
 	        return false;
 	    }
 	    
-		double tradeThresh = BASE_TRADE_THRESH;
-	    Double maxPri = stk.getMaxCurPri();
-	    Double minPri = stk.getMinCurPri();
-	    Double yt_cls_pri = stk.getYtClsPri();
-	    Double cur_pri = stk.getCur_pri();
-        
-	    if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null && !StockMarket.isMarketTooCold(null)) {
-        
-	    	double maxPct = (maxPri - minPri) / yt_cls_pri;
-	    	double curPct =(cur_pri - minPri) / yt_cls_pri;
-        
-	    	boolean qtyPlused = stk.isLstQtyPlused();
-	    	
-	    	log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", isQtyPlused:" + qtyPlused);
-	    	
-	    	//only when the stock is increased to stop, then buy it.
-	    	if (maxPct >= tradeThresh && curPct >= maxPct * 9.0 / 10.0 && stk.isLstQtyPlused()) {
-	    		log.info("IncStopBuyPointSelector isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
-	    				+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
-	    		return true;
-	    	}
-	    	else {
-	    		log.info("IncStopBuyPointSelector isGoodBuyPoint false Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
-	    				+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
-	    	}
-	    } else {
-	    	log.info("IncStopBuyPointSelector isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, isMarketTooCold is true return false");
-	    }
-		return false;
+//		double tradeThresh = BASE_TRADE_THRESH;
+//	    Double maxPri = stk.getMaxCurPri();
+//	    Double minPri = stk.getMinCurPri();
+//	    Double yt_cls_pri = stk.getYtClsPri();
+//	    Double cur_pri = stk.getCur_pri();
+//        
+//	    if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null && !StockMarket.isMarketTooCold(null)) {
+//        
+//	    	double maxPct = (maxPri - minPri) / yt_cls_pri;
+//	    	double curPct =(cur_pri - minPri) / yt_cls_pri;
+//        
+//	    	boolean qtyPlused = stk.isLstQtyPlused();
+//	    	
+//	    	log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", isQtyPlused:" + qtyPlused);
+//	    	
+//	    	//only when the stock is increased to stop, then buy it.
+//	    	if (maxPct >= tradeThresh && curPct >= maxPct * 9.0 / 10.0 && stk.isLstQtyPlused()) {
+//	    		log.info("IncStopBuyPointSelector isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
+//	    				+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
+//	    		return true;
+//	    	}
+//	    	else {
+//	    		log.info("IncStopBuyPointSelector isGoodBuyPoint false Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
+//	    				+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
+//	    	}
+//	    } else {
+//	    	log.info("IncStopBuyPointSelector isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, isMarketTooCold is true return false");
+//	    }
+		return true;
 	}
 	
 	@Override
@@ -87,15 +87,15 @@ public class IncStopBuyPointSelector implements IBuyPointSelector {
 	}
 
 	   private boolean matchIncStopMode(Stock2 s){
-	        LocalDateTime lt = LocalDateTime.now();
-	        int hr = lt.getHour();
-	        int mnt = lt.getMinute();
-	        int timeStm = hr*100 + mnt;
-	        if (timeStm < 1430 || timeStm > 1500) {
-	            log.info("matchIncStopMode says false, timeStm: " + timeStm);
-	            return false;
-	        }
-	        log.info("Time is after 14:30 and before 15:00, good time for matchIncStopMode to buy.");
+//	        LocalDateTime lt = LocalDateTime.now();
+//	        int hr = lt.getHour();
+//	        int mnt = lt.getMinute();
+//	        int timeStm = hr*100 + mnt;
+//	        if (timeStm < 1430 || timeStm > 1500) {
+//	            log.info("matchIncStopMode says false, timeStm: " + timeStm);
+//	            return false;
+//	        }
+//	        log.info("Time is after 14:30 and before 15:00, good time for matchIncStopMode to buy.");
 	        
 	        TopGainStockSelector selector = new TopGainStockSelector();
 	        if (selector.isTargetStock(s, null)) {

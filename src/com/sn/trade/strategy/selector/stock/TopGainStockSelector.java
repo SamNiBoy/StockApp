@@ -16,17 +16,18 @@ import com.sn.stock.Stock2;
 public class TopGainStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(TopGainStockSelector.class);
-    int MIN_INC_STOP_CNT = 3;
+//    int MIN_INC_STOP_CNT = 3;
     int MAX_STOCK_NUM = 50;
     
-    static private Map<String, Integer> topStocks = new HashMap<String, Integer>();
+    Double MAX_THRESH_VALUE = 0.01;
+    int    MAX_DAYS_VALUE = 7;
+    static private Map<String, Double> topStocks = new HashMap<String, Double>();
     /**
      * @param args
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
-        if (topStocks.isEmpty()) {
-            buildtopStocks();
-        }
+    	topStocks.clear();
+        buildtopStocks();
         
         if (!topStocks.isEmpty() && topStocks.containsKey(s.getID())) {
             log.info("Stock:" + s.getID() + " is selected as good stock from " + topStocks.size() + " stocks.");
@@ -45,20 +46,29 @@ public class TopGainStockSelector implements IStockSelector {
 
         try {
             Statement stm = con.createStatement();
-            String sql = " select id, " +
-            		     "        sum(case when (td_cls_pri - yt_cls_pri)/yt_cls_pri >=0.09 then 1 else 0 end) incStopCnt" +
-            		     "   from stkdlyinfo " +
-            		     "  where yt_cls_pri > 0 " +
-            		     "    and (td_cls_pri - td_opn_pri) / yt_cls_pri >= 0.06 " +
-            		     "    and dt >= to_char(sysdate - 14, 'yyyy-mm-dd') " +
-            		     "  group by id " +
-            		     "  having sum(case when (td_cls_pri - yt_cls_pri)/yt_cls_pri >=0.09 then 1 else 0 end) >=  " + MIN_INC_STOP_CNT +
-            		     "  order by incStopCnt desc";
+//            String sql = " select id, " +
+//            		     "        sum(case when (td_cls_pri - yt_cls_pri)/yt_cls_pri >=0.09 then 1 else 0 end) incStopCnt" +
+//            		     "   from stkdlyinfo " +
+//            		     "  where yt_cls_pri > 0 " +
+//            		     "    and (td_cls_pri - td_opn_pri) / yt_cls_pri >= 0.06 " +
+//            		     "    and dt >= to_char(sysdate - 14, 'yyyy-mm-dd') " +
+//            		     "  group by id " +
+//            		     "  having sum(case when (td_cls_pri - yt_cls_pri)/yt_cls_pri >=0.09 then 1 else 0 end) >=  " + MIN_INC_STOP_CNT +
+//            		     "  order by incStopCnt desc";
+            String sql = "select (tp.cur_pri - tp.td_opn_pri) / tp.yt_cls_pri detpri, tp.id from stkdat2 tp, stkdlyinfo yp "
+                         + " where tp.td_opn_pri > yp.td_opn_pri "
+                         + " and tp.id = yp.id "
+                         + " and to_char(tp.dl_dt-1,'yyyy-mm-dd') = yp.dt "
+                         + " and tp.cur_pri > tp.td_opn_pri "
+                         + " and (tp.cur_pri - tp.td_opn_pri) / tp.yt_cls_pri < " + MAX_THRESH_VALUE
+                         + " and tp.ft_id = (select max(ft_id) from stkdat2 t2 where tp.id = t2.id) "
+                         + " and tp.cur_pri > (select max(td_hst_pri) from stkdlyinfo t3 where t3.id = tp.id and t3.dt >= to_char(tp.dl_dt - " + MAX_DAYS_VALUE + ",'yyyy-mm-dd') and t3.dt < to_char(tp.dl_dt,'yyyy-mm-dd')) "
+                         + " order by detpri desc ";
             
             ResultSet rs = stm.executeQuery(sql);
             while (rs.next() && cnt < MAX_STOCK_NUM) {
-                log.info("Build topStocks: " + rs.getString("id") + " incStopCnt:" + rs.getInt("incStopCnt"));
-                topStocks.put(rs.getString("id"), rs.getInt("incStopCnt"));
+                log.info("Build topStocks: " + rs.getString("id") + " detpri:" + rs.getDouble("detpri"));
+                topStocks.put(rs.getString("id"), rs.getDouble("detpri"));
                 cnt++;
             }
             rs.close();
@@ -89,18 +99,18 @@ public class TopGainStockSelector implements IStockSelector {
 	@Override
 	public boolean adjustCriteria(boolean harder) {
 		// TODO Auto-generated method stub
-		log.info("try " + (harder ? " harder" : " loose") + " MIN_INC_STOP_CNT:" + MIN_INC_STOP_CNT + " MAX_STOCK_NUM:" + MAX_STOCK_NUM);
+		log.info("try " + (harder ? " harder" : " loose") + " MAX_THRESH_VALUE:" + MAX_THRESH_VALUE + " MAX_DAYS_VALUE:" + MAX_DAYS_VALUE);
 		if (harder) {
-		    MIN_INC_STOP_CNT ++;
+			MAX_DAYS_VALUE ++;
 		    MAX_STOCK_NUM--;
-		    if (MIN_INC_STOP_CNT > 14) {
-		        MIN_INC_STOP_CNT = 14;
+		    if (MAX_DAYS_VALUE > 14) {
+		    	MAX_DAYS_VALUE = 14;
 		    }
 		    if (MAX_STOCK_NUM < 20) {
 		        MAX_STOCK_NUM = 20;
 		    }
 		}
-	    log.info("After adjust, try " + (harder ? " harder" : " loose") + " MIN_INC_STOP_CNT:" + MIN_INC_STOP_CNT + " MAX_STOCK_NUM:" + MAX_STOCK_NUM);
+	    log.info("After adjust, try " + (harder ? " harder" : " loose") + " MAX_THRESH_VALUE:" + MAX_THRESH_VALUE + " MAX_DAYS_VALUE:" + MAX_DAYS_VALUE);
 
 		return false;
 	}
