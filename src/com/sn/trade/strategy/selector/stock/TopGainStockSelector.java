@@ -22,12 +22,23 @@ public class TopGainStockSelector implements IStockSelector {
     Double MAX_THRESH_VALUE = 0.01;
     int    MAX_DAYS_VALUE = 7;
     static private Map<String, Double> topStocks = new HashMap<String, Double>();
+    
+    boolean refresh_cache_flg = false;
+    
+	public TopGainStockSelector(boolean always_refresh_cache_flg) {
+		refresh_cache_flg = always_refresh_cache_flg;
+	}
     /**
      * @param args
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
-    	topStocks.clear();
-        buildtopStocks();
+    	if (refresh_cache_flg) {
+    	    topStocks.clear();
+    	}
+    	
+    	if (topStocks.isEmpty()) {
+            buildtopStocks();
+    	}
         
         if (!topStocks.isEmpty() && topStocks.containsKey(s.getID())) {
             log.info("Stock:" + s.getID() + " is selected as good stock from " + topStocks.size() + " stocks.");
