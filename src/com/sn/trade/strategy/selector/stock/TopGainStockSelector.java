@@ -75,7 +75,7 @@ public class TopGainStockSelector implements IStockSelector {
                          + " and tp.ft_id = (select max(ft_id) from stkdat2 t2 where tp.id = t2.id) "
                          + " and tp.cur_pri > (select max(td_hst_pri) from stkdlyinfo t3 where t3.id = tp.id and t3.dt >= to_char(tp.dl_dt - " + MAX_DAYS_VALUE + ",'yyyy-mm-dd') and t3.dt < to_char(tp.dl_dt,'yyyy-mm-dd')) "
                          + " order by detpri desc ";
-            
+            log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
             while (rs.next() && cnt < MAX_STOCK_NUM) {
                 log.info("Build topStocks: " + rs.getString("id") + " detpri:" + rs.getDouble("detpri"));
@@ -120,6 +120,16 @@ public class TopGainStockSelector implements IStockSelector {
 		    if (MAX_STOCK_NUM < 20) {
 		        MAX_STOCK_NUM = 20;
 		    }
+		}
+		else {
+			MAX_THRESH_VALUE += 0.01;
+			MAX_DAYS_VALUE--;
+			if (MAX_THRESH_VALUE > 0.03) {
+				MAX_THRESH_VALUE = 0.03;
+			}
+			if (MAX_DAYS_VALUE < 3) {
+				MAX_DAYS_VALUE = 3;
+			}
 		}
 	    log.info("After adjust, try " + (harder ? " harder" : " loose") + " MAX_THRESH_VALUE:" + MAX_THRESH_VALUE + " MAX_DAYS_VALUE:" + MAX_DAYS_VALUE);
 
