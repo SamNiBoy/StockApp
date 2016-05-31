@@ -120,6 +120,10 @@ public class TopGainStockSelector implements IStockSelector {
 		    if (MAX_STOCK_NUM < 20) {
 		        MAX_STOCK_NUM = 20;
 		    }
+		    MAX_THRESH_VALUE -= 0.01;
+		    if (MAX_THRESH_VALUE < 0.01) {
+		    	MAX_THRESH_VALUE = 0.01;
+		    }
 		}
 		else {
 			MAX_THRESH_VALUE += 0.01;
