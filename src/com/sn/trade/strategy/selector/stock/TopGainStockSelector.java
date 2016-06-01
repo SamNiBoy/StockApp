@@ -76,6 +76,7 @@ public class TopGainStockSelector implements IStockSelector {
                          + " and (tp.cur_pri - tp.td_opn_pri) / tp.yt_cls_pri < " + MAX_THRESH_VALUE
                          + " and tp.ft_id = (select max(ft_id) from stkdat2 t2 where tp.id = t2.id) "
                          + " and tp.cur_pri > (select max(td_hst_pri) from stkdlyinfo t3 where t3.id = tp.id and t3.dt >= to_char(tp.dl_dt - " + MAX_DAYS_VALUE + ",'yyyy-mm-dd') and t3.dt < to_char(tp.dl_dt,'yyyy-mm-dd')) "
+                         + " and not exists (select 'x' from stkdlyinfo t4 where tp.id = t4.id and t4.dt >= to_char(sysdate - " + MAX_DAYS_VALUE + ", 'yyyy-mm-dd') and (t4.td_cls_pri - t4.td_opn_pri) / t4.yt_cls_pri > 0.03) "
                          + " order by detpri desc ";
             log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
