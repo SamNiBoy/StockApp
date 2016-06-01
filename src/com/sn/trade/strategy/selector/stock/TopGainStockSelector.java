@@ -3,6 +3,7 @@ package com.sn.trade.strategy.selector.stock;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,24 +18,37 @@ public class TopGainStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(TopGainStockSelector.class);
 //    int MIN_INC_STOP_CNT = 3;
-    int MAX_STOCK_NUM = 50;
+    static int MAX_STOCK_NUM = 50;
     
-    Double MAX_THRESH_VALUE = 0.01;
-    int    MAX_DAYS_VALUE = 7;
+    static Double MAX_THRESH_VALUE = 0.01;
+    static int    MAX_DAYS_VALUE = 7;
+    
+    static int MINUTES_FOR_EXPIRE = 5;
+    
+    
     static private Map<String, Double> topStocks = new HashMap<String, Double>();
     
-    boolean refresh_cache_flg = false;
-    
-	public TopGainStockSelector(boolean always_refresh_cache_flg) {
-		refresh_cache_flg = always_refresh_cache_flg;
+    static private LocalDateTime lst_time = null;
+	public TopGainStockSelector() {
 	}
     /**
      * @param args
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
     	synchronized (topStocks) {
-    	    if (refresh_cache_flg) {
-    	        topStocks.clear();
+    		
+    		boolean time_expired = false;
+            LocalDateTime lt = LocalDateTime.now();
+            
+            log.info("Now time is:" + lt.toString() + ", lst_time is:" + (lst_time == null ? "null" : lst_time.toString()));
+            if (lst_time == null || lt.minusMinutes(MINUTES_FOR_EXPIRE).isAfter(lst_time)) {
+            	lst_time = lt;
+            	time_expired = true;
+            }
+
+            log.info("time_expired is:" + time_expired);
+    	    if (time_expired) {
+    	    	topStocks.clear();
     	    }
     	    
     	    if (topStocks.isEmpty()) {

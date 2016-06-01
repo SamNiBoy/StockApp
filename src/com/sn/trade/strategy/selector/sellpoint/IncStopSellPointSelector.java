@@ -17,7 +17,7 @@ public class IncStopSellPointSelector implements ISellPointSelector {
 
     public static boolean matchIncStopMode(Stock2 s){
 
-	    TopGainStockSelector selector = new TopGainStockSelector(false);
+	    TopGainStockSelector selector = new TopGainStockSelector();
 	    if (selector.isTargetStock(s, null)) {
 	        log.info("TopGainStockSelector determined the stock is good, return true for matchIncStopMode.");
 	        return true;

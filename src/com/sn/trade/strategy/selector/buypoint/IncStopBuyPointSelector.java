@@ -97,7 +97,7 @@ public class IncStopBuyPointSelector implements IBuyPointSelector {
 //	        }
 //	        log.info("Time is after 14:30 and before 15:00, good time for matchIncStopMode to buy.");
 	        
-	        TopGainStockSelector selector = new TopGainStockSelector(false);
+	        TopGainStockSelector selector = new TopGainStockSelector();
 	        if (selector.isTargetStock(s, null)) {
 	            log.info("TopGainStockSelector determined the stock is good, return true for matchIncStopMode to buy.");
 	            return true;
