@@ -530,11 +530,11 @@ public class Stock2 implements Comparable<Stock2>{
                 }
             }
             if (cnt * 1.0 / (sz - 1) > 0.6) {
-                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " big than 0.8, plused return true.");
+                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " big than 0.6, plused return true.");
                 return true;
             }
             else {
-                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " less than 0.8, plused return false.");
+                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " less than 0.6, plused return false.");
                 return false;
             }
         }

@@ -32,22 +32,24 @@ public class TopGainStockSelector implements IStockSelector {
      * @param args
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
-    	if (refresh_cache_flg) {
-    	    topStocks.clear();
-    	}
-    	
-    	if (topStocks.isEmpty()) {
-            buildtopStocks();
-    	}
+    	synchronized (topStocks) {
+    	    if (refresh_cache_flg) {
+    	        topStocks.clear();
+    	    }
+    	    
+    	    if (topStocks.isEmpty()) {
+                buildtopStocks();
+    	    }
         
-        if (!topStocks.isEmpty() && topStocks.containsKey(s.getID())) {
-            log.info("Stock:" + s.getID() + " is selected as good stock from " + topStocks.size() + " stocks.");
-            return true;
-        }
-        else {
-            log.info("Stock:" + s.getID() + " is NOT selected as good stock from " + topStocks.size() + " stocks.");
-            return false;
-        }
+            if (!topStocks.isEmpty() && topStocks.containsKey(s.getID())) {
+                log.info("Stock:" + s.getID() + " is selected as good stock from " + topStocks.size() + " stocks.");
+                return true;
+            }
+            else {
+                log.info("Stock:" + s.getID() + " is NOT selected as good stock from " + topStocks.size() + " stocks.");
+                return false;
+            }
+    	}
     }
     
     private boolean buildtopStocks() {
