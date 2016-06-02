@@ -111,7 +111,7 @@ public class SuggestStock implements IWork {
 		delayBeforNxtStart = dbn;
 		//selectors.add(new DefaultStockSelector());
 		selectors.add(new PriceStockSelector());
-		//selectors.add(new StddevStockSelector());
+		selectors.add(new StddevStockSelector());
 		//selectors.add(new AvgClsPriStockSelector());
 //		selectors.add(new ClosePriceTrendStockSelector());
 		selectors.add(new TopGainStockSelector());

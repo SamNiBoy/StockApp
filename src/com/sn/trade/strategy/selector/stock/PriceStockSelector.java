@@ -17,13 +17,15 @@ public class PriceStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(PriceStockSelector.class);
     double HighestPrice = 40;
+    double LowestPrice = 10;
     /**
      * @param args
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
-        if (s.getCur_pri() != null && s.getCur_pri() <= HighestPrice) {
-                    log.info("returned true because price is <= 20.");
-                    return true;
+        Double curPri = s.getCur_pri();
+        if (curPri != null && curPri <= HighestPrice && curPri >= LowestPrice) {
+             log.info("returned true because price " + curPri + " is in [" + LowestPrice + "," + HighestPrice +"]");
+             return true;
         }
         log.info("returned false for PriceStockSelector");
         return false;
