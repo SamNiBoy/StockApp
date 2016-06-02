@@ -15,6 +15,7 @@ import com.sn.db.DBManager;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.stock.indicator.MACD;
+import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.work.task.SellModeWatchDog;
 
@@ -22,8 +23,6 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(QtySellPointSelector.class);
 
-	private double BASE_TRADE_THRESH = 0.03;
-	Map<String, Boolean> preSellMode = new HashMap<String, Boolean>();
 	/**
 	 * @param args
 	 */
@@ -37,7 +36,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 		Double minPri = stk.getMinCurPri();
 		Double yt_cls_pri = stk.getYtClsPri();
 		Double cur_pri = stk.getCur_pri();
-		double tradeThresh = BASE_TRADE_THRESH;
+		double tradeThresh = STConstants.BASE_TRADE_THRESH;
 		
 
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
@@ -59,10 +58,10 @@ public class QtySellPointSelector implements ISellPointSelector {
 				return true;
 			}
 			
-			Boolean psd = preSellMode.get(stk.getID());
+			Boolean psd = StockMarket.getStockSellMode(stk.getID());
 			Boolean csd = SellModeWatchDog.isStockInSellMode(stk);
 			
-			preSellMode.put(stk.getID(), csd);
+			StockMarket.putStockSellMode(stk.getID(), csd);
 
 			//If we switched to sell mode, make sure sell once.
 			if ((csd != null && psd != null) && (csd == true && psd == false)) {
@@ -78,7 +77,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 	
     public double getSellThreshValueByDegree(double Degree, Stock2 stk) {
     	
-    	double baseThresh = BASE_TRADE_THRESH;
+    	double baseThresh = STConstants.BASE_TRADE_THRESH;
     	
     	Timestamp tm = stk.getDl_dt();
         String deadline = null;
@@ -102,11 +101,11 @@ public class QtySellPointSelector implements ISellPointSelector {
     			double dev = rs.getDouble("dev");
     			log.info("dev calculated for stock:" + stk.getID() + " is:" + dev);
     			if (dev >= 0.01 && dev <= 0.04) {
-    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + BASE_TRADE_THRESH;
+    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + STConstants.BASE_TRADE_THRESH;
     			}
     		}
     		else {
-    			baseThresh = BASE_TRADE_THRESH;
+    			baseThresh = STConstants.BASE_TRADE_THRESH;
     		}
     		rs.close();
     		stm.close();

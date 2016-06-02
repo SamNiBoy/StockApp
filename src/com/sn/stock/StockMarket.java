@@ -29,6 +29,8 @@ public class StockMarket{
     static private ConcurrentHashMap<String, Stock2> gzstocks = new ConcurrentHashMap<String, Stock2>();
     static private ConcurrentHashMap<String, Stock2> recomstocks = null;
     
+    static private Map<String, Boolean> gzStockSellMode = new HashMap<String, Boolean>();
+    
     private static int StkNum = 0;
     private static int TotInc = 0;
     private static int TotDec = 0;
@@ -55,6 +57,25 @@ public class StockMarket{
                 Stock2 stk = stocks.get(s);
                 stk.printStockInfo();
             }
+    }
+    
+    static public Boolean getStockSellMode(String stkid) {
+        Boolean sell_mode = null;
+        sell_mode = gzStockSellMode.get(stkid);
+        
+        if (sell_mode == null) {
+            log.info("sell mode for stock:" + stkid + " is not set yet.");
+            return null;
+        }
+        else {
+            log.info("sell mode for stock:" + stkid + " is " + sell_mode);
+            return sell_mode;
+        }
+    }
+    
+    static public void putStockSellMode(String stkid, boolean sell_mode) {
+        log.info("put stock sell mode " + sell_mode + " for stock:" + stkid);
+        gzStockSellMode.put(stkid, sell_mode);
     }
     
     static public boolean loadStocks() {

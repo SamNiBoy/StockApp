@@ -29,8 +29,8 @@ import com.sn.trade.strategy.selector.stock.IStockSelector;
 
 public class TradeStrategyGenerator {
 
-    static public List<ITradeStrategy> generatorStrategies() throws Exception {
-        List<ITradeStrategy> res = new ArrayList<ITradeStrategy>();
+    static public Set<ITradeStrategy> generatorStrategies() throws Exception {
+        Set<ITradeStrategy> res = new HashSet<ITradeStrategy>();
         
         IBuyPointSelector bs = new QtyBuyPointSelector();
         ISellPointSelector ses = new QtySellPointSelector();
@@ -45,11 +45,11 @@ public class TradeStrategyGenerator {
         
         res.add(its);
         
-        IBuyPointSelector bs2 = new IncStopBuyPointSelector();
-        ISellPointSelector ses2 = new IncStopSellPointSelector();
-        ITradeStrategy its2 = new TradeStrategyImp(bs2, ses2, ca);
+//        IBuyPointSelector bs2 = new IncStopBuyPointSelector();
+//        ISellPointSelector ses2 = new IncStopSellPointSelector();
+//        ITradeStrategy its2 = new TradeStrategyImp(bs2, ses2, ca);
         
-        res.add(its2);
+//        res.add(its2);
         return res;
     }
     

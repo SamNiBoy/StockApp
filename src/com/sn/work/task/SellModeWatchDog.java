@@ -184,7 +184,7 @@ public class SellModeWatchDog implements IWork {
                log.info("got incPct:" + incPct);
            }
            if (incPct < STConstants.MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE) {
-               log.info("cur price is incPct:" + incPct + " which is less 5% yt_cls_pri, not suggest disable sell mode.");
+               log.info("cur price is incPct:" + incPct + " which is less " + STConstants.MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE + " yt_cls_pri, not suggest disable sell mode.");
                suggest_flg = false;
            }
        }
