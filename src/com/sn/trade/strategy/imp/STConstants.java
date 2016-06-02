@@ -27,7 +27,7 @@ public class STConstants {
 	
 	
 	public static final int MAX_LOST_TIME_BEFORE_EXIT_TRADE = 2;
-	public static final int MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE = 7;
+	public static final int MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE = 3;
 	
 	public static final double MAX_LOST_PCT_FOR_SELL_MODE = -0.06;
 	public static final double MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE = 0.04;
@@ -36,4 +36,6 @@ public class STConstants {
 	
 	public static final double TOP_INCSTOP_BASE_TRADE_THRESH = 0.06;
 	public static final int MAX_NUM_STOCKS_FOR_TRADE = 10;
+	public static final int DEV_CALCULATE_DAYS = 7;
+	public static final double MIN_DEV_BEFORE_EXIT_TRADE = 0.007;
 }

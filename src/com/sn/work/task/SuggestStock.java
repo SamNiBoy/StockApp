@@ -120,8 +120,8 @@ public class SuggestStock implements IWork {
 
 	public void run() {
 		// TODO Auto-generated method stub
+		boolean mandatory_pass_flg = true;
 		boolean suggest_flg = false;
-		boolean loop_nxt_stock = false;
 
 //        StockDataFetcher.lock.lock();
 //        try {
@@ -146,15 +146,24 @@ public class SuggestStock implements IWork {
 			    	Stock2 s = stks.get(stk);
 			    	for (IStockSelector slt : selectors) {
 			    		if (slt.isMandatoryCriteria() && !slt.isTargetStock(s, null)) {
-			    			loop_nxt_stock = true;
+			    			mandatory_pass_flg = false;
 			    			break;
 			    		}
-			    		else {
-			    			suggest_flg = true;
+			    		else if (slt.isMandatoryCriteria()){
+			    			mandatory_pass_flg = true;
+			    			
+			    			// If the mandatory criteria also an OR criteria, then enough to suggest this stock.
+			    			if (slt.isORCriteria()) {
+			    				suggest_flg = true;
+			    			}
 			    		}
 			    	}
-			    	if (!loop_nxt_stock) {
+			    	if (mandatory_pass_flg) {
 			    		for (IStockSelector slt : selectors) {
+			    			if (suggest_flg) {
+			    				log.info("Mandatory criteria also Or criteria matched, suggest stock directly!");
+			    				break;
+			    			}
 			    			if (slt.isMandatoryCriteria()) {
 			    				continue;
 			    			}
@@ -166,14 +175,9 @@ public class SuggestStock implements IWork {
 			    				}
 			    			}
 			    			else {
-			    				if (slt.isORCriteria()) {
-			    					log.info("Or criteria not matched, continue next criteira.");
-			    					suggest_flg = false;
-			    					continue;
-			    				} else {
-			    					suggest_flg = false;
-			    					break;
-			    				}
+			    			    log.info("Non mandatory criteria not matched, continue next criteira.");
+			    				suggest_flg = false;
+			    				continue;
 			    			}
 			    		}
 			    		if (suggest_flg) {
@@ -181,14 +185,14 @@ public class SuggestStock implements IWork {
 			    		}
 			    		suggest_flg = false;
 			    	}
-			    	loop_nxt_stock = false;
+			    	mandatory_pass_flg = false;
 			    }
 			    if (stocksWaitForMail.size() == 0) {
 			    	log.info("stocksWaitForMail is empty, tryHarderCriteria set to false");
 			    	tryHarderCriteria = false;
 			    }
 			    else if (stocksWaitForMail.size() > 10) {
-			    	log.info("stocksWaitForMail has " + stocksWaitForMail.size() + " which is more than 20, tryHarderCriteria set to true");
+			    	log.info("stocksWaitForMail has " + stocksWaitForMail.size() + " which is more than 10, tryHarderCriteria set to true");
 			    	tryHarderCriteria = true;
 			    	stocksWaitForMail.clear();
 			    }
@@ -276,7 +280,7 @@ public class SuggestStock implements IWork {
 				Statement stm2 = con.createStatement();
 				ResultSet rs2 = stm2.executeQuery(sql);
 				sql = "";
-				if (rs2.next()) {
+				while (rs2.next()) {
 					totCnt++;
 					String stkid = rs2.getString("id");
 					if (shouldStockExitTrade(stkid)) {
@@ -377,6 +381,7 @@ public class SuggestStock implements IWork {
 		ResultSet rs = null;
 		int lost_cnt = 0;
 		int gain_cnt = 0;
+		boolean should_exit = false;
 		try {
 			sql = "select * from tradedtl where stkid = '" + stkid + "' and acntid like 'ACNT%' order by seqnum";
 			log.info(sql);
@@ -411,7 +416,7 @@ public class SuggestStock implements IWork {
 			log.info("Stock:" + stkid + " lost_cnt:" + lost_cnt + " gain_cnt:" + gain_cnt);
 			if (lost_cnt - gain_cnt > STConstants.MAX_LOST_TIME_BEFORE_EXIT_TRADE) {
 				log.info("Lost cnt is " + STConstants.MAX_LOST_TIME_BEFORE_EXIT_TRADE + " times more than gain_cnt, should exit trade.");
-				return true;
+				should_exit = true;
 			}
 			
 			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "' and acntid like 'ACNT%' "
@@ -422,17 +427,38 @@ public class SuggestStock implements IWork {
 			rs = stm.executeQuery(sql);
 			if (!rs.next()) {
 				log.info("Stock:" + stkid + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + " days without trade record, should exit trade.");
-				return true;
+				should_exit = true;
 			}
 			
 			rs.close();
 			stm.close();
-			con.close();
+			
+    		sql = "select avg(dev) dev from ("
+ 				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atSuggestStockDay "
+ 				   + "  from stkdat2 "
+ 				   + " where id ='" + stkid + "'"
+ 				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS + ", 'yyyy-mm-dd')"
+ 				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
+ 		    log.info(sql);
+ 		    stm = con.createStatement();
+ 		    rs = stm.executeQuery(sql);
+ 		    if (rs.next()) {
+ 		    	 double dev = rs.getDouble("dev");
+ 		    	 log.info("Stock: " + stkid + "'s " + STConstants.DEV_CALCULATE_DAYS + " dev is:" + dev + ", MIN_DEV_BEFORE_EXIT_TRADE:" + STConstants.MIN_DEV_BEFORE_EXIT_TRADE);
+ 		    	if (dev < STConstants.MIN_DEV_BEFORE_EXIT_TRADE) {
+ 		    		log.info("Stock:" + stkid + " dev value:"+ dev + " reached min threshold value " +STConstants.MIN_DEV_BEFORE_EXIT_TRADE + ", should exit trade.");
+ 		    		should_exit = true;
+ 		    	}
+ 		    }
+ 		
+ 		    rs.close();
+ 		    stm.close();
+		    con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		return false;
+		return should_exit;
 	}
 	
 	private void resetSuggestion() {

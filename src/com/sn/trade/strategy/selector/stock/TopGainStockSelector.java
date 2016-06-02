@@ -117,12 +117,12 @@ public class TopGainStockSelector implements IStockSelector {
 	@Override
 	public boolean isORCriteria() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 	@Override
 	public boolean isMandatoryCriteria() {
 		// TODO Auto-generated method stub
-		return true;
+		return false;
 	}
 	@Override
 	public boolean adjustCriteria(boolean harder) {

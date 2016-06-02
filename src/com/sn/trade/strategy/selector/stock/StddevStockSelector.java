@@ -11,12 +11,12 @@ import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
+import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.imp.TradeStrategyImp;
 
 public class StddevStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(StddevStockSelector.class);
-    int days = 7;
 	double maxStddev = 0.1;
 	double minStddev = 0.013;
     /**
@@ -32,7 +32,7 @@ public class StddevStockSelector implements IStockSelector {
     				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
     				   + "  from stkdat2 "
     				   + " where id ='" + s.getID() + "'"
-    				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + days + ", 'yyyy-mm-dd')"
+    				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS + ", 'yyyy-mm-dd')"
     				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
@@ -55,7 +55,7 @@ public class StddevStockSelector implements IStockSelector {
 	@Override
 	public boolean isORCriteria() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 	@Override
 	public boolean isMandatoryCriteria() {
