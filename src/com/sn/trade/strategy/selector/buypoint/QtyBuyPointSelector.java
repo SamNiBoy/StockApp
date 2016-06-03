@@ -78,16 +78,16 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 			}
 		}
 
-        Boolean psd = StockMarket.getStockSellMode(stk.getID());
-        Boolean csd = SellModeWatchDog.isStockInSellMode(stk);
-        
-        StockMarket.putStockSellMode(stk.getID(), csd);
-
-        //If we switched to non sell mode, make sure buy once.
-        if ((csd != null && psd != null) && (csd == false && psd == true)) {
-            log.info("Stock " + stk.getID() + " is switched to non sell mode, buy point return true.");
-            return true;
-        }
+//        Boolean psd = StockMarket.getStockSellMode(stk.getID());
+//        Boolean csd = SellModeWatchDog.isStockInSellMode(stk);
+//        
+//        StockMarket.putStockSellMode(stk.getID(), csd);
+//
+//        //If we switched to non sell mode, make sure buy once.
+//        if ((csd != null && psd != null) && (csd == false && psd == true)) {
+//            log.info("Stock " + stk.getID() + " is switched to non sell mode, buy point return true.");
+//            return true;
+//        }
         
 		return false;
 	}
