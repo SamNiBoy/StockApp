@@ -22,6 +22,7 @@ import com.sn.trade.strategy.selector.stock.AvgClsPriStockSelector;
 import com.sn.trade.strategy.selector.stock.DefaultStockSelector;
 import com.sn.trade.strategy.selector.stock.IStockSelector;
 import com.sn.trade.strategy.selector.stock.KeepGainStockSelector;
+import com.sn.trade.strategy.selector.stock.LimitClsPriStockSelector;
 import com.sn.trade.strategy.selector.stock.PriceStockSelector;
 import com.sn.trade.strategy.selector.stock.StddevStockSelector;
 import com.sn.trade.strategy.selector.stock.TopGainStockSelector;
@@ -112,6 +113,7 @@ public class SuggestStock implements IWork {
 		//selectors.add(new DefaultStockSelector());
 		selectors.add(new PriceStockSelector());
 		selectors.add(new StddevStockSelector());
+		selectors.add(new LimitClsPriStockSelector());
 		//selectors.add(new AvgClsPriStockSelector());
 //		selectors.add(new ClosePriceTrendStockSelector());
 		selectors.add(new TopGainStockSelector());
@@ -324,7 +326,7 @@ public class SuggestStock implements IWork {
 				+ "  and s.gz_flg = 1 "
 				+ "  and s.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "') "
 				+ "  and not exists (select 'x' from stkdlyinfo i2 where i2.id = i.id and i2.dt > i.dt) "
-				+ "  order by i.td_cls_pri ";
+				+ "  order by abs(i.td_cls_pri - 20) ";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
