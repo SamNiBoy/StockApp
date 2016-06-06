@@ -19,7 +19,7 @@ public class LimitClsPriStockSelector implements IStockSelector {
     int longPrd = 14;
     int midPrd = 7;
     int shortPrd = 3;
-    double ALLOW_INC_THRESH_VALUE = 0.5;
+    double ALLOW_INC_THRESH_VALUE = 0.1;
     /**
      * @param args
      */
@@ -29,12 +29,12 @@ public class LimitClsPriStockSelector implements IStockSelector {
     	double longAvgPri = s.getAvgYtClsPri(longPrd, 0);
     	
     	//If the stock price sharply increased by ALLOW_INC_THRESH_VALUE, not suggest this stock.
-    	if (shtAvgPri > midAvgPri && midAvgPri > longAvgPri && (shtAvgPri - longAvgPri) / longAvgPri > ALLOW_INC_THRESH_VALUE) {
+    	if (shtAvgPri > midAvgPri && midAvgPri > longAvgPri && (shtAvgPri - longAvgPri) / longAvgPri < ALLOW_INC_THRESH_VALUE) {
     		log.info("stock: " + s.getID() + " shtAvgPri:" + shtAvgPri + " midAvgPri:" + midAvgPri + " longAvgPri:" + longAvgPri + ", ALLOW_INC_THRESH_VALUE:" + ALLOW_INC_THRESH_VALUE);
-    		return false;
+    		return true;
     	}
-    	log.info("stock: " + s.getID() + " shtAvgPri:" + shtAvgPri + " midAvgPri:" + midAvgPri + " longAvgPri:" + longAvgPri + ", ALLOW_INC_THRESH_VALUE: " + ALLOW_INC_THRESH_VALUE + ", return true");
-        return true;
+    	log.info("stock: " + s.getID() + " shtAvgPri:" + shtAvgPri + " midAvgPri:" + midAvgPri + " longAvgPri:" + longAvgPri + ", ALLOW_INC_THRESH_VALUE: " + ALLOW_INC_THRESH_VALUE + ", return false");
+        return false;
     }
 	@Override
 	public boolean isORCriteria() {
@@ -51,14 +51,14 @@ public class LimitClsPriStockSelector implements IStockSelector {
 		// TODO Auto-generated method stub
 		if (!harder) {
 		    ALLOW_INC_THRESH_VALUE += 0.02;
-		    if (ALLOW_INC_THRESH_VALUE > 0.5) {
-		        ALLOW_INC_THRESH_VALUE = 0.5;
+		    if (ALLOW_INC_THRESH_VALUE > 0.2) {
+		        ALLOW_INC_THRESH_VALUE = 0.2;
 		    }
 		}
 		else {
 	          ALLOW_INC_THRESH_VALUE -= 0.02;
-	          if (ALLOW_INC_THRESH_VALUE < 0.1) {
-	              ALLOW_INC_THRESH_VALUE = 0.1;
+	          if (ALLOW_INC_THRESH_VALUE < 0.01) {
+	              ALLOW_INC_THRESH_VALUE = 0.01;
 	          }
 		}
 		log.info("try harder:" + harder + ", ALLOW_INC_THRESH_VALUE:" + ALLOW_INC_THRESH_VALUE);

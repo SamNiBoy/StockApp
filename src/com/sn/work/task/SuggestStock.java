@@ -239,7 +239,7 @@ public class SuggestStock implements IWork {
 				sql = "";
 				if (rs2.next()) {
 					if (rs2.getLong("gz_flg") == 0) {
-						sql = "update usrStk set gz_flg = 1, suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "' where openID = '" + openID
+						sql = "update usrStk set gz_flg = 1, suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "', add_dt = sysdate where openID = '" + openID
 								+ "' and id = '" + s.getID() + "'";
 					}
 				} else {
@@ -364,7 +364,7 @@ public class SuggestStock implements IWork {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		try {
-			sql = "update usrStk set sell_mode_flg = 1 where id = '" + stkid + "'";
+			sql = "update usrStk set sell_mode_flg = 1, add_dt = sysdate where id = '" + stkid + "'";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);
