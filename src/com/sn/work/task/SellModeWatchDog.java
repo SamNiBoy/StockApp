@@ -172,6 +172,11 @@ public class SellModeWatchDog implements IWork {
        	   }
        }
        
+       if (SuggestStock.shouldStockExitTrade(s.getID())) {
+    	   log.info("Stock:" + s.getID() + ":" + s.getName() + " matches shouldStockExitTrade(), can not disable sell mode.");
+    	   suggest_flg = false;
+       }
+       
        //If we are going to disable sell mode, make more safe check.
        if (pre_sell_mode && suggest_flg) {
            Double ytclspri = s.getYtClsPri();
