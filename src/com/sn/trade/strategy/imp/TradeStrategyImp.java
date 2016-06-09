@@ -763,7 +763,7 @@ public class TradeStrategyImp implements ITradeStrategy {
             Connection con = DBManager.getConnection();
             Statement stm = con.createStatement();
             
-            sql = "select count(*) cnt, buy_flg from SellBuyRecord "
+            sql = "select count(*) cnt, max(qty) maxqty, buy_flg from SellBuyRecord "
                 + " where openID = '"  + openID + "'"
             	+ " and stkid ='" + s.getID() + "'"
             	+ " group by buy_flg";
@@ -774,11 +774,13 @@ public class TradeStrategyImp implements ITradeStrategy {
             int buyCnt = 0;
             int sellCnt = 0;
             int buy_flg = 0;
+            int maxbuyqty = 0;
             
             while (rs.next()) {
             	buy_flg = rs.getInt("buy_flg");
             	if (buy_flg == 1) {
             		buyCnt = rs.getInt("cnt");
+            		maxbuyqty = rs.getInt("maxqty");
             	}
             	else {
             		sellCnt = rs.getInt("cnt");
@@ -801,8 +803,11 @@ public class TradeStrategyImp implements ITradeStrategy {
                 }
             }
             else {
-            	//is sell trade.
-                if (s.getCur_pri() <= 20) {
+            	log.info("maxbuyqty:" + maxbuyqty);
+            	if (maxbuyqty > 0) {
+            		qtyToTrade = maxbuyqty;
+            	}
+            	else if (s.getCur_pri() <= 20) {
                 	qtyToTrade = 200;
                 }
                 else {
