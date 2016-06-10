@@ -143,7 +143,7 @@ public class SimTrader implements IWork{
         ResultSet rs = null;
         String sql = "";
         if (simOnGzStk) {
-            sql = "select * from usrStk where gz_flg = 1 and openID ='" + STConstants.openID + "' and openID = suggested_by ";
+            sql = StockMarket.GZ_STOCK_SELECT;
         }
         else {
             sql = "select * from stk where id in "

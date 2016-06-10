@@ -140,24 +140,29 @@ public class SimStockDriver {
                 stm.close();
             }
             else {
+                String ids = "";
                 for (String stkId : stk_list) {
-                    stm = con.createStatement();
-                    String sql = "select id, name from stk where id ='" + stkId + "'";
-                    rs = stm.executeQuery(sql);
-                    
-                    String id, name;
-                    
-                    if (rs.next()) {
-                        id = rs.getString("id");
-                        name = rs.getString("name");
-                        s = new Stock2(id, name, start_dt, end_dt, StockData.SMALL_SZ);
-                        simstocks.put(id, s);
-                        cnt++;
-                        log.info("LoadStocks completed:" + cnt * 1.0 / stk_list.size());
+                    if (ids.length() > 0) {
+                        ids += ",";
                     }
-                    rs.close();
-                    stm.close();
+                    ids += "'" + stkId + "'";
                 }
+                
+                stm = con.createStatement();
+                String sql = "select id, name from stk where id in (" + ids + ") order by id ";
+                rs = stm.executeQuery(sql);
+                String id, name;
+                
+                while (rs.next()) {
+                    id = rs.getString("id");
+                    name = rs.getString("name");
+                    s = new Stock2(id, name, start_dt, end_dt, StockData.SMALL_SZ);
+                    simstocks.put(id, s);
+                    cnt++;
+                    log.info("LoadStocks completed:" + cnt * 1.0 / stk_list.size());
+                }
+                rs.close();
+                stm.close();
             }
         }
         catch(SQLException e)

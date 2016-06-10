@@ -29,6 +29,7 @@ import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.trade.StockTrader;
 import com.sn.trade.strategy.ITradeStrategy;
+import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.imp.TradeStrategyGenerator;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
@@ -98,7 +99,7 @@ public class SimWorker implements IWork {
     	try {
     		con = DBManager.getConnection();
     		stm = con.createStatement();
-    		sql = "select to_char(sysdate - 3, 'yyyy-mm-dd') sd, to_char(sysdate, 'yyyy-mm-dd') ed from dual ";
+    		sql = "select to_char(sysdate - " + STConstants.DAYS_FOR_SIM + ", 'yyyy-mm-dd') sd, to_char(sysdate, 'yyyy-mm-dd') ed from dual ";
     		log.info(sql);
     		rs = stm.executeQuery(sql);
     		rs.next();
