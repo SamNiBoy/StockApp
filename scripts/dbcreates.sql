@@ -468,6 +468,7 @@ stkId varchar2(6 byte) not null,
 price number not null,
 qty number not null,
 buy_flg number not null,
+sim_mode_flg number not null,
 dl_dt date not null
 );
 

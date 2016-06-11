@@ -140,9 +140,8 @@ public class TradeStrategyImp implements ITradeStrategy {
 			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
 			        sm.put(s.getID(), s);
 			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
-			    	if (!sim_mode) {
-			            createBuySellRecord(s, STConstants.openID, true, qtyToTrade);
-			    	}
+			        
+			        createBuySellRecord(s, STConstants.openID, true, qtyToTrade);
 			        break;
 			    }
 			    catch (Exception e) {
@@ -204,9 +203,8 @@ public class TradeStrategyImp implements ITradeStrategy {
 			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
 			        sm.put(s.getID(), s);
 			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
-			    	if (!sim_mode) {
-			            createBuySellRecord(s, STConstants.openID, false, qtyToTrade);
-			    	}
+			        
+			        createBuySellRecord(s, STConstants.openID, false, qtyToTrade);
 			        break;
 			    }
 			    catch (Exception e) {
@@ -353,8 +351,13 @@ public class TradeStrategyImp implements ITradeStrategy {
 		log.info("Total traded " + totalCnt + " times.");
 
 		if (totalCnt >= STConstants.MAX_TRADE_TIMES_PER_DAY) {
-			log.info("Trade limit for a day is: " + STConstants.MAX_TRADE_TIMES_PER_DAY + " can not trade today!");
-			return false;
+			if (sim_mode) {
+				log.info("sim_mode is true: skip total trade per day limitation.");
+			}
+			else {
+			    log.info("Trade limit for a day is: " + STConstants.MAX_TRADE_TIMES_PER_DAY + " can not trade today!");
+			    return false;
+			}
 		}
 
 		LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
@@ -426,13 +429,13 @@ public class TradeStrategyImp implements ITradeStrategy {
 		}
 	}
 	
-	private static boolean stopTradeForPeriod(String openID, int days) {
+	private boolean stopTradeForPeriod(String openID, int days) {
 		String sql;
 		boolean shouldStopTrade = false;
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and dl_dt >= sysdate - "
+			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "' and sim_mode_flg = " + (sim_mode ? 1 : 0) + "   and dl_dt >= sysdate - "
 					+ days
 					// + " and to_char(dl_dt, 'hh24:mi:ss') > '08:00:00'"
 					// + " and to_char(dl_dt, 'hh24:mi:ss') < '16:00:00'"
@@ -510,13 +513,13 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return shouldStopTrade;
 	}
 	
-	private static boolean stopTradeForStock(String openID, Stock2 s, int days) {
+	private boolean stopTradeForStock(String openID, Stock2 s, int days) {
 		String sql;
 		boolean shouldStopTrade = false;
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and stkid ='" + s.getID() + "'  and dl_dt >= sysdate - " + days
+			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "' and sim_mode_flg = " + (sim_mode ? 1 : 0) + "   and stkid ='" + s.getID() + "'  and dl_dt >= sysdate - " + days
 					// + " and to_char(dl_dt, 'hh24:mi:ss') > '08:00:00'"
 					// + " and to_char(dl_dt, 'hh24:mi:ss') < '16:00:00'"
 					+ " order by stkid, sb_id";
@@ -592,7 +595,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return shouldStopTrade;
 	}
 	
-	private static boolean skipRiskCheck(String openID, boolean is_buy_flg, Stock2 s) {
+	private boolean skipRiskCheck(String openID, boolean is_buy_flg, Stock2 s) {
 
 		String sql;
 		boolean shouldSkipCheck = false;
@@ -600,9 +603,11 @@ public class TradeStrategyImp implements ITradeStrategy {
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
+			
+			int sim = (sim_mode) ? 1 : 0;
 
 			// get last trade record.
-			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and stkid ='" + s.getID()
+			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + " and sim_mode_flg = " + sim + "   and stkid ='" + s.getID()
 					+ "' order by sb_id desc";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
@@ -890,14 +895,15 @@ public class TradeStrategyImp implements ITradeStrategy {
         return false;
     }
 	
-	private static boolean createBuySellRecord(Stock2 s, String openID, boolean is_buy_flg, String qtyToTrade) {
+	private boolean createBuySellRecord(Stock2 s, String openID, boolean is_buy_flg, String qtyToTrade) {
 		String sql;
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 			sql = "insert into SellBuyRecord values(SEQ_SBR_PK.nextval,'" + openID + "','" + s.getID() + "'," + s.getCur_pri()
 					+ "," + qtyToTrade + ","
-					+ (is_buy_flg ? 1 : 0)
+					+ (is_buy_flg ? 1 : 0) + ","
+					+ (sim_mode ? 1 : 0)
 					+ ",to_date('" + s.getDl_dt().toString().substring(0, 19) + "', 'yyyy-mm-dd hh24:mi:ss'))";
 			log.info(sql);
 			stm.execute(sql);

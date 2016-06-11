@@ -85,22 +85,29 @@ public class SimTrader implements IWork{
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "delete from tradedtl where acntid like 'Sim%'";
+			sql = "delete from tradedtl where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
 			
 			stm = con.createStatement();
-			sql = "delete from tradehdr where acntid like 'Sim%'";
+			sql = "delete from tradehdr where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
 			
 			stm = con.createStatement();
-			sql = "delete from CashAcnt where  dft_acnt_flg = 0 and acntid like 'Sim%'";
+			sql = "delete from CashAcnt where  dft_acnt_flg = 0 and acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
+			
+			stm = con.createStatement();
+			sql = "delete from SellBuyRecord where sim_mode_flg = 1";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			
 			con.commit();
 			con.close();
 		} catch (Exception e) {
