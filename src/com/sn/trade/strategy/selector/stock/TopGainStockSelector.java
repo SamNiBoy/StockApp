@@ -12,7 +12,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 
 public class TopGainStockSelector implements IStockSelector {
 
@@ -34,7 +34,7 @@ public class TopGainStockSelector implements IStockSelector {
     /**
      * @param args
      */
-    public boolean isTargetStock(Stock2 s, ICashAccount ac) {
+    public boolean isTargetStock(Stock s, ICashAccount ac) {
     	synchronized (topStocks) {
     		
     		boolean time_expired = false;

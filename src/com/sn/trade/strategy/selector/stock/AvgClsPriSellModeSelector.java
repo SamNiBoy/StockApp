@@ -2,7 +2,7 @@ package com.sn.trade.strategy.selector.stock;
 
 import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 
 public class AvgClsPriSellModeSelector implements IStockSelector {
 
@@ -10,7 +10,7 @@ public class AvgClsPriSellModeSelector implements IStockSelector {
     /**
      * @param args
      */
-    public boolean isTargetStock(Stock2 s, ICashAccount ac) {
+    public boolean isTargetStock(Stock s, ICashAccount ac) {
         boolean Cross10Days = false;
         boolean Cross20Days = false;
     	Double avgPri1 = s.getAvgYtClsPri(10, 0);

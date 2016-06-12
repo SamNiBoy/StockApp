@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.trade.strategy.selector.stock.DefaultStockSelector;
 
@@ -20,7 +20,7 @@ public class DefaultBuyPointSelector implements IBuyPointSelector {
 	/**
 	 * @param args
 	 */
-	public boolean isGoodBuyPoint(Stock2 s, ICashAccount ac) {
+	public boolean isGoodBuyPoint(Stock s, ICashAccount ac) {
 		int periods = 5;
 		int ratio = 10;
 		int downTimes = 3;
@@ -54,7 +54,7 @@ public class DefaultBuyPointSelector implements IBuyPointSelector {
 	}
 
 	@Override
-	public int getBuyQty(Stock2 s, ICashAccount ac) {
+	public int getBuyQty(Stock s, ICashAccount ac) {
 		// TODO Auto-generated method stub
 		return 100;
 	}

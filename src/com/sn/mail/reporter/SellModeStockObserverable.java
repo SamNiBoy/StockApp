@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 
@@ -30,36 +30,36 @@ public class SellModeStockObserverable extends Observable {
 
     static Logger log = Logger.getLogger(SellModeStockObserverable.class);
 
-    private List<Stock2> stocksToSellMode = new ArrayList<Stock2>();
-    private List<Stock2> stocksToUnSellMode = new ArrayList<Stock2>();
+    private List<Stock> stocksToSellMode = new ArrayList<Stock>();
+    private List<Stock> stocksToUnSellMode = new ArrayList<Stock>();
     private List<SellModeStockSubscriber> ms = new ArrayList<SellModeStockSubscriber>();
 
-    public void addStockToSellMode(List<Stock2> lst) {
+    public void addStockToSellMode(List<Stock> lst) {
     	stocksToSellMode.clear();
     	stocksToSellMode.addAll(lst);
     }
-    public void addStockToUnsellMode(List<Stock2> lst) {
+    public void addStockToUnsellMode(List<Stock> lst) {
     	stocksToUnSellMode.clear();
     	stocksToUnSellMode.addAll(lst);
     }
 	public class SellModeStockSubscriber{
 		String openID;
 		String mail;
-		List<Stock2> stockMailed = new ArrayList<Stock2>();
+		List<Stock> stockMailed = new ArrayList<Stock>();
 		SellModeStockSubscriber(String oid, String ml) {
 			openID = oid;
 			mail = ml;
 		}
 		public String subject;
 		public String content;
-		boolean alreadyMailed(Stock2 s) {
+		boolean alreadyMailed(Stock s) {
 			if (stockMailed.contains(s)) {
 				log.info("Stock:" + s.getID() + " already Mailed to user:" + openID);
 				return true;
 			}
 			return false;
 		}
-		public boolean setMailed(Stock2 s) {
+		public boolean setMailed(Stock s) {
 			stockMailed.add(s);
 			return true;
 		}
@@ -121,7 +121,7 @@ public class SellModeStockObserverable extends Observable {
                     "<th> Is Sell Mode</th> " +
                     "<th> Price</th></tr>");
             DecimalFormat df = new DecimalFormat("##.##");
-            for (Stock2 s : stocksToSellMode) {
+            for (Stock s : stocksToSellMode) {
             	if (!u.alreadyMailed(s)) {
                     body.append("<tr> <td>" + s.getID() + "</td>" +
                     "<td> " + s.getName() + "</td>" +
@@ -133,7 +133,7 @@ public class SellModeStockObserverable extends Observable {
             	}
             }
             
-            for (Stock2 s : stocksToUnSellMode) {
+            for (Stock s : stocksToUnSellMode) {
             	if (!u.alreadyMailed(s)) {
                     body.append("<tr> <td>" + s.getID() + "</td>" +
                     "<td> " + s.getName() + "</td>" +

@@ -17,9 +17,10 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.selector.stock.ClosePriceTrendStockSelector;
 
-public class Stock2 implements Comparable<Stock2>{
+public class Stock implements Comparable<Stock>{
 
     public class StockData{
 
@@ -529,14 +530,53 @@ public class Stock2 implements Comparable<Stock2>{
                     cnt++;
                 }
             }
-            if (cnt * 1.0 / (sz - 1) > 0.6) {
-                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " big than 0.6, plused return true.");
+            double thresh_pct = calThreashValueForQtyPluse();
+            if (cnt * 1.0 / (sz - 1) >= thresh_pct) {
+                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " big than " + thresh_pct + ", plused return true.");
                 return true;
             }
             else {
-                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " less than 0.6, plused return false.");
+                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " less than " + thresh_pct + ", plused return false.");
                 return false;
             }
+        }
+        
+        private double calThreashValueForQtyPluse() {
+        	double base = STConstants.QTY_PLUSED_BASE_PCT;
+        	double final_val = base;
+        	Boolean sell_mode = StockMarket.getStockSellMode(id);
+        	if (sell_mode != null && sell_mode) {
+        		final_val = base;
+        	}
+        	else {
+            	try {
+            		Connection con = DBManager.getConnection();
+            		Statement stm = con.createStatement();
+            		String sql = "select avg(dev) dev from ("
+            				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
+            				   + "  from stkdat2 "
+            				   + " where id ='" + id + "'"
+            				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS + ", 'yyyy-mm-dd')"
+            				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
+            		log.info(sql);
+            		ResultSet rs = stm.executeQuery(sql);
+            		if (rs.next()) {
+            			 double dev = rs.getDouble("dev");
+            			 log.info("calThreashValueForQtyPluse get dev:" + dev);
+            			if (dev > 0.01 && dev <= 0.1) {
+            				final_val = (1 - STConstants.QTY_PLUSED_BASE_PCT) * (dev - 0.01) / (0.1 - 0.01) + STConstants.BASE_TRADE_THRESH;
+            			}
+            		}
+            		rs.close();
+            		stm.close();
+            		con.close();
+            	}
+            	catch(Exception e) {
+            		log.info(e.getMessage());
+            	}
+        	}
+        	log.info("calThreashValueForQtyPluse returned final_val:" + final_val);
+        	return final_val;
         }
         
         //Check if cur price is jumping water, tailSz tells how many recent records should be check, and pct tells
@@ -1100,7 +1140,7 @@ public class Stock2 implements Comparable<Stock2>{
 		}
     }
     
-    static Logger log = Logger.getLogger(Stock2.class);
+    static Logger log = Logger.getLogger(Stock.class);
     /**
      * @param args
      */
@@ -1137,13 +1177,13 @@ public class Stock2 implements Comparable<Stock2>{
             String sql = "select id, name from stk where id = '002654'";
             
             ResultSet rs = stm.executeQuery(sql);
-            List<Stock2> sl = new LinkedList<Stock2>();
+            List<Stock> sl = new LinkedList<Stock>();
             while(rs.next()) {
-                Stock2 s = new Stock2(rs.getString("id"), rs.getString("name"), StockData.SMALL_SZ);
+                Stock s = new Stock(rs.getString("id"), rs.getString("name"), StockData.SMALL_SZ);
                 sl.add(s);
             }
             for (int i = 0; i < sl.size(); i++) {
-                Stock2 s = sl.get(i);
+                Stock s = sl.get(i);
                 ClosePriceTrendStockSelector cs = new ClosePriceTrendStockSelector();
                 cs.isTargetStock(s, null);
                 s.printStockInfo();
@@ -1154,14 +1194,14 @@ public class Stock2 implements Comparable<Stock2>{
         }
     }
     
-    public Stock2(String ids, String nm, int sz)
+    public Stock(String ids, String nm, int sz)
     {
         id = ids;
         name = nm;
         sd = new StockData(id, sz);
     }
     
-    public Stock2(String ids, String nm, String start_dte, String end_dte, int sz)
+    public Stock(String ids, String nm, String start_dte, String end_dte, int sz)
     {
         id = ids;
         name = nm;
@@ -1169,7 +1209,7 @@ public class Stock2 implements Comparable<Stock2>{
     }
 
     @Override
-    public int compareTo(Stock2 arg0) {
+    public int compareTo(Stock arg0) {
         // TODO Auto-generated method stub
         return 0;
     }

@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.trade.strategy.imp.TradeStrategyImp;
 
@@ -25,7 +25,7 @@ public class ClosePriceTrendStockSelector implements IStockSelector {
     /**
      * @param args
      */
-    public boolean isTargetStock(Stock2 s, ICashAccount ac) {
+    public boolean isTargetStock(Stock s, ICashAccount ac) {
     	Double maxYtClsPri = s.getMaxYtClsPri(days);
     	Double minYtClsPri = s.getMinYtClsPri(days);
     	Double curPri = s.getCur_pri();

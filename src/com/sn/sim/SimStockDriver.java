@@ -34,9 +34,9 @@ import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.mail.reporter.StockObserver;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.reporter.WCMsgSender;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
-import com.sn.stock.Stock2.StockData;
+import com.sn.stock.Stock.StockData;
 
 public class SimStockDriver {
 
@@ -51,7 +51,7 @@ public class SimStockDriver {
     
     private boolean is_sim_on_today = false;
     
-    public ConcurrentHashMap<String, Stock2> simstocks = null;
+    public ConcurrentHashMap<String, Stock> simstocks = null;
     
     boolean addStkToSim(String stkId) {
         if (stkId != null && !stkId.equals("")) {
@@ -116,8 +116,8 @@ public class SimStockDriver {
         Statement stm = null;
         ResultSet rs = null;
         
-        simstocks = new ConcurrentHashMap<String, Stock2>();
-        Stock2 s = null;
+        simstocks = new ConcurrentHashMap<String, Stock>();
+        Stock s = null;
         int cnt = 0;
         
         try {
@@ -131,7 +131,7 @@ public class SimStockDriver {
                 while (rs.next()) {
                     id = rs.getString("id");
                     name = rs.getString("name");
-                    s = new Stock2(id, name, start_dt, end_dt, StockData.SMALL_SZ);
+                    s = new Stock(id, name, start_dt, end_dt, StockData.SMALL_SZ);
                     simstocks.put(id, s);
                     cnt++;
                     log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -156,7 +156,7 @@ public class SimStockDriver {
                 while (rs.next()) {
                     id = rs.getString("id");
                     name = rs.getString("name");
-                    s = new Stock2(id, name, start_dt, end_dt, StockData.SMALL_SZ);
+                    s = new Stock(id, name, start_dt, end_dt, StockData.SMALL_SZ);
                     simstocks.put(id, s);
                     cnt++;
                     log.info("LoadStocks completed:" + cnt * 1.0 / stk_list.size());
@@ -309,7 +309,7 @@ public class SimStockDriver {
                 	continue;
                 }
                 
-                Stock2 s = simstocks.get(stkId);
+                Stock s = simstocks.get(stkId);
                 if (s != null) {
                     log.info("Now, loading DtRs for stock:" + s.getID());
                     s.getSd().loadDataFromRs(DtRs);

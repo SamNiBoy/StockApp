@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.stock.RawStockData;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
@@ -57,7 +57,7 @@ public class StockDataFetcher implements IWork {
     }
 
     static public boolean start() {
-        self = new StockDataFetcher(0, Stock2.StockData.SECONDS_PER_FETCH * 1000);
+        self = new StockDataFetcher(0, Stock.StockData.SECONDS_PER_FETCH * 1000);
         if (WorkManager.submitWork(self)) {
             log.info("开始收集股票数据!");
             cnsmr = new StockDataConsumer(0, 0);

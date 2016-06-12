@@ -24,7 +24,7 @@ import com.sn.cashAcnt.CashAcnt;
 import com.sn.cashAcnt.CashAcntManger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.trade.strategy.ITradeStrategy;
 import com.sn.trade.strategy.selector.buypoint.IBuyPointSelector;
@@ -71,15 +71,15 @@ public class TradeStrategyImp implements ITradeStrategy {
 	static public Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
     static Map<String, ICashAccount> cash_account_map = new HashMap<String, ICashAccount>();
     
-	public StockBuySellEntry getLstTradeRecord(Stock2 s) {
+	public StockBuySellEntry getLstTradeRecord(Stock s) {
 		return tradeRecord.get(s.getID()).getLast();
 	}
 
-    public boolean isGoodPointtoBuy(Stock2 s) {
+    public boolean isGoodPointtoBuy(Stock s) {
         return buypoint_selector.isGoodBuyPoint(s, cash_account);
     }
 
-    public boolean isGoodPointtoSell(Stock2 s) {
+    public boolean isGoodPointtoSell(Stock s) {
         return sellpoint_selector.isGoodSellPoint(s, cash_account);
     }
     
@@ -105,7 +105,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	}
 	
 	@Override
-	public boolean buyStock(Stock2 s) {
+	public boolean buyStock(Stock s) {
 		// TODO Auto-generated method stub
 		loadStocksForTrade();
 		ICashAccount ac = getVirtualCashAcntForStock(s.getID());
@@ -137,7 +137,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			        
 			        createBuyTradeRecord(s, qtyToTrade, ac);
 			        
-			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
+			        Map<String, Stock> sm = new HashMap<String, Stock>();
 			        sm.put(s.getID(), s);
 			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
 			        
@@ -164,7 +164,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	}
 	
 	@Override
-	public boolean sellStock(Stock2 s) {
+	public boolean sellStock(Stock s) {
 		// TODO Auto-generated method stub
 		loadStocksForTrade();
 		ICashAccount ac = getVirtualCashAcntForStock(s.getID());
@@ -200,7 +200,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			        
 			        createSellTradeRecord(s, qtyToTrade, ac);
 			        
-			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
+			        Map<String, Stock> sm = new HashMap<String, Stock>();
 			        sm.put(s.getID(), s);
 			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
 			        
@@ -227,7 +227,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	}
 
     @Override
-    public boolean calProfit(String ForDt, Map<String, Stock2>stockSet) {
+    public boolean calProfit(String ForDt, Map<String, Stock>stockSet) {
         // TODO Auto-generated method stub
         return cash_account.calProfit(ForDt, stockSet);
     }
@@ -262,7 +262,7 @@ public class TradeStrategyImp implements ITradeStrategy {
     }
 
 	@Override
-	public boolean performTrade(Stock2 s) {
+	public boolean performTrade(Stock s) {
         
 		if (isGoodPointtoBuy(s) && buyStock(s)) {
         	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
@@ -302,7 +302,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return true;
 	}
 	
-	private boolean canTradeRecord(Stock2 s, boolean is_buy_flg, String openID) {
+	private boolean canTradeRecord(Stock s, boolean is_buy_flg, String openID) {
 		//For sim_mode, we don't care if user gzed the stock.
 		if ((tradeStocks == null || !tradeStocks.contains(s.getID())) && !sim_mode) {
 			log.info("stock " + s.getID() + " is not available for trade.");
@@ -513,7 +513,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return shouldStopTrade;
 	}
 	
-	private boolean stopTradeForStock(String openID, Stock2 s, int days) {
+	private boolean stopTradeForStock(String openID, Stock s, int days) {
 		String sql;
 		boolean shouldStopTrade = false;
 		try {
@@ -595,7 +595,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return shouldStopTrade;
 	}
 	
-	private boolean skipRiskCheck(String openID, boolean is_buy_flg, Stock2 s) {
+	private boolean skipRiskCheck(String openID, boolean is_buy_flg, Stock s) {
 
 		String sql;
 		boolean shouldSkipCheck = false;
@@ -659,7 +659,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	}
 	
 
-	private static boolean isInSellMode(String openID, Stock2 s) {
+	private static boolean isInSellMode(String openID, Stock s) {
 
 		String sql;
 		int sell_mode_flg = 0;
@@ -690,7 +690,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return sell_mode_flg == 1;
 	}
 	
-	private static boolean createSellTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac) {
+	private static boolean createSellTradeRecord(Stock s, String qtyToTrade, ICashAccount ac) {
 
         log.info("now start to sell stock " + s.getName()
                 + " price:" + s.getCur_pri()
@@ -761,7 +761,7 @@ public class TradeStrategyImp implements ITradeStrategy {
     
     }
 	
-	private static int getTradeQty(Stock2 s, boolean is_buy_flg, String openID) {
+	private static int getTradeQty(Stock s, boolean is_buy_flg, String openID) {
         String sql;
         int qtyToTrade = 100;
         try {
@@ -826,7 +826,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         return qtyToTrade;
     }
 	
-	private static boolean createBuyTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac) {
+	private static boolean createBuyTradeRecord(Stock s, String qtyToTrade, ICashAccount ac) {
         
 		int buyMnt = Integer.valueOf(qtyToTrade);
 		double occupiedMny = buyMnt * s.getCur_pri();
@@ -895,7 +895,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         return false;
     }
 	
-	private boolean createBuySellRecord(Stock2 s, String openID, boolean is_buy_flg, String qtyToTrade) {
+	private boolean createBuySellRecord(Stock s, String openID, boolean is_buy_flg, String qtyToTrade) {
 		String sql;
 		try {
 			Connection con = DBManager.getConnection();

@@ -28,8 +28,8 @@ import com.sn.mail.reporter.MailSenderType;
 import com.sn.mail.reporter.MailSenderFactory;
 import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.reporter.WCMsgSender;
-import com.sn.stock.Stock2;
-import com.sn.stock.Stock2.StockData;
+import com.sn.stock.Stock;
+import com.sn.stock.Stock.StockData;
 import com.sn.stock.StockMarket;
 
 public class StockObserverable extends Observable {
@@ -104,7 +104,7 @@ public class StockObserverable extends Observable {
 				id = rs.getString("id");
 				avgSpeed = rs.getDouble("avgSpeed");
 				avgHand = rs.getLong("avgHand");
-				Stock2 s = StockMarket.getStocks().get(id);
+				Stock s = StockMarket.getStocks().get(id);
 				if (s != null) {
 					body += "<tr> <td>" + s.getID() + "</td>" + "<td> " + s.getName() + "</td>" + "<td> "
 							+ df.format(s.getCur_pri()) + "</td>" + "<td> " + df.format(avgSpeed) + "</td>" + "<td> "
@@ -140,7 +140,7 @@ public class StockObserverable extends Observable {
 				id = rs.getString("id");
 				avgSpeed = rs.getDouble("avgSpeed");
 				avgHand = rs.getLong("avgHand");
-				Stock2 s = StockMarket.getStocks().get(id);
+				Stock s = StockMarket.getStocks().get(id);
 				if (s != null) {
 					body2 += "<tr> <td>" + s.getID() + "</td>" + "<td> " + s.getName() + "</td>" + "<td> "
 							+ df.format(s.getCur_pri()) + "</td>" + "<td> " + df.format(avgSpeed) + "</td>" + "<td> "
@@ -193,7 +193,7 @@ public class StockObserverable extends Observable {
 				hst = rs.getDouble("hst_pri");
 				id = rs.getString("id");
 				top3Pct = rs.getDouble("Top3Pct");
-				Stock2 s = StockMarket.getStocks().get(id);
+				Stock s = StockMarket.getStocks().get(id);
 				if (s != null) {
 					if (s.getCur_pri() < lst + (hst - lst) * 3.0 / 10.0 && s.getCur_pri() >= lst && top3Pct > 0.6) {
 						BucketNo = ((s.getCur_pri() - lst) / (hst - lst) * 10) + 1;
@@ -332,7 +332,7 @@ public class StockObserverable extends Observable {
 			long detQty = 0, qtyCnt = 0;
 
 			Map<String, String> rowMap = new HashMap<String, String>();
-			List<Stock2> sl = new ArrayList<Stock2>();
+			List<Stock> sl = new ArrayList<Stock>();
 
 			for (String stock : gzStocks.keySet()) {
 				try {
@@ -451,7 +451,7 @@ public class StockObserverable extends Observable {
 			Collections.sort(sl);
 
 			int rk = 1;
-			for (Stock2 p : sl) {
+			for (Stock p : sl) {
 				// p.setRk(rk);
 				// rk++;
 				// if (p.isGoodCandidateForBuy()) {
@@ -638,7 +638,7 @@ public class StockObserverable extends Observable {
 		ResultSet rs = null;
 
 		// stocks = new ConcurrentHashMap<String, Stock2>();
-		Stock2 s = null;
+		Stock s = null;
 		int Total = 0, cnt = 0;
 		try {
 			stm = con.createStatement();
@@ -650,7 +650,7 @@ public class StockObserverable extends Observable {
 			while (rs.next()) {
 				id = rs.getString("id");
 				name = rs.getString("name");
-				s = new Stock2(id, name, StockData.BIG_SZ);
+				s = new Stock(id, name, StockData.BIG_SZ);
 				// s.setCur_pri(7.8);
 				// s.constructFollowers();
 				// stocks.put(id, s);

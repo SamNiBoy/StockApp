@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.mail.reporter.GzStockBuySellPointObserverable;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 import com.sn.trade.StockTrader;
@@ -61,7 +61,7 @@ public class GzStockDataConsumer implements IWork {
     }
     
     public void run() {
-        ConcurrentHashMap<String, Stock2> gzs = StockMarket
+        ConcurrentHashMap<String, Stock> gzs = StockMarket
         .getGzstocks();
         while (true) {
         	log.info("after while, dataqueue.take()...");
@@ -74,7 +74,7 @@ public class GzStockDataConsumer implements IWork {
         		log.info("Unexpected exception happened from GzStockDataConsumer take()");
         	}
             synchronized (srd) {
-                Stock2 s = gzs.get(srd.id);
+                Stock s = gzs.get(srd.id);
                 
                 if (s != null) {
                     log.info("Now consuming StockRawData " + srd.id + " Name" + srd.name + "dq size:" + dataqueue.size());

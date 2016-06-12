@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.trade.strategy.selector.buypoint.DefaultBuyPointSelector;
 
 public class DefaultSellPointSelector implements ISellPointSelector {
@@ -19,7 +19,7 @@ public class DefaultSellPointSelector implements ISellPointSelector {
 	/**
 	 * @param args
 	 */
-	public boolean isGoodSellPoint(Stock2 s, ICashAccount ac) {
+	public boolean isGoodSellPoint(Stock s, ICashAccount ac) {
 		int periods = 5;
 		int upTimes = 4;
 
@@ -48,7 +48,7 @@ public class DefaultSellPointSelector implements ISellPointSelector {
 	}
 
 	@Override
-	public int getSellQty(Stock2 s, ICashAccount ac) {
+	public int getSellQty(Stock s, ICashAccount ac) {
 		// TODO Auto-generated method stub
 		return 100;
 	}

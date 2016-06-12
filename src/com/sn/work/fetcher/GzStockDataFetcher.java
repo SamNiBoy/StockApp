@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.stock.RawStockData;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
@@ -51,7 +51,7 @@ public class GzStockDataFetcher implements IWork {
     }
 
     static public boolean start() {
-        self = new GzStockDataFetcher(0, Stock2.StockData.SECONDS_PER_FETCH * 1000);
+        self = new GzStockDataFetcher(0, Stock.StockData.SECONDS_PER_FETCH * 1000);
         cnsmr = new GzStockDataConsumer(0, 0);
         if (WorkManager.submitWork(self)) {
             log.info("Newly created GzStockDataFetcher and started!");

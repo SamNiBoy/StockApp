@@ -38,6 +38,8 @@ public class STConstants {
 	public static final int MAX_NUM_STOCKS_FOR_TRADE = 10;
 	public static final int DEV_CALCULATE_DAYS = 7;
 	public static final double MIN_DEV_BEFORE_EXIT_TRADE = 0.01;
+	public static final double QTY_PLUSED_BASE_PCT = 0.6;
 	
 	public static final int DAYS_FOR_SIM = 3;
+	
 }

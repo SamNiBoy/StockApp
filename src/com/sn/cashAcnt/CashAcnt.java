@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.sim.SimStockDriver;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 
 public class CashAcnt implements ICashAccount {
@@ -203,7 +203,7 @@ public class CashAcnt implements ICashAccount {
 		return unSellableAmt;
 	}
 
-	public boolean calProfit(String ForDt, Map<String, Stock2> stockSet) {
+	public boolean calProfit(String ForDt, Map<String, Stock> stockSet) {
 		Connection con = DBManager.getConnection();
 
 		String sql = "select stkId from TradeHdr h where h.acntId = '" + actId + "'";
@@ -214,10 +214,10 @@ public class CashAcnt implements ICashAccount {
 		try {
 			Statement stm = con.createStatement();
 			rs = stm.executeQuery(sql);
-			Map<String, Stock2> stks = stockSet;
+			Map<String, Stock> stks = stockSet;
 			while (rs.next()) {
 				String stkId = rs.getString("stkId");
-				Stock2 s = stks.get(stkId);
+				Stock s = stks.get(stkId);
 
 				int inHandMnt = getSellableAmt(stkId, ForDt) + getUnSellableAmt(stkId, ForDt);
 
@@ -399,7 +399,7 @@ public class CashAcnt implements ICashAccount {
 	}
 
 	@Override
-	public boolean hasStockInHand(Stock2 s) {
+	public boolean hasStockInHand(Stock s) {
 		// TODO Auto-generated method stub
 		log.info("now check if stock " + s.getName() + " in hand with price:" + s.getCur_pri() + " against CashAcount: "
 				+ actId);
@@ -431,7 +431,7 @@ public class CashAcnt implements ICashAccount {
 	}
 
 	@Override
-	public double getInHandStockCostPrice(Stock2 s) {
+	public double getInHandStockCostPrice(Stock s) {
 		// TODO Auto-generated method stub
 		log.info("get stock " + s.getName() + " in hand with current price:" + s.getCur_pri()
 				+ " cost price against CashAcount: " + actId);
@@ -482,7 +482,7 @@ public class CashAcnt implements ICashAccount {
 	}
 
 	@Override
-	public double getStockCostRatio(Stock2 s) {
+	public double getStockCostRatio(Stock s) {
 		// TODO Auto-generated method stub
 		log.info("check stock " + s.getName() + " in hand used money ratio against CashAcount: " + actId);
 
@@ -516,7 +516,7 @@ public class CashAcnt implements ICashAccount {
 	}
 
 	@Override
-	public Double getLstBuyPri(Stock2 s) {
+	public Double getLstBuyPri(Stock s) {
 		// TODO Auto-generated method stub
 		log.info("check stock " + s.getName() + " last buy price against CashAcount: " + actId);
 

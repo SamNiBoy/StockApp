@@ -7,7 +7,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.selector.stock.TopGainStockSelector;
 
@@ -15,7 +15,7 @@ public class IncStopSellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(IncStopSellPointSelector.class);
 
-    public static boolean matchIncStopMode(Stock2 s){
+    public static boolean matchIncStopMode(Stock s){
 
 	    TopGainStockSelector selector = new TopGainStockSelector();
 	    if (selector.isTargetStock(s, null)) {
@@ -41,7 +41,7 @@ public class IncStopSellPointSelector implements ISellPointSelector {
 	/**
 	 * @param args
 	 */
-	public boolean isGoodSellPoint(Stock2 stk, ICashAccount ac) {
+	public boolean isGoodSellPoint(Stock stk, ICashAccount ac) {
 
 //	    if (!matchIncStopMode(stk)) {
 //	        return false;
@@ -87,7 +87,7 @@ public class IncStopSellPointSelector implements ISellPointSelector {
 	}
 	
 	@Override
-	public int getSellQty(Stock2 s, ICashAccount ac) {
+	public int getSellQty(Stock s, ICashAccount ac) {
 		// TODO Auto-generated method stub
         int sellMnt = 0;
         

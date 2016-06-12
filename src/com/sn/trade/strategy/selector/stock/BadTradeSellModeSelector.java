@@ -3,7 +3,7 @@ package com.sn.trade.strategy.selector.stock;
 import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.work.task.SuggestStock;
 
 public class BadTradeSellModeSelector implements IStockSelector {
@@ -12,7 +12,7 @@ public class BadTradeSellModeSelector implements IStockSelector {
     /**
      * @param args
      */
-    public boolean isTargetStock(Stock2 s, ICashAccount ac) {
+    public boolean isTargetStock(Stock s, ICashAccount ac) {
         if (SuggestStock.shouldStockExitTrade(s.getID())) {
         	log.info("Stock:" + s.getID() + " matches bad trade record, set to sell mode.");
         	return true;

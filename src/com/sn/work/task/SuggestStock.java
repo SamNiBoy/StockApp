@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.RecommandStockObserverable;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.selector.stock.AvgClsPriStockSelector;
@@ -51,7 +51,7 @@ public class SuggestStock implements IWork {
 
 	static SuggestStock self = null;
 	
-	static List<Stock2> stocksWaitForMail = new LinkedList<Stock2>();
+	static List<Stock> stocksWaitForMail = new LinkedList<Stock>();
 	
 	static RecommandStockObserverable rso = new RecommandStockObserverable();
 
@@ -140,12 +140,12 @@ public class SuggestStock implements IWork {
 		resetSuggestion();
 		
 		try {
-			Map<String, Stock2> stks = StockMarket.getStocks();
+			Map<String, Stock> stks = StockMarket.getStocks();
 			int tryCnt = 10;
 			boolean tryHarderCriteria = false;
 			while(tryCnt-- > 0) {
 			    for (String stk : stks.keySet()) {
-			    	Stock2 s = stks.get(stk);
+			    	Stock s = stks.get(stk);
 			    	for (IStockSelector slt : selectors) {
 			    		if (slt.isMandatoryCriteria() && !slt.isTargetStock(s, null)) {
 			    			mandatory_pass_flg = false;
@@ -199,7 +199,7 @@ public class SuggestStock implements IWork {
 			    	stocksWaitForMail.clear();
 			    }
 			    else {
-			    	for (Stock2 s2 : stocksWaitForMail) {
+			    	for (Stock s2 : stocksWaitForMail) {
 		    			suggestStock(s2);
 			    	}
 			    	electStockforTrade();
@@ -221,7 +221,7 @@ public class SuggestStock implements IWork {
 		log.info("SuggestStock Now exit!!!");
 	}
 
-	private void suggestStock(Stock2 s) {
+	private void suggestStock(Stock s) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
@@ -355,10 +355,10 @@ public class SuggestStock implements IWork {
 			e.printStackTrace();
 		}
 		
-		Iterator<Stock2> it = stocksWaitForMail.iterator();
+		Iterator<Stock> it = stocksWaitForMail.iterator();
 		while(it.hasNext())
 		{
-			Stock2 s = it.next();
+			Stock s = it.next();
 			if (!stockMoved.contains(s.getID())) {
 				log.info("remove stock:" + s.getID() + " as it is not moved for trade.");
 				it.remove();

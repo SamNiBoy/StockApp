@@ -34,7 +34,7 @@ import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.mail.reporter.StockObserver;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.reporter.WCMsgSender;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.trade.StockTrader;
 import com.sn.trade.strategy.ITradeStrategy;

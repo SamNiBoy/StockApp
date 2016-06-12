@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.work.itf.IWork;
 
 public class EvaStocks implements IWork {
@@ -39,7 +39,7 @@ public class EvaStocks implements IWork {
 
     TimeUnit tu = TimeUnit.MILLISECONDS;
 
-    public static ArrayList<Stock2> stkLst = new ArrayList<Stock2>();
+    public static ArrayList<Stock> stkLst = new ArrayList<Stock>();
     public static Map<String, Double> stkMaxs = new ConcurrentHashMap<String, Double>();
 
     static Logger log = Logger.getLogger(EvaStocks.class);

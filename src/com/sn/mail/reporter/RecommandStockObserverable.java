@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 
@@ -30,10 +30,10 @@ public class RecommandStockObserverable extends Observable {
 
     static Logger log = Logger.getLogger(RecommandStockObserverable.class);
 
-    private List<Stock2> stocksToSuggest = new ArrayList<Stock2>();
+    private List<Stock> stocksToSuggest = new ArrayList<Stock>();
     private List<RecommandStockSubscriber> ms = new ArrayList<RecommandStockSubscriber>();
 
-    public void addStockToSuggest(List<Stock2> lst) {
+    public void addStockToSuggest(List<Stock> lst) {
     	stocksToSuggest.clear();
     	stocksToSuggest.addAll(lst);
     }
@@ -41,21 +41,21 @@ public class RecommandStockObserverable extends Observable {
 	public class RecommandStockSubscriber{
 		String openID;
 		String mail;
-		List<Stock2> stockSuggested = new ArrayList<Stock2>();
+		List<Stock> stockSuggested = new ArrayList<Stock>();
 		RecommandStockSubscriber(String oid, String ml) {
 			openID = oid;
 			mail = ml;
 		}
 		public String subject;
 		public String content;
-		boolean alreadySuggested(Stock2 s) {
+		boolean alreadySuggested(Stock s) {
 			if (stockSuggested.contains(s)) {
 				log.info("Stock:" + s.getID() + " already suggested to user:" + openID);
 				return true;
 			}
 			return false;
 		}
-		public boolean setSuggested(Stock2 s) {
+		public boolean setSuggested(Stock s) {
 			stockSuggested.add(s);
 			return true;
 		}
@@ -116,7 +116,7 @@ public class RecommandStockObserverable extends Observable {
                     "<th> Name</th> " +
                     "<th> Price</th></tr>");
             DecimalFormat df = new DecimalFormat("##.##");
-            for (Stock2 s : stocksToSuggest) {
+            for (Stock s : stocksToSuggest) {
             	if (!u.alreadySuggested(s)) {
                     body.append("<tr> <td>" + s.getID() + "</td>" +
                     "<td> " + s.getName() + "</td>" +

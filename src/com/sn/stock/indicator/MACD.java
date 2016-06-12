@@ -17,18 +17,18 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 
 public class MACD {
 
 	static Logger log = Logger.getLogger(MACD.class);
 	// short ,long, mid periods
 	int s, l, m;
-	Stock2 stk = null;
+	Stock stk = null;
 
 	public Double DIF, DEF, MACD;
 
-	public MACD(int sht, int lng, int mid, Stock2 stk1) {
+	public MACD(int sht, int lng, int mid, Stock stk1) {
 		s = sht;
 		l = lng;
 		m = mid;

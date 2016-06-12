@@ -25,7 +25,7 @@ import com.sn.cashAcnt.CashAcntManger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.stock.RawStockData;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.trade.StockTrader;
 import com.sn.trade.strategy.ITradeStrategy;
@@ -137,7 +137,7 @@ public class SimWorker implements IWork {
             while (ssd.step()) {
                 log.info("Simulate step:" + (++StepCnt));
                 for (String stock : ssd.simstocks.keySet()) {
-                    Stock2 s = ssd.simstocks.get(stock);
+                    Stock s = ssd.simstocks.get(stock);
 
                     lststp = lst_stmp.get(s.getID());
                     curstp = s.getDl_dt();

@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.trade.strategy.selector.stock.TopGainStockSelector;
 
@@ -16,7 +16,7 @@ public class IncStopBuyPointSelector implements IBuyPointSelector {
 	private double BASE_TRADE_THRESH = 0.09;
 
 	@Override
-	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
+	public boolean isGoodBuyPoint(Stock stk, ICashAccount ac) {
 
 	    //First make sure the stock is matching the incStop mode.
 	    if (!matchIncStopMode(stk)) {
@@ -55,7 +55,7 @@ public class IncStopBuyPointSelector implements IBuyPointSelector {
 	}
 	
 	@Override
-	public int getBuyQty(Stock2 s, ICashAccount ac) {
+	public int getBuyQty(Stock s, ICashAccount ac) {
 		// TODO Auto-generated method stub
         double useableMny = 0;
         int buyMnt = 0;
@@ -86,7 +86,7 @@ public class IncStopBuyPointSelector implements IBuyPointSelector {
 		return buyMnt;
 	}
 
-	   private boolean matchIncStopMode(Stock2 s){
+	   private boolean matchIncStopMode(Stock s){
 //	        LocalDateTime lt = LocalDateTime.now();
 //	        int hr = lt.getHour();
 //	        int mnt = lt.getMinute();

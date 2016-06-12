@@ -29,10 +29,10 @@ import com.sn.cashAcnt.CashAcntManger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.GzStockBuySellPointObserverable;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
-import com.sn.stock.Stock2.StockData;
+import com.sn.stock.Stock.StockData;
 import com.sn.trade.strategy.ITradeStrategy;
 import com.sn.trade.strategy.imp.TradeStrategyGenerator;
 import com.sn.trade.strategy.selector.buypoint.IBuyPointSelector;
@@ -82,10 +82,10 @@ public class StockTrader {
 		
 		resetTest();
 		
-		Stock2 s1 = new Stock2("600503", "abcdef", StockData.SMALL_SZ);
-		Stock2 s2 = new Stock2("002448", "hijklmn", StockData.SMALL_SZ);
-		Stock2 s3 = new Stock2("600871", "abcdef", StockData.SMALL_SZ);
-		Stock2 s4 = new Stock2("002269", "lllll", StockData.SMALL_SZ);
+		Stock s1 = new Stock("600503", "abcdef", StockData.SMALL_SZ);
+		Stock s2 = new Stock("002448", "hijklmn", StockData.SMALL_SZ);
+		Stock s3 = new Stock("600871", "abcdef", StockData.SMALL_SZ);
+		Stock s4 = new Stock("002269", "lllll", StockData.SMALL_SZ);
 		
 		StockMarket.addGzStocks(s1);
 		StockMarket.addGzStocks(s2);
@@ -234,7 +234,7 @@ public class StockTrader {
 	}
 
 	// This method perform real trade and sending mail.
-	public boolean performTrade(Stock2 s) {
+	public boolean performTrade(Stock s) {
 	    for (ITradeStrategy stg : strategies) {
 		    if (stg.performTrade(s)) {
             	StockBuySellEntry rc = stg.getLstTradeRecord(s);

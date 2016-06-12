@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.stock.indicator.MACD;
 import com.sn.trade.strategy.imp.STConstants;
@@ -22,7 +22,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 	static Logger log = Logger.getLogger(QtyBuyPointSelector.class);
 	
 	@Override
-	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
+	public boolean isGoodBuyPoint(Stock stk, ICashAccount ac) {
 
 		double tradeThresh = STConstants.BASE_TRADE_THRESH;
 		if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {
@@ -92,7 +92,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 		return false;
 	}
 	
-    public double getBuyThreshValueByDegree(double Degree, Stock2 stk) {
+    public double getBuyThreshValueByDegree(double Degree, Stock stk) {
     	
     	double baseThresh = STConstants.BASE_TRADE_THRESH;
     	
@@ -158,7 +158,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     }
 
 	@Override
-	public int getBuyQty(Stock2 s, ICashAccount ac) {
+	public int getBuyQty(Stock s, ICashAccount ac) {
 		// TODO Auto-generated method stub
         double useableMny = 0;
         int buyMnt = 0;

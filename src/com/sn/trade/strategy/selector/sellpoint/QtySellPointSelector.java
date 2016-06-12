@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.stock.indicator.MACD;
 import com.sn.trade.strategy.imp.STConstants;
@@ -26,12 +26,12 @@ public class QtySellPointSelector implements ISellPointSelector {
 	/**
 	 * @param args
 	 */
-	public boolean isGoodSellPoint(Stock2 stk, ICashAccount ac) {
+	public boolean isGoodSellPoint(Stock stk, ICashAccount ac) {
 
-	    if (IncStopSellPointSelector.matchIncStopMode(stk)) {
-	        log.info("QtySellPointerSelector skip stock which should be handled by IncStopSellPointSelector");
-	        return false;
-	    }
+//	    if (IncStopSellPointSelector.matchIncStopMode(stk)) {
+//	        log.info("QtySellPointerSelector skip stock which should be handled by IncStopSellPointSelector");
+//	        return false;
+//	    }
 		Double maxPri = stk.getMaxCurPri();
 		Double minPri = stk.getMinCurPri();
 		Double yt_cls_pri = stk.getYtClsPri();
@@ -75,7 +75,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 		return false;
 	}
 	
-    public double getSellThreshValueByDegree(double Degree, Stock2 stk) {
+    public double getSellThreshValueByDegree(double Degree, Stock stk) {
     	
     	double baseThresh = STConstants.BASE_TRADE_THRESH;
     	
@@ -145,7 +145,7 @@ public class QtySellPointSelector implements ISellPointSelector {
     }
 
 	@Override
-	public int getSellQty(Stock2 s, ICashAccount ac) {
+	public int getSellQty(Stock s, ICashAccount ac) {
 		// TODO Auto-generated method stub
         int sellMnt = 0;
         

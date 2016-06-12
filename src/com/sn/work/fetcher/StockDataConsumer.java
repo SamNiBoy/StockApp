@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.stock.RawStockData;
 import com.sn.work.WorkManager;
@@ -69,14 +69,14 @@ public class StockDataConsumer implements IWork {
     public void run()
     {
         log.info("Now about to run StockConsumer's run...");
-        ConcurrentHashMap<String, Stock2> ss = StockMarket
+        ConcurrentHashMap<String, Stock> ss = StockMarket
         .getStocks();
         int cnt = 0;
         try {
             while (true) {
                 RawStockData srd = dataqueue.take();
                 log.info("take return stock:" + srd.id);
-                Stock2 s = ss.get(srd.id);
+                Stock s = ss.get(srd.id);
                 if (s != null) {
                     cnt++;
                     log.info("About to consume RawData from RawStockDataConsume, queue size:" + dataqueue.size());

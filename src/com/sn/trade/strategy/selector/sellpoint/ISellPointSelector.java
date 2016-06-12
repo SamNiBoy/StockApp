@@ -7,13 +7,13 @@ import java.util.concurrent.TimeUnit;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 
 public interface ISellPointSelector {
 
     /**
      * @param args
      */
-    public boolean isGoodSellPoint(Stock2 s, ICashAccount ac);
-    public int getSellQty(Stock2 s, ICashAccount ac);
+    public boolean isGoodSellPoint(Stock s, ICashAccount ac);
+    public int getSellQty(Stock s, ICashAccount ac);
 }

@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.StockObserverable;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 
 public interface ICashAccount {
 
@@ -33,10 +33,10 @@ public interface ICashAccount {
     public void printTradeInfo();
     public int getSellableAmt(String stkId, String sellDt);
     public int getUnSellableAmt(String stkId, String sellDt);
-    public boolean calProfit(String ForDt, Map<String, Stock2>stockSet);
+    public boolean calProfit(String ForDt, Map<String, Stock>stockSet);
     public boolean initAccount();
-    public boolean hasStockInHand(Stock2 s);
-    public double getInHandStockCostPrice(Stock2 s);
-    public Double getLstBuyPri(Stock2 s);
-    public double getStockCostRatio(Stock2 s);
+    public boolean hasStockInHand(Stock s);
+    public double getInHandStockCostPrice(Stock s);
+    public Double getLstBuyPri(Stock s);
+    public double getStockCostRatio(Stock s);
 }

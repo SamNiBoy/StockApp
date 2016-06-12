@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.trade.strategy.imp.TradeStrategyImp;
 
@@ -21,7 +21,7 @@ public class PriceStockSelector implements IStockSelector {
     /**
      * @param args
      */
-    public boolean isTargetStock(Stock2 s, ICashAccount ac) {
+    public boolean isTargetStock(Stock s, ICashAccount ac) {
         Double curPri = s.getCur_pri();
         if (curPri != null && curPri <= HighestPrice && curPri >= LowestPrice) {
              log.info("returned true because price " + curPri + " is in [" + LowestPrice + "," + HighestPrice +"]");

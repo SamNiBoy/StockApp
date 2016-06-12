@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.SellModeStockObserverable;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.selector.stock.AvgClsPriSellModeSelector;
@@ -43,8 +43,8 @@ public class SellModeWatchDog implements IWork {
 
 	static SellModeWatchDog self = null;
 	
-	static List<Stock2> stocksSellModeWaitForMail = new LinkedList<Stock2>();
-	static List<Stock2> stocksUnSellModeWaitForMail = new LinkedList<Stock2>();
+	static List<Stock> stocksSellModeWaitForMail = new LinkedList<Stock>();
+	static List<Stock> stocksUnSellModeWaitForMail = new LinkedList<Stock>();
 	
 	static SellModeStockObserverable rso = new SellModeStockObserverable();
 
@@ -95,9 +95,9 @@ public class SellModeWatchDog implements IWork {
 	public void run() {
 		// TODO Auto-generated method stub
 		try {
-	        Map<String, Stock2> stks = StockMarket.getGzstocks();
+	        Map<String, Stock> stks = StockMarket.getGzstocks();
 	        for (String stk : stks.keySet()) {
-	        	Stock2 s = stks.get(stk);
+	        	Stock s = stks.get(stk);
 	        	
 	        	if (!isStockInSellMode(s) && stockMatchSellMode(s)) {
 	        		setStockSellMode(s, true);
@@ -120,7 +120,7 @@ public class SellModeWatchDog implements IWork {
 	    log.info("TradeWatchDog Now exit!!!");
 	}
 	
-	private boolean stockMatchSellMode(Stock2 s) {
+	private boolean stockMatchSellMode(Stock s) {
         boolean suggest_flg = false;
 
         for (IStockSelector slt : selectors) {
@@ -160,7 +160,7 @@ public class SellModeWatchDog implements IWork {
         return suggest_flg;
 	}
 	 
-	private boolean stockMatchUnSellMode(Stock2 s) {
+	private boolean stockMatchUnSellMode(Stock s) {
         boolean suggest_flg = true;
 
         boolean pre_sell_mode = isStockInSellMode(s);
@@ -196,7 +196,7 @@ public class SellModeWatchDog implements IWork {
         return suggest_flg;
 	}
 	
-	public static boolean isStockInSellMode(Stock2 s) {
+	public static boolean isStockInSellMode(Stock s) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
@@ -228,7 +228,7 @@ public class SellModeWatchDog implements IWork {
 		return is_in_sell_mode;
 	}
 
-	private void setStockSellMode(Stock2 s, boolean to_sell_mode) {
+	private void setStockSellMode(Stock s, boolean to_sell_mode) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;

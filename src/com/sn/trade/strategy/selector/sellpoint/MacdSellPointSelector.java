@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2;
+import com.sn.stock.Stock;
 import com.sn.stock.indicator.MACD;
 import com.sn.trade.strategy.selector.buypoint.DefaultBuyPointSelector;
 
@@ -20,7 +20,7 @@ public class MacdSellPointSelector implements ISellPointSelector {
 	/**
 	 * @param args
 	 */
-	public boolean isGoodSellPoint(Stock2 stk, ICashAccount ac) {
+	public boolean isGoodSellPoint(Stock stk, ICashAccount ac) {
 
 		int s = 12, l = 26, m = 9;
 
@@ -40,7 +40,7 @@ public class MacdSellPointSelector implements ISellPointSelector {
 	}
 
 	@Override
-	public int getSellQty(Stock2 s, ICashAccount ac) {
+	public int getSellQty(Stock s, ICashAccount ac) {
 		// TODO Auto-generated method stub
 		return 100;
 	}

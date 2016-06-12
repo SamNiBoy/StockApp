@@ -18,16 +18,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.stock.Stock2.StockData;
+import com.sn.stock.Stock.StockData;
 import com.sn.trade.strategy.imp.STConstants;
 
 public class StockMarket{
 
     static Logger log = Logger.getLogger(StockMarket.class);
     
-    static private ConcurrentHashMap<String, Stock2> stocks = new ConcurrentHashMap<String, Stock2>();
-    static private ConcurrentHashMap<String, Stock2> gzstocks = new ConcurrentHashMap<String, Stock2>();
-    static private ConcurrentHashMap<String, Stock2> recomstocks = null;
+    static private ConcurrentHashMap<String, Stock> stocks = new ConcurrentHashMap<String, Stock>();
+    static private ConcurrentHashMap<String, Stock> gzstocks = new ConcurrentHashMap<String, Stock>();
+    static private ConcurrentHashMap<String, Stock> recomstocks = null;
     
     static private Map<String, Boolean> gzStockSellMode = new HashMap<String, Boolean>();
     
@@ -54,7 +54,7 @@ public class StockMarket{
     public static void main(String[] args) {
         // TODO Auto-generated method stub
             for (String s : stocks.keySet()) {
-                Stock2 stk = stocks.get(s);
+                Stock stk = stocks.get(s);
                 stk.printStockInfo();
             }
     }
@@ -85,7 +85,7 @@ public class StockMarket{
         ResultSet rs = null;
         
         stocks.clear();
-        Stock2 s = null;
+        Stock s = null;
         int cnt = 0;
         try {
             stm = con.createStatement();
@@ -97,7 +97,7 @@ public class StockMarket{
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, StockData.SMALL_SZ);
+                s = new Stock(id, name, StockData.SMALL_SZ);
                 stocks.put(id, s);
                 cnt++;
                 log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -121,7 +121,7 @@ public class StockMarket{
         ResultSet rs = null;
         
         gzstocks.clear();
-        Stock2 s = null;
+        Stock s = null;
         int cnt = 0;
         try {
             stm = con.createStatement();
@@ -132,7 +132,7 @@ public class StockMarket{
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, StockData.SMALL_SZ);
+                s = new Stock(id, name, StockData.SMALL_SZ);
                 gzstocks.put(id, s);
                 cnt++;
                 log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -149,7 +149,7 @@ public class StockMarket{
         return true;
     }
     
-    static public boolean addGzStocks(Stock2 s) {
+    static public boolean addGzStocks(Stock s) {
         gzstocks.put(s.getID(), s);
         log.info("StockMarket addGzStocks " + s.getID() + " successed!");
         return true;
@@ -161,7 +161,7 @@ public class StockMarket{
         Statement stm = null;
         ResultSet rs = null;
         
-        Stock2 s = null;
+        Stock s = null;
         try {
             stm = con.createStatement();
             String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and s.id = '" + stkId + "'";
@@ -172,7 +172,7 @@ public class StockMarket{
             if (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, StockData.SMALL_SZ);
+                s = new Stock(id, name, StockData.SMALL_SZ);
                 gzstocks.put(id, s);
                 log.info("addGzStocks completed for: " + stkId);
             }
@@ -192,7 +192,7 @@ public class StockMarket{
 
         boolean removed = false;
         if (!gzstocks.isEmpty()) {
-             Stock2 rm = gzstocks.remove(stkId);
+             Stock rm = gzstocks.remove(stkId);
              if (rm != null) {
                  removed = true;
              }
@@ -207,7 +207,7 @@ public class StockMarket{
         }
     }
     
-    public static ConcurrentHashMap<String, Stock2> getStocks() {
+    public static ConcurrentHashMap<String, Stock> getStocks() {
         synchronized (StockMarket.class) {
             if (stocks.isEmpty()) {
                 loadStocks();
@@ -216,26 +216,26 @@ public class StockMarket{
         }
     }
 
-    public static void setStocks(ConcurrentHashMap<String, Stock2> stocks) {
+    public static void setStocks(ConcurrentHashMap<String, Stock> stocks) {
         StockMarket.stocks = stocks;
     }
 
-    public static ConcurrentHashMap<String, Stock2> getGzstocks() {
+    public static ConcurrentHashMap<String, Stock> getGzstocks() {
         if (gzstocks.isEmpty()) {
             loadGzStocks();
         }
         return gzstocks;
     }
 
-    public static void setGzstocks(ConcurrentHashMap<String, Stock2> gzstocks) {
+    public static void setGzstocks(ConcurrentHashMap<String, Stock> gzstocks) {
         StockMarket.gzstocks = gzstocks;
     }
 
-    public static ConcurrentHashMap<String, Stock2> getRecomstocks() {
+    public static ConcurrentHashMap<String, Stock> getRecomstocks() {
         return recomstocks;
     }
 
-    public static void setRecomstocks(ConcurrentHashMap<String, Stock2> recomstocks) {
+    public static void setRecomstocks(ConcurrentHashMap<String, Stock> recomstocks) {
         StockMarket.recomstocks = recomstocks;
     }
 
@@ -327,7 +327,7 @@ public class StockMarket{
     	}
     	int jumpCnt = 0;
     	for(String s : stocks.keySet()) {
-    		Stock2 stk = stocks.get(s);
+    		Stock stk = stocks.get(s);
     		if (stk.isJumpWater(tailSz, jumpPct)) {
     			jumpCnt++;
     		}
@@ -352,7 +352,7 @@ public class StockMarket{
     	}
     	int jumpCnt = 0;
     	for(String s : gzstocks.keySet()) {
-    		Stock2 stk = gzstocks.get(s);
+    		Stock stk = gzstocks.get(s);
     		if (stk.isJumpWater(tailSz, jumpPct)) {
     			jumpCnt++;
     		}
