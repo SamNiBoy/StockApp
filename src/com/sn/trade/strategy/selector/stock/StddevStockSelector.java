@@ -33,6 +33,7 @@ public class StddevStockSelector implements IStockSelector {
     				   + "  from stkdat2 "
     				   + " where id ='" + s.getID() + "'"
     				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS + ", 'yyyy-mm-dd')"
+    				   + "   and not exists (select 'x' from usrStk where id ='" + s.getID() + "' and sell_mode_flg = 1)"
     				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);

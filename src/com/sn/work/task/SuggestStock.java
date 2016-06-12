@@ -233,14 +233,22 @@ public class SuggestStock implements IWork {
 			rs = stm.executeQuery(sql);
 			while (rs.next()) {
 				String openID = rs.getString("openID");
-				sql = "select gz_flg from usrStk where openID = '" + openID + "' and id = '" + s.getID() + "'";
+				sql = "select gz_flg, sell_mode_flg, suggested_by from usrStk where openID = '" + openID + "' and id = '" + s.getID() + "'";
 				Statement stm2 = con.createStatement();
 				ResultSet rs2 = stm2.executeQuery(sql);
 				sql = "";
 				if (rs2.next()) {
 					if (rs2.getLong("gz_flg") == 0) {
-						sql = "update usrStk set gz_flg = 1, suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "', suggested_sellmode_by = '', add_dt = sysdate where openID = '" + openID
+						if (rs2.getLong("sell_mode_flg") == 0) {
+						    sql = "update usrStk set gz_flg = 1, suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "', suggested_sellmode_by = '', add_dt = sysdate where openID = '" + openID
 								+ "' and id = '" + s.getID() + "'";
+						}
+						else {
+							log.info("Stock:" + s.getID() + " sell mode:" + rs2.getLong("sell_mode_flg") + " is true, can not suggest it!");
+						}
+					}
+					else {
+						log.info("Stock gz_flg: " + rs2.getLong("gz_flg") + " already gzed, and suggested by:" + rs2.getString("suggested_by"));
 					}
 				} else {
 					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'SYSTEM','',sysdate)";
