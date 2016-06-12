@@ -17,8 +17,9 @@ import com.sn.trade.strategy.imp.TradeStrategyImp;
 public class StddevStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(StddevStockSelector.class);
-	double maxStddev = 0.1;
-	double minStddev = 0.013;
+
+    double minStddev = STConstants.MIN_STEDEV_VALUE;
+    double maxStddev = STConstants.MAX_STEDEV_VALUE;
     /**
      * @param args
      */
@@ -74,9 +75,9 @@ public class StddevStockSelector implements IStockSelector {
 		}
 		else {
 			minStddev -= 0.001;
-			if (minStddev <= 0.01) {
-				log.info("minStddev is lower than 0.01, use 0.01.");
-				minStddev = 0.01;
+			if (minStddev <= STConstants.ALLOWABLE_MIN_STEDEV_VALUE) {
+				log.info("minStddev is lower than " + STConstants.ALLOWABLE_MIN_STEDEV_VALUE + ", use it.");
+				minStddev = STConstants.ALLOWABLE_MIN_STEDEV_VALUE;
 			}
 			log.info("Now maxStddve:" + maxStddev + ", minStddev:" + minStddev);
 		}

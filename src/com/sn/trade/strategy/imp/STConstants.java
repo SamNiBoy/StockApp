@@ -36,9 +36,13 @@ public class STConstants {
 	
 	public static final double TOP_INCSTOP_BASE_TRADE_THRESH = 0.06;
 	public static final int MAX_NUM_STOCKS_FOR_TRADE = 10;
-	public static final int DEV_CALCULATE_DAYS = 7;
-	public static final double MIN_DEV_BEFORE_EXIT_TRADE = 0.01;
 	public static final double QTY_PLUSED_BASE_PCT = 0.6;
+	
+	public static final int DEV_CALCULATE_DAYS = 7;
+	public static final double MAX_STEDEV_VALUE = 0.1;
+	public static final double MIN_STEDEV_VALUE = 0.02;
+	public static final double ALLOWABLE_MIN_STEDEV_VALUE = 0.017;
+	public static final double MIN_DEV_BEFORE_EXIT_TRADE = 0.015;
 	
 	public static final int DAYS_FOR_SIM = 3;
 	
