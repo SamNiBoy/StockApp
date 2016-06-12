@@ -19,9 +19,9 @@ public class IncStopBuyPointSelector implements IBuyPointSelector {
 	public boolean isGoodBuyPoint(Stock stk, ICashAccount ac) {
 
 	    //First make sure the stock is matching the incStop mode.
-	    if (!matchIncStopMode(stk)) {
-	        return false;
-	    }
+//	    if (!matchIncStopMode(stk)) {
+//	        return false;
+//	    }
 	    
 //		double tradeThresh = BASE_TRADE_THRESH;
 //	    Double maxPri = stk.getMaxCurPri();
@@ -51,7 +51,7 @@ public class IncStopBuyPointSelector implements IBuyPointSelector {
 //	    } else {
 //	    	log.info("IncStopBuyPointSelector isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, isMarketTooCold is true return false");
 //	    }
-		return true;
+		return false;
 	}
 	
 	@Override
