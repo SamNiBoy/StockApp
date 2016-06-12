@@ -89,7 +89,7 @@ public class GzStock implements com.sn.work.itf.IWork {
             	}
             	else {
             		rs.close();
-            	    sql = "insert into usrStk values ('" + frmUsr + "','" + stockID + "',1,0,'" + frmUsr + "', sysdate)";
+            	    sql = "insert into usrStk values ('" + frmUsr + "','" + stockID + "',1,0,'" + frmUsr + "', '', sysdate)";
             	    log.info(sql);
             	    stm.execute(sql);
         		    msg = "成功添加关注:" + stockID;

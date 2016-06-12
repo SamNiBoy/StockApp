@@ -14,6 +14,7 @@ id varchar2(6 byte) not null,
 gz_flg number not null,
 sell_mode_flg number not null,
 suggested_by varchar2(100 byte) not null,
+suggested_sellmode_by varchar2(100 byte),
 add_dt date not null,
 CONSTRAINT "usrStk_PK" PRIMARY KEY (OpenID, id)
 );

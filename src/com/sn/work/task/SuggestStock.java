@@ -239,11 +239,11 @@ public class SuggestStock implements IWork {
 				sql = "";
 				if (rs2.next()) {
 					if (rs2.getLong("gz_flg") == 0) {
-						sql = "update usrStk set gz_flg = 1, suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "', add_dt = sysdate where openID = '" + openID
+						sql = "update usrStk set gz_flg = 1, suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "', suggested_sellmode_by = '', add_dt = sysdate where openID = '" + openID
 								+ "' and id = '" + s.getID() + "'";
 					}
 				} else {
-					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'SYSTEM',sysdate)";
+					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'SYSTEM','',sysdate)";
 				}
 				rs2.close();
 				stm2.close();
@@ -332,7 +332,7 @@ public class SuggestStock implements IWork {
 			rs = stm.executeQuery(sql);
 			while (rs.next() && maxCnt-- > 0) {
 				String id = rs.getString("id");
-				sql = "update usrStk set suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "',  gz_flg = 1, sell_mode_flg = 0, add_dt = sysdate where id ='" + id + "'";
+				sql = "update usrStk set suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "',  gz_flg = 1, sell_mode_flg = 0, suggested_sellmode_by = '', add_dt = sysdate where id ='" + id + "'";
 				Statement stm2 = con.createStatement();
 				stm2.execute(sql);
 				con.commit();
@@ -364,7 +364,7 @@ public class SuggestStock implements IWork {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		try {
-			sql = "update usrStk set sell_mode_flg = 1, add_dt = sysdate where id = '" + stkid + "'";
+			sql = "update usrStk set sell_mode_flg = 1, suggested_sellmode_by = 'SuggestStock', add_dt = sysdate where id = '" + stkid + "'";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

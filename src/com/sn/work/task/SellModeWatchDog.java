@@ -202,7 +202,7 @@ public class SellModeWatchDog implements IWork {
 		Statement stm = null;
 		boolean is_in_sell_mode = false;
 		try {
-			sql = "select sell_mode_flg from usrStk where openID = '" + STConstants.openID + "' and id = '" + s.getID() + "'";
+			sql = "select sell_mode_flg from usrStk where openID = '" + STConstants.openID + "' and id = '" + s.getID() + "' and suggested_sellmode_by = 'SellModeWatchDog'";
 			log.info(sql);
 			stm = con.createStatement();
 			ResultSet rs = stm.executeQuery(sql);
@@ -233,7 +233,7 @@ public class SellModeWatchDog implements IWork {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		try {
-			sql = "update usrStk set sell_mode_flg = " + (to_sell_mode ?  "1": "0") + " where openID = '" + STConstants.openID + "' and id = '" + s.getID() + "'";
+			sql = "update usrStk set sell_mode_flg = " + (to_sell_mode ?  "1": "0") + ", suggested_sellmode_by = '" + (to_sell_mode ?  "SellModeWatchDog": "") + "'" + " where openID = '" + STConstants.openID + "' and id = '" + s.getID() + "'";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);
