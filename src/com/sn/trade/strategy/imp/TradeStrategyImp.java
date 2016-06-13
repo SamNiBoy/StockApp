@@ -382,8 +382,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 				}
 				log.info("For stock " + s.getID() + " total sellCnt:" + sellCnt + ", total buyCnt:" + buyCnt);
 
-				// We only allow buy BUY_MORE_THEN_SELL_CNT more than sell.
-				if (buyCnt >= sellCnt + STConstants.BUY_MORE_THEN_SELL_CNT && is_buy_flg) {
+				StockBuySellEntry lst = rcds.getLast();
+				// We only allow buy BUY_MORE_THEN_SELL_CNT more than sell and we will not buy again with higher price.
+				if (((buyCnt >= sellCnt + STConstants.BUY_MORE_THEN_SELL_CNT) || (buyCnt > sellCnt && s.getCur_pri() > lst.price)) && is_buy_flg) {
 					log.info("Bought more than sold, can won't buy again.");
 					return false;
 				}
@@ -397,7 +398,6 @@ public class TradeStrategyImp implements ITradeStrategy {
 				else {
 					// If we just sold/buy it, and now the price has no
 					// significant change, we will not do the same trade.
-					StockBuySellEntry lst = rcds.getLast();
 					if (is_buy_flg == lst.is_buy_point && Math.abs((s.getCur_pri() - lst.price)) / lst.price <= 0.01) {
 						log.info("Just " + (is_buy_flg ? "buy" : "sell") + " this stock with similar prices "
 								+ s.getCur_pri() + "/" + lst.price + ", skip same trade.");
