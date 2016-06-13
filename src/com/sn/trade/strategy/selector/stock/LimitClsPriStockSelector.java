@@ -61,13 +61,14 @@ public class LimitClsPriStockSelector implements IStockSelector {
     		    yt_cls_pri > yt_opn_pri &&
     		    midAvgPri > yt_lst_pri &&
     		    yt_cls_pri > midAvgPri &&
-    		    pct >= MIN_PCT_YT_PRI) {
+    		    pct >= MIN_PCT_YT_PRI && s.isDlyDlQtyPlused()) {
     		    return true;
     		}
     	}
     	log.info("stock: " + s.getID() + " shtAvgPri:" + shtAvgPri + " midAvgPri:" + midAvgPri + " longAvgPri:" + longAvgPri + ", ALLOW_INC_THRESH_VALUE: " + ALLOW_INC_THRESH_VALUE + ", return false");
         return false;
     }
+    
 	@Override
 	public boolean isORCriteria() {
 		// TODO Auto-generated method stub

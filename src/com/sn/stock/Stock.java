@@ -633,6 +633,31 @@ public class Stock implements Comparable<Stock>{
         	return final_val;
         }
         
+        public boolean isDlyDlQtyPlused() {
+            int sz = dly_dl_stk_num_lst.size();
+            if (sz <= 10) {
+                log.info("dly_dl_stk_num_lst has less data, isDlyDlQtyPlused is false.");
+                return false;
+            }
+            long lstDetQty = dly_dl_stk_num_lst.get(sz - 1) - dly_dl_stk_num_lst.get(sz - 2);
+            log.info("isDlyDlQtyPlused is:" + lstDetQty + " size:" + sz);
+            long cnt = 0;
+            for (int i = 1; i<= sz -2; i++) {
+                long preDetQty = dly_dl_stk_num_lst.get(sz - 1 - i) - dly_dl_stk_num_lst.get(sz - 2 - i);
+                if (preDetQty < lstDetQty) {
+                    cnt++;
+                }
+            }
+            if (cnt * 1.0 / (sz - 1) >= STConstants.DLY_DL_QTY_PLUSED_PCT) {
+                log.info("isDlyDlQtyPlused cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " big than " + STConstants.DLY_DL_QTY_PLUSED_PCT + ", plused return true.");
+                return true;
+            }
+            else {
+                log.info("isDlyDlQtyPlused cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " less than " + STConstants.DLY_DL_QTY_PLUSED_PCT + ", plused return false.");
+                return false;
+            }
+        }
+        
         //Check if cur price is jumping water, tailSz tells how many recent records should be check, and pct tells
         //how many percentage price decrease determine jumping water.
         public boolean isJumpWater(int tailSz, double pct) {
@@ -1349,6 +1374,11 @@ public class Stock implements Comparable<Stock>{
     //this method tells if the lasted record has dl_stk_num qty plused.
     public boolean isLstQtyPlused() {
         return sd.isLstQtyPlused();
+    }
+    
+    //this method tells if the lasted record has dly_dl_stk_num qty plused.
+    public boolean isDlyDlQtyPlused() {
+        return sd.isDlyDlQtyPlused();
     }
     
     public boolean isStoppingJumpWater() {
