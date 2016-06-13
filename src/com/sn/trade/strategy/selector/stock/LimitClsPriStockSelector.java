@@ -59,7 +59,7 @@ public class LimitClsPriStockSelector implements IStockSelector {
     		    yt_opn_pri != null &&
     		    yt_cls_pri != null &&
     		    yt_cls_pri > yt_opn_pri &&
-    		    midAvgPri > yt_opn_pri &&
+    		    midAvgPri > yt_lst_pri &&
     		    yt_cls_pri > midAvgPri &&
     		    pct >= MIN_PCT_YT_PRI) {
     		    return true;
