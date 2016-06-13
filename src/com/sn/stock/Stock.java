@@ -30,17 +30,23 @@ public class Stock implements Comparable<Stock>{
         int MAX_SZ = 800;
         //Save all history data
         String stkid;
-        List<Double> td_opn_pri_lst = null;
-        List<Double> yt_cls_pri_lst = null;
-        List<Double> td_hst_pri_lst = null;
-        List<Double> td_lst_pri_lst = null;
-        List<String> dt_lst = null;
-
+        List<Double> dly_td_opn_pri_lst = null;
+        List<Double> dly_yt_cls_pri_lst = null;
+        List<Double> dly_td_hst_pri_lst = null;
+        List<Double> dly_td_lst_pri_lst = null;
+        List<Integer> dly_dl_stk_num_lst =null;
+        List<Double> dly_dl_mny_num_lst = null;
+        List<String> dly_dt_lst = null;
+        
         //Save today's data
         List<Integer> ft_id_lst =  null;
         List<Double> cur_pri_lst = null;
         List<Double> b1_bst_pri_lst = null;
         List<Double> s1_bst_pri_lst = null;
+        List<Double> td_opn_pri_lst = null;
+        List<Double> yt_cls_pri_lst = null;
+        List<Double> td_hst_pri_lst = null;
+        List<Double> td_lst_pri_lst = null;
         List<Integer> dl_stk_num_lst =null;
         List<Double> dl_mny_num_lst = null;
         List<Integer> b1_num_lst = null;
@@ -259,6 +265,54 @@ public class Stock implements Comparable<Stock>{
             this.stkid = stkid;
         }
 
+        public List<Double> getDly_td_opn_pri_lst() {
+            return dly_td_opn_pri_lst;
+        }
+
+        public void setDly_td_opn_pri_lst(List<Double> dly_td_opn_pri_lst) {
+            this.dly_td_opn_pri_lst = dly_td_opn_pri_lst;
+        }
+
+        public List<Double> getDly_yt_cls_pri_lst() {
+            return dly_yt_cls_pri_lst;
+        }
+
+        public void setDly_yt_cls_pri_lst(List<Double> dly_yt_cls_pri_lst) {
+            this.dly_yt_cls_pri_lst = dly_yt_cls_pri_lst;
+        }
+
+        public List<Double> getDly_td_hst_pri_lst() {
+            return dly_td_hst_pri_lst;
+        }
+
+        public void setDly_td_hst_pri_lst(List<Double> dly_td_hst_pri_lst) {
+            this.dly_td_hst_pri_lst = dly_td_hst_pri_lst;
+        }
+
+        public List<Double> getDly_td_lst_pri_lst() {
+            return dly_td_lst_pri_lst;
+        }
+
+        public void setDly_td_lst_pri_lst(List<Double> dly_td_lst_pri_lst) {
+            this.dly_td_lst_pri_lst = dly_td_lst_pri_lst;
+        }
+
+        public List<Integer> getDly_dl_stk_num_lst() {
+            return dly_dl_stk_num_lst;
+        }
+
+        public void setDly_dl_stk_num_lst(List<Integer> dly_dl_stk_num_lst) {
+            this.dly_dl_stk_num_lst = dly_dl_stk_num_lst;
+        }
+
+        public List<Double> getDly_dl_mny_num_lst() {
+            return dly_dl_mny_num_lst;
+        }
+
+        public void setDly_dl_mny_num_lst(List<Double> dly_dl_mny_num_lst) {
+            this.dly_dl_mny_num_lst = dly_dl_mny_num_lst;
+        }
+
         public List<Double> getTd_opn_pri_lst() {
             return td_opn_pri_lst;
         }
@@ -291,12 +345,12 @@ public class Stock implements Comparable<Stock>{
             td_lst_pri_lst = tdLstPriLst;
         }
 
-        public List<String> getDt_lst() {
-            return dt_lst;
+        public List<String> getDly_dt_lst() {
+            return dly_dt_lst;
         }
 
-        public void setDt_lst(List<String> dtLst) {
-            dt_lst = dtLst;
+        public void setDly_dt_lst(List<String> dtLst) {
+            dly_dt_lst = dtLst;
         }
 
         public List<Integer> getFt_id_lst() {
@@ -654,11 +708,13 @@ public class Stock implements Comparable<Stock>{
             stkid = stkId;
             MAX_SZ = sz;
             
-            td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            dt_lst = new BoundArrayList<String>(MAX_SZ);
+            dly_td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dly_yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dly_td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dly_td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dly_dl_stk_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            dly_dl_mny_num_lst = new BoundArrayList<Double>(MAX_SZ);
+            dly_dt_lst = new BoundArrayList<String>(MAX_SZ);
             
 
             //Save today's data
@@ -666,6 +722,10 @@ public class Stock implements Comparable<Stock>{
             cur_pri_lst = new BoundArrayList<Double>(MAX_SZ);
             b1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
             s1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
             dl_stk_num_lst = new BoundArrayList<Integer>(MAX_SZ);
             dl_mny_num_lst = new BoundArrayList<Double>(MAX_SZ);
             b1_num_lst = new BoundArrayList<Integer>(MAX_SZ);
@@ -698,11 +758,13 @@ public class Stock implements Comparable<Stock>{
                 log.info(sql);
                 ResultSet rs = stm.executeQuery(sql);
                 while(rs.next()) {
-                    td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
-                    yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
-                    td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
-                    td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
-                    dt_lst.add(rs.getString("dt"));
+                    dly_td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
+                    dly_yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
+                    dly_td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
+                    dly_td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
+                    dly_dl_stk_num_lst.add(rs.getInt("dl_stk_num"));
+                    dly_dl_mny_num_lst.add(rs.getDouble("dl_mny_num"));
+                    dly_dt_lst.add(rs.getString("dt"));
                 }
                 rs.close();
                 stm.close();
@@ -718,11 +780,13 @@ public class Stock implements Comparable<Stock>{
             stkid = stkId;
             MAX_SZ = sz;
             
-            td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            dt_lst = new BoundArrayList<String>(MAX_SZ);
+            dly_td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dly_yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dly_td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dly_td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            dly_dl_stk_num_lst = new BoundArrayList<Integer>(MAX_SZ);
+            dly_dl_mny_num_lst = new BoundArrayList<Double>(MAX_SZ);
+            dly_dt_lst = new BoundArrayList<String>(MAX_SZ);
             
 
             //Save today's data
@@ -730,6 +794,10 @@ public class Stock implements Comparable<Stock>{
             cur_pri_lst = new BoundArrayList<Double>(MAX_SZ);
             b1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
             s1_bst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
+            td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
             dl_stk_num_lst = new BoundArrayList<Integer>(MAX_SZ);
             dl_mny_num_lst = new BoundArrayList<Double>(MAX_SZ);
             b1_num_lst = new BoundArrayList<Integer>(MAX_SZ);
@@ -762,11 +830,13 @@ public class Stock implements Comparable<Stock>{
                 log.info(sql);
                 ResultSet rs = stm.executeQuery(sql);
                 while(rs.next()) {
-                    td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
-                    yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
-                    td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
-                    td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
-                    dt_lst.add(rs.getString("dt"));
+                    dly_td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
+                    dly_yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
+                    dly_td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
+                    dly_td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
+                    dly_dl_stk_num_lst.add(rs.getInt("dl_stk_num"));
+                    dly_dl_mny_num_lst.add(rs.getDouble("dl_mny_num"));
+                    dly_dt_lst.add(rs.getString("dt"));
                 }
                 rs.close();
                 stm.close();
@@ -797,6 +867,10 @@ public class Stock implements Comparable<Stock>{
                     cur_pri_lst.add(rs.getDouble("cur_pri"));
                     b1_bst_pri_lst.add(rs.getDouble("b1_bst_pri"));
                     s1_bst_pri_lst.add(rs.getDouble("s1_bst_pri"));
+                    td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
+                    yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
+                    td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
+                    td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
                     dl_stk_num_lst.add(rs.getInt("dl_stk_num"));
                     dl_mny_num_lst.add(rs.getDouble("dl_mny_num"));
                     b1_num_lst.add(rs.getInt("b1_num"));
@@ -851,6 +925,10 @@ public class Stock implements Comparable<Stock>{
                     cur_pri_lst.add(rs.getDouble("cur_pri"));
                     b1_bst_pri_lst.add(rs.getDouble("b1_bst_pri"));
                     s1_bst_pri_lst.add(rs.getDouble("s1_bst_pri"));
+                    td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
+                    yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
+                    td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
+                    td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
                     dl_stk_num_lst.add(rs.getInt("dl_stk_num"));
                     dl_mny_num_lst.add(rs.getDouble("dl_mny_num"));
                     b1_num_lst.add(rs.getInt("b1_num"));
@@ -898,6 +976,10 @@ public class Stock implements Comparable<Stock>{
                     cur_pri_lst.add(rs.getDouble("cur_pri"));
                     b1_bst_pri_lst.add(rs.getDouble("b1_bst_pri"));
                     s1_bst_pri_lst.add(rs.getDouble("s1_bst_pri"));
+                    td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
+                    yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
+                    td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
+                    td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
                     dl_stk_num_lst.add(rs.getInt("dl_stk_num"));
                     dl_mny_num_lst.add(rs.getDouble("dl_mny_num"));
                     b1_num_lst.add(rs.getInt("b1_num"));
@@ -937,6 +1019,10 @@ public class Stock implements Comparable<Stock>{
                 cur_pri_lst.add(rsd.cur_pri);
                 b1_bst_pri_lst.add(rsd.b1_bst_pri);
                 s1_bst_pri_lst.add(rsd.s1_bst_pri);
+                td_opn_pri_lst.add(rsd.td_opn_pri);
+                yt_cls_pri_lst.add(rsd.yt_cls_pri);
+                td_hst_pri_lst.add(rsd.td_hst_pri);
+                td_lst_pri_lst.add(rsd.td_lst_pri);
                 dl_stk_num_lst.add(rsd.dl_stk_num);
                 dl_mny_num_lst.add(rsd.dl_mny_num);
                 b1_num_lst.add(rsd.b1_num);
@@ -972,6 +1058,10 @@ public class Stock implements Comparable<Stock>{
                 cur_pri_lst.clear();
                 b1_bst_pri_lst.clear();
                 s1_bst_pri_lst.clear();
+                td_opn_pri_lst.clear();
+                yt_cls_pri_lst.clear();
+                td_hst_pri_lst.clear();
+                td_lst_pri_lst.clear();
                 dl_stk_num_lst.clear();
                 dl_mny_num_lst.clear();
                 b1_num_lst.clear();
@@ -1005,9 +1095,9 @@ public class Stock implements Comparable<Stock>{
         }
         
         void PrintStockData() {
-            log.info("Total get " + dt_lst.size() + " days data.");
-            for (int i = 0; i < dt_lst.size(); i++) {
-                log.info("Date:" + dt_lst.get(i) +
+            log.info("Total get " + dly_dt_lst.size() + " days data.");
+            for (int i = 0; i < dly_dt_lst.size(); i++) {
+                log.info("Date:" + dly_dt_lst.get(i) +
                          " top:" + td_opn_pri_lst.get(i) +
                          " ycp:" + yt_cls_pri_lst.get(i) +
                          " thp:" + td_hst_pri_lst.get(i) +
@@ -1407,5 +1497,66 @@ public class Stock implements Comparable<Stock>{
     public String getID() {
         // TODO Auto-generated method stub
         return id;
+    }
+    
+    //forDay = 0 means yesterday's open price.
+    public Double getOpen_pri(int forDay) {
+        Double opn_pri = null;
+        if (!sd.dly_td_opn_pri_lst.isEmpty()) {
+            opn_pri = sd.dly_td_opn_pri_lst.get(sd.dly_td_opn_pri_lst.size() - forDay - 1);
+            log.info("Got opn_pri:" + opn_pri + " for stock:" + id + " for day:" + forDay);
+            return opn_pri;
+        }
+        return opn_pri;
+    }
+    //forDay = 0 means yesterday's cls price.
+    public Double getCls_pri(int forDay) {
+        Double cls_pri = null;
+        if (!sd.dly_yt_cls_pri_lst.isEmpty()) {
+            cls_pri = sd.dly_yt_cls_pri_lst.get(sd.dly_yt_cls_pri_lst.size() - forDay - 1);
+            log.info("Got cls_pri:" + cls_pri + " for stock:" + id + " for day:" + forDay);
+            return cls_pri;
+        }
+        return cls_pri;
+    }
+    //forDay = 0 means yesterday's highest price.
+    public Double getHst_pri(int forDay) {
+        Double hst_pri = null;
+        if (!sd.dly_td_hst_pri_lst.isEmpty()) {
+            hst_pri = sd.dly_td_hst_pri_lst.get(sd.dly_td_hst_pri_lst.size() - forDay - 1);
+            log.info("Got hst_pri:" + hst_pri + " for stock:" + id + " for day:" + forDay);
+            return hst_pri;
+        }
+        return hst_pri;
+    }
+    //forDay = 0 means yesterday's lowest price.
+    public Double getLst_pri(int forDay) {
+        Double lst_pri = null;
+        if (!sd.dly_td_lst_pri_lst.isEmpty()) {
+            lst_pri = sd.dly_td_lst_pri_lst.get(sd.dly_td_lst_pri_lst.size() - forDay - 1);
+            log.info("Got lst_pri:" + lst_pri + " for stock:" + id + " for day:" + forDay);
+            return lst_pri;
+        }
+        return lst_pri;
+    }
+    //forDay = 0 means yesterday's deal qty.
+    public Integer getDl_stk_num(int forDay) {
+        Integer dl_stk_num = null;
+        if (!sd.dly_dl_stk_num_lst.isEmpty()) {
+            dl_stk_num = sd.dly_dl_stk_num_lst.get(sd.dly_dl_stk_num_lst.size() - forDay - 1);
+            log.info("Got dl_stk_num:" + dl_stk_num + " for stock:" + id + " for day:" + forDay);
+            return dl_stk_num;
+        }
+        return dl_stk_num;
+    }
+    //forDay = 0 means yesterday's deal money.
+    public Double getDl_mny_num(int forDay) {
+        Double dl_stk_mny = null;
+        if (!sd.dly_dl_mny_num_lst.isEmpty()) {
+            dl_stk_mny = sd.dly_dl_mny_num_lst.get(sd.dly_dl_mny_num_lst.size() - forDay - 1);
+            log.info("Got dl_stk_mny:" + dl_stk_mny + " for stock:" + id + " for day:" + forDay);
+            return dl_stk_mny;
+        }
+        return dl_stk_mny;
     }
 }
