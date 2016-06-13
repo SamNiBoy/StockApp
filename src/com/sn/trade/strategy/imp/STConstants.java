@@ -43,6 +43,7 @@ public class STConstants {
 	public static final double MIN_STEDEV_VALUE = 0.02;
 	public static final double ALLOWABLE_MIN_STEDEV_VALUE = 0.017;
 	public static final double MIN_DEV_BEFORE_EXIT_TRADE = 0.015;
+	public static final double DISALLOW_BUY_IF_LOST = -0.05;
 	
 	public static final int DAYS_FOR_SIM = 3;
 	
