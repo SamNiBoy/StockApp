@@ -28,10 +28,10 @@ public class LimitClsPriStockSelector implements IStockSelector {
     	double shtAvgPri = s.getAvgYtClsPri(shortPrd, 0);
     	double midAvgPri = s.getAvgYtClsPri(midPrd, 0);
     	double longAvgPri = s.getAvgYtClsPri(longPrd, 0);
-    	Double yt_lst_pri = s.getLst_pri(1);
-    	Double yt_hst_pri = s.getHst_pri(1);
-    	Double yt_opn_pri = s.getOpen_pri(1);
-    	Double yt_cls_pri = s.getCls_pri(1);
+    	Double yt_lst_pri = s.getLst_pri(0);
+    	Double yt_hst_pri = s.getHst_pri(0);
+    	Double yt_opn_pri = s.getOpen_pri(0);
+    	Double yt_cls_pri = s.getCls_pri(0);
     	
     	//If the stock price sharply increased by ALLOW_INC_THRESH_VALUE, not suggest this stock.
     	if (shtAvgPri > midAvgPri && midAvgPri > longAvgPri && (shtAvgPri - longAvgPri) / longAvgPri < ALLOW_INC_THRESH_VALUE) {
