@@ -590,8 +590,24 @@ public class Stock implements Comparable<Stock>{
                 return true;
             }
             else {
-                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " less than " + thresh_pct + ", plused return false.");
-                return false;
+                // We shift ahead one record as we introduced logic of isLstPriTurnaround in case previous record has qty plused.
+                lstDetQty = dl_stk_num_lst.get(sz - 2) - dl_stk_num_lst.get(sz - 3);
+                log.info("lstDetQty2 is:" + lstDetQty + " size:" + (sz - 1));
+                cnt = 0;
+                for (int i = 2; i<= sz -3; i++) {
+                    long preDetQty = dl_stk_num_lst.get(sz - 1 - i) - dl_stk_num_lst.get(sz - 2 - i);
+                    if (preDetQty < lstDetQty) {
+                        cnt++;
+                    }
+                }
+                if (cnt * 1.0 / (sz - 2) >= thresh_pct) {
+                    log.info("cnt is:" + cnt + " cnt/(sz-2):" + cnt * 1.0 / (sz-2) + " big than " + thresh_pct + ", plused return true.");
+                    return true;
+                }
+                else {
+                    log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " less than " + thresh_pct + ", plused return false.");
+                    return false;
+                }
             }
         }
         
