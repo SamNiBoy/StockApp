@@ -68,27 +68,7 @@ public class QtyDisableTradeStockSelector implements IStockSelector {
 	@Override
 	public boolean adjustCriteria(boolean harder) {
 		// TODO Auto-generated method stub
-		if (harder) {
-		    tradeThresh += 0.02;
-		    if (tradeThresh > 0.3) {
-		        tradeThresh = 0.3;
-		    }
-		    THRESH_PCT += 0.02;
-		    if (THRESH_PCT > 0.9) {
-		    	THRESH_PCT = 0.9;
-		    }
-		}
-		else {
-		    tradeThresh -= 0.02;
-	          if (tradeThresh < 0.1) {
-	              tradeThresh = 0.1;
-	          }
-	          THRESH_PCT -= 0.02;
-	          if (THRESH_PCT < 0.8) {
-	        	  THRESH_PCT = 0.8;
-	          }
-		}
-		log.info("try harder:" + harder + ", tradeThresh:" + tradeThresh);
+		log.info("try harder:" + harder + ", tradeThresh:" + tradeThresh + ", THRESH_PCT:" + THRESH_PCT);
 		return true;
 	}
 }
