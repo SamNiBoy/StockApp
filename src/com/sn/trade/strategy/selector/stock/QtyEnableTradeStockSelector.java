@@ -18,7 +18,7 @@ import com.sn.trade.strategy.imp.TradeStrategyImp;
 public class QtyEnableTradeStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(QtyEnableTradeStockSelector.class);
-    double tradeThresh = 0.1;
+    double tradeThresh = 0.2;
     double THRESH_PCT = 0.1;
     /**
      * @param args
@@ -71,8 +71,8 @@ public class QtyEnableTradeStockSelector implements IStockSelector {
 		// TODO Auto-generated method stub
 		if (harder) {
 		    tradeThresh += 0.02;
-		    if (tradeThresh > 0.3) {
-		        tradeThresh = 0.3;
+		    if (tradeThresh > 0.4) {
+		        tradeThresh = 0.4;
 		    }
 		    THRESH_PCT -= 0.01;
 		    if (THRESH_PCT < 0.1) {
@@ -85,8 +85,8 @@ public class QtyEnableTradeStockSelector implements IStockSelector {
 	              tradeThresh = 0.1;
 	          }
 			   THRESH_PCT += 0.01;
-			   if (THRESH_PCT > 0.3) {
-			       THRESH_PCT = 0.3;
+			   if (THRESH_PCT > 0.2) {
+			       THRESH_PCT = 0.2;
 			   }
 		}
 		log.info("try harder:" + harder + ", tradeThresh:" + tradeThresh);

@@ -18,7 +18,7 @@ import com.sn.trade.strategy.imp.TradeStrategyImp;
 public class QtyDisableTradeStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(QtyDisableTradeStockSelector.class);
-    double tradeThresh = 0.2;
+    double tradeThresh = 0.5;
     double THRESH_PCT = 0.9;
     /**
      * @param args
