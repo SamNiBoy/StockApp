@@ -18,7 +18,8 @@ import com.sn.trade.strategy.imp.TradeStrategyImp;
 public class QtyDisableTradeStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(QtyDisableTradeStockSelector.class);
-    double tradeThresh = STConstants.BASE_TRADE_THRESH;
+    double tradeThresh = 0.2;
+    double THRESH_PCT = 0.9;
     /**
      * @param args
      */
@@ -31,20 +32,22 @@ public class QtyDisableTradeStockSelector implements IStockSelector {
         if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
             double maxPct = (maxPri - minPri) / yt_cls_pri;
-            double curPct =(cur_pri - minPri) / yt_cls_pri;
+            double clsPct =(yt_cls_pri - minPri) / yt_cls_pri;
 
             boolean dlQtyPlused = stk.isDlyDlQtyPlused();
             
-            log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", dlQtyPlused:" + dlQtyPlused);
+            log.info("Is maxPct:" + maxPct + ">= tradeThresh:" + tradeThresh
+            		+ " and clsPct:" + clsPct + ">= maxPct:" + maxPct + " * THRESH_PCT:" + THRESH_PCT
+            		+ " and dlQtyPlused:" + dlQtyPlused);
             
-            if (maxPct >= tradeThresh && curPct >= maxPct * 9.0 / 10.0 && dlQtyPlused && stk.isLstDlyClsPriTurnaround(false)) {
+            if (maxPct >= tradeThresh && clsPct >= maxPct * THRESH_PCT && dlQtyPlused && stk.isLstDlyClsPriTurnaround(false)) {
                 log.info("QtyDisableTradeStockSelector true Check DisableTrade:" + stk.getDl_dt() + " stock:" + stk.getID()
-                        + " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
+                        + " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " clsPct:" + clsPct);
                 return true;
             }
             else {
                 log.info("QtyDisableTradeStockSelector false Check DisableTrade:" + stk.getDl_dt() + " stock:" + stk.getID()
-                        + " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
+                        + " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " clsPct:" + clsPct + " tradeThresh:" + tradeThresh);
             }
         } else {
             log.info("QtyDisableTradeStockSelector says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
@@ -67,14 +70,22 @@ public class QtyDisableTradeStockSelector implements IStockSelector {
 		// TODO Auto-generated method stub
 		if (harder) {
 		    tradeThresh += 0.02;
-		    if (tradeThresh > 0.1) {
-		        tradeThresh = 0.1;
+		    if (tradeThresh > 0.3) {
+		        tradeThresh = 0.3;
+		    }
+		    THRESH_PCT += 0.02;
+		    if (THRESH_PCT > 0.9) {
+		    	THRESH_PCT = 0.9;
 		    }
 		}
 		else {
 		    tradeThresh -= 0.02;
-	          if (tradeThresh < 0.01) {
-	              tradeThresh = 0.01;
+	          if (tradeThresh < 0.1) {
+	              tradeThresh = 0.1;
+	          }
+	          THRESH_PCT -= 0.02;
+	          if (THRESH_PCT < 0.8) {
+	        	  THRESH_PCT = 0.8;
 	          }
 		}
 		log.info("try harder:" + harder + ", tradeThresh:" + tradeThresh);

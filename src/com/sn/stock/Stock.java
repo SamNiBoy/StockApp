@@ -26,6 +26,7 @@ public class Stock implements Comparable<Stock>{
 
     	static public final int BIG_SZ = 270;  // store 4.5 hours data.
     	static public final int SMALL_SZ = 60; // store 1 hour data.
+    	static public final int DLY_RCD_SZ = 30; // store 1 month data for daily record.
     	static public final int SECONDS_PER_FETCH = 60;
         int MAX_SZ = 800;
         //Save all history data
@@ -789,13 +790,13 @@ public class Stock implements Comparable<Stock>{
             stkid = stkId;
             MAX_SZ = sz;
             
-            dly_td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            dly_yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            dly_td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            dly_td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            dly_dl_stk_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-            dly_dl_mny_num_lst = new BoundArrayList<Double>(MAX_SZ);
-            dly_dt_lst = new BoundArrayList<String>(MAX_SZ);
+            dly_td_opn_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_yt_cls_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_td_hst_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_td_lst_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_dl_stk_num_lst = new BoundArrayList<Integer>(DLY_RCD_SZ);
+            dly_dl_mny_num_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_dt_lst = new BoundArrayList<String>(DLY_RCD_SZ);
             
 
             //Save today's data
@@ -861,13 +862,13 @@ public class Stock implements Comparable<Stock>{
             stkid = stkId;
             MAX_SZ = sz;
             
-            dly_td_opn_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            dly_yt_cls_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            dly_td_hst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            dly_td_lst_pri_lst = new BoundArrayList<Double>(MAX_SZ);
-            dly_dl_stk_num_lst = new BoundArrayList<Integer>(MAX_SZ);
-            dly_dl_mny_num_lst = new BoundArrayList<Double>(MAX_SZ);
-            dly_dt_lst = new BoundArrayList<String>(MAX_SZ);
+            dly_td_opn_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_yt_cls_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_td_hst_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_td_lst_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_dl_stk_num_lst = new BoundArrayList<Integer>(DLY_RCD_SZ);
+            dly_dl_mny_num_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_dt_lst = new BoundArrayList<String>(DLY_RCD_SZ);
             
 
             //Save today's data

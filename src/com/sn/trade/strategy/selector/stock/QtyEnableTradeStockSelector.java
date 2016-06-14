@@ -18,7 +18,8 @@ import com.sn.trade.strategy.imp.TradeStrategyImp;
 public class QtyEnableTradeStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(QtyEnableTradeStockSelector.class);
-    double tradeThresh = STConstants.BASE_TRADE_THRESH;
+    double tradeThresh = 0.1;
+    double THRESH_PCT = 0.1;
     /**
      * @param args
      */
@@ -28,23 +29,26 @@ public class QtyEnableTradeStockSelector implements IStockSelector {
         Double yt_cls_pri = stk.getYtClsPri();
         Double cur_pri = stk.getCur_pri();
 
-        if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
+        if (maxPri != null && minPri != null && yt_cls_pri != null) {
 
             double maxPct = (maxPri - minPri) / yt_cls_pri;
-            double curPct =(cur_pri - minPri) / yt_cls_pri;
+            double clsPct =(yt_cls_pri - minPri) / yt_cls_pri;
 
             boolean dlQtyPlused = stk.isDlyDlQtyPlused();
             
-            log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", dlQtyPlused:" + dlQtyPlused);
+            log.info("Is maxPct:" + maxPct + ">= tradeThresh:" + tradeThresh
+            		+ " and clsPct:" + clsPct + " < maxPct:" + maxPct + "* THRESH_PCT:" + THRESH_PCT
+            		+ " and dlQtyPlused:" + dlQtyPlused
+            		+ " and cur_pri:" + cur_pri + " > yt_cls_pri:" + yt_cls_pri);
             
-            if (maxPct >= tradeThresh && curPct < maxPct * 1.0 / 10.0 && dlQtyPlused && stk.isLstDlyClsPriTurnaround(true)) {
+            if (maxPct >= tradeThresh && clsPct < maxPct * THRESH_PCT && dlQtyPlused && cur_pri > yt_cls_pri) {
                 log.info("QtyEnableTradeStockSelector true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
-                        + " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
+                        + " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " yt_cls_pri:" + yt_cls_pri);
                 return true;
             }
             else {
                 log.info("QtyEnableTradeStockSelector false Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
-                        + " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
+                        + " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " yt_cls_pri:" + yt_cls_pri + " tradeThresh:" + tradeThresh);
             }
         } else {
             log.info("QtyEnableTradeStockSelector says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
@@ -67,15 +71,23 @@ public class QtyEnableTradeStockSelector implements IStockSelector {
 		// TODO Auto-generated method stub
 		if (harder) {
 		    tradeThresh += 0.02;
-		    if (tradeThresh > 0.1) {
-		        tradeThresh = 0.1;
+		    if (tradeThresh > 0.3) {
+		        tradeThresh = 0.3;
+		    }
+		    THRESH_PCT -= 0.01;
+		    if (THRESH_PCT < 0.1) {
+		    	THRESH_PCT = 0.1;
 		    }
 		}
 		else {
 		    tradeThresh -= 0.02;
-	          if (tradeThresh < 0.01) {
-	              tradeThresh = 0.01;
+	          if (tradeThresh < 0.1) {
+	              tradeThresh = 0.1;
 	          }
+			   THRESH_PCT += 0.01;
+			   if (THRESH_PCT > 0.3) {
+			       THRESH_PCT = 0.3;
+			   }
 		}
 		log.info("try harder:" + harder + ", tradeThresh:" + tradeThresh);
 		return true;
