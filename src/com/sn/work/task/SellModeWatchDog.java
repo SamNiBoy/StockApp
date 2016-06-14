@@ -20,6 +20,7 @@ import com.sn.trade.strategy.selector.stock.AvgClsPriSellModeSelector;
 import com.sn.trade.strategy.selector.stock.BadTradeSellModeSelector;
 import com.sn.trade.strategy.selector.stock.CurPriLostSellModeSelector;
 import com.sn.trade.strategy.selector.stock.IStockSelector;
+import com.sn.trade.strategy.selector.stock.QtyDisableTradeStockSelector;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
 
@@ -89,6 +90,7 @@ public class SellModeWatchDog implements IWork {
 		//selectors.add(new DefaultSellModeSelector());
 		selectors.add(new AvgClsPriSellModeSelector());
 		selectors.add(new CurPriLostSellModeSelector());
+		selectors.add(new QtyDisableTradeStockSelector());
 		//selectors.add(new BadTradeSellModeSelector());
 	}
 

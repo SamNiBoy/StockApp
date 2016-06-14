@@ -631,6 +631,26 @@ public class Stock implements Comparable<Stock>{
             }
         }
         
+        public boolean isLstDlyClsPriTurnaround(boolean inc_flg) {
+            int sz = dly_yt_cls_pri_lst.size();
+            if (sz <= 10) {
+                log.info("dly_yt_cls_pri_lst has less data, isLstDlyClsPriTurnaround is false.");
+                return false;
+            }
+            double lstPri = dly_yt_cls_pri_lst.get(sz - 1);
+            double prePri = dly_yt_cls_pri_lst.get(sz - 2);
+            double lstDetPri = (inc_flg ? (lstPri - prePri) : (prePri - lstPri));
+            log.info("lstDetPri is:" + lstDetPri + " size:" + sz + " inc_flg:" + inc_flg);
+            if (lstDetPri / prePri >= 0.01) {
+                log.info("lst price is:" + lstPri + ", pre price is:" + prePri + (inc_flg ? "big" : "small") + " than 0.01, isLstDlyClsPriTurnaround return true.");
+                return true;
+            }
+            else {
+                log.info("lst price is:" + lstPri + ", pre price is:" + prePri + (inc_flg ? " not big" : " not small") + " than 0.01, isLstDlyClsPriTurnaround return false.");
+                return false;
+            }
+        }
+        
         private double calThreashValueForQtyPluse() {
         	double base = STConstants.QTY_PLUSED_BASE_PCT;
         	double final_val = base;
@@ -1196,6 +1216,78 @@ public class Stock implements Comparable<Stock>{
             }
         }
 
+        public Double getMaxDlyClsPri() {
+            // TODO Auto-generated method stub
+            int sz = dly_yt_cls_pri_lst.size();
+            double maxPri = 0;
+            if (sz > 0) {
+                for (int i = 0; i < sz; i++) {
+                    if (maxPri < dly_yt_cls_pri_lst.get(i)) {
+                        maxPri = dly_yt_cls_pri_lst.get(i);
+                    }
+                }
+            }
+            log.info("got max dly_yt_cls_pri_lst pri for stock:" + id + ":" + maxPri);
+            if (maxPri > 0) {
+                return maxPri;
+            }
+            return null;
+        }
+        
+        public Double getMinDlyClsPri() {
+            // TODO Auto-generated method stub
+            int sz = dly_yt_cls_pri_lst.size();
+            double minPri = 100000;
+            if (sz > 0) {
+                for (int i = 0; i < sz; i++) {
+                    if (minPri > dly_yt_cls_pri_lst.get(i) && dly_yt_cls_pri_lst.get(i) > 0) {
+                        minPri = dly_yt_cls_pri_lst.get(i);
+                    }
+                }
+            }
+            log.info("got min dly_yt_cls_pri_lst pri for stock:" + id + ":" + minPri);
+            if (minPri > 0) {
+                return minPri;
+            }
+            return null;
+        }
+        
+        public Double getMaxDlyOpnPri() {
+            // TODO Auto-generated method stub
+            int sz = dly_td_opn_pri_lst.size();
+            double maxPri = 0;
+            if (sz > 0) {
+                for (int i = 0; i < sz; i++) {
+                    if (maxPri < dly_td_opn_pri_lst.get(i)) {
+                        maxPri = dly_td_opn_pri_lst.get(i);
+                    }
+                }
+            }
+            log.info("got max dly_td_opn_pri_lst pri for stock:" + id + ":" + maxPri);
+            if (maxPri > 0) {
+                return maxPri;
+            }
+            return null;
+        }
+        
+        public Double getMinDlyOpnPri() {
+            // TODO Auto-generated method stub
+            int sz = dly_td_opn_pri_lst.size();
+            double minPri = 100000;
+            if (sz > 0) {
+                for (int i = 0; i < sz; i++) {
+                    if (minPri > dly_td_opn_pri_lst.get(i) && dly_td_opn_pri_lst.get(i) > 0) {
+                        minPri = dly_td_opn_pri_lst.get(i);
+                    }
+                }
+            }
+            log.info("got min dly_td_opn_pri_lst pri for stock:" + id + ":" + minPri);
+            if (minPri > 0) {
+                return minPri;
+            }
+            return null;
+        }
+        
 		public Double getMaxCurPri() {
 			// TODO Auto-generated method stub
 			int sz = cur_pri_lst.size();
@@ -1397,6 +1489,22 @@ public class Stock implements Comparable<Stock>{
     	return sd.getYtClsPri();
     }
     
+    public Double getMaxDlyClsPri() {
+        return sd.getMaxDlyClsPri();
+    }
+    
+    public Double getMinDlyClsPri() {
+        return sd.getMinDlyClsPri();
+    }
+    
+    public Double getMaxDlyOpnPri() {
+        return sd.getMaxDlyOpnPri();
+    }
+    
+    public Double getMinDlyOpnPri() {
+        return sd.getMinDlyOpnPri();
+    }
+    
     public boolean isJumpWater(int tailSz, double pct) {
     	if (sd.isJumpWater(tailSz, pct)) {
     		//sd.PrintStockData();
@@ -1414,6 +1522,10 @@ public class Stock implements Comparable<Stock>{
     
     public boolean isLstPriTurnaround(boolean inc_flg) {
         return sd.isLstPriTurnaround(inc_flg);
+    }
+    
+    public boolean isLstDlyClsPriTurnaround(boolean inc_flg) {
+        return sd.isLstDlyClsPriTurnaround(inc_flg);
     }
     
     //this method tells if the lasted record has dly_dl_stk_num qty plused.
