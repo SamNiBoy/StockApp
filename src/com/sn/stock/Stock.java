@@ -595,6 +595,26 @@ public class Stock implements Comparable<Stock>{
             }
         }
         
+        public boolean isLstPriTurnaround(boolean inc_flg) {
+            int sz = cur_pri_lst.size();
+            if (sz <= 10) {
+                log.info("cur_pri_lst has less data, isLstPriTurnaround is false.");
+                return false;
+            }
+            double lstPri = cur_pri_lst.get(sz - 1);
+            double prePri = cur_pri_lst.get(sz - 2);
+            double lstDetPri = (inc_flg ? (lstPri - prePri) : (prePri - lstPri));
+            log.info("lstDetPri is:" + lstDetPri + " size:" + sz + " inc_flg:" + inc_flg);
+            if (lstDetPri >= 0.05) {
+                log.info("lst price is:" + lstPri + ", pre price is:" + prePri + (inc_flg ? "big" : "small") + " than 0.05, isLstPriTurnaround return true.");
+                return true;
+            }
+            else {
+                log.info("lst price is:" + lstPri + ", pre price is:" + prePri + (inc_flg ? " not big" : " not small") + " than 0.05, isLstPriTurnaround return false.");
+                return false;
+            }
+        }
+        
         private double calThreashValueForQtyPluse() {
         	double base = STConstants.QTY_PLUSED_BASE_PCT;
         	double final_val = base;
@@ -1374,6 +1394,10 @@ public class Stock implements Comparable<Stock>{
     //this method tells if the lasted record has dl_stk_num qty plused.
     public boolean isLstQtyPlused() {
         return sd.isLstQtyPlused();
+    }
+    
+    public boolean isLstPriTurnaround(boolean inc_flg) {
+        return sd.isLstPriTurnaround(inc_flg);
     }
     
     //this method tells if the lasted record has dly_dl_stk_num qty plused.

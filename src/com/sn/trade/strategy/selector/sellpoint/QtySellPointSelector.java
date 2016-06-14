@@ -50,11 +50,12 @@ public class QtySellPointSelector implements ISellPointSelector {
 			
 			boolean con1 = maxPct > tradeThresh && curPct > maxPct * 9.0 / 10.0;
 			boolean con2 = stk.isLstQtyPlused();
+			boolean con3 = stk.isLstPriTurnaround(false);
 			
 			log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + "yt_cls_pri:" + yt_cls_pri + " maxPri:" + maxPri + " minPri:"
 					+ minPri + " maxPct:" + maxPct + " curPct:" + curPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
-			log.info("con1 is:" + con1 + " con2 is:" + con2);
-			if (con1 && con2) {
+			log.info("con1 is:" + con1 + " con2 is:" + con2 + " con3 is:" +con3);
+			if (con1 && con2 && con3) {
 				return true;
 			}
 			
