@@ -30,15 +30,14 @@ public class LimitClsPriStockSelector implements IStockSelector {
     	
     	//If the stock price sharply increased by ALLOW_INC_THRESH_VALUE, not suggest this stock.
     	if (shtAvgPri > midAvgPri && midAvgPri > longAvgPri && (shtAvgPri - longAvgPri) / longAvgPri < ALLOW_INC_THRESH_VALUE) {
-    		log.info("stock: " + s.getID() + " shtAvgPri:" + shtAvgPri
-    		        + " midAvgPri:" + midAvgPri + " longAvgPri:" + longAvgPri
-    		        + ", ALLOW_INC_THRESH_VALUE:" + ALLOW_INC_THRESH_VALUE);
-    		
-    		if (s.isDlyDlQtyPlused()) {
-    		    return true;
-    		}
-    	}
-    	log.info("stock: " + s.getID() + " shtAvgPri:" + shtAvgPri + " midAvgPri:" + midAvgPri + " longAvgPri:" + longAvgPri + ", ALLOW_INC_THRESH_VALUE: " + ALLOW_INC_THRESH_VALUE + ", return false");
+            log.info("stock: " + s.getID() + " shtAvgPri:" + shtAvgPri
+                    + " midAvgPri:" + midAvgPri + " longAvgPri:" + longAvgPri
+                    + ", ALLOW_INC_THRESH_VALUE:" + ALLOW_INC_THRESH_VALUE);
+            if (s.isDlyDlQtyPlused()) {
+                return true;
+            }
+        }
+        log.info("stock: " + s.getID() + " shtAvgPri:" + shtAvgPri + " midAvgPri:" + midAvgPri + " longAvgPri:" + longAvgPri + ", ALLOW_INC_THRESH_VALUE: " + ALLOW_INC_THRESH_VALUE + ", return false");
         return false;
     }
     
