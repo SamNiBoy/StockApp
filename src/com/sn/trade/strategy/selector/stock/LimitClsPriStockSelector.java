@@ -33,9 +33,7 @@ public class LimitClsPriStockSelector implements IStockSelector {
             log.info("stock: " + s.getID() + " shtAvgPri:" + shtAvgPri
                     + " midAvgPri:" + midAvgPri + " longAvgPri:" + longAvgPri
                     + ", ALLOW_INC_THRESH_VALUE:" + ALLOW_INC_THRESH_VALUE);
-            if (s.isDlyDlQtyPlused()) {
-                return true;
-            }
+            return true;
         }
         log.info("stock: " + s.getID() + " shtAvgPri:" + shtAvgPri + " midAvgPri:" + midAvgPri + " longAvgPri:" + longAvgPri + ", ALLOW_INC_THRESH_VALUE: " + ALLOW_INC_THRESH_VALUE + ", return false");
         return false;
