@@ -45,8 +45,8 @@ public class PriceStockSelector implements IStockSelector {
 		// TODO Auto-generated method stub
 		log.info("Try " + (harder ? "Harder" : "Loose") + " criteria for HighestPrice " + HighestPrice);
 		if (harder) {
-			if (HighestPrice < 5) {
-				log.info("HighestPrice can not less than 5");
+			if (HighestPrice < 15) {
+				log.info("HighestPrice can not less than 15");
 				return false;
 			}
 			else {

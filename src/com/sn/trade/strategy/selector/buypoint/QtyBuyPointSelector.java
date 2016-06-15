@@ -153,8 +153,14 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     		if (Degree < 10) {
     			ratio = 1;
     		}
-    		else {
+    		else if (Degree < 20){
     			ratio = 1.1;
+    		}
+    		else if (Degree < 30) {
+    			ratio = 1.5;
+    		}
+    		else {
+    			ratio = 2;
     		}
     	}
     	log.info("Calculate buy thresh value with Degree:" + Degree + ", baseThresh:" + baseThresh + " ratio:" + ratio + " final thresh value:" + ratio * baseThresh);

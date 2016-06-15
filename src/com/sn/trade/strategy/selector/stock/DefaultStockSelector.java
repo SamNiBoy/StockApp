@@ -27,9 +27,9 @@ public class DefaultStockSelector implements IStockSelector {
     		log.info("s is not null, s.getDl_dt() is:" + s.getDl_dt());
     	}
         if (StockMarket.isMarketTooCold(s.getDl_dt()) &&
-                !StockMarket.hasMoreIncStock()) {
-                    log.info("returned false because market is too cool.");
-                    return false;
+            StockMarket.hasMostDecStock()) {
+                log.info("returned false because market is too cool.");
+                return false;
         }
         log.info("returned true for isGoodStock()");
         return true;

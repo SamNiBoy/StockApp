@@ -490,11 +490,13 @@ public class StockMarket{
         if (Degree == 0.0) {
             calIndex(tm);
         }
-        return Degree < -20;
+        log.info("Degree is:" + Degree + ", is it too cool for -30?");
+        return Degree < -30;
     }
     
-    static public boolean hasMoreIncStock() {
-        return TotInc > TotDec;
+    static public boolean hasMostDecStock() {
+    	log.info("TotInc:" + TotInc + ", TotDec:" + TotDec + ", Ratio:" + Math.abs(TotInc - TotDec) / Math.min(TotInc, TotDec));
+        return TotInc / (TotInc + TotDec) < 1.0/3.0;
     }
     
     static double getMnyRatioIncDec() {

@@ -19,14 +19,14 @@ public class QtyEnableTradeStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(QtyEnableTradeStockSelector.class);
     double tradeThresh = 0.2;
-    double THRESH_PCT = 0.1;
+    double THRESH_PCT = 0.2;
     /**
      * @param args
      */
     public boolean isTargetStock(Stock stk, ICashAccount ac) {
-        Double maxPri = stk.getMaxDlyClsPri();
-        Double minPri = stk.getMinDlyClsPri();
-        Double yt_cls_pri = stk.getYtClsPri();
+        Double maxPri = stk.getMaxDlyTdClsPri();
+        Double minPri = stk.getMinDlyTdClsPri();
+        Double yt_cls_pri = stk.getTdCls_pri(0);
         Double cur_pri = stk.getCur_pri();
 
         if (maxPri != null && minPri != null && yt_cls_pri != null) {
@@ -41,7 +41,7 @@ public class QtyEnableTradeStockSelector implements IStockSelector {
             		+ " and dlQtyPlused:" + dlQtyPlused
             		+ " and cur_pri:" + cur_pri + " > yt_cls_pri:" + yt_cls_pri);
             
-            if (maxPct >= tradeThresh && clsPct < maxPct * THRESH_PCT && dlQtyPlused && cur_pri > yt_cls_pri) {
+            if (maxPct >= tradeThresh && clsPct < maxPct * THRESH_PCT && dlQtyPlused && cur_pri >= yt_cls_pri) {
                 log.info("QtyEnableTradeStockSelector true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
                         + " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " yt_cls_pri:" + yt_cls_pri);
                 return true;
@@ -84,9 +84,9 @@ public class QtyEnableTradeStockSelector implements IStockSelector {
 	          if (tradeThresh < 0.1) {
 	              tradeThresh = 0.1;
 	          }
-			   THRESH_PCT += 0.01;
-			   if (THRESH_PCT > 0.2) {
-			       THRESH_PCT = 0.2;
+			   THRESH_PCT += 0.02;
+			   if (THRESH_PCT > 0.4) {
+			       THRESH_PCT = 0.4;
 			   }
 		}
 		log.info("try harder:" + harder + ", tradeThresh:" + tradeThresh);

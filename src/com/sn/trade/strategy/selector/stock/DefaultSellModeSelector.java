@@ -21,7 +21,7 @@ public class DefaultSellModeSelector implements IStockSelector {
      */
     public boolean isTargetStock(Stock s, ICashAccount ac) {
         if (StockMarket.isMarketTooCold(s.getDl_dt()) &&
-            !StockMarket.hasMoreIncStock()) {
+            StockMarket.hasMostDecStock()) {
             log.info("when market is too cool, set to sell mode.");
             return true;
         }

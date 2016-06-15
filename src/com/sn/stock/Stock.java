@@ -26,12 +26,13 @@ public class Stock implements Comparable<Stock>{
 
     	static public final int BIG_SZ = 270;  // store 4.5 hours data.
     	static public final int SMALL_SZ = 60; // store 1 hour data.
-    	static public final int DLY_RCD_SZ = 30; // store 1 month data for daily record.
+    	static public final int DLY_RCD_SZ = 14; // store 2 weeks data for daily record.
     	static public final int SECONDS_PER_FETCH = 60;
         int MAX_SZ = 800;
         //Save all history data
         String stkid;
         List<Double> dly_td_opn_pri_lst = null;
+        List<Double> dly_td_cls_pri_lst = null;
         List<Double> dly_yt_cls_pri_lst = null;
         List<Double> dly_td_hst_pri_lst = null;
         List<Double> dly_td_lst_pri_lst = null;
@@ -269,9 +270,17 @@ public class Stock implements Comparable<Stock>{
         public List<Double> getDly_td_opn_pri_lst() {
             return dly_td_opn_pri_lst;
         }
+        
+        public List<Double> getDly_td_cls_pri_lst() {
+            return dly_td_cls_pri_lst;
+        }
 
         public void setDly_td_opn_pri_lst(List<Double> dly_td_opn_pri_lst) {
             this.dly_td_opn_pri_lst = dly_td_opn_pri_lst;
+        }
+        
+        public void setDly_td_cls_pri_lst(List<Double> dly_td_cls_pri_lst) {
+            this.dly_td_cls_pri_lst = dly_td_cls_pri_lst;
         }
 
         public List<Double> getDly_yt_cls_pri_lst() {
@@ -633,13 +642,13 @@ public class Stock implements Comparable<Stock>{
         }
         
         public boolean isLstDlyClsPriTurnaround(boolean inc_flg) {
-            int sz = dly_yt_cls_pri_lst.size();
+            int sz = dly_td_cls_pri_lst.size();
             if (sz <= 10) {
-                log.info("dly_yt_cls_pri_lst has less data, isLstDlyClsPriTurnaround is false.");
+                log.info("dly_td_cls_pri_lst has less data, isLstDlyClsPriTurnaround is false.");
                 return false;
             }
-            double lstPri = dly_yt_cls_pri_lst.get(sz - 1);
-            double prePri = dly_yt_cls_pri_lst.get(sz - 2);
+            double lstPri = dly_td_cls_pri_lst.get(sz - 1);
+            double prePri = dly_td_cls_pri_lst.get(sz - 2);
             double lstDetPri = (inc_flg ? (lstPri - prePri) : (prePri - lstPri));
             log.info("lstDetPri is:" + lstDetPri + " size:" + sz + " inc_flg:" + inc_flg);
             if (lstDetPri / prePri >= 0.01) {
@@ -696,12 +705,12 @@ public class Stock implements Comparable<Stock>{
                 log.info("dly_dl_stk_num_lst has less data, isDlyDlQtyPlused is false.");
                 return false;
             }
-            long lstDetQty = dly_dl_stk_num_lst.get(sz - 1) - dly_dl_stk_num_lst.get(sz - 2);
-            log.info("isDlyDlQtyPlused is:" + lstDetQty + " size:" + sz);
+            long lstQty = dly_dl_stk_num_lst.get(sz - 1);
+            log.info("isDlyDlQtyPlused is:" + lstQty + " size:" + sz);
             long cnt = 0;
             for (int i = 1; i<= sz -2; i++) {
-                long preDetQty = dly_dl_stk_num_lst.get(sz - 1 - i) - dly_dl_stk_num_lst.get(sz - 2 - i);
-                if (preDetQty < lstDetQty) {
+                long preQty = dly_dl_stk_num_lst.get(sz - 1 - i);
+                if (preQty < lstQty) {
                     cnt++;
                 }
             }
@@ -791,6 +800,7 @@ public class Stock implements Comparable<Stock>{
             MAX_SZ = sz;
             
             dly_td_opn_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_td_cls_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
             dly_yt_cls_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
             dly_td_hst_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
             dly_td_lst_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
@@ -834,13 +844,27 @@ public class Stock implements Comparable<Stock>{
             
             Connection con = DBManager.getConnection();
             try {
+            	double pre_yt_cls_pri = -1;
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDlyInfo where id ='" + stkId + "' order by dt";
                 
                 log.info(sql);
                 ResultSet rs = stm.executeQuery(sql);
                 while(rs.next()) {
+                	if (pre_yt_cls_pri != -1 && Math.abs(pre_yt_cls_pri - rs.getDouble("yt_cls_pri")) / Math.min(pre_yt_cls_pri, rs.getDouble("yt_cls_pri"))  > 1) {
+                		log.info("1.pre_yt_cls_pri:" + pre_yt_cls_pri + ", rs.yt_cls_pri:" + rs.getDouble("yt_cls_pri") + " has 100% diff, clear data and reset.");
+                		dly_td_opn_pri_lst.clear();
+                		dly_td_cls_pri_lst.clear();
+                		dly_yt_cls_pri_lst.clear();
+                		dly_td_hst_pri_lst.clear();
+                		dly_td_lst_pri_lst.clear();
+                		dly_dl_stk_num_lst.clear();
+                		dly_dl_mny_num_lst.clear();
+                		dly_dt_lst.clear();
+                	}
+                	pre_yt_cls_pri = rs.getDouble("yt_cls_pri");
                     dly_td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
+                    dly_td_cls_pri_lst.add(rs.getDouble("td_cls_pri"));
                     dly_yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
                     dly_td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
                     dly_td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
@@ -863,6 +887,7 @@ public class Stock implements Comparable<Stock>{
             MAX_SZ = sz;
             
             dly_td_opn_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
+            dly_td_cls_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
             dly_yt_cls_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
             dly_td_hst_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
             dly_td_lst_pri_lst = new BoundArrayList<Double>(DLY_RCD_SZ);
@@ -906,13 +931,27 @@ public class Stock implements Comparable<Stock>{
 
             Connection con = DBManager.getConnection();
             try {
+            	double pre_yt_cls_pri = -1;
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDlyInfo where id ='" + stkId + "' order by dt";
                 
                 log.info(sql);
                 ResultSet rs = stm.executeQuery(sql);
                 while(rs.next()) {
+                	if (pre_yt_cls_pri != -1 && Math.abs(pre_yt_cls_pri - rs.getDouble("yt_cls_pri")) /  Math.min(pre_yt_cls_pri, rs.getDouble("yt_cls_pri")) > 1) {
+                		log.info("pre_yt_cls_pri:" + pre_yt_cls_pri + ", rs.yt_cls_pri:" + rs.getDouble("yt_cls_pri") + " has 100% diff, clear data and reset.");
+                		dly_td_opn_pri_lst.clear();
+                		dly_td_cls_pri_lst.clear();
+                		dly_yt_cls_pri_lst.clear();
+                		dly_td_hst_pri_lst.clear();
+                		dly_td_lst_pri_lst.clear();
+                		dly_dl_stk_num_lst.clear();
+                		dly_dl_mny_num_lst.clear();
+                		dly_dt_lst.clear();
+                	}
+                	pre_yt_cls_pri = rs.getDouble("yt_cls_pri");
                     dly_td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
+                    dly_td_cls_pri_lst.add(rs.getDouble("td_cls_pri"));
                     dly_yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
                     dly_td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
                     dly_td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
@@ -1289,6 +1328,42 @@ public class Stock implements Comparable<Stock>{
             return null;
         }
         
+        public Double getMaxDlyTdClsPri() {
+            // TODO Auto-generated method stub
+            int sz = dly_td_cls_pri_lst.size();
+            double maxPri = 0;
+            if (sz > 0) {
+                for (int i = 0; i < sz; i++) {
+                    if (maxPri < dly_td_cls_pri_lst.get(i)) {
+                        maxPri = dly_td_cls_pri_lst.get(i);
+                    }
+                }
+            }
+            log.info("got max dly_td_cls_pri_lst pri for stock:" + id + ":" + maxPri);
+            if (maxPri > 0) {
+                return maxPri;
+            }
+            return null;
+        }
+        
+        public Double getMinDlyTdClsPri() {
+            // TODO Auto-generated method stub
+            int sz = dly_td_cls_pri_lst.size();
+            double minPri = 100000;
+            if (sz > 0) {
+                for (int i = 0; i < sz; i++) {
+                    if (minPri > dly_td_cls_pri_lst.get(i) && dly_td_cls_pri_lst.get(i) > 0) {
+                        minPri = dly_td_cls_pri_lst.get(i);
+                    }
+                }
+            }
+            log.info("got min dly_td_cls_pri_lst pri for stock:" + id + ":" + minPri);
+            if (minPri > 0) {
+                return minPri;
+            }
+            return null;
+        }
+        
 		public Double getMaxCurPri() {
 			// TODO Auto-generated method stub
 			int sz = cur_pri_lst.size();
@@ -1506,6 +1581,14 @@ public class Stock implements Comparable<Stock>{
         return sd.getMinDlyOpnPri();
     }
     
+    public Double getMaxDlyTdClsPri() {
+        return sd.getMaxDlyTdClsPri();
+    }
+    
+    public Double getMinDlyTdClsPri() {
+        return sd.getMinDlyTdClsPri();
+    }
+    
     public boolean isJumpWater(int tailSz, double pct) {
     	if (sd.isJumpWater(tailSz, pct)) {
     		//sd.PrintStockData();
@@ -1691,6 +1774,16 @@ public class Stock implements Comparable<Stock>{
             return opn_pri;
         }
         return opn_pri;
+    }
+    //forDay = 0 means yesterday's open price.
+    public Double getTdCls_pri(int forDay) {
+        Double td_cls_pri = null;
+        if (!sd.dly_td_cls_pri_lst.isEmpty()) {
+        	td_cls_pri = sd.dly_td_cls_pri_lst.get(sd.dly_td_cls_pri_lst.size() - forDay - 1);
+            log.info("Got cls_pri:" + td_cls_pri + " for stock:" + id + " for day:" + forDay);
+            return td_cls_pri;
+        }
+        return td_cls_pri;
     }
     //forDay = 0 means yesterday's cls price.
     public Double getCls_pri(int forDay) {

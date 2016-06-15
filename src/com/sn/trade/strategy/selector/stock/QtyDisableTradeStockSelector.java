@@ -18,15 +18,15 @@ import com.sn.trade.strategy.imp.TradeStrategyImp;
 public class QtyDisableTradeStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(QtyDisableTradeStockSelector.class);
-    double tradeThresh = 0.5;
+    double tradeThresh = 0.3;
     double THRESH_PCT = 0.9;
     /**
      * @param args
      */
     public boolean isTargetStock(Stock stk, ICashAccount ac) {
-        Double maxPri = stk.getMaxDlyClsPri();
-        Double minPri = stk.getMinDlyClsPri();
-        Double yt_cls_pri = stk.getYtClsPri();
+        Double maxPri = stk.getMaxDlyTdClsPri();
+        Double minPri = stk.getMinDlyTdClsPri();
+        Double yt_cls_pri = stk.getTdCls_pri(0);
         Double cur_pri = stk.getCur_pri();
 
         if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
