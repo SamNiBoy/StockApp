@@ -16,7 +16,7 @@ public class AvgClsPriSellModeSelector implements IStockSelector {
     	Double avgPri1 = s.getAvgYtClsPri(10, 0);
     	Double avgPri2 = s.getAvgYtClsPri(10, 1);
     	Double curPri = s.getCur_pri();
-        if ((avgPri1 != null && curPri != null && avgPri2 != null) && (avgPri1 >= curPri) && (avgPri2 <= curPri)) {
+        if ((avgPri1 != null && curPri != null && avgPri2 != null) && (avgPri1 > curPri + 0.01) && (0.01 + avgPri2 < curPri)) {
             log.info("cur price is crossover 10 days avg cls price");
             Cross10Days = true;
         }
@@ -24,7 +24,7 @@ public class AvgClsPriSellModeSelector implements IStockSelector {
     	avgPri1 = s.getAvgYtClsPri(20, 0);
     	avgPri2 = s.getAvgYtClsPri(20, 1);
     	
-        if ((avgPri1 != null && curPri != null && avgPri2 != null) && (avgPri1 >= curPri) && (avgPri2 <= curPri)) {
+        if ((avgPri1 != null && curPri != null && avgPri2 != null) && (avgPri1 > curPri + 0.01) && (0.01 + avgPri2 < curPri)) {
             log.info("cur price is crossover 20 days avg cls price");
             Cross20Days = true;
         }
