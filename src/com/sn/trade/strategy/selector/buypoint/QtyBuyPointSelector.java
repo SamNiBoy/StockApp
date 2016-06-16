@@ -30,12 +30,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 			Double minPri = stk.getMinCurPri();
 			Double yt_cls_pri = stk.getYtClsPri();
 			Double cur_pri = stk.getCur_pri();
-			Double opn_pri = stk.getOpen_pri();
 
-			if ((cur_pri - opn_pri) / yt_cls_pri <= STConstants.DISALLOW_BUY_IF_LOST) {
-			    log.info("DISALLOW BUY, cur_pri:" + cur_pri + ", opn_pri:" + opn_pri + ", DISALLOW_BUY_IF_LOST:" + STConstants.DISALLOW_BUY_IF_LOST + ", lost:" + (cur_pri - opn_pri) / yt_cls_pri);
-			    return false;
-			}
 			if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
 				double marketDegree = StockMarket.getDegree();

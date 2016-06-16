@@ -88,7 +88,7 @@ public class SellModeWatchDog implements IWork {
 	public SellModeWatchDog(long id, long dbn) {
 		initDelay = id;
 		delayBeforNxtStart = dbn;
-		selectors.add(new DefaultSellModeSelector());
+		//selectors.add(new DefaultSellModeSelector());
 		selectors.add(new AvgClsPriSellModeSelector());
 		selectors.add(new CurPriLostSellModeSelector());
 		//selectors.add(new QtyDisableTradeStockSelector());
