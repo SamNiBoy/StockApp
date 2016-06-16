@@ -334,6 +334,7 @@ public class SuggestStock implements IWork {
 			sql = "select s.id from usrStk s, stkdlyinfo i "
 				+ "where s.id = i.id "
 				+ "  and s.gz_flg = 1 "
+				+ "  and s.sell_mode_flg = 0 "
 				+ "  and s.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "') "
 				+ "  and not exists (select 'x' from stkdlyinfo i2 where i2.id = i.id and i2.dt > i.dt) "
 				+ "  order by abs(i.td_cls_pri - 20) ";
@@ -349,6 +350,8 @@ public class SuggestStock implements IWork {
 				stm2.close();
 				grantCnt++;
 				stockMoved.add(id);
+				// Now add stock to gzStocks.
+				StockMarket.addGzStocks(id);
 			}
 			rs.close();
 			stm.close();
