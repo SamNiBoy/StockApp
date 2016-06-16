@@ -48,7 +48,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 			double maxPct = (maxPri - minPri) / yt_cls_pri;
 			double curPct = (cur_pri - minPri) / yt_cls_pri;
 			
-			boolean con1 = maxPct > tradeThresh && curPct > maxPct * 9.0 / 10.0;
+			boolean con1 = maxPct > tradeThresh && curPct > maxPct * 8.0 / 10.0;
 			boolean con2 = stk.isLstQtyPlused();
 			boolean con3 = stk.isLstPriTurnaround(false);
 			
