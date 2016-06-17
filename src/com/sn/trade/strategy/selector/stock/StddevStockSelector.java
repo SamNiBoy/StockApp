@@ -26,6 +26,11 @@ public class StddevStockSelector implements IStockSelector {
     public boolean isTargetStock(Stock s, ICashAccount ac) {
     	boolean isgood = false;
     	double dev = -1;
+    	
+    	if (s.isStockDivided()) {
+    		log.info("Can not suggest stock:" + s.getID() + " as it was divided!");
+    		return false;
+    	}
     	try {
     		Connection con = DBManager.getConnection();
     		Statement stm = con.createStatement();

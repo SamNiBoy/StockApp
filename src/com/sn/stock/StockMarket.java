@@ -496,7 +496,7 @@ public class StockMarket{
     
     static public boolean hasMostDecStock() {
     	log.info("TotInc:" + TotInc + ", TotDec:" + TotDec + ", Ratio:" + Math.abs(TotInc - TotDec) / Math.min(TotInc, TotDec));
-        return TotInc / (TotInc + TotDec) < 1.0/3.0;
+        return TotInc * 1.0/ (TotInc + TotDec) < 1.0/3.0;
     }
     
     static double getMnyRatioIncDec() {

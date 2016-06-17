@@ -29,6 +29,7 @@ public class Stock implements Comparable<Stock>{
     	static public final int DLY_RCD_SZ = 14; // store 2 weeks data for daily record.
     	static public final int SECONDS_PER_FETCH = 60;
         int MAX_SZ = 800;
+        private boolean is_stock_divided = false;
         //Save all history data
         String stkid;
         List<Double> dly_td_opn_pri_lst = null;
@@ -845,6 +846,7 @@ public class Stock implements Comparable<Stock>{
             Connection con = DBManager.getConnection();
             try {
             	double pre_yt_cls_pri = -1;
+            	int cnt = 0;
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDlyInfo where id ='" + stkId + "' order by dt";
                 
@@ -861,7 +863,9 @@ public class Stock implements Comparable<Stock>{
                 		dly_dl_stk_num_lst.clear();
                 		dly_dl_mny_num_lst.clear();
                 		dly_dt_lst.clear();
+                		cnt = 0;
                 	}
+                	cnt++;
                 	pre_yt_cls_pri = rs.getDouble("yt_cls_pri");
                     dly_td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
                     dly_td_cls_pri_lst.add(rs.getDouble("td_cls_pri"));
@@ -871,6 +875,16 @@ public class Stock implements Comparable<Stock>{
                     dly_dl_stk_num_lst.add(rs.getInt("dl_stk_num"));
                     dly_dl_mny_num_lst.add(rs.getDouble("dl_mny_num"));
                     dly_dt_lst.add(rs.getString("dt"));
+                }
+                
+                // If the stock was divided within the last DLY_RCD_SZ, it's not good
+                // to be suggested for trade as the price was half.
+                if (cnt >= DLY_RCD_SZ) {
+                	is_stock_divided = false;
+                }
+                else {
+                	log.info("1.Stock:" + id + " maybe was divided, cnt:" + cnt + " which is less than " + DLY_RCD_SZ);
+                	is_stock_divided = true;
                 }
                 rs.close();
                 stm.close();
@@ -932,6 +946,7 @@ public class Stock implements Comparable<Stock>{
             Connection con = DBManager.getConnection();
             try {
             	double pre_yt_cls_pri = -1;
+            	int cnt = 0;
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDlyInfo where id ='" + stkId + "' order by dt";
                 
@@ -948,7 +963,9 @@ public class Stock implements Comparable<Stock>{
                 		dly_dl_stk_num_lst.clear();
                 		dly_dl_mny_num_lst.clear();
                 		dly_dt_lst.clear();
+                		cnt=0;
                 	}
+                	cnt++;
                 	pre_yt_cls_pri = rs.getDouble("yt_cls_pri");
                     dly_td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
                     dly_td_cls_pri_lst.add(rs.getDouble("td_cls_pri"));
@@ -958,6 +975,16 @@ public class Stock implements Comparable<Stock>{
                     dly_dl_stk_num_lst.add(rs.getInt("dl_stk_num"));
                     dly_dl_mny_num_lst.add(rs.getDouble("dl_mny_num"));
                     dly_dt_lst.add(rs.getString("dt"));
+                }
+                
+                // If the stock was divided within the last DLY_RCD_SZ, it's not good
+                // to be suggested for trade as the price was half.
+                if (cnt >= DLY_RCD_SZ) {
+                	is_stock_divided = false;
+                }
+                else {
+                	log.info("Stock:" + id + " possible was divided, cnt:" + cnt + " which is less than " + DLY_RCD_SZ);
+                	is_stock_divided = true;
                 }
                 rs.close();
                 stm.close();
@@ -1457,6 +1484,9 @@ public class Stock implements Comparable<Stock>{
 			}
 			return null;
 		}
+		public boolean isStockDivided() {
+			return is_stock_divided;
+		}
     }
     
     static Logger log = Logger.getLogger(Stock.class);
@@ -1587,6 +1617,10 @@ public class Stock implements Comparable<Stock>{
     
     public Double getMinDlyTdClsPri() {
         return sd.getMinDlyTdClsPri();
+    }
+    
+    public boolean isStockDivided() {
+    	return sd.isStockDivided();
     }
     
     public boolean isJumpWater(int tailSz, double pct) {
