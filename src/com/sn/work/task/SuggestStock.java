@@ -139,6 +139,10 @@ public class SuggestStock implements IWork {
 //            StockDataFetcher.lock.unlock();
 //        }
 
+		if (StockMarket.isMarketTooCold(null) || StockMarket.hasMostDecStock()) {
+		    log.info("Market is not good, skip suggesting stock!");
+		    return;
+		}
 		resetSuggestion();
 		
 		try {
