@@ -632,12 +632,12 @@ public class Stock implements Comparable<Stock>{
             double prePri = cur_pri_lst.get(sz - 2);
             double lstDetPri = (inc_flg ? (lstPri - prePri) : (prePri - lstPri));
             log.info("lstDetPri is:" + lstDetPri + " size:" + sz + " inc_flg:" + inc_flg);
-            if (lstDetPri >= 0.05) {
-                log.info("lst price is:" + lstPri + ", pre price is:" + prePri + (inc_flg ? "big" : "small") + " than 0.05, isLstPriTurnaround return true.");
+            if (lstDetPri >= 0.01) {
+                log.info("lst price is:" + lstPri + ", pre price is:" + prePri + (inc_flg ? "big" : "small") + " than 0.01, isLstPriTurnaround return true.");
                 return true;
             }
             else {
-                log.info("lst price is:" + lstPri + ", pre price is:" + prePri + (inc_flg ? " not big" : " not small") + " than 0.05, isLstPriTurnaround return false.");
+                log.info("lst price is:" + lstPri + ", pre price is:" + prePri + (inc_flg ? " not big" : " not small") + " than 0.01, isLstPriTurnaround return false.");
                 return false;
             }
         }
