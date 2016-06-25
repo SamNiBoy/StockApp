@@ -126,6 +126,27 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     		}
     		rs.close();
     		stm.close();
+    		
+    		stm = con.createStatement();
+    		// If the stock just get gzed in 5 minutes, but no buy, then half the threshold value to easy buy.
+    		sql = "select 'x'" +
+    			  " from usrStk " +
+    			  "where gz_flg = 1 " +
+    			  "  and id = '" + stk.getID() + "'" +
+    			  "  and add_dt >= " + deadline + " - 5.0/(24 * 60)" +
+    		      "  and not exists (select 'y' " +
+    		      "                    from SellBuyRecord r " +
+    		      "                   where r.stkid = usrStk.id " +
+    		      "                     and r.buy_flg = 1 " +
+    		      "                     and to_char(" + deadline + ", 'yyyy-mm-dd') = to_char(r.dl_dt,'yyyy-mm-dd'))";
+    		log.info(sql);
+    		rs = stm.executeQuery(sql);
+    		if (rs.next()) {
+    		    log.info("Stock:" + stk.getID() + " just get added to trade in 5 minutes, but not brought, use half trade threshhold value: " + baseThresh + " to easy buy.");
+    		    baseThresh = baseThresh / 2.0;
+    		}
+    		rs.close();
+    		stm.close();
     		con.close();
     	}
     	catch(Exception e) {
