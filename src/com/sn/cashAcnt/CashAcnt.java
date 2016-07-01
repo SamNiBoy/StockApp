@@ -149,7 +149,11 @@ public class CashAcnt {
             ResultSet rs = stm.executeQuery(sql);
             if (rs.next()) {
                 if (rs.getInt("maxseq") < 0) {
-                    sql = "insert into TradeHdr values('" + this.actId + "','" + s.getID() + "',0.0, sysdate)";
+                    sql = "insert into TradeHdr values('" + this.actId + "','"
+                    + s.getID() + "',"
+                    + s.getCur_pri()*buyMnt + ","
+                    + buyMnt + ","
+                    + s.getCur_pri() + ", sysdate)";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -340,6 +344,7 @@ public class CashAcnt {
         
         ResultSet rs = null;
         pftMny = 0;
+        double subpftMny = 0;
         try {
             Statement stm = con.createStatement();
             rs = stm.executeQuery(sql);
@@ -351,15 +356,15 @@ public class CashAcnt {
                 int inHandMnt = getSellableAmt(stkId) + getUnSellableAmt(stkId);
                 
                 log.info("in hand amt:" + inHandMnt + " price:" + s.getCur_pri() + " with cost:" + usedMny);
-                pftMny += inHandMnt * s.getCur_pri() - usedMny;
+                subpftMny = inHandMnt * s.getCur_pri();
                 
-                if (pftMny != 0) {
-                    sql = "update TradeHdr set pft_mny = " + pftMny + " where acntId ='" + actId + "' and stkId ='" + stkId + "'";
-                    Statement stm2 = con.createStatement();
-                    log.info(sql);
-                    stm2.execute(sql);
-                    stm2.close();
-                }
+                sql = "update TradeHdr set pft_mny = " + subpftMny
+                + ", pft_price =" + s.getCur_pri()
+                + ", in_hand_qty = " + inHandMnt + " where acntId ='" + actId + "' and stkId ='" + stkId + "'";
+                Statement stm2 = con.createStatement();
+                log.info(sql);
+                stm2.execute(sql);
+                stm2.close();
             }
             
             rs.close();

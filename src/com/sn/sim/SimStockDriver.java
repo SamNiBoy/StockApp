@@ -149,7 +149,7 @@ public class SimStockDriver {
             idClause = " and id in ('";
             for (String stkId : stk_list) {
                 if (addedFlg) {
-                    idClause += ",";
+                    idClause += ",'";
                 }
                 idClause += stkId + "'";
                 addedFlg = true;

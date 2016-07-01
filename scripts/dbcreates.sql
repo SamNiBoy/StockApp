@@ -298,7 +298,9 @@ insert into cashacnt values('testCashAct001',20000,0,0,4,0.5,1,sysdate);
 create table TradeHdr(
 acntId varchar2(20 byte) not null,
 stkId varchar2(6 byte) not null,
-pft_mny number not null,
+pft_mny number not null, /* the money of your stock */
+in_hand_qty number not null,
+pft_price number not null,
 add_dt date not null,
 CONSTRAINT "TradeHdr_PK" PRIMARY KEY (acntId, stkId)
 );

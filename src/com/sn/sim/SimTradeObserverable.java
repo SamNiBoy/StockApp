@@ -62,6 +62,7 @@ public class SimTradeObserverable extends Observable {
     static public void main(String[] args) {
         
         SimStockDriver.addStkToSim("002397");
+        SimStockDriver.addStkToSim("600503");
         SimStockDriver.setStartEndSimDt("2016-02-18", "2016-02-19");
         
         SimStockDriver.loadStocks();
@@ -105,6 +106,7 @@ public class SimTradeObserverable extends Observable {
             this.setChanged();
             this.notifyObservers(this);
             hasSentMail = true;
+            needSentMail = false;
         }
     }
     
