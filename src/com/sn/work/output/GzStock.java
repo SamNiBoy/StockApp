@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.stock.StockMarket;
 import com.sn.trade.StockTrader;
+import com.sn.trade.strategy.imp.STConstants;
 import com.sn.work.itf.IWork;
 import com.sn.work.WorkManager;
 
@@ -63,7 +64,7 @@ public class GzStock implements com.sn.work.itf.IWork {
             	long gz_flg = rs.getLong("gz_flg");
             	rs.close();
             	stm.close();
-            	sql = "update usrStk set gz_flg = 1 - gz_flg, suggested_by = '" + frmUsr + "' where id = '" + stockID + "' and openID = '" + frmUsr + "'";
+            	sql = "update usrStk set gz_flg = 1 - gz_flg, trade_mode_id = " + STConstants.TRADE_MODE_ID_MANUAL + ", suggested_by = '" + frmUsr + "' where id = '" + stockID + "' and openID = '" + frmUsr + "'";
             	stm = con.createStatement();
             	log.info(sql);
             	stm.execute(sql);
@@ -89,7 +90,7 @@ public class GzStock implements com.sn.work.itf.IWork {
             	}
             	else {
             		rs.close();
-            	    sql = "insert into usrStk values ('" + frmUsr + "','" + stockID + "',1,0,'" + frmUsr + "', '', sysdate)";
+            	    sql = "insert into usrStk values ('" + frmUsr + "','" + stockID + "'," + STConstants.TRADE_MODE_ID_MANUAL + ",1,0,'" + frmUsr + "', '', sysdate)";
             	    log.info(sql);
             	    stm.execute(sql);
         		    msg = "成功添加关注:" + stockID;

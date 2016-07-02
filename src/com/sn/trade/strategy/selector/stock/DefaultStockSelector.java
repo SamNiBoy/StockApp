@@ -50,4 +50,9 @@ public class DefaultStockSelector implements IStockSelector {
 		log.info("Mandatory criteria can not be adjusted");
 		return true;
 	}
+    @Override
+    public Integer getTradeModeId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

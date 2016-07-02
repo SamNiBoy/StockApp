@@ -11,6 +11,7 @@ CONSTRAINT "usr_PK" PRIMARY KEY (OpenID)
 create table usrStk(
 openID varchar2(100 byte) not null,
 id varchar2(6 byte) not null,
+trade_mode_id number,
 gz_flg number not null,
 sell_mode_flg number not null,
 suggested_by varchar2(100 byte) not null,

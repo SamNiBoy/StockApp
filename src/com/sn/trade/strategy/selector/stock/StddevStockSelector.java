@@ -62,7 +62,7 @@ public class StddevStockSelector implements IStockSelector {
 	@Override
 	public boolean isORCriteria() {
 		// TODO Auto-generated method stub
-		return true;
+		return false;
 	}
 	@Override
 	public boolean isMandatoryCriteria() {
@@ -88,4 +88,9 @@ public class StddevStockSelector implements IStockSelector {
 		}
 		return true;
 	}
+    @Override
+    public Integer getTradeModeId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

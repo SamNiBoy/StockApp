@@ -48,4 +48,8 @@ public class STConstants {
 	
 	public static final int DAYS_FOR_SIM = 3;
 	
+	public static final int TRADE_MODE_ID_QTYTRADE = 1;
+	public static final int TRADE_MODE_ID_AVGPRI = 2;
+	public static final int TRADE_MODE_ID_MANUAL = 3;
+	
 }

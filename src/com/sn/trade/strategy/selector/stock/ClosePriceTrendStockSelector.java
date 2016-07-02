@@ -126,4 +126,9 @@ public class ClosePriceTrendStockSelector implements IStockSelector {
 		log.info("maxPctUpper:" + maxPctUpper + "maxPctLower:" + maxPctLower + "curPctLowLvl:" + curPctLowLvl + "maxPctLower2:" + maxPctLower2 + "curPctUpLvl:" + curPctUpLvl);
 		return true;
 	}
+    @Override
+    public Integer getTradeModeId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

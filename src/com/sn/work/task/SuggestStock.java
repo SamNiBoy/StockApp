@@ -18,7 +18,7 @@ import com.sn.mail.reporter.RecommandStockObserverable;
 import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.trade.strategy.imp.STConstants;
-import com.sn.trade.strategy.selector.stock.AvgClsPriStockSelector;
+import com.sn.trade.strategy.selector.stock.AvgPriStockSelector;
 import com.sn.trade.strategy.selector.stock.DefaultStockSelector;
 import com.sn.trade.strategy.selector.stock.IStockSelector;
 import com.sn.trade.strategy.selector.stock.KeepGainStockSelector;
@@ -52,7 +52,7 @@ public class SuggestStock implements IWork {
 
 	static SuggestStock self = null;
 	
-	static List<Stock> stocksWaitForMail = new LinkedList<Stock>();
+	static List<SuggestData> stocksWaitForMail = new LinkedList<SuggestData>();
 	
 	static RecommandStockObserverable rso = new RecommandStockObserverable();
 
@@ -114,9 +114,9 @@ public class SuggestStock implements IWork {
 		//selectors.add(new DefaultStockSelector());
 		selectors.add(new PriceStockSelector());
 		selectors.add(new StddevStockSelector());
-		selectors.add(new LimitClsPriStockSelector());
+		//selectors.add(new LimitClsPriStockSelector());
 		//selectors.add(new QtyEnableTradeStockSelector());
-		//selectors.add(new AvgClsPriStockSelector());
+		selectors.add(new AvgPriStockSelector());
 //		selectors.add(new ClosePriceTrendStockSelector());
 //		selectors.add(new TopGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
@@ -149,6 +149,7 @@ public class SuggestStock implements IWork {
 			Map<String, Stock> stks = StockMarket.getStocks();
 			int tryCnt = 10;
 			boolean tryHarderCriteria = false;
+			Integer trade_mode_id = null;
 			while(tryCnt-- > 0) {
 			    for (String stk : stks.keySet()) {
 			    	Stock s = stks.get(stk);
@@ -163,13 +164,14 @@ public class SuggestStock implements IWork {
 			    			// If the mandatory criteria also an OR criteria, then enough to suggest this stock.
 			    			if (slt.isORCriteria()) {
 			    				suggest_flg = true;
+			    				trade_mode_id = slt.getTradeModeId();
 			    			}
 			    		}
 			    	}
 			    	if (mandatory_pass_flg) {
 			    		for (IStockSelector slt : selectors) {
 			    			if (suggest_flg) {
-			    				log.info("Mandatory criteria also Or criteria matched, suggest stock directly!");
+			    				log.info("Mandatory criteria also Or criteria matched, trade mode id:" + trade_mode_id + " suggest stock directly!");
 			    				break;
 			    			}
 			    			if (slt.isMandatoryCriteria()) {
@@ -178,7 +180,8 @@ public class SuggestStock implements IWork {
 			    			if (slt.isTargetStock(s, null)) {
 			    				suggest_flg = true;
 			    				if (slt.isORCriteria()) {
-			    					log.info("Or criteria matched, suggest the stock:" + s.getID());
+			    				    trade_mode_id = slt.getTradeModeId();
+			    					log.info("Or criteria matched, suggest the stock:" + s.getID() + " trade mode id:" + trade_mode_id);
 			    					break;
 			    				}
 			    			}
@@ -188,9 +191,10 @@ public class SuggestStock implements IWork {
 			    				continue;
 			    			}
 			    		}
-			    		if (suggest_flg) {
-			    			stocksWaitForMail.add(s);
+			    		if (suggest_flg && trade_mode_id != null) {
+			    			stocksWaitForMail.add(new SuggestData(s, trade_mode_id));
 			    		}
+			    		trade_mode_id = null;
 			    		suggest_flg = false;
 			    	}
 			    	mandatory_pass_flg = false;
@@ -205,7 +209,7 @@ public class SuggestStock implements IWork {
 			    	stocksWaitForMail.clear();
 			    }
 			    else {
-			    	for (Stock s2 : stocksWaitForMail) {
+			    	for (SuggestData s2 : stocksWaitForMail) {
 		    			suggestStock(s2);
 			    	}
 			    	electStockforTrade();
@@ -227,7 +231,7 @@ public class SuggestStock implements IWork {
 		log.info("SuggestStock Now exit!!!");
 	}
 
-	private void suggestStock(Stock s) {
+	private void suggestStock(SuggestData s) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
@@ -239,25 +243,25 @@ public class SuggestStock implements IWork {
 			rs = stm.executeQuery(sql);
 			while (rs.next()) {
 				String openID = rs.getString("openID");
-				sql = "select gz_flg, sell_mode_flg, suggested_by from usrStk where openID = '" + openID + "' and id = '" + s.getID() + "'";
+				sql = "select gz_flg, sell_mode_flg, suggested_by from usrStk where openID = '" + openID + "' and id = '" + s.s.getID() + "'";
 				Statement stm2 = con.createStatement();
 				ResultSet rs2 = stm2.executeQuery(sql);
 				sql = "";
 				if (rs2.next()) {
 					if (rs2.getLong("gz_flg") == 0) {
 						if (rs2.getLong("sell_mode_flg") == 0) {
-						    sql = "update usrStk set gz_flg = 1, suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "', suggested_sellmode_by = '', add_dt = sysdate where openID = '" + openID
-								+ "' and id = '" + s.getID() + "'";
+						    sql = "update usrStk set gz_flg = 1, trade_mode_id = " + s.trade_mode_id + ", suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "', suggested_sellmode_by = '', add_dt = sysdate where openID = '" + openID
+								+ "' and id = '" + s.s.getID() + "'";
 						}
 						else {
-							log.info("Stock:" + s.getID() + " sell mode:" + rs2.getLong("sell_mode_flg") + " is true, can not suggest it!");
+							log.info("Stock:" + s.s.getID() + " sell mode:" + rs2.getLong("sell_mode_flg") + " is true, can not suggest it!");
 						}
 					}
 					else {
 						log.info("Stock gz_flg: " + rs2.getLong("gz_flg") + " already gzed, and suggested by:" + rs2.getString("suggested_by"));
 					}
 				} else {
-					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'SYSTEM','',sysdate)";
+					sql = "insert into usrStk values ('" + openID + "','" + s.s.getID() + "',"+ s.trade_mode_id +",1,0,'SYSTEM','',sysdate)";
 				}
 				rs2.close();
 				stm2.close();
@@ -364,12 +368,12 @@ public class SuggestStock implements IWork {
 			e.printStackTrace();
 		}
 		
-		Iterator<Stock> it = stocksWaitForMail.iterator();
+		Iterator<SuggestData> it = stocksWaitForMail.iterator();
 		while(it.hasNext())
 		{
-			Stock s = it.next();
-			if (!stockMoved.contains(s.getID())) {
-				log.info("remove stock:" + s.getID() + " as it is not moved for trade.");
+		    SuggestData v = it.next();
+			if (!stockMoved.contains(v.s.getID())) {
+				log.info("remove stock:" + v.s.getID() + " as it is not moved for trade.");
 				it.remove();
 			}
 		}
@@ -499,7 +503,7 @@ public class SuggestStock implements IWork {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		try {
-			sql = "update usrStk set gz_flg = 0 where gz_flg = 1 and suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "')";
+			sql = "update usrStk set gz_flg = 0, trade_mode_id = null where gz_flg = 1 and suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "')";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

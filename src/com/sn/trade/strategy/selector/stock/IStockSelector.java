@@ -18,4 +18,5 @@ public interface IStockSelector {
     public boolean isORCriteria();
     public boolean isMandatoryCriteria();
     public boolean adjustCriteria(boolean harder);
+    public Integer getTradeModeId();
 }

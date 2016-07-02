@@ -45,4 +45,9 @@ public class CurPriLostSellModeSelector implements IStockSelector {
 		log.info("CurPriLostSellModeSelector can not be adjusted");
 		return true;
 	}
+    @Override
+    public Integer getTradeModeId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

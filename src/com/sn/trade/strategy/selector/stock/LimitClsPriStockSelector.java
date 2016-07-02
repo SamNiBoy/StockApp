@@ -11,6 +11,7 @@ import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
+import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.imp.TradeStrategyImp;
 
 public class LimitClsPriStockSelector implements IStockSelector {
@@ -67,4 +68,10 @@ public class LimitClsPriStockSelector implements IStockSelector {
 		log.info("try harder:" + harder + ", ALLOW_INC_THRESH_VALUE:" + ALLOW_INC_THRESH_VALUE);
 		return true;
 	}
+
+    @Override
+    public Integer getTradeModeId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

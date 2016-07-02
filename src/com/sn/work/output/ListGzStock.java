@@ -65,7 +65,7 @@ public class ListGzStock implements IWork {
     private String getGzStockInfo()
     {
         Statement stm = null;
-        String sql = "select s.id, s.name, u.sell_mode_flg "
+        String sql = "select s.id, s.name, u.sell_mode_flg, u.trade_mode_id "
         		+ "     from stk s, usrStk u "
         		+ "    where s.id = u.id "
         		+ "      and u.gz_flg = 1 "
@@ -75,6 +75,7 @@ public class ListGzStock implements IWork {
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
         Map<String, Integer> sellmodes = new HashMap<String, Integer> ();
+        Map<String, Integer> trademodeids = new HashMap<String, Integer> ();
         DecimalFormat df = new DecimalFormat("##.###");
         String ids = "";
 
@@ -86,6 +87,7 @@ public class ListGzStock implements IWork {
             while (rs.next()) {
                 Stocks.put(rs.getString("id"), rs.getString("name"));
                 sellmodes.put(rs.getString("id"), rs.getInt("sell_mode_flg"));
+                trademodeids.put(rs.getString("id"), rs.getInt("trade_mode_id"));
                 if (ids.length() > 0) {
                 	ids += ",";
                 }
@@ -116,6 +118,7 @@ public class ListGzStock implements IWork {
                 	String sellMode = (sellmodes.get(stock) == 1) ? "Yes" : "No";
                 	dev = rs.getDouble("dev");
                     Double cur_pri1 = StockMarket.getStocks().get(stock).getCur_pri();
+                    Integer trade_mode_id = trademodeids.get(stock);
                     
                     if (cur_pri1 != null) {
                         cur_pri = cur_pri1;
@@ -124,7 +127,7 @@ public class ListGzStock implements IWork {
                     	log.info("cur_pri for stock:" + stock + " is null, use -1.");
                     	cur_pri = -1;
                     }
-                    content += "价:" + df.format(cur_pri) + " stddev:" + df.format(dev) + " sellMode: " + sellMode + "\n";
+                    content += "价:" + df.format(cur_pri) + " stddev:" + df.format(dev) + " sellMode: " + sellMode + "TradeModeId:" + trade_mode_id + "\n";
                 }
                 rs.close();
             } catch(SQLException e0) {

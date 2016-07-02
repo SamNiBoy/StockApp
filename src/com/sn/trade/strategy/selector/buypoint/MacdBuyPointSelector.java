@@ -45,4 +45,11 @@ public class MacdBuyPointSelector implements IBuyPointSelector {
 		// TODO Auto-generated method stub
 		return 100;
 	}
+
+
+    @Override
+    public boolean matchTradeModeId(Stock s) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }

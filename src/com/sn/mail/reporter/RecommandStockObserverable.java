@@ -25,15 +25,16 @@ import com.sn.db.DBManager;
 import com.sn.stock.Stock;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
+import com.sn.work.task.SuggestData;
 
 public class RecommandStockObserverable extends Observable {
 
     static Logger log = Logger.getLogger(RecommandStockObserverable.class);
 
-    private List<Stock> stocksToSuggest = new ArrayList<Stock>();
+    private List<SuggestData> stocksToSuggest = new ArrayList<SuggestData>();
     private List<RecommandStockSubscriber> ms = new ArrayList<RecommandStockSubscriber>();
 
-    public void addStockToSuggest(List<Stock> lst) {
+    public void addStockToSuggest(List<SuggestData> lst) {
     	stocksToSuggest.clear();
     	stocksToSuggest.addAll(lst);
     }
@@ -114,16 +115,18 @@ public class RecommandStockObserverable extends Observable {
                     "<tr>" +
                     "<th> ID</th> " +
                     "<th> Name</th> " +
+                    "<th> TradeModeID</th> " +
                     "<th> Price</th></tr>");
             DecimalFormat df = new DecimalFormat("##.##");
-            for (Stock s : stocksToSuggest) {
-            	if (!u.alreadySuggested(s)) {
-                    body.append("<tr> <td>" + s.getID() + "</td>" +
-                    "<td> " + s.getName() + "</td>" +
-                    "<td> " + df.format(s.getCur_pri() == null ? 0 : s.getCur_pri()) + "</td></tr>");
+            for (SuggestData v : stocksToSuggest) {
+            	if (!u.alreadySuggested(v.s)) {
+                    body.append("<tr> <td>" + v.s.getID() + "</td>" +
+                    "<td> " + v.s.getName() + "</td>" +
+                    "<td> " + v.trade_mode_id + "</td>" +
+                    "<td> " + df.format(v.s.getCur_pri() == null ? 0 : v.s.getCur_pri()) + "</td></tr>");
                     usr_need_mail = true;
                     generated_mail = true;
-                    u.setSuggested(s);
+                    u.setSuggested(v.s);
             	}
             }
             if (usr_need_mail) {

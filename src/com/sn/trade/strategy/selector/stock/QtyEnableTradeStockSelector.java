@@ -92,4 +92,10 @@ public class QtyEnableTradeStockSelector implements IStockSelector {
 		log.info("try harder:" + harder + ", tradeThresh:" + tradeThresh);
 		return true;
 	}
+
+    @Override
+    public Integer getTradeModeId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

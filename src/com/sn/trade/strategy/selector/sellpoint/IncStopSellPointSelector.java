@@ -115,4 +115,10 @@ public class IncStopSellPointSelector implements ISellPointSelector {
         }
 		return sellMnt;
 	}
+
+    @Override
+    public boolean matchTradeModeId(Stock s) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }

@@ -14,11 +14,13 @@ import com.sn.cashAcnt.CashAcntManger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.trade.strategy.ITradeStrategy;
+import com.sn.trade.strategy.selector.buypoint.AvgPriBuyPointSelector;
 import com.sn.trade.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.trade.strategy.selector.buypoint.IBuyPointSelector;
 import com.sn.trade.strategy.selector.buypoint.IncStopBuyPointSelector;
 import com.sn.trade.strategy.selector.buypoint.MacdBuyPointSelector;
 import com.sn.trade.strategy.selector.buypoint.QtyBuyPointSelector;
+import com.sn.trade.strategy.selector.sellpoint.AvgPriSellPointSelector;
 import com.sn.trade.strategy.selector.sellpoint.DefaultSellPointSelector;
 import com.sn.trade.strategy.selector.sellpoint.ISellPointSelector;
 import com.sn.trade.strategy.selector.sellpoint.IncStopSellPointSelector;
@@ -45,11 +47,11 @@ public class TradeStrategyGenerator {
         
         res.add(its);
         
-//        IBuyPointSelector bs2 = new IncStopBuyPointSelector();
-//        ISellPointSelector ses2 = new IncStopSellPointSelector();
-//        ITradeStrategy its2 = new TradeStrategyImp(bs2, ses2, ca);
+        IBuyPointSelector bs2 = new AvgPriBuyPointSelector();
+        ISellPointSelector ses2 = new AvgPriSellPointSelector();
+        ITradeStrategy its2 = new TradeStrategyImp(bs2, ses2, ca);
         
-//        res.add(its2);
+        res.add(its2);
         return res;
     }
     
@@ -62,11 +64,11 @@ public class TradeStrategyGenerator {
         ITradeStrategy its = new TradeStrategyImp(bs, ses, ca);
         ss.add(its);
         
-//        IBuyPointSelector bs2 = new IncStopBuyPointSelector();
-//        ISellPointSelector ses2 = new IncStopSellPointSelector();
-//        ITradeStrategy its2 = new TradeStrategyImp(bs2, ses2, ca);
+        IBuyPointSelector bs2 = new AvgPriBuyPointSelector();
+        ISellPointSelector ses2 = new AvgPriSellPointSelector();
+        ITradeStrategy its2 = new TradeStrategyImp(bs2, ses2, ca);
         
-//        ss.add(its2);
+        ss.add(its2);
         return ss;
     }
 }

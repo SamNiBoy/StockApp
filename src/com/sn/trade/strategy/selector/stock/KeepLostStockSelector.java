@@ -73,4 +73,9 @@ public class KeepLostStockSelector implements IStockSelector {
 		log.info("try " + (harder ? " harder" : " loose") + " days:" + days + " dayPct:" + dayPct);
 		return false;
 	}
+    @Override
+    public Integer getTradeModeId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

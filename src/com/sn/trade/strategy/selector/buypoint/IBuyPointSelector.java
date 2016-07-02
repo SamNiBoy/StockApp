@@ -16,4 +16,5 @@ public interface IBuyPointSelector {
      */
     public boolean isGoodBuyPoint(Stock s, ICashAccount ac);
     public int getBuyQty(Stock s, ICashAccount ac);
+    public boolean matchTradeModeId(Stock s);
 }

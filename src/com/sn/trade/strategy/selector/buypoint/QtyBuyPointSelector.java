@@ -215,6 +215,40 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         }
 		return buyMnt;
 	}
+
+    @Override
+    public boolean matchTradeModeId(Stock s) {
+        // TODO Auto-generated method stub
+        Integer trade_mode_id = null;
+        try {
+            Connection con = DBManager.getConnection();
+            Statement stm = con.createStatement();
+            String sql = "select trade_mode_id "
+                       + "  from usrStk "
+                       + " where id ='" + s.getID() + "'";
+            log.info(sql);
+            ResultSet rs = stm.executeQuery(sql);
+            if (rs.next()) {
+                trade_mode_id = rs.getInt("trade_mode_id");
+                log.info("trade_mode_id for stock:" + s.getID() + " is:" + trade_mode_id + " expected:" + STConstants.TRADE_MODE_ID_QTYTRADE + " or:" + STConstants.TRADE_MODE_ID_MANUAL);
+            }
+            else {
+            }
+            rs.close();
+            stm.close();
+            con.close();
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+        
+        if (trade_mode_id != null && (trade_mode_id == STConstants.TRADE_MODE_ID_QTYTRADE || trade_mode_id == STConstants.TRADE_MODE_ID_MANUAL)) {
+            log.info("trade mode matched, continue");
+            return true;
+        }
+        log.info("trade mode does not matched, continue");
+        return false;
+    }
     
 
 }

@@ -106,4 +106,10 @@ public class IncStopBuyPointSelector implements IBuyPointSelector {
 	        
 	        return false;
 	    }
+
+    @Override
+    public boolean matchTradeModeId(Stock s) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }

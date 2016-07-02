@@ -156,4 +156,9 @@ public class TopGainStockSelector implements IStockSelector {
 
 		return false;
 	}
+    @Override
+    public Integer getTradeModeId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

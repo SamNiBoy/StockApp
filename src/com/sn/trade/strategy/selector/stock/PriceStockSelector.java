@@ -65,4 +65,9 @@ public class PriceStockSelector implements IStockSelector {
 		log.info("HighestPrice is now: " + HighestPrice);
 		return false;
 	}
+    @Override
+    public Integer getTradeModeId() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

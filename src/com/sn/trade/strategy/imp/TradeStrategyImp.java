@@ -76,11 +76,11 @@ public class TradeStrategyImp implements ITradeStrategy {
 	}
 
     public boolean isGoodPointtoBuy(Stock s) {
-        return buypoint_selector.isGoodBuyPoint(s, cash_account);
+        return buypoint_selector.matchTradeModeId(s) && buypoint_selector.isGoodBuyPoint(s, cash_account);
     }
 
     public boolean isGoodPointtoSell(Stock s) {
-        return sellpoint_selector.isGoodSellPoint(s, cash_account);
+        return sellpoint_selector.matchTradeModeId(s) && sellpoint_selector.isGoodSellPoint(s, cash_account);
     }
     
     public TradeStrategyImp(IBuyPointSelector bs,
