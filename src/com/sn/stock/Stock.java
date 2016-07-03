@@ -1637,8 +1637,37 @@ public class Stock implements Comparable<Stock>{
     String id;
     String name;
     StockData sd;
+    Integer trade_mode_id = null;
     
     
+    public int getTrade_mode_id() {
+        if (trade_mode_id == null) {
+            try {
+                Connection con = DBManager.getConnection();
+                Statement stm = con.createStatement();
+                String sql = "select trade_mode_id "
+                           + "  from usrStk "
+                           + " where id ='" + id + "'";
+                log.info(sql);
+                ResultSet rs = stm.executeQuery(sql);
+                if (rs.next()) {
+                    trade_mode_id = rs.getInt("trade_mode_id");
+                    log.info("trade_mode_id for stock:" + id + " is:" + trade_mode_id);
+                }
+                rs.close();
+                stm.close();
+                con.close();
+            }
+            catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            log.info("stock:" + id + "'s cached trade mode is:" + trade_mode_id);
+        }
+        return trade_mode_id;
+    }
+
     public void setId(String id) {
         this.id = id;
     }
