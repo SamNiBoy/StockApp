@@ -12,7 +12,7 @@ public class AvgPriSellModeSelector implements IStockSelector {
     static int SHORT_DAYS = 5;
     static int LONG_DAYS = 10;
     static int SHIFT_DAYS = 3;
-    static double SHRINK_PCT = 0.8;
+    static double DETPRI_SHRINK_TO_PCT = 0.2;
     /**
      * @param args
      */
@@ -40,7 +40,7 @@ public class AvgPriSellModeSelector implements IStockSelector {
         int shrtDays = SHORT_DAYS;
         int lngDays = LONG_DAYS;
         int shftDays = SHIFT_DAYS;
-        double pct = SHRINK_PCT;
+        double pct = DETPRI_SHRINK_TO_PCT;
         if (s.isTDClsPriAboutDeadCross(shrtDays, lngDays, shftDays, pct)) {
             log.info("stock:" + s.getID() + " is dead across, AvgPriSellModeSelector return true");
             return true;
