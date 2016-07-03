@@ -211,11 +211,14 @@ public class CashAcnt implements ICashAccount {
 		ResultSet rs = null;
 		pftMny = 0;
 		double subpftMny = 0;
+		boolean has_trade_flg = false;
 		try {
 			Statement stm = con.createStatement();
+			log.info(sql);
 			rs = stm.executeQuery(sql);
 			Map<String, Stock> stks = stockSet;
 			while (rs.next()) {
+			    has_trade_flg = true;
 				String stkId = rs.getString("stkId");
 				Stock s = stks.get(stkId);
 
@@ -234,6 +237,12 @@ public class CashAcnt implements ICashAccount {
 
 			rs.close();
 			stm.close();
+			
+			if (!has_trade_flg) {
+			    log.info("no trade record for:" + actId + " skip calculate profit.");
+	             con.close();
+			    return false;
+			}
 
 			sql = "select sum(pft_mny) tot_pft_mny from TradeHdr h where acntId = '" + actId + "'";
 

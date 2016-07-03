@@ -42,7 +42,7 @@ public class STConstants {
 	public static final int DEV_CALCULATE_DAYS = 7;
 	public static final double MAX_STEDEV_VALUE = 0.03;
 	public static final double MIN_STEDEV_VALUE = 0.015;
-	public static final double ALLOWABLE_MIN_STEDEV_VALUE = 0.017;
+	public static final double ALLOWABLE_MIN_STEDEV_VALUE = 0.01;
 	public static final double MIN_DEV_BEFORE_EXIT_TRADE = 0.015;
 	public static final double DISALLOW_BUY_IF_LOST = -0.05;
 	

@@ -105,7 +105,7 @@ public class SuggestStock implements IWork {
 		// TODO Auto-generated method stub
 		SuggestStock fsd = new SuggestStock(0, 10000);
 		log.info("Main exit");
-		WorkManager.submitWork(fsd);
+		fsd.run();
 	}
 
 	public SuggestStock(long id, long dbn) {

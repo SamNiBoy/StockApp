@@ -136,11 +136,6 @@ public class TradeStrategyImp implements ITradeStrategy {
 			    	}
 			        
 			        createBuyTradeRecord(s, qtyToTrade, ac);
-			        
-			        Map<String, Stock> sm = new HashMap<String, Stock>();
-			        sm.put(s.getID(), s);
-			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
-			        
 			        createBuySellRecord(s, STConstants.openID, true, qtyToTrade);
 			        break;
 			    }
@@ -199,11 +194,6 @@ public class TradeStrategyImp implements ITradeStrategy {
 			    	}
 			        
 			        createSellTradeRecord(s, qtyToTrade, ac);
-			        
-			        Map<String, Stock> sm = new HashMap<String, Stock>();
-			        sm.put(s.getID(), s);
-			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
-			        
 			        createBuySellRecord(s, STConstants.openID, false, qtyToTrade);
 			        break;
 			    }
@@ -274,6 +264,12 @@ public class TradeStrategyImp implements ITradeStrategy {
         	rc.printStockInfo();
         	return true;
         }
+		
+		cash_account = getVirtualCashAcntForStock(s.getID());
+        Map<String, Stock> sm = new HashMap<String, Stock>();
+        sm.put(s.getID(), s);
+        calProfit(s.getDl_dt().toString().substring(0, 10), sm);
+        
         return false;
 	}
 	
