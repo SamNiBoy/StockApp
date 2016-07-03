@@ -1804,7 +1804,7 @@ public class Stock implements Comparable<Stock>{
             try {
                 Connection con = DBManager.getConnection();
                 Statement stm = con.createStatement();
-                String sql = "select cur_pri from stkdat where id = '" + id + "' order by dl_dt desc";
+                String sql = "select cur_pri from stkdat2 where id = '" + id + "' order by dl_dt desc";
                 log.info(sql);
                 ResultSet rs = stm.executeQuery(sql);
                 if (rs.next()) {
