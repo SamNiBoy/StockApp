@@ -16,6 +16,7 @@ import com.sn.mail.reporter.StockObserverable;
 import com.sn.sim.SimStockDriver;
 import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
+import com.sn.trade.strategy.imp.STConstants;
 
 public class CashAcnt implements ICashAccount {
 
@@ -413,30 +414,62 @@ public class CashAcnt implements ICashAccount {
 		log.info("now check if stock " + s.getName() + " in hand with price:" + s.getCur_pri() + " against CashAcount: "
 				+ actId);
 
-		Connection con = DBManager.getConnection();
 		boolean hasStockInHand = false;
-		try {
-			String sql = "select sum(case when buy_flg = 1 then 1 else -1 end * amount) inHandQty "
-					+ "  from Tradedtl d " + " where d.stkId = '" + s.getID() + "'" + "   and d.acntId = '" + actId
-					+ "'";
 
-			log.info(sql);
-			Statement stm = con.createStatement();
-			ResultSet rs = stm.executeQuery(sql);
-			if (rs.next() && rs.getInt("inHandQty") > 0) {
-				hasStockInHand = true;
-			} else {
-				hasStockInHand = false;
-			}
-			rs.close();
-			stm.close();
-			con.close();
+		boolean sim_mode = actId.startsWith(STConstants.ACNT_SIM_PREFIX);
+		
+		hasStockInHand = hasStockInHand(s.getID(), sim_mode);
+		
+		return hasStockInHand;
+	}
+	
+	public static boolean hasStockInHand(String stkId, boolean sim_mode) {
+	   Connection con = DBManager.getConnection();
+	    boolean hasStockInHand = false;
+	    String like_clause = "";
+	    double buyQty = 0;
+	    double sellQty = 0;
+	    
+	    if (!sim_mode) {
+	        like_clause = " like '" + STConstants.ACNT_TRADE_PREFIX + "%'";
+	    }
+	    else {
+	        like_clause = " like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+	    }
+	    try {
+	        String sql = "select d.buy_flg, d.amount "
+	                   + "  from Tradedtl d "
+	                   + " where d.stkId = '" + stkId + "'"
+	                   + "   and d.acntId " + like_clause
+	                   + " order by seqnum desc";
 
-			return hasStockInHand;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
+	        log.info(sql);
+	        Statement stm = con.createStatement();
+	        ResultSet rs = stm.executeQuery(sql);
+	        while (rs.next()) {
+	            if(rs.getInt("buy_flg") > 0) {
+	                buyQty = rs.getInt("amount");
+	                sellQty -= buyQty;
+	            }
+	            else {
+	                sellQty += rs.getInt("amount");
+	            }
+	            if (sellQty < 0) {
+	                break;
+	            }
+	        }
+	        
+	        log.info("Stock:" + stkId + " sellQty:" + sellQty + ", hasStockInHand:" + hasStockInHand);
+	        if (sellQty < 0) {
+	            hasStockInHand = true;
+	        }
+	        rs.close();
+	        stm.close();
+	        con.close();
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return hasStockInHand;
 	}
 
 	@Override

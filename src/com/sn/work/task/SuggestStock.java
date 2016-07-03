@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
+import com.sn.cashAcnt.CashAcnt;
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.RecommandStockObserverable;
 import com.sn.stock.Stock;
@@ -392,18 +393,15 @@ public class SuggestStock implements IWork {
 			stm.close();
 			
 			// If the stock sold out, put gz_flg to false.
-			sql =   " update usrStk u set gz_flg = 0 "
-					+ "where u.sell_mode_flg = 1"
-					+ "  and u.id = '" + stkid + "'"
-					+ "  and (exists(select 'x' from "
-                    + "                   (select sum(amount) totamt, buy_flg from tradedtl where stkid = u.id and acntid like 'ACNT%' group by buy_flg) t1, "
-                    + "                   (select sum(amount) totamt, buy_flg from tradedtl where stkid = u.id and acntid like 'ACNT%' group by buy_flg) t2 "
-                    + "                   where (t1.buy_flg = 1 and t2.buy_flg = 0 and t1.totamt <= t2.totamt) or t1.buy_flg is null) "
-                    + "        or not exists (select 'x' from tradedtl where stkid = u.id)) ";
-			log.info(sql);
-			stm = con.createStatement();
-			stm.execute(sql);
-			stm.close();
+			if (CashAcnt.hasStockInHand(stkid, false)) {
+			    sql =   " update usrStk u set gz_flg = 0 "
+			    		+ "where u.sell_mode_flg = 1"
+			    		+ "  and u.id = '" + stkid + "'";
+			    log.info(sql);
+			    stm = con.createStatement();
+			    stm.execute(sql);
+			    stm.close();
+			}
 			con.commit();
 			con.close();
 		} catch (Exception e) {
