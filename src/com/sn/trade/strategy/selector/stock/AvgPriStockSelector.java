@@ -88,11 +88,8 @@ public class AvgPriStockSelector implements IStockSelector {
             if (SHORT_DAYS < 3) {
                 SHORT_DAYS = 3;
             }
-            if (LONG_DAYS < 5) {
-                LONG_DAYS = 5;
-            }
-            if (SHIFT_DAYS < 2) {
-                SHIFT_DAYS = 2;
+            if (LONG_DAYS < 7) {
+                LONG_DAYS = 7;
             }
         }
         
