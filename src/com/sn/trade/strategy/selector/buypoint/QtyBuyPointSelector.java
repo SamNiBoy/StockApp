@@ -33,7 +33,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
 				double marketDegree = StockMarket.getDegree();
 				
-				tradeThresh = getBuyThreshValueByDegree(marketDegree, stk);
+				tradeThresh = getBuyThreshValueByDegree(marketDegree, stk, ac);
 				
 				double maxPct = (maxPri - minPri) / yt_cls_pri;
 				double curPct =(cur_pri - minPri) / yt_cls_pri;
@@ -63,6 +63,10 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 			Double lstBuy = ac.getLstBuyPri(stk);
 			Double cur_pri = stk.getCur_pri();
 			Double yt_cls_pri = stk.getYtClsPri();
+			
+			double marketDegree = StockMarket.getDegree();
+			tradeThresh = getBuyThreshValueByDegree(marketDegree, stk, ac);
+			
 			if (lstBuy != null && cur_pri != null && yt_cls_pri != null) {
 				if ((lstBuy - cur_pri) / yt_cls_pri > tradeThresh && stk.isLstQtyPlused()) {
 					log.info("isGoodBuyPoint Buy true:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:"
@@ -76,24 +80,18 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 			}
 		}
 
-//        Boolean psd = StockMarket.getStockSellMode(stk.getID());
-//        Boolean csd = SellModeWatchDog.isStockInSellMode(stk);
-//        
-//        StockMarket.putStockSellMode(stk.getID(), csd);
-//
-//        //If we switched to non sell mode, make sure buy once.
-//        if ((csd != null && psd != null) && (csd == false && psd == true)) {
-//            log.info("Stock " + stk.getID() + " is switched to non sell mode, buy point return true.");
-//            return true;
-//        }
-        
 		return false;
 	}
 	
-    public double getBuyThreshValueByDegree(double Degree, Stock stk) {
+    public double getBuyThreshValueByDegree(double Degree, Stock stk, ICashAccount ac) {
     	
     	double baseThresh = STConstants.BASE_TRADE_THRESH;
     	
+    	if (ac != null && !ac.hasStockInHand(stk) && stk.getTrade_mode_id() == STConstants.TRADE_MODE_ID_AVGPRI) {
+    	    log.info("Stock:" + stk.getID() + " not brought yet, and is trade mode AVGPRI, set baseThresh to 0.0");
+    	    return 0.0;
+    	}
+
     	Timestamp tm = stk.getDl_dt();
         String deadline = null;
         if (tm == null) {

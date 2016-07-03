@@ -47,11 +47,11 @@ public class TradeStrategyGenerator {
         
         res.add(its);
         
-        IBuyPointSelector bs2 = new AvgPriBuyPointSelector();
-        ISellPointSelector ses2 = new AvgPriSellPointSelector();
-        ITradeStrategy its2 = new TradeStrategyImp(bs2, ses2, ca);
-        
-        res.add(its2);
+//        IBuyPointSelector bs2 = new AvgPriBuyPointSelector();
+//        ISellPointSelector ses2 = new AvgPriSellPointSelector();
+//        ITradeStrategy its2 = new TradeStrategyImp(bs2, ses2, ca);
+//        
+//        res.add(its2);
         return res;
     }
     
@@ -64,11 +64,11 @@ public class TradeStrategyGenerator {
         ITradeStrategy its = new TradeStrategyImp(bs, ses, ca);
         ss.add(its);
         
-        IBuyPointSelector bs2 = new AvgPriBuyPointSelector();
-        ISellPointSelector ses2 = new AvgPriSellPointSelector();
-        ITradeStrategy its2 = new TradeStrategyImp(bs2, ses2, ca);
-        
-        ss.add(its2);
+//        IBuyPointSelector bs2 = new AvgPriBuyPointSelector();
+//        ISellPointSelector ses2 = new AvgPriSellPointSelector();
+//        ITradeStrategy its2 = new TradeStrategyImp(bs2, ses2, ca);
+//        
+//        ss.add(its2);
         return ss;
     }
 }

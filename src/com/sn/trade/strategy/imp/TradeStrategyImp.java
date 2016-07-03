@@ -108,10 +108,8 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean buyStock(Stock s) {
 		// TODO Auto-generated method stub
 		loadStocksForTrade();
-		ICashAccount ac = getVirtualCashAcntForStock(s.getID());
 		int qtb = 0;
-		
-		qtb = buypoint_selector.getBuyQty(s, ac);
+		qtb = buypoint_selector.getBuyQty(s, cash_account);
 		
 		if (qtb <= 0) {
 			log.info("qty to buy/sell is zero by Virtual CashAccount, switch to sellbuyrecord to get qtyToTrade.");
@@ -135,7 +133,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			            cpb.setContents(sel, null);
 			    	}
 			        
-			        createBuyTradeRecord(s, qtyToTrade, ac);
+			        createBuyTradeRecord(s, qtyToTrade, cash_account);
 			        createBuySellRecord(s, STConstants.openID, true, qtyToTrade);
 			        break;
 			    }
@@ -162,10 +160,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean sellStock(Stock s) {
 		// TODO Auto-generated method stub
 		loadStocksForTrade();
-		ICashAccount ac = getVirtualCashAcntForStock(s.getID());
 		int qtb = 0;
 		
-		qtb = sellpoint_selector.getSellQty(s, ac);
+		qtb = sellpoint_selector.getSellQty(s, cash_account);
 		
 		if (qtb <= 0 && !sim_mode) {
 			log.info("qty to buy/sell is zero by Virtual CashAccount, switch to sellbuyrecord to get qtyToTrade.");
@@ -193,7 +190,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			            cpb.setContents(sel, null);
 			    	}
 			        
-			        createSellTradeRecord(s, qtyToTrade, ac);
+			        createSellTradeRecord(s, qtyToTrade, cash_account);
 			        createBuySellRecord(s, STConstants.openID, false, qtyToTrade);
 			        break;
 			    }
@@ -253,7 +250,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 
 	@Override
 	public boolean performTrade(Stock s) {
-        
+	    
+	    cash_account = getVirtualCashAcntForStock(s.getID());
+	    
 		if (isGoodPointtoBuy(s) && buyStock(s)) {
         	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
         	rc.printStockInfo();
@@ -265,7 +264,6 @@ public class TradeStrategyImp implements ITradeStrategy {
         	return true;
         }
 		
-		cash_account = getVirtualCashAcntForStock(s.getID());
         Map<String, Stock> sm = new HashMap<String, Stock>();
         sm.put(s.getID(), s);
         calProfit(s.getDl_dt().toString().substring(0, 10), sm);

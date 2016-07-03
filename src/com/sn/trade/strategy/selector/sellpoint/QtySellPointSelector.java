@@ -28,11 +28,6 @@ public class QtySellPointSelector implements ISellPointSelector {
 	 */
 	public boolean isGoodSellPoint(Stock stk, ICashAccount ac) {
 
-//	    if (IncStopSellPointSelector.matchIncStopMode(stk)) {
-//	        log.info("QtySellPointerSelector skip stock which should be handled by IncStopSellPointSelector");
-//	        return false;
-//	    }
-	    
 		Double maxPri = stk.getMaxCurPri();
 		Double minPri = stk.getMinCurPri();
 		Double yt_cls_pri = stk.getYtClsPri();
@@ -44,7 +39,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 			double marketDegree = StockMarket.getDegree();
 			
-			tradeThresh = getSellThreshValueByDegree(marketDegree, stk);
+			tradeThresh = getSellThreshValueByDegree(marketDegree, stk, ac);
 			
 			double maxPct = (maxPri - minPri) / yt_cls_pri;
 			double curPct = (cur_pri - minPri) / yt_cls_pri;
@@ -77,10 +72,15 @@ public class QtySellPointSelector implements ISellPointSelector {
 		return false;
 	}
 	
-    public double getSellThreshValueByDegree(double Degree, Stock stk) {
+    public double getSellThreshValueByDegree(double Degree, Stock stk, ICashAccount ac) {
     	
     	double baseThresh = STConstants.BASE_TRADE_THRESH;
     	
+    	if (ac.hasStockInHand(stk) && SellModeWatchDog.isStockInSellMode(stk) && stk.getTrade_mode_id() == STConstants.TRADE_MODE_ID_AVGPRI) {
+    	    log.info("Stock:" + stk.getID() + " is in sell mode, and is trade mode AVGPRI, set sell baseThresh to 0.0");
+    	    return 0.0;
+    	}
+
     	Timestamp tm = stk.getDl_dt();
         String deadline = null;
         if (tm == null) {
@@ -180,7 +180,7 @@ public class QtySellPointSelector implements ISellPointSelector {
     public boolean matchTradeModeId(Stock s) {
         // TODO Auto-generated method stub
         Integer trade_mode_id = s.getTrade_mode_id();
-        boolean sell_mode_flg = SellModeWatchDog.isStockInSellMode(s);;
+        boolean sell_mode_flg = SellModeWatchDog.isStockInSellMode(s);
         
         log.info("trade_mode_id for stock:" + s.getID() + " is:" + trade_mode_id + "sell_mode_flg:" + sell_mode_flg
                 + " expected:" + STConstants.TRADE_MODE_ID_QTYTRADE
