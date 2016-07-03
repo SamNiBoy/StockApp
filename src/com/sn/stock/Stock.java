@@ -163,6 +163,129 @@ public class Stock implements Comparable<Stock>{
             return avgPri;
         }
         
+        public boolean isTDClsPriGoldenCross(int shrtDays, int lngDays, int shftDays) {
+            ArrayList<Double> shrtAvgPris = new ArrayList<Double>();
+            ArrayList<Double> lngAvgPris = new ArrayList<Double>();
+            
+            if (dly_td_cls_pri_lst.size() < lngDays + shftDays) {
+                log.info("dly_td_cls_pri_lst size is:" + dly_td_cls_pri_lst.size() + " which is small than lngDays + shftDays:" + lngDays + "+" + shftDays + " return false.");
+                return false;
+            }
+            for (int i = 0; i <= shftDays; i++) {
+                double shrtAvgPri = getAvgTDClsPri(shrtDays, i);
+                shrtAvgPris.add(shrtAvgPri);
+                
+                double lngAvgPri = getAvgTDClsPri(lngDays, i);
+                lngAvgPris.add(lngAvgPri);
+                log.info("shrtAvgPris[" + i + "]:" + shrtAvgPri + ", lngAvgPris[" + i + "]:" + lngAvgPri);
+            }
+            
+            double tdShrtPri = shrtAvgPris.get(0);
+            double tdLngPri = lngAvgPris.get(0);
+            
+            double ytShrtPri = shrtAvgPris.get(1);
+            double ytLngPri = lngAvgPris.get(1);
+            
+            log.info("tdShrtPri > tdLngPri + 0.01: " + tdShrtPri + " > " + (tdLngPri + 0.01));
+            log.info("ytShrtPri + 0.01 < ytLngPri: " + (ytShrtPri + 0.01) + " < " + ytLngPri);
+            
+            if (tdShrtPri > tdLngPri + 0.01 &&
+                ytShrtPri + 0.01 < ytLngPri) {
+                
+                double pre_detPri = -1;
+                double detPri = -1;
+                for (int j = 1; j <= shftDays; j++) {
+                    detPri = lngAvgPris.get(j) - shrtAvgPris.get(j);
+                    if (j == 1) {
+                        pre_detPri = detPri;
+                        continue;
+                    }
+                    
+                    log.info("is pre_detpri:" + pre_detPri + "< detPri + 0.01: " + (detPri + 0.01));
+                    if (pre_detPri < detPri + 0.01) {
+                        pre_detPri = detPri;
+                        continue;
+                    }
+                    else {
+                        log.info("dep pri is not keeping closing, return alse.");
+                        return false;
+                    }
+                }
+            }
+            else {
+                log.info("shrt pri is not golden cross to lng pri, return false");
+                return false;
+            }
+            log.info("isTDClsPriGoldenCross return true.");
+            return true;
+        }
+        
+        public boolean isTDClsPriAboutDeadCross(int shrtDays, int lngDays, int shftDays, double pct) {
+            ArrayList<Double> shrtAvgPris = new ArrayList<Double>();
+            ArrayList<Double> lngAvgPris = new ArrayList<Double>();
+            
+            if (dly_td_cls_pri_lst.size() < lngDays + shftDays) {
+                log.info("dly_td_cls_pri_lst size is:" + dly_td_cls_pri_lst.size() + " which is small than lngDays + shftDays:" + lngDays + "+" + shftDays + " return false.");
+                return false;
+            }
+            for (int i = 0; i <= shftDays; i++) {
+                double shrtAvgPri = getAvgTDClsPri(shrtDays, i);
+                shrtAvgPris.add(shrtAvgPri);
+                
+                double lngAvgPri = getAvgTDClsPri(lngDays, i);
+                lngAvgPris.add(lngAvgPri);
+                log.info("isTDClsPriAboutDeadCross shrtAvgPris[" + i + "]:" + shrtAvgPri + ", lngAvgPris[" + i + "]:" + lngAvgPri);
+            }
+            
+            double tdShrtPri = shrtAvgPris.get(0);
+            double tdLngPri = lngAvgPris.get(0);
+            
+            double ytShrtPri = shrtAvgPris.get(1);
+            double ytLngPri = lngAvgPris.get(1);
+            
+            log.info("tdShrtPri + 0.01 < tdLngPri: " + (tdShrtPri + 0.01) + " < " + tdLngPri);
+            log.info("ytShrtPri > ytLngPri + 0.01: " + ytShrtPri + " > " + (ytLngPri + 0.01));
+            
+            if (tdShrtPri + 0.01 < tdLngPri &&
+                ytShrtPri > ytLngPri + 0.01) {
+                log.info("price already dead crossed, return true");
+                return true;
+            }
+                
+            double pre_detPri = -1;
+            double detPri = -1;
+            boolean keep_shrink_flg = false;
+            double actPct = 0;
+            for (int j = 0; j <= shftDays; j++) {
+                detPri = shrtAvgPris.get(j) - lngAvgPris.get(j);
+                if (j == 0) {
+                    pre_detPri = detPri;
+                    continue;
+                }
+                
+                actPct = pre_detPri / detPri;
+                
+                log.info("is pre_detpri / detPri < pct:" + pre_detPri + " / " + detPri + " = " + actPct + " < " + pct);
+                if (pre_detPri > 0 && detPri > 0) {
+                    pre_detPri = detPri;
+                    if (actPct < pct) {
+                        keep_shrink_flg = true;
+                        continue;
+                    }
+                    else {
+                        keep_shrink_flg = false;
+                        break;
+                    }
+                }
+                else {
+                    log.info("pre_detPri and detPri is not both > 0, return false.");
+                    return false;
+                }
+            }
+            log.info("isTDClsPriAboutDeadCross return keep_shrink_flg:" + keep_shrink_flg);
+            return keep_shrink_flg;
+        }
+        
         public Double getCurPriStddev() {
             log.info("getCurPriStddev: get stddev for cur_pri.");
             double yt_cls_pri = 0;
@@ -1612,7 +1735,14 @@ public class Stock implements Comparable<Stock>{
     public Double getAvgTDClsPri(int days, int shiftDays) {
         return sd.getAvgTDClsPri(days, shiftDays);
     }
+    
+    public boolean isTDClsPriGoldenCross(int shrtDays, int lngDays, int shftDays) {
+        return sd.isTDClsPriGoldenCross(shrtDays, lngDays, shftDays);
+    }
 
+    public boolean isTDClsPriAboutDeadCross(int shrtDays, int lngDays, int shftDays, double pct) {
+        return sd.isTDClsPriAboutDeadCross(shrtDays, lngDays, shftDays, pct);
+    }
     public Double getYtClsPri() {
     	return sd.getYtClsPri();
     }
