@@ -146,7 +146,7 @@ public class Stock implements Comparable<Stock>{
         }
         
         public double getAvgTDClsPri(int days, int shiftDays) {
-            log.info("getAvgTDYtClsPri: get avg dly_td_cls_pri_lst for " + days + " days with shiftDays" + shiftDays);
+            log.info("getAvgTDClsPri: get avg dly_td_cls_pri_lst for " + days + " days with shiftDays" + shiftDays);
             double avgPri = 0;
             int size = dly_td_cls_pri_lst.size();
             if (size < days + shiftDays) {
