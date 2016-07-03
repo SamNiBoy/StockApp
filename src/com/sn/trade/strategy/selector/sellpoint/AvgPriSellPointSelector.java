@@ -30,11 +30,11 @@ public class AvgPriSellPointSelector implements ISellPointSelector {
 	public boolean isGoodSellPoint(Stock stk, ICashAccount ac) {
 	    AvgPriSellModeSelector selector = new AvgPriSellModeSelector();
 	    if (selector.isTargetStock(stk, ac)) {
-	        log.info("AvgPriSellModeSelector selector matched for stock:" + stk.getID() + " sell stock!");
+	        log.info("AvgPriSellModeSelector selector matched for stock:" + stk.getID() + ", sell stock!");
 	        return true;
 	    }
 	    else {
-	        log.info("AvgPriSellModeSelector selector NOT matched for stock:" + stk.getID() + " NOT sell stock!");
+	        log.info("AvgPriSellModeSelector selector NOT matched for stock:" + stk.getID() + ", NOT sell stock!");
 	        return false;
 	    }
 	}

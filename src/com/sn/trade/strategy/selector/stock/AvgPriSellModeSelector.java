@@ -42,10 +42,10 @@ public class AvgPriSellModeSelector implements IStockSelector {
         int shftDays = SHIFT_DAYS;
         double pct = SHRINK_PCT;
         if (s.isTDClsPriAboutDeadCross(shrtDays, lngDays, shftDays, pct)) {
-            log.info("stock:" + s.getID() + " is gloden across, AvgPriStockSelector return true");
+            log.info("stock:" + s.getID() + " is dead across, AvgPriSellModeSelector return true");
             return true;
         }
-        log.info("stock:" + s.getID() + " is NOT gloden across, AvgPriStockSelector return false");
+        log.info("stock:" + s.getID() + " is NOT dead across, AvgPriSellModeSelector return false");
         return false;
         
     }
