@@ -145,6 +145,24 @@ public class Stock implements Comparable<Stock>{
             return avgPri;
         }
         
+        public double getAvgTDClsPri(int days, int shiftDays) {
+            log.info("getAvgTDYtClsPri: get avg dly_td_cls_pri_lst for " + days + " days with shiftDays" + shiftDays);
+            double avgPri = 0;
+            int size = dly_td_cls_pri_lst.size();
+            if (size < days + shiftDays) {
+                log.info("Warning: there is no " + days + " dly_td_cls_pri_lst data for stock:" + id + " using " + size + " days' data.");
+                days = size - shiftDays;
+            }
+            
+            for (int i = 0; i<days; i++) {
+                avgPri += dly_td_cls_pri_lst.get(size - i - 1 - shiftDays);
+            }
+            
+            avgPri = avgPri / days;
+            log.info("Get avg dly_td_cls_pri_lst as:" + avgPri);
+            return avgPri;
+        }
+        
         public Double getCurPriStddev() {
             log.info("getCurPriStddev: get stddev for cur_pri.");
             double yt_cls_pri = 0;
@@ -1590,6 +1608,10 @@ public class Stock implements Comparable<Stock>{
     public Double getAvgYtClsPri(int days, int shiftDays) {
     	return sd.getAvgYtClsPri(days, shiftDays);
     }
+    
+    public Double getAvgTDClsPri(int days, int shiftDays) {
+        return sd.getAvgTDClsPri(days, shiftDays);
+    }
 
     public Double getYtClsPri() {
     	return sd.getYtClsPri();
@@ -1779,7 +1801,27 @@ public class Stock implements Comparable<Stock>{
             return cur_pri;
         }
         else {
-        	log.info("return null as cur_pri");
+            try {
+                Connection con = DBManager.getConnection();
+                Statement stm = con.createStatement();
+                String sql = "select cur_pri from stkdat where id = '" + id + "' order by dl_dt desc";
+                log.info(sql);
+                ResultSet rs = stm.executeQuery(sql);
+                if (rs.next()) {
+                     cur_pri = rs.getDouble("cur_pri");
+                     log.info("getCur_pri get cur_pri from db:" + cur_pri);
+                }
+                rs.close();
+                stm.close();
+                con.close();
+            }
+            catch(Exception e) {
+                log.info(e.getMessage());
+            }
+            
+            if (cur_pri == null) {
+        	    log.info("return null as cur_pri");
+            }
             return cur_pri;
         }
     }
