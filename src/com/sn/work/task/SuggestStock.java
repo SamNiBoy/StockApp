@@ -393,7 +393,7 @@ public class SuggestStock implements IWork {
 			stm.close();
 			
 			// If the stock sold out, put gz_flg to false.
-			if (CashAcnt.hasStockInHand(stkid, false)) {
+			if (!CashAcnt.hasStockInHand(stkid, false)) {
 			    sql =   " update usrStk u set gz_flg = 0 "
 			    		+ "where u.sell_mode_flg = 1"
 			    		+ "  and u.id = '" + stkid + "'";
