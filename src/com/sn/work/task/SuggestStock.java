@@ -323,12 +323,30 @@ public class SuggestStock implements IWork {
 		
 		log.info("MAX_NUM_STOCKS_FOR_TRADE:" + STConstants.MAX_NUM_STOCKS_FOR_TRADE + ", totCnt: " + totCnt + ", exiter:" + exiter + ", newStocksNum:" + newStocksNum);
 		
+		Set<String> stockMoved = null;
+		
 		if (newStocksNum > 0) {
-			moveStockToTrade(newStocksNum);
+		    stockMoved = moveStockToTrade(newStocksNum);
 		}
+		
+		if (stockMoved == null) {
+		    log.info("No stock moved for trading, clear:" + stocksWaitForMail.size() + " suggested stocks.");
+		    stocksWaitForMail.clear();
+		    return;
+		}
+	    Iterator<SuggestData> it = stocksWaitForMail.iterator();
+	    while(it.hasNext())
+	    {
+	        SuggestData v = it.next();
+	        if (!stockMoved.contains(v.s.getID())) {
+	            log.info("remove stock:" + v.s.getID() + " as it is not moved for trade.");
+	            it.remove();
+	        }
+	    }
+	    log.info("Send :"+stocksWaitForMail.size() + " stocks that moved for trading.");
 	}
 	
-	private void moveStockToTrade(int maxCnt) {
+	private Set<String> moveStockToTrade(int maxCnt) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
@@ -337,7 +355,7 @@ public class SuggestStock implements IWork {
 		int grantCnt = 0;
 		if (maxCnt <= 0) {
 			log.info("maxCnt must be > 0 for move stockToTrade.");
-			return;
+			return null;
 		}
 		try {
 			sql = "select s.id from usrStk s, stkdlyinfo i "
@@ -369,16 +387,13 @@ public class SuggestStock implements IWork {
 			e.printStackTrace();
 		}
 		
-		Iterator<SuggestData> it = stocksWaitForMail.iterator();
-		while(it.hasNext())
-		{
-		    SuggestData v = it.next();
-			if (!stockMoved.contains(v.s.getID())) {
-				log.info("remove stock:" + v.s.getID() + " as it is not moved for trade.");
-				it.remove();
-			}
+		if (stockMoved.isEmpty()) {
+		    stockMoved = null;
 		}
+		
 		log.info("Total granted:" + grantCnt + " stocks for trading.");
+		
+		return stockMoved;
 	}
 	
 	private void putStockToSellMode(String stkid) {
