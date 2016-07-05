@@ -57,7 +57,7 @@ public class AvgPriSellModeSelector implements IStockSelector {
     @Override
     public boolean isMandatoryCriteria() {
         // TODO Auto-generated method stub
-        return true;
+        return false;
     }
     @Override
     public boolean adjustCriteria(boolean harder) {
