@@ -24,7 +24,7 @@ public class DefaultSellPointSelector implements ISellPointSelector {
 		int upTimes = 4;
 
 		if (ac != null) {
-			boolean hasStockInHand = ac.hasStockInHand(s);
+			boolean hasStockInHand = ac.hasStockInHandBeforeDays(s, 0);
 			//double inhandPri = ac.getInHandStockCostPrice(s);
 			double lstbuypri = ac.getLstBuyPri(s);
 

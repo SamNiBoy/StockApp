@@ -31,7 +31,7 @@ public class DefaultBuyPointSelector implements IBuyPointSelector {
 		}
 
 		if (ac != null) {
-			boolean hasStockInHand = ac.hasStockInHand(s);
+			boolean hasStockInHand = ac.hasStockInHandBeforeDays(s, 0);
 			Double lstbuypri = ac.getLstBuyPri(s);
 			// If stock price goes down then previous bought, bug again.
 			if (hasStockInHand && (lstbuypri - s.getCur_pri()) / lstbuypri >= 0.02) {

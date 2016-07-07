@@ -76,7 +76,7 @@ public class QtySellPointSelector implements ISellPointSelector {
     	
     	double baseThresh = STConstants.BASE_TRADE_THRESH;
     	
-    	if (ac.hasStockInHand(stk) && SellModeWatchDog.isStockInSellMode(stk) && stk.getTrade_mode_id() == STConstants.TRADE_MODE_ID_AVGPRI) {
+    	if (ac.hasStockInHandBeforeDays(stk, 0) && SellModeWatchDog.isStockInSellMode(stk) && stk.getTrade_mode_id() == STConstants.TRADE_MODE_ID_AVGPRI) {
     	    log.info("Stock:" + stk.getID() + " is in sell mode, and is trade mode AVGPRI, set sell baseThresh to 0.0");
     	    return 0.0;
     	}

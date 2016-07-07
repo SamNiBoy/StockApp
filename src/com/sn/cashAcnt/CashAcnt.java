@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -409,7 +410,7 @@ public class CashAcnt implements ICashAccount {
 	}
 
 	@Override
-	public boolean hasStockInHand(Stock s) {
+	public boolean hasStockInHandBeforeDays(Stock s, int days) {
 		// TODO Auto-generated method stub
 		log.info("now check if stock " + s.getName() + " in hand with price:" + s.getCur_pri() + " against CashAcount: "
 				+ actId);
@@ -418,12 +419,21 @@ public class CashAcnt implements ICashAccount {
 
 		boolean sim_mode = actId.startsWith(STConstants.ACNT_SIM_PREFIX);
 		
-		hasStockInHand = hasStockInHand(s.getID(), sim_mode);
+	    Timestamp tm = s.getDl_dt();
+	    String startDate = null;
+	    if (tm == null) {
+	        startDate = "sysdate";
+	    }
+	    else {
+	        startDate = "to_date('" + tm.toLocaleString() + "', 'yyyy-mm-dd HH24:MI:SS')";
+	    }
+	         
+		hasStockInHand = hasStockInHandBeforeDays(s.getID(), sim_mode,startDate, days);
 		
 		return hasStockInHand;
 	}
 	
-	public static boolean hasStockInHand(String stkId, boolean sim_mode) {
+	public static boolean hasStockInHandBeforeDays(String stkId, boolean sim_mode, String startDate, int days) {
 	   Connection con = DBManager.getConnection();
 	    boolean hasStockInHand = false;
 	    String like_clause = "";
@@ -436,10 +446,13 @@ public class CashAcnt implements ICashAccount {
 	    else {
 	        like_clause = " like '" + STConstants.ACNT_SIM_PREFIX + "%'";
 	    }
+	    
+	    log.info("Now checking stock:" + stkId + "in hand, sim_mode:" + sim_mode + ", startDate:" + startDate + ", Days:" + days);
 	    try {
 	        String sql = "select d.buy_flg, d.amount "
 	                   + "  from Tradedtl d "
 	                   + " where d.stkId = '" + stkId + "'"
+	                   + "   and d.dl_dt <=  " + startDate + " - " + days
 	                   + "   and d.acntId " + like_clause
 	                   + " order by seqnum desc";
 
@@ -471,6 +484,56 @@ public class CashAcnt implements ICashAccount {
 	    }
 	    return hasStockInHand;
 	}
+	
+	   public static boolean hasStockInHand(String stkId, boolean sim_mode) {
+	       Connection con = DBManager.getConnection();
+	        boolean hasStockInHand = false;
+	        String like_clause = "";
+	        double buyQty = 0;
+	        double sellQty = 0;
+	        
+	        if (!sim_mode) {
+	            like_clause = " like '" + STConstants.ACNT_TRADE_PREFIX + "%'";
+	        }
+	        else {
+	            like_clause = " like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+	        }
+	        
+	        try {
+	            String sql = "select d.buy_flg, d.amount "
+	                       + "  from Tradedtl d "
+	                       + " where d.stkId = '" + stkId + "'"
+	                       + "   and d.acntId " + like_clause
+	                       + " order by seqnum desc";
+
+	            log.info(sql);
+	            Statement stm = con.createStatement();
+	            ResultSet rs = stm.executeQuery(sql);
+	            while (rs.next()) {
+	                if(rs.getInt("buy_flg") > 0) {
+	                    buyQty = rs.getInt("amount");
+	                    sellQty -= buyQty;
+	                }
+	                else {
+	                    sellQty += rs.getInt("amount");
+	                }
+	                if (sellQty < 0) {
+	                    break;
+	                }
+	            }
+	            
+	            log.info("Stock:" + stkId + " sellQty:" + sellQty + ", hasStockInHand:" + hasStockInHand);
+	            if (sellQty < 0) {
+	                hasStockInHand = true;
+	            }
+	            rs.close();
+	            stm.close();
+	            con.close();
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	        return hasStockInHand;
+	    }
 
 	@Override
 	public double getInHandStockCostPrice(Stock s) {
