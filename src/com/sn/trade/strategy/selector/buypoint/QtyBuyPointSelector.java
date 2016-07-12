@@ -23,63 +23,40 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 	public boolean isGoodBuyPoint(Stock stk, ICashAccount ac) {
 
 		double tradeThresh = STConstants.BASE_TRADE_THRESH;
-		if ((ac != null && !ac.hasStockInHandBeforeDays(stk, 0)) || ac == null) {
-			Double maxPri = stk.getMaxCurPri();
-			Double minPri = stk.getMinCurPri();
-			Double yt_cls_pri = stk.getYtClsPri();
-			Double cur_pri = stk.getCur_pri();
-
-			if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
-
-				double marketDegree = StockMarket.getDegree();
-				
-				tradeThresh = getBuyThreshValueByDegree(marketDegree, stk, ac);
-				
-				double maxPct = (maxPri - minPri) / yt_cls_pri;
-				double curPct =(cur_pri - minPri) / yt_cls_pri;
-
-				boolean qtyPlused = stk.isLstQtyPlused();
-				
-				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", isQtyPlused:" + qtyPlused);
-				
-				if (maxPct >= tradeThresh && curPct < maxPct * 1.0 / 10.0 && stk.isLstQtyPlused() && stk.isLstPriTurnaround(true)) {
-					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
-							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
-					return true;
-				} else if (stk.isStoppingJumpWater() && !StockMarket.isGzStocksJumpWater(5, 0.01, 0.5)) {
-					log.info("Stock cur price is stopping dumping, isGoodBuyPoint return true.");
-					//for testing purpose, still return false;
-					return true;
-				}
-				else {
-					log.info("isGoodBuyPoint false Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
-							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
-				}
-			} else {
-				log.info("isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
-			}
-		} else {
-			// has stock in hand;
-			Double lstBuy = ac.getLstBuyPri(stk);
-			Double cur_pri = stk.getCur_pri();
-			Double yt_cls_pri = stk.getYtClsPri();
-			
-			double marketDegree = StockMarket.getDegree();
-			tradeThresh = getBuyThreshValueByDegree(marketDegree, stk, ac);
-			
-			if (lstBuy != null && cur_pri != null && yt_cls_pri != null) {
-				if ((lstBuy - cur_pri) / yt_cls_pri > tradeThresh && stk.isLstQtyPlused()) {
-					log.info("isGoodBuyPoint Buy true:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:"
-							+ lstBuy + " curPri:" + cur_pri + " yt_cls_pri:" + yt_cls_pri);
-					return true;
-				}
-				log.info("isGoodBuyPoint Buy false:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:" + lstBuy
-						+ " curPri:" + cur_pri + " yt_cls_pri:" + yt_cls_pri);
-			} else {
-				log.info("isGoodBuyPoint Buy false: fields is null");
-			}
-		}
-
+        Double maxPri = stk.getMaxCurPri();
+        Double minPri = stk.getMinCurPri();
+        Double yt_cls_pri = stk.getYtClsPri();
+        Double cur_pri = stk.getCur_pri();
+        
+        if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
+        
+        	double marketDegree = StockMarket.getDegree();
+        	
+        	tradeThresh = getBuyThreshValueByDegree(marketDegree, stk, ac);
+        	
+        	double maxPct = (maxPri - minPri) / yt_cls_pri;
+        	double curPct =(cur_pri - minPri) / yt_cls_pri;
+        
+        	boolean qtyPlused = stk.isLstQtyPlused();
+        	
+        	log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", isQtyPlused:" + qtyPlused);
+        	
+        	if (maxPct >= tradeThresh && curPct < maxPct * 1.0 / 10.0 && stk.isLstQtyPlused() && stk.isLstPriTurnaround(true)) {
+        		log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
+        				+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
+        		return true;
+        	} else if (stk.isStoppingJumpWater() && !StockMarket.isGzStocksJumpWater(5, 0.01, 0.5)) {
+        		log.info("Stock cur price is stopping dumping, isGoodBuyPoint return true.");
+        		//for testing purpose, still return false;
+        		return true;
+        	}
+        	else {
+        		log.info("isGoodBuyPoint false Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
+        				+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
+        	}
+        } else {
+        	log.info("isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
+        }
 		return false;
 	}
 	
