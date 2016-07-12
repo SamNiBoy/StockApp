@@ -35,7 +35,7 @@ public class STConstants {
 	public static final double BASE_TRADE_THRESH = 0.03;
 	
 	public static final double TOP_INCSTOP_BASE_TRADE_THRESH = 0.06;
-	public static final int MAX_NUM_STOCKS_FOR_TRADE = 5;
+	public static final int MAX_NUM_STOCKS_FOR_TRADE = 3;
 	public static final double QTY_PLUSED_BASE_PCT = 0.6;
 	public static final double DLY_DL_QTY_PLUSED_PCT = 0.7;
 	
@@ -43,7 +43,7 @@ public class STConstants {
 	public static final double MAX_STEDEV_VALUE = 0.03;
 	public static final double MIN_STEDEV_VALUE = 0.015;
 	public static final double ALLOWABLE_MIN_STEDEV_VALUE = 0.01;
-	public static final double MIN_DEV_BEFORE_EXIT_TRADE = 0.005;
+	public static final double MIN_DEV_BEFORE_EXIT_TRADE = 0.008;
 	public static final double DISALLOW_BUY_IF_LOST = -0.05;
 	
 	public static final int DAYS_FOR_SIM = 3;
