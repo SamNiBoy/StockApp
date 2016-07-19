@@ -68,8 +68,8 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     	        !ac.hasStockInHandBeforeDays(stk, 1) &&
     	        !ac.hasStockInHandBeforeDays(stk, 0) &&
     	        stk.getTrade_mode_id() == STConstants.TRADE_MODE_ID_AVGPRI) {
-    	    log.info("Stock:" + stk.getID() + " not brought yet, and is trade mode AVGPRI, set baseThresh to 0.01");
-    	    return 0.01;
+    	    log.info("Stock:" + stk.getID() + " not brought yet, and is trade mode AVGPRI, set baseThresh to 0.02");
+    	    return 0.02;
     	}
 
     	Timestamp tm = stk.getDl_dt();

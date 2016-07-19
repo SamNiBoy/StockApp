@@ -321,6 +321,8 @@ public class SuggestStock implements IWork {
 		
 		int newStocksNum = (exiter < (STConstants.MAX_NUM_STOCKS_FOR_TRADE - totCnt) ? (STConstants.MAX_NUM_STOCKS_FOR_TRADE - totCnt) : exiter);
 		
+		newStocksNum = (STConstants.MAX_NUM_STOCKS_FOR_TRADE - totCnt) < 0 ? 0 : newStocksNum;
+		
 		log.info("MAX_NUM_STOCKS_FOR_TRADE:" + STConstants.MAX_NUM_STOCKS_FOR_TRADE + ", totCnt: " + totCnt + ", exiter:" + exiter + ", newStocksNum:" + newStocksNum);
 		
 		Set<String> stockMoved = null;
