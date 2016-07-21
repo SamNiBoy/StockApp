@@ -64,14 +64,6 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     	
     	double baseThresh = STConstants.BASE_TRADE_THRESH;
     	
-    	if (ac != null &&
-    	        !ac.hasStockInHandBeforeDays(stk, 1) &&
-    	        !ac.hasStockInHandBeforeDays(stk, 0) &&
-    	        stk.getTrade_mode_id() == STConstants.TRADE_MODE_ID_AVGPRI) {
-    	    log.info("Stock:" + stk.getID() + " not brought yet, and is trade mode AVGPRI, set baseThresh to 0.02");
-    	    return 0.02;
-    	}
-
     	Timestamp tm = stk.getDl_dt();
         String deadline = null;
         if (tm == null) {
