@@ -17,7 +17,7 @@ import com.sn.trade.strategy.imp.TradeStrategyImp;
 public class ClosePriceTrendStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(ClosePriceTrendStockSelector.class);
-    int days = 30;
+    int days = 60;
 	double curPctLowLvl = 0.1;
     /**
      * @param args
@@ -60,8 +60,8 @@ public class ClosePriceTrendStockSelector implements IStockSelector {
 		log.info("curPctLowLvl:" + curPctLowLvl);
 		if (harder) {
 			days++;
-			if (days >= 30) {
-				days = 30;
+			if (days >= 90) {
+				days = 90;
 			}
 			curPctLowLvl = curPctLowLvl - 0.01;
 			if (curPctLowLvl <= 0.01) {
@@ -71,8 +71,8 @@ public class ClosePriceTrendStockSelector implements IStockSelector {
 		else {
 			curPctLowLvl = curPctLowLvl + 0.01;
 			days--;
-			if (days < 15) {
-				days = 15;
+			if (days < 20) {
+				days = 20;
 			}
 			curPctLowLvl = curPctLowLvl + 0.01;
 			if (curPctLowLvl >= 0.2) {

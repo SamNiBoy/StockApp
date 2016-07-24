@@ -1537,7 +1537,7 @@ public class Stock implements Comparable<Stock>{
             int sz = dly_td_cls_pri_lst.size();
             double maxPri = 0;
             if (sz > 0 && sz >= LastDays) {
-                for (int i = 0; i < LastDays; i++) {
+                for (int i = sz - 1; i >= sz - LastDays; i--) {
                     if (maxPri < dly_td_cls_pri_lst.get(i)) {
                         maxPri = dly_td_cls_pri_lst.get(i);
                     }
@@ -1555,7 +1555,7 @@ public class Stock implements Comparable<Stock>{
             int sz = dly_td_cls_pri_lst.size();
             double minPri = 100000;
             if (sz > 0 && sz >= LastDays) {
-                for (int i = 0; i < LastDays; i++) {
+                for (int i =  sz - 1; i >= sz - LastDays; i--) {
                     if (minPri > dly_td_cls_pri_lst.get(i) && dly_td_cls_pri_lst.get(i) > 0) {
                         minPri = dly_td_cls_pri_lst.get(i);
                     }

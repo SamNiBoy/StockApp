@@ -35,7 +35,7 @@ public class STConstants {
 	public static final double BASE_TRADE_THRESH = 0.03;
 	
 	public static final double TOP_INCSTOP_BASE_TRADE_THRESH = 0.06;
-	public static final int MAX_NUM_STOCKS_FOR_TRADE = 3;
+	public static final int MAX_NUM_STOCKS_FOR_TRADE = 1;
 	public static final double QTY_PLUSED_BASE_PCT = 0.6;
 	public static final double DLY_DL_QTY_PLUSED_PCT = 0.7;
 	

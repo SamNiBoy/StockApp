@@ -329,7 +329,7 @@ public class SuggestStock implements IWork {
 		Set<String> stockMoved = null;
 		
 		if (newStocksNum > 0) {
-		    stockMoved = moveStockToTrade(newStocksNum);
+		    //stockMoved = moveStockToTrade(newStocksNum);
 		}
 		
 	    Iterator<SuggestData> it = stocksWaitForMail.iterator();
