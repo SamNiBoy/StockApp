@@ -20,6 +20,7 @@ import com.sn.stock.Stock;
 import com.sn.stock.StockMarket;
 import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.selector.stock.AvgPriStockSelector;
+import com.sn.trade.strategy.selector.stock.ClosePriceTrendStockSelector;
 import com.sn.trade.strategy.selector.stock.DefaultStockSelector;
 import com.sn.trade.strategy.selector.stock.IStockSelector;
 import com.sn.trade.strategy.selector.stock.KeepGainStockSelector;
@@ -69,7 +70,7 @@ public class SuggestStock implements IWork {
 
 	static public boolean start() {
 		if (self == null) {
-			self = new SuggestStock(0, 30 * 60000);
+			self = new SuggestStock(0, 60 * 60000);
 			if (WorkManager.submitWork(self)) {
 				resMsg = "Newly created SuggestStock and started!";
 				return true;
@@ -117,8 +118,8 @@ public class SuggestStock implements IWork {
 		selectors.add(new StddevStockSelector());
 		//selectors.add(new LimitClsPriStockSelector());
 		//selectors.add(new QtyEnableTradeStockSelector());
-		selectors.add(new AvgPriStockSelector());
-//		selectors.add(new ClosePriceTrendStockSelector());
+		//selectors.add(new AvgPriStockSelector());
+		selectors.add(new ClosePriceTrendStockSelector());
 //		selectors.add(new TopGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
 	}
@@ -170,29 +171,29 @@ public class SuggestStock implements IWork {
 			    		}
 			    	}
 			    	if (mandatory_pass_flg) {
+			    	    boolean exit_frm_try_nxt = false;
 			    		for (IStockSelector slt : selectors) {
+			    			exit_frm_try_nxt = false;
 			    			if (suggest_flg) {
 			    				log.info("Mandatory criteria also Or criteria matched, trade mode id:" + trade_mode_id + " suggest stock directly!");
 			    				break;
 			    			}
 			    			if (slt.isMandatoryCriteria()) {
+			    				exit_frm_try_nxt = true;
+			    				trade_mode_id = slt.getTradeModeId();
 			    				continue;
 			    			}
-			    			if (slt.isTargetStock(s, null)) {
-			    				suggest_flg = true;
-			    				if (slt.isORCriteria()) {
-			    				    trade_mode_id = slt.getTradeModeId();
-			    					log.info("Or criteria matched, suggest the stock:" + s.getID() + " trade mode id:" + trade_mode_id);
-			    					break;
-			    				}
-			    			}
-			    			else {
-			    			    log.info("Non mandatory criteria not matched, continue next criteira.");
-			    				suggest_flg = false;
-			    				continue;
+			    			if (slt.isTargetStock(s, null) && slt.isORCriteria()) {
+			    				trade_mode_id = slt.getTradeModeId();
+				    		    suggest_flg = true;
+			    				log.info("Or criteria matched, suggest the stock:" + s.getID() + " trade mode id:" + trade_mode_id);
+			    			    break;
 			    			}
 			    		}
-			    		if (suggest_flg && trade_mode_id != null) {
+			    		
+			    		log.info("exit_frm_try_nxt:" + exit_frm_try_nxt + ", suggest_flg:" + suggest_flg + ", trade_mode_id:" + trade_mode_id);
+			    		// When exit_frm_try_nxt is true, it means passed all mandatory criteria tests.
+			    		if ((exit_frm_try_nxt || suggest_flg) && trade_mode_id != null) {
 			    			stocksWaitForMail.add(new SuggestData(s, trade_mode_id));
 			    		}
 			    		trade_mode_id = null;
@@ -331,21 +332,22 @@ public class SuggestStock implements IWork {
 		    stockMoved = moveStockToTrade(newStocksNum);
 		}
 		
-		if (stockMoved == null) {
-		    log.info("No stock moved for trading, clear:" + stocksWaitForMail.size() + " suggested stocks.");
-		    stocksWaitForMail.clear();
-		    return;
-		}
 	    Iterator<SuggestData> it = stocksWaitForMail.iterator();
+	    
+	    int cnt = 0;
 	    while(it.hasNext())
 	    {
 	        SuggestData v = it.next();
-	        if (!stockMoved.contains(v.s.getID())) {
+	        if (stockMoved == null || !stockMoved.contains(v.s.getID())) {
 	            log.info("remove stock:" + v.s.getID() + " as it is not moved for trade.");
-	            it.remove();
+	            v.moved_to_trade = false;
+	        }
+	        else {
+	        	v.moved_to_trade = true;
+	        	cnt++;
 	        }
 	    }
-	    log.info("Send :"+stocksWaitForMail.size() + " stocks that moved for trading.");
+	    log.info("Send :"+ cnt + " stocks that moved for trading.");
 	}
 	
 	private Set<String> moveStockToTrade(int maxCnt) {

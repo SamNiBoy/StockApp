@@ -91,6 +91,9 @@ public class AvgPriStockSelector implements IStockSelector {
             if (LONG_DAYS < 7) {
                 LONG_DAYS = 7;
             }
+            if (SHIFT_DAYS <= 0) {
+            	SHIFT_DAYS = 1;
+            }
         }
         
         log.info("adjustCriteria: SHORT_DAYS:" + SHORT_DAYS + ", LONG_DAYS:" + LONG_DAYS + ", SHIFT_DAYS:" + SHIFT_DAYS);

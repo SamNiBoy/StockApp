@@ -116,6 +116,7 @@ public class RecommandStockObserverable extends Observable {
                     "<th> ID</th> " +
                     "<th> Name</th> " +
                     "<th> TradeModeID</th> " +
+                    "<th> MovedForTrade</th> " +
                     "<th> Price</th></tr>");
             DecimalFormat df = new DecimalFormat("##.##");
             for (SuggestData v : stocksToSuggest) {
@@ -123,6 +124,7 @@ public class RecommandStockObserverable extends Observable {
                     body.append("<tr> <td>" + v.s.getID() + "</td>" +
                     "<td> " + v.s.getName() + "</td>" +
                     "<td> " + v.trade_mode_id + "</td>" +
+                    "<td> " + (v.moved_to_trade ? " Yes" : "No") + "</td>" +
                     "<td> " + df.format(v.s.getCur_pri() == null ? 0 : v.s.getCur_pri()) + "</td></tr>");
                     usr_need_mail = true;
                     generated_mail = true;

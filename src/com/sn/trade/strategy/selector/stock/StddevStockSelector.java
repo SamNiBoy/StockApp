@@ -91,6 +91,6 @@ public class StddevStockSelector implements IStockSelector {
     @Override
     public Integer getTradeModeId() {
         // TODO Auto-generated method stub
-        return null;
+        return STConstants.TRADE_MODE_ID_QTYTRADE;
     }
 }

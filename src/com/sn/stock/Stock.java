@@ -26,7 +26,7 @@ public class Stock implements Comparable<Stock>{
 
     	static public final int BIG_SZ = 270;  // store 4.5 hours data.
     	static public final int SMALL_SZ = 60; // store 1 hour data.
-    	static public final int DLY_RCD_SZ = 14; // store 2 weeks data for daily record.
+    	static public final int DLY_RCD_SZ = 60; // store 2 months data for daily record.
     	static public final int SECONDS_PER_FETCH = 60;
         int MAX_SZ = 800;
         private boolean is_stock_divided = false;
@@ -1532,6 +1532,42 @@ public class Stock implements Comparable<Stock>{
             return null;
         }
         
+        public Double getMaxDlyTdClsPri(int LastDays) {
+            // TODO Auto-generated method stub
+            int sz = dly_td_cls_pri_lst.size();
+            double maxPri = 0;
+            if (sz > 0 && sz >= LastDays) {
+                for (int i = 0; i < LastDays; i++) {
+                    if (maxPri < dly_td_cls_pri_lst.get(i)) {
+                        maxPri = dly_td_cls_pri_lst.get(i);
+                    }
+                }
+            }
+            log.info("got max dly_td_cls_pri_lst pri for stock:" + id + ":" + maxPri + " for days:" + LastDays);
+            if (maxPri > 0) {
+                return maxPri;
+            }
+            return null;
+        }
+        
+        public Double getMinDlyTdClsPri(int LastDays) {
+            // TODO Auto-generated method stub
+            int sz = dly_td_cls_pri_lst.size();
+            double minPri = 100000;
+            if (sz > 0 && sz >= LastDays) {
+                for (int i = 0; i < LastDays; i++) {
+                    if (minPri > dly_td_cls_pri_lst.get(i) && dly_td_cls_pri_lst.get(i) > 0) {
+                        minPri = dly_td_cls_pri_lst.get(i);
+                    }
+                }
+            }
+            log.info("got min dly_td_cls_pri_lst pri for stock:" + id + ":" + minPri + " for Days:" + LastDays);
+            if (minPri > 0) {
+                return minPri;
+            }
+            return null;
+        }
+        
 		public Double getMaxCurPri() {
 			// TODO Auto-generated method stub
 			int sz = cur_pri_lst.size();
@@ -1798,6 +1834,14 @@ public class Stock implements Comparable<Stock>{
     
     public Double getMinDlyTdClsPri() {
         return sd.getMinDlyTdClsPri();
+    }
+    
+    public Double getMaxDlyTdClsPri(int lastDays) {
+        return sd.getMaxDlyTdClsPri(lastDays);
+    }
+    
+    public Double getMinDlyTdClsPri(int lastDays) {
+        return sd.getMinDlyTdClsPri(lastDays);
     }
     
     public boolean isStockDivided() {
