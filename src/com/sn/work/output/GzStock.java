@@ -64,7 +64,7 @@ public class GzStock implements com.sn.work.itf.IWork {
             	long gz_flg = rs.getLong("gz_flg");
             	rs.close();
             	stm.close();
-            	sql = "update usrStk set gz_flg = 1 - gz_flg, trade_mode_id = " + STConstants.TRADE_MODE_ID_MANUAL + ", suggested_by = '" + frmUsr + "' where id = '" + stockID + "' and openID = '" + frmUsr + "'";
+            	sql = "update usrStk set gz_flg = 1 - gz_flg, trade_mode_id = " + STConstants.TRADE_MODE_ID_MANUAL + ", suggested_by = '" + frmUsr + "', sell_mode_flg = case when gz_flg = 1 then sell_mode_flg else 0 end where id = '" + stockID + "' and openID = '" + frmUsr + "'";
             	stm = con.createStatement();
             	log.info(sql);
             	stm.execute(sql);
