@@ -32,7 +32,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         
         	double marketDegree = StockMarket.getDegree();
         	
-        	tradeThresh = getBuyThreshValueByDegree(marketDegree, stk, ac);
+        	//tradeThresh = getBuyThreshValueByDegree(marketDegree, stk, ac);
         	
         	double maxPct = (maxPri - minPri) / yt_cls_pri;
         	double curPct =(cur_pri - minPri) / yt_cls_pri;

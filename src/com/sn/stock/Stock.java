@@ -875,20 +875,22 @@ public class Stock implements Comparable<Stock>{
         		return false;
         	}
         	int idx = cur_pri_lst.size() - 1;
-        	double yt_cls_pri = this.getYtClsPri();
-        	double detPri = 0;
+        	double dscCnt = 0;
+        	double detPri = 0.0;
+        	double lastDetPri = cur_pri_lst.get(idx) - cur_pri_lst.get(idx - 1);
         	int ts = tailSz;
         	while (ts > 0) {
         		if (cur_pri_lst.get(idx) < cur_pri_lst.get(idx - 1)) {
-        			detPri += cur_pri_lst.get(idx) - cur_pri_lst.get(idx - 1);
+        			dscCnt++;
         		}
+        		detPri += cur_pri_lst.get(idx) - cur_pri_lst.get(idx - 1);
         		idx--;
         		ts--;
         	}
         	
-        	log.info("check jumpWater, cur_pri_lst.size: " + cur_pri_lst.size() + " TailSz:" + tailSz + " yt_cls_pri:" + yt_cls_pri
-        			+ " detPri:" + detPri + ", detPri/yt_cls_pri pct:" + detPri * 1.0 / yt_cls_pri + " passed pct:" + pct);
-        	if (detPri * 1.0 / yt_cls_pri <= -pct) {
+        	log.info("check jumpWater, cur_pri_lst.size: " + cur_pri_lst.size() + " TailSz:" + tailSz + ", lastDetPri:" + lastDetPri
+        			+ " dscCnt:" + dscCnt + ", dscCnt/tailSz pct:" + dscCnt * 1.0 / tailSz + " passed pct:" + pct + ", detPri/tailSz:" + detPri / tailSz);
+        	if (dscCnt * 1.0 / tailSz <= -pct && detPri < 0 && lastDetPri < detPri * 5) {
         		log.info("jump water return true");
                 tailSz_jumpping_water = tailSz;
                 pct_jumpping_water = pct;
@@ -920,10 +922,8 @@ public class Stock implements Comparable<Stock>{
         	double yt_cls_pri = this.getYtClsPri();
         	int ts = tailSz;
         	double detPri = 0;
-        	while (tailSz > 0) {
-        		if (cur_pri_lst.get(idx) < cur_pri_lst.get(idx - 1)) {
-        			detPri += cur_pri_lst.get(idx) - cur_pri_lst.get(idx - 1);
-        		}
+        	while (ts > 0) {
+        		detPri += cur_pri_lst.get(idx) - cur_pri_lst.get(idx - 1);
         		idx--;
         		ts--;
         	}

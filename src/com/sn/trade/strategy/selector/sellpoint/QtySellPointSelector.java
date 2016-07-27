@@ -39,7 +39,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 			double marketDegree = StockMarket.getDegree();
 			
-			tradeThresh = getSellThreshValueByDegree(marketDegree, stk, ac);
+			//tradeThresh = getSellThreshValueByDegree(marketDegree, stk, ac);
 			
 			double maxPct = (maxPri - minPri) / yt_cls_pri;
 			double curPct = (cur_pri - minPri) / yt_cls_pri;
