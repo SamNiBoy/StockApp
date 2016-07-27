@@ -307,7 +307,7 @@ public class SuggestStock implements IWork {
 					String stkid = rs2.getString("id");
 					if (shouldStockExitTrade(stkid)) {
 						exiter++;
-						putStockToSellMode(stkid);
+						//putStockToSellMode(stkid);
 					}
 				}
 				rs2.close();
