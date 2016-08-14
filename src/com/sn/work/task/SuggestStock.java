@@ -307,7 +307,7 @@ public class SuggestStock implements IWork {
 					String stkid = rs2.getString("id");
 					if (shouldStockExitTrade(stkid)) {
 						exiter++;
-						//putStockToSellMode(stkid);
+						putStockToSellMode(stkid);
 					}
 				}
 				rs2.close();
@@ -329,7 +329,7 @@ public class SuggestStock implements IWork {
 		Set<String> stockMoved = null;
 		
 		if (newStocksNum > 0) {
-		    //stockMoved = moveStockToTrade(newStocksNum);
+		    stockMoved = moveStockToTrade(newStocksNum);
 		}
 		
 	    Iterator<SuggestData> it = stocksWaitForMail.iterator();
