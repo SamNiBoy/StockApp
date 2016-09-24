@@ -70,7 +70,7 @@ public class ListGzStock implements IWork {
         		+ "    where s.id = u.id "
         		+ "      and u.gz_flg = 1 "
         		+ "      and u.openID ='" + frmUsr + "' "
-        	    + "      and u.suggested_by in ('" + frmUsr + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "')"
+        	    + "      and u.suggested_by in ('" + frmUsr + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEM_GRANTED + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEM_READ_FOR_TRADE + "')"
         	    + "     order by s.id ";
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();

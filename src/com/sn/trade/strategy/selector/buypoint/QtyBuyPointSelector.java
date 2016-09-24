@@ -14,6 +14,7 @@ import com.sn.stock.indicator.MACD;
 import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.work.task.SellModeWatchDog;
+import com.sn.work.task.SuggestStock;
 
 public class QtyBuyPointSelector implements IBuyPointSelector {
 
@@ -28,11 +29,20 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         Double yt_cls_pri = stk.getYtClsPri();
         Double cur_pri = stk.getCur_pri();
         
+        boolean isStockFreshAdded = false;
+        
         if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
         
-        	double marketDegree = StockMarket.getDegree();
+        	//double marketDegree = StockMarket.getDegree();
         	
         	//tradeThresh = getBuyThreshValueByDegree(marketDegree, stk, ac);
+        	isStockFreshAdded = SuggestStock.isStockFreshAddedForTrade(stk);
+        	
+        	if (isStockFreshAdded) {
+        		tradeThresh = tradeThresh / 2;
+        		log.info("Stock is freshly added for trade, use half thresh value:" + tradeThresh);
+        		SuggestStock.resetStockFreshAddedForTrade(stk);
+        	}
         	
         	double maxPct = (maxPri - minPri) / yt_cls_pri;
         	double curPct =(cur_pri - minPri) / yt_cls_pri;

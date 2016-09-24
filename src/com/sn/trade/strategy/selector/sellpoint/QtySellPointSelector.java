@@ -37,7 +37,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
-			double marketDegree = StockMarket.getDegree();
+			//double marketDegree = StockMarket.getDegree();
 			
 			//tradeThresh = getSellThreshValueByDegree(marketDegree, stk, ac);
 			Boolean psd = StockMarket.getStockSellMode(stk.getID());

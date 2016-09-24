@@ -65,7 +65,8 @@ public class ListSuggestStock implements IWork {
     private String getGzStockInfo()
     {
         Statement stm = null;
-        String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "' and u.suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "'";
+        String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "' and u.suggested_by in ('"
+        + STConstants.SUGGESTED_BY_FOR_SYSTEM_GRANTED + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEM_READ_FOR_TRADE + "')";
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
         DecimalFormat df = new DecimalFormat("##.###");

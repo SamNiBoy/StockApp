@@ -46,7 +46,10 @@ public class StockMarket{
     		                             + "from stk s, usrStk u "
     		                             + "where s.id = u.id "
     		                             + "  and u.gz_flg = 1 "
-    		                             + "  and u.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_USER + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "') "
+    		                             + "  and u.suggested_by in ('"
+    		                             + STConstants.SUGGESTED_BY_FOR_USER + "','"
+    		                             + STConstants.SUGGESTED_BY_FOR_SYSTEM_GRANTED + "','"
+    		                             + STConstants.SUGGESTED_BY_FOR_SYSTEM_READ_FOR_TRADE + "') "
     		                             + "order by s.id";
     /**
      * @param args

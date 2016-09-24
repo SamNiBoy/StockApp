@@ -21,9 +21,13 @@ public class STConstants {
 	public static final String openID = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
 	
 	public static final String SUGGESTED_BY_FOR_USER = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
-	public static final String SUGGESTED_BY_FOR_SYSTEMGRANTED = "SYSTEMGRANTED";
+	
+	//Suggested by system and good for trading
+	public static final String SUGGESTED_BY_FOR_SYSTEM_READ_FOR_TRADE = "SYSTEM_READY_FOR_TRADE";
+	public static final String SUGGESTED_BY_FOR_SYSTEM_GRANTED = "SYSTEM_GRANTED";
+	//Suggested for system to gz_flg = 1, but not valid for trading.
 	public static final String SUGGESTED_BY_FOR_SYSTEM = "SYSTEM";
-	public static final String SUGGESTED_BY_FOR_SYSTEMUPDATE = "SYSTEMUPDATE";
+	public static final String SUGGESTED_BY_FOR_SYSTEM_UPDATE = "SYSTEM_UPDATE";
 	
 	
 	public static final int MAX_LOST_TIME_BEFORE_EXIT_TRADE = 2;

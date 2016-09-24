@@ -2,6 +2,7 @@ package com.sn.work.task;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -252,7 +253,7 @@ public class SuggestStock implements IWork {
 				if (rs2.next()) {
 					if (rs2.getLong("gz_flg") == 0) {
 						if (rs2.getLong("sell_mode_flg") == 0) {
-						    sql = "update usrStk set gz_flg = 1, trade_mode_id = " + s.trade_mode_id + ", suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "', suggested_sellmode_by = '', add_dt = sysdate where openID = '" + openID
+						    sql = "update usrStk set gz_flg = 1, trade_mode_id = " + s.trade_mode_id + ", suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEM_UPDATE + "', suggested_sellmode_by = '', add_dt = sysdate where openID = '" + openID
 								+ "' and id = '" + s.s.getID() + "'";
 						}
 						else {
@@ -298,7 +299,7 @@ public class SuggestStock implements IWork {
 			rs = stm.executeQuery(sql);
 			while (rs.next()) {
 				String openID = rs.getString("openID");
-				sql = "select id from usrStk where openID = '" + openID + "' and sell_mode_flg = 0 and suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "','" + STConstants.SUGGESTED_BY_FOR_USER + "') and gz_flg = 1 order by id";
+				sql = "select id from usrStk where openID = '" + openID + "' and sell_mode_flg = 0 and suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM_GRANTED + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEM_READ_FOR_TRADE + "','"+ STConstants.SUGGESTED_BY_FOR_USER + "') and gz_flg = 1 order by id";
 				Statement stm2 = con.createStatement();
 				ResultSet rs2 = stm2.executeQuery(sql);
 				sql = "";
@@ -366,7 +367,7 @@ public class SuggestStock implements IWork {
 				+ "where s.id = i.id "
 				+ "  and s.gz_flg = 1 "
 				+ "  and s.sell_mode_flg = 0 "
-				+ "  and s.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "') "
+				+ "  and s.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEM_UPDATE + "') "
 				+ "  and not exists (select 'x' from stkdlyinfo i2 where i2.id = i.id and i2.dt > i.dt) "
 				+ "  order by abs(i.td_cls_pri - 20) ";
 			log.info(sql);
@@ -374,7 +375,7 @@ public class SuggestStock implements IWork {
 			rs = stm.executeQuery(sql);
 			while (rs.next() && maxCnt-- > 0) {
 				String id = rs.getString("id");
-				sql = "update usrStk set suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "',  gz_flg = 1, sell_mode_flg = 0, suggested_sellmode_by = '', add_dt = sysdate where id ='" + id + "'";
+				sql = "update usrStk set suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEM_READ_FOR_TRADE + "', gz_flg = 1, sell_mode_flg = 0, suggested_sellmode_by = '', add_dt = sysdate where id ='" + id + "'";
 				Statement stm2 = con.createStatement();
 				stm2.execute(sql);
 				con.commit();
@@ -515,12 +516,65 @@ public class SuggestStock implements IWork {
 		return should_exit;
 	}
 	
+	public static boolean isStockFreshAddedForTrade(Stock s) {
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		boolean isStockFreshAdded = false;
+		try {
+			sql = "select 'x' from usrStk where openID = '" + STConstants.openID
+					+ "' and id = '" + s.getID()
+					+ "' and suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEM_READ_FOR_TRADE + "'"
+					+ "  and sell_mode_flg = 0 "
+					+ "  and gz_flg = 1 ";
+			log.info(sql);
+			stm = con.createStatement();
+			ResultSet rs = stm.executeQuery(sql);
+			if (rs.next()) {
+				isStockFreshAdded = true;
+			}
+			rs.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.info("stock " + s.getName() + " is not freshly added for trade!");
+		}
+		finally {
+		    try {
+		    	//log.info("Closing statement and connection!");
+				stm.close();
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		log.info("Stock " + s.getName() + "'s isStockFreshAdded is:" + isStockFreshAdded);
+		return isStockFreshAdded;
+	}
+
+	public static void resetStockFreshAddedForTrade(Stock s) {
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		try {
+			sql = "update usrStk set suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEM_GRANTED + "' where openID = '" + STConstants.openID + "' and id = '" + s.getID() + "'";
+			log.info(sql);
+			stm = con.createStatement();
+			stm.execute(sql);
+			con.commit();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private void resetSuggestion() {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		try {
-			sql = "update usrStk set gz_flg = 0, trade_mode_id = null where gz_flg = 1 and suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "')";
+			sql = "update usrStk set gz_flg = 0, trade_mode_id = null where gz_flg = 1 and suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEM_UPDATE + "')";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);
