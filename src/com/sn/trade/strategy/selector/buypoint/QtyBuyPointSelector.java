@@ -30,6 +30,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         Double cur_pri = stk.getCur_pri();
         
         boolean isStockFreshAdded = false;
+        boolean okBuy = false;
         
         if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
         
@@ -41,7 +42,6 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         	if (isStockFreshAdded) {
         		tradeThresh = tradeThresh / 2;
         		log.info("Stock is freshly added for trade, use half thresh value:" + tradeThresh);
-        		SuggestStock.resetStockFreshAddedForTrade(stk);
         	}
         	
         	double maxPct = (maxPri - minPri) / yt_cls_pri;
@@ -54,20 +54,26 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         	if (maxPct >= tradeThresh && curPct < maxPct * 1.0 / 10.0 && stk.isLstQtyPlused() && stk.isLstPriTurnaround(true)) {
         		log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
         				+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
-        		return true;
+        		okBuy = true;
         	} else if (stk.isStoppingJumpWater() && !StockMarket.isGzStocksJumpWater(5, 0.01, 0.5)) {
         		log.info("Stock cur price is stopping dumping, isGoodBuyPoint return true.");
         		//for testing purpose, still return false;
-        		return true;
+        		okBuy = true;
         	}
         	else {
         		log.info("isGoodBuyPoint false Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
         				+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
+        		okBuy = false;
         	}
         } else {
         	log.info("isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
+        	okBuy = false;
         }
-		return false;
+        
+        if (isStockFreshAdded && okBuy) {
+    		SuggestStock.resetStockFreshAddedForTrade(stk);
+        }
+		return okBuy;
 	}
 	
     public double getBuyThreshValueByDegree(double Degree, Stock stk, ICashAccount ac) {
