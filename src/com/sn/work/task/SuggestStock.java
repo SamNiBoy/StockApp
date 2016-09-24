@@ -119,7 +119,7 @@ public class SuggestStock implements IWork {
 		//selectors.add(new LimitClsPriStockSelector());
 		//selectors.add(new QtyEnableTradeStockSelector());
 		//selectors.add(new AvgPriStockSelector());
-		selectors.add(new ClosePriceTrendStockSelector());
+//		selectors.add(new ClosePriceTrendStockSelector());
 //		selectors.add(new TopGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
 	}

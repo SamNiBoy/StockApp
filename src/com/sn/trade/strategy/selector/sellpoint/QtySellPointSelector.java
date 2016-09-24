@@ -40,6 +40,15 @@ public class QtySellPointSelector implements ISellPointSelector {
 			double marketDegree = StockMarket.getDegree();
 			
 			//tradeThresh = getSellThreshValueByDegree(marketDegree, stk, ac);
+			Boolean psd = StockMarket.getStockSellMode(stk.getID());
+			Boolean csd = SellModeWatchDog.isStockInSellMode(stk);
+			
+			StockMarket.putStockSellMode(stk.getID(), csd);
+			
+			if (csd) {
+				tradeThresh = tradeThresh / 2;
+				log.info("sell mode stock use half thresh hold value:" + tradeThresh);
+			}
 			
 			double maxPct = (maxPri - minPri) / yt_cls_pri;
 			double curPct = (cur_pri - minPri) / yt_cls_pri;
@@ -55,11 +64,6 @@ public class QtySellPointSelector implements ISellPointSelector {
 				return true;
 			}
 			
-			Boolean psd = StockMarket.getStockSellMode(stk.getID());
-			Boolean csd = SellModeWatchDog.isStockInSellMode(stk);
-			
-			StockMarket.putStockSellMode(stk.getID(), csd);
-
 			//If we switched to sell mode, make sure sell once.
 			if ((csd != null && psd != null) && (csd == true && psd == false)) {
 				log.info("Stock " + stk.getID() + " is in sell mode, at sell point, return true.");

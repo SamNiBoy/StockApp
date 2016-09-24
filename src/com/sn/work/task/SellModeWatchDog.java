@@ -206,12 +206,12 @@ public class SellModeWatchDog implements IWork {
 		Statement stm = null;
 		boolean is_in_sell_mode = false;
 		try {
-			sql = "select sell_mode_flg from usrStk where openID = '" + STConstants.openID + "' and id = '" + s.getID() + "' and suggested_sellmode_by = 'SellModeWatchDog'";
+			sql = "select sell_mode_flg from usrStk where openID = '" + STConstants.openID + "' and id = '" + s.getID() + "' and suggested_sellmode_by in ('SuggestStock', 'SellModeWatchDog')";
 			log.info(sql);
 			stm = con.createStatement();
 			ResultSet rs = stm.executeQuery(sql);
 			if (rs.next()) {
-			    is_in_sell_mode = rs.getInt("sell_mode_flg") == 1;
+			    is_in_sell_mode = (rs.getInt("sell_mode_flg") == 1);
 			}
 			rs.close();
 		} catch (Exception e) {

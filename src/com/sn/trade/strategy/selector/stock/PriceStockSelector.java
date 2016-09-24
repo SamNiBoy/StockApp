@@ -16,7 +16,7 @@ import com.sn.trade.strategy.imp.TradeStrategyImp;
 public class PriceStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(PriceStockSelector.class);
-    double HighestPrice = 40;
+    double HighestPrice = 30;
     double LowestPrice = 10;
     /**
      * @param args
@@ -54,8 +54,8 @@ public class PriceStockSelector implements IStockSelector {
 			}
 		}
 		else {
-			if (HighestPrice > 50) {
-				log.info("HighestPrice can not more than 50");
+			if (HighestPrice > 30) {
+				log.info("HighestPrice can not more than 30");
 				return false;
 			}
 			else {

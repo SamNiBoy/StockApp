@@ -25,7 +25,7 @@ public class StddevStockSelector implements IStockSelector {
      */
     public boolean isTargetStock(Stock s, ICashAccount ac) {
     	boolean isgood = false;
-    	double dev = -1;
+    	double dev1 = -1, dev2 = -1, dev3 = -1;
     	
     	if (s.isStockDivided()) {
     		log.info("Can not suggest stock:" + s.getID() + " as it was divided!");
@@ -44,19 +44,64 @@ public class StddevStockSelector implements IStockSelector {
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
     		if (rs.next()) {
-    			 dev = rs.getDouble("dev");
-    			if (dev >= minStddev && dev <= maxStddev) {
+    			 dev1 = rs.getDouble("dev");
+    			if (dev1 >= minStddev && dev1 <= maxStddev) {
     				isgood = true;
     			}
     		}
     		rs.close();
     		stm.close();
+    		if (isgood) {
+    			isgood = false;
+    	       	sql = "select avg(dev) dev from ("
+ 		       		   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
+ 		       		   + "  from stkdat2 "
+ 		       		   + " where id ='" + s.getID() + "'"
+ 		       		   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS * 2 + ", 'yyyy-mm-dd')"
+ 		       		   + "   and not exists (select 'x' from usrStk where id ='" + s.getID() + "' and sell_mode_flg = 1)"
+ 		       		   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
+ 		        log.info(sql);
+ 		        stm = con.createStatement();
+ 		        rs = stm.executeQuery(sql);
+ 		        if (rs.next()) {
+ 		            dev2 = rs.getDouble("dev");
+ 		            log.info("dev2:" + dev2 + "< dev1:" + dev1 + "? " + (dev2 < dev1));
+ 		          	if (dev2 < dev1) {
+ 		          		isgood = true;
+ 		       	    }
+ 		        }
+ 		        rs.close();
+ 		        stm.close();
+    		}
+    		
+    		if (isgood) {
+    			isgood = false;
+    	       	sql = "select avg(dev) dev from ("
+ 		       		   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
+ 		       		   + "  from stkdat2 "
+ 		       		   + " where id ='" + s.getID() + "'"
+ 		       		   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS * 3 + ", 'yyyy-mm-dd')"
+ 		       		   + "   and not exists (select 'x' from usrStk where id ='" + s.getID() + "' and sell_mode_flg = 1)"
+ 		       		   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
+ 		        log.info(sql);
+ 		        stm = con.createStatement();
+ 		        rs = stm.executeQuery(sql);
+ 		        if (rs.next()) {
+ 		            dev3 = rs.getDouble("dev");
+ 		            log.info("dev3:" + dev3 + "< dev2:" + dev2 + "? " + (dev3 < dev2));
+ 		          	if (dev3 < dev2) {
+ 		          		isgood = true;
+ 		       	    }
+ 		        }
+ 		        rs.close();
+ 		        stm.close();
+    		}
     		con.close();
     	}
     	catch(Exception e) {
     		e.printStackTrace();
     	}
-    	log.info("dev:" + dev + ", minStddev:" + minStddev + ", maxStddev:" + maxStddev + " return " + (isgood ? " true":"false"));
+    	log.info("dev1:" + dev1 + ", minStddev:" + minStddev + ", maxStddev:" + maxStddev + " return " + (isgood ? " true":"false"));
         return isgood;
     }
 	@Override
