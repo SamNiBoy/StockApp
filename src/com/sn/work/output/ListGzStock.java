@@ -92,7 +92,7 @@ public class ListGzStock implements IWork {
                 	ids += ",";
                 }
                 ids += "'" + rs.getString("id") + "'";
-                id = "'" + rs.getString("id") + "'";
+                id = rs.getString("id");
             }
             rs.close();
             
