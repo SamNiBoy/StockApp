@@ -356,7 +356,7 @@ public class StockMarket{
                          " from stkdat2 " +
                          " where td_opn_pri > 0 " +
                          "   and id = '" + stkId + "'" +
-                         "  order by ft_id desc";
+                         "  order by DayStr desc";
             log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
 
