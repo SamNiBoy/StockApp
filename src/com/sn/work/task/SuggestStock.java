@@ -488,11 +488,12 @@ public class SuggestStock implements IWork {
 			rs.close();
 			stm.close();
 			
+			int daysCnt = StockMarket.getNumDaysAhead(stkid, STConstants.DEV_CALCULATE_DAYS);
     		sql = "select avg(dev) dev from ("
  				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atSuggestStockDay "
  				   + "  from stkdat2 "
  				   + " where id ='" + stkid + "'"
- 				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS + ", 'yyyy-mm-dd')"
+ 				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + daysCnt + ", 'yyyy-mm-dd')"
  				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
  		    log.info(sql);
  		    stm = con.createStatement();

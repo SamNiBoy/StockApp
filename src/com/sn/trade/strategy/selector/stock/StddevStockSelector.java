@@ -26,7 +26,7 @@ public class StddevStockSelector implements IStockSelector {
     public boolean isTargetStock(Stock s, ICashAccount ac) {
     	boolean isgood = false;
     	double dev1 = -1, dev2 = -1, dev3 = -1;
-    	
+    	int daysCnt = StockMarket.getNumDaysAhead(s.getID(), STConstants.DEV_CALCULATE_DAYS);
     	if (s.isStockDivided()) {
     		log.info("Can not suggest stock:" + s.getID() + " as it was divided!");
     		return false;
@@ -38,7 +38,7 @@ public class StddevStockSelector implements IStockSelector {
     				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
     				   + "  from stkdat2 "
     				   + " where id ='" + s.getID() + "'"
-    				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS + ", 'yyyy-mm-dd')"
+    				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + daysCnt + ", 'yyyy-mm-dd')"
     				   + "   and not exists (select 'x' from usrStk where id ='" + s.getID() + "' and sell_mode_flg = 1)"
     				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
     		log.info(sql);
@@ -53,11 +53,12 @@ public class StddevStockSelector implements IStockSelector {
     		stm.close();
     		if (isgood) {
     			isgood = false;
+    			daysCnt = StockMarket.getNumDaysAhead(s.getID(), STConstants.DEV_CALCULATE_DAYS * 2);
     	       	sql = "select avg(dev) dev from ("
  		       		   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
  		       		   + "  from stkdat2 "
  		       		   + " where id ='" + s.getID() + "'"
- 		       		   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS * 2 + ", 'yyyy-mm-dd')"
+ 		       		   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + daysCnt + ", 'yyyy-mm-dd')"
  		       		   + "   and not exists (select 'x' from usrStk where id ='" + s.getID() + "' and sell_mode_flg = 1)"
  		       		   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
  		        log.info(sql);
@@ -76,11 +77,12 @@ public class StddevStockSelector implements IStockSelector {
     		
     		if (isgood) {
     			isgood = false;
+    			daysCnt = StockMarket.getNumDaysAhead(s.getID(), STConstants.DEV_CALCULATE_DAYS * 3);
     	       	sql = "select avg(dev) dev from ("
  		       		   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
  		       		   + "  from stkdat2 "
  		       		   + " where id ='" + s.getID() + "'"
- 		       		   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS * 3 + ", 'yyyy-mm-dd')"
+ 		       		   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + daysCnt + ", 'yyyy-mm-dd')"
  		       		   + "   and not exists (select 'x' from usrStk where id ='" + s.getID() + "' and sell_mode_flg = 1)"
  		       		   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
  		        log.info(sql);

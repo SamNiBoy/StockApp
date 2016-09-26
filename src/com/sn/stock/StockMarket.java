@@ -344,6 +344,50 @@ public class StockMarket{
     	return false;
     }
     
+    public static int getNumDaysAhead(String stkId, int daysAhead) {
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        int daysCnt = 0;
+
+        String dayStr = "";
+        try {
+            stm = con.createStatement();
+            String sql = "select distinct to_char(dl_dt, 'yyyy-mm-dd') DayStr " +
+                         " from stkdat2 " +
+                         " where td_opn_pri > 0 " +
+                         "   and id = '" + stkId + "'" +
+                         "  order by ft_id desc";
+            log.info(sql);
+            ResultSet rs = stm.executeQuery(sql);
+
+            while (rs.next() && daysAhead > 0) {
+                daysAhead--;
+            }
+            
+            if (!rs.isAfterLast()) {
+                dayStr = rs.getString("DayStr");
+                rs.close();
+                stm.close();
+                stm = con.createStatement();
+                sql = "select to_date(to_char(sysdate, 'yyyy-mm-dd'), 'yyyy-mm-dd hh24:mi:ss') - to_date('" + dayStr + "', 'yyyy-mm-dd hh24:mi:ss') daysCnt from dual";
+                log.info(sql);
+                rs = stm.executeQuery(sql);
+                if(rs.next()) {
+                    daysCnt = rs.getInt("daysCnt");
+                }
+            }
+            log.info("get daysCnt:" + daysCnt);
+            rs.close();
+            stm.close();
+            con.close();
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return daysCnt;
+    }
+    
     public static boolean isGzStocksJumpWater(int tailSz, double jumpPct, double stockJumpCntPct) {
     	if (gzstocks.isEmpty()) {
     		getGzstocks();

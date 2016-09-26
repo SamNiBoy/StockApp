@@ -77,7 +77,7 @@ public class ListGzStock implements IWork {
         Map<String, Integer> sellmodes = new HashMap<String, Integer> ();
         Map<String, Integer> trademodeids = new HashMap<String, Integer> ();
         DecimalFormat df = new DecimalFormat("##.###");
-        String ids = "";
+        String ids = "", id = "";
 
         try {
         	Connection con = DBManager.getConnection();
@@ -92,19 +92,22 @@ public class ListGzStock implements IWork {
                 	ids += ",";
                 }
                 ids += "'" + rs.getString("id") + "'";
+                id = "'" + rs.getString("id") + "'";
             }
             rs.close();
             
             double dev = 0;
             double cur_pri = 0;
 
+            int daysCnt = StockMarket.getNumDaysAhead(id, STConstants.DEV_CALCULATE_DAYS);
+            
             try {
                 sql = "select id, avg(dev) dev from ("
          		   + "select id, stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
         		   + "  from stkdat2 "
         		   + " where id in (" + ids + ")"
         		   + "   and yt_cls_pri > 0 "
-        		   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS + ", 'yyyy-mm-dd')"
+        		   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + daysCnt + ", 'yyyy-mm-dd')"
         		   + " group by id, to_char(dl_dt, 'yyyy-mm-dd'))"
         		   + " group by id order by id ";
                 

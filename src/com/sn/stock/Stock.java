@@ -807,6 +807,7 @@ public class Stock implements Comparable<Stock>{
         	double base = STConstants.QTY_PLUSED_BASE_PCT;
         	double final_val = base;
         	Boolean sell_mode = StockMarket.getStockSellMode(id);
+        	int daysCnt = StockMarket.getNumDaysAhead(id, STConstants.DEV_CALCULATE_DAYS);
         	if (sell_mode != null && sell_mode) {
         		final_val = base;
         	}
@@ -818,7 +819,7 @@ public class Stock implements Comparable<Stock>{
             				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
             				   + "  from stkdat2 "
             				   + " where id ='" + id + "'"
-            				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + STConstants.DEV_CALCULATE_DAYS + ", 'yyyy-mm-dd')"
+            				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + daysCnt + ", 'yyyy-mm-dd')"
             				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
             		log.info(sql);
             		ResultSet rs = stm.executeQuery(sql);
