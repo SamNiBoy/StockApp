@@ -41,6 +41,7 @@ public class StockMarket{
     private static double totDecDlMny = 0.0;
     private static double totEqlDlMny = 0.0;
     private static double Degree = 0.0;
+    private static int cachedDaysCnt = 0;
     
     public static String GZ_STOCK_SELECT = "select distinct s.id, s.name, s.area "
     		                             + "from stk s, usrStk u "
@@ -345,6 +346,11 @@ public class StockMarket{
     }
     
     public static int getNumDaysAhead(String stkId, int daysAhead) {
+    	
+    	if (cachedDaysCnt > 0) {
+    		log.info("use cachedDaysCnt:" + cachedDaysCnt);
+    		return cachedDaysCnt;
+    	}
         Connection con = DBManager.getConnection();
         Statement stm = null;
         int daysCnt = 0;
@@ -377,6 +383,8 @@ public class StockMarket{
                 }
             }
             log.info("get daysCnt:" + daysCnt);
+            
+            cachedDaysCnt= daysCnt;
             rs.close();
             stm.close();
             con.close();

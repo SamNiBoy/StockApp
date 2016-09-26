@@ -26,6 +26,7 @@ import com.sn.trade.strategy.selector.stock.DefaultStockSelector;
 import com.sn.trade.strategy.selector.stock.IStockSelector;
 import com.sn.trade.strategy.selector.stock.KeepGainStockSelector;
 import com.sn.trade.strategy.selector.stock.LimitClsPriStockSelector;
+import com.sn.trade.strategy.selector.stock.MostPlusStockSelector;
 import com.sn.trade.strategy.selector.stock.PriceStockSelector;
 import com.sn.trade.strategy.selector.stock.QtyEnableTradeStockSelector;
 import com.sn.trade.strategy.selector.stock.StddevStockSelector;
@@ -121,7 +122,7 @@ public class SuggestStock implements IWork {
 		//selectors.add(new QtyEnableTradeStockSelector());
 		//selectors.add(new AvgPriStockSelector());
 //		selectors.add(new ClosePriceTrendStockSelector());
-//		selectors.add(new TopGainStockSelector());
+		selectors.add(new MostPlusStockSelector());
 //		selectors.add(new KeepLostStockSelector());
 	}
 
@@ -142,10 +143,10 @@ public class SuggestStock implements IWork {
 //            StockDataFetcher.lock.unlock();
 //        }
 
-		if (StockMarket.isMarketTooCold(null) || StockMarket.hasMostDecStock()) {
-		    log.info("Market is not good, skip suggesting stock!");
-		    return;
-		}
+//		if (StockMarket.isMarketTooCold(null) || StockMarket.hasMostDecStock()) {
+//		    log.info("Market is not good, skip suggesting stock!");
+//		    return;
+//		}
 		resetSuggestion();
 		
 		try {
