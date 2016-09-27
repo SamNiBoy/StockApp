@@ -70,4 +70,9 @@ public class AvgPriSellModeSelector implements IStockSelector {
         // TODO Auto-generated method stub
         return null;
     }
+	@Override
+	public boolean shouldStockExitTrade(String s) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

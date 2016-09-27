@@ -140,4 +140,41 @@ public class StddevStockSelector implements IStockSelector {
         // TODO Auto-generated method stub
         return STConstants.TRADE_MODE_ID_QTYTRADE;
     }
+	@Override
+	public boolean shouldStockExitTrade(String stkId) {
+		// TODO Auto-generated method stub
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		ResultSet rs = null;
+		boolean should_exit = false;
+		int daysCnt = StockMarket.getNumDaysAhead(stkId, STConstants.DEV_CALCULATE_DAYS);
+		
+		try {
+		String sql = "select avg(dev) dev from ("
+				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atSuggestStockDay "
+				   + "  from stkdat2 "
+				   + " where id ='" + stkId + "'"
+				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + daysCnt + ", 'yyyy-mm-dd')"
+				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
+		    log.info(sql);
+		    stm = con.createStatement();
+		    rs = stm.executeQuery(sql);
+		    if (rs.next()) {
+		    	 double dev = rs.getDouble("dev");
+		    	 log.info("Stock: " + stkId + "'s " + STConstants.DEV_CALCULATE_DAYS + " dev is:" + dev + ", MIN_DEV_BEFORE_EXIT_TRADE:" + STConstants.MIN_DEV_BEFORE_EXIT_TRADE);
+		    	if (dev < STConstants.MIN_DEV_BEFORE_EXIT_TRADE) {
+		    		log.info("Stock:" + stkId + " dev value:"+ dev + " reached min threshold value " +STConstants.MIN_DEV_BEFORE_EXIT_TRADE + ", should exit trade.");
+		    		should_exit = true;
+		    	}
+		    }
+		
+		    rs.close();
+		    stm.close();
+	        con.close();
+		}
+		catch (Exception e) {
+			log.error(e.getMessage());
+		}
+		return should_exit;
+	}
 }

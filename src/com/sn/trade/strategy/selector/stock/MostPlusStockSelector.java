@@ -31,6 +31,7 @@ public class MostPlusStockSelector implements IStockSelector {
     
     static private LocalDateTime lst_time = null;
     static int MINUTES_FOR_EXPIRE = 5;
+    static boolean criteria_chg = false;
     
 	private class StockPlusCount implements Comparable<StockPlusCount>{
     	public String stkID;
@@ -68,7 +69,6 @@ public class MostPlusStockSelector implements IStockSelector {
     }
     
     private boolean buildAllStocks() {
-        Connection con = DBManager.getConnection();
         
         boolean DataChanged = false;
 
@@ -76,6 +76,7 @@ public class MostPlusStockSelector implements IStockSelector {
             int daysCnt = StockMarket.getNumDaysAhead("000001", STConstants.DEV_CALCULATE_DAYS);
             
             try {
+                Connection con = DBManager.getConnection();
                 Statement stm = con.createStatement();
                 String sql = "select cur_pri, yt_cls_pri, id, to_char(dl_dt,'yyyy-mm-dd') dayStr, to_char(sysdate, 'yyyy-mm-dd') todayStr "
                 		     + " from stkdat2 s"
@@ -160,6 +161,7 @@ public class MostPlusStockSelector implements IStockSelector {
             log.info("time_expired is:" + time_expired);
     	    if (time_expired) {
                 try {
+                    Connection con = DBManager.getConnection();
                     Statement stm = con.createStatement();
                     String sql = "select cur_pri, yt_cls_pri, id, to_char(dl_dt,'yyyy-mm-dd') dayStr, to_char(sysdate, 'yyyy-mm-dd') todayStr "
                     		     + " from stkdat2 s"
@@ -216,7 +218,7 @@ public class MostPlusStockSelector implements IStockSelector {
     	    }
         }
         
-        if (DataChanged) {
+        if (DataChanged || criteria_chg) {
             List<StockPlusCount> lst = new ArrayList<StockPlusCount>(allStocks.values());
             Collections.sort(lst);
             StockPlusCount spc = null;
@@ -234,6 +236,7 @@ public class MostPlusStockSelector implements IStockSelector {
             	    topStocks.put(lst.get(i).stkID, lst.get(i));
             	}
             }
+            criteria_chg = false;
         }
         
         log.info("Total loaded: " + topStocks.size() + " stocks.");
@@ -281,6 +284,8 @@ public class MostPlusStockSelector implements IStockSelector {
 		    	MIN_TODAY_COUNT = 0;
 		    }
 		}
+		
+		criteria_chg = true;
 		log.info("After try " + (harder ? " harder" : " loose") + " MIN_PRE_COUNT:" + MIN_PRE_COUNT + ", MIN_TODAY_COUNT:" + MIN_TODAY_COUNT);
 
 		return false;
@@ -290,4 +295,19 @@ public class MostPlusStockSelector implements IStockSelector {
         // TODO Auto-generated method stub
         return STConstants.TRADE_MODE_ID_QTYTRADE;
     }
+	@Override
+	public boolean shouldStockExitTrade(String stkId) {
+		// TODO Auto-generated method stub
+		StockPlusCount spc = null;
+		spc = allStocks.get(stkId);
+		
+		if (spc != null) {
+			log.info("shouldStockExitTrade for:" + stkId + " return today_count:" + spc.today_count + " past_count:" + spc.past_count + " <= 0 " + (spc.today_count + spc.past_count <= 0));
+			if (spc.today_count + spc.past_count <= 0) {
+				log.info("stock:" + stkId + " no trade chance, should exit trade.");
+				return true;
+			}
+		}
+		return false;
+	}
 }

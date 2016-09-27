@@ -117,7 +117,7 @@ public class SuggestStock implements IWork {
 		delayBeforNxtStart = dbn;
 		//selectors.add(new DefaultStockSelector());
 		selectors.add(new PriceStockSelector());
-		selectors.add(new StddevStockSelector());
+		//selectors.add(new StddevStockSelector());
 		//selectors.add(new LimitClsPriStockSelector());
 		//selectors.add(new QtyEnableTradeStockSelector());
 		//selectors.add(new AvgPriStockSelector());
@@ -430,7 +430,7 @@ public class SuggestStock implements IWork {
 		}
 	}
 	
-	public static boolean shouldStockExitTrade(String stkid) {
+	public boolean shouldStockExitTrade(String stkid) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
@@ -475,46 +475,34 @@ public class SuggestStock implements IWork {
 				should_exit = true;
 			}
 			
-			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "' and acntid like 'ACNT%' "
-				+ "   and dl_dt >= sysdate - " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + ")"
-				+ " or exists (select 'y' from usrStk where gz_flg = 1 and id = '" + stkid +  "' and add_dt > sysdate - " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + ")";
-			log.info(sql);
-			stm = con.createStatement();
-			rs = stm.executeQuery(sql);
-			if (!rs.next()) {
-				log.info("Stock:" + stkid + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + " days without trade record, should exit trade.");
-				should_exit = true;
+			if (!should_exit) {
+			    sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "' and acntid like 'ACNT%' "
+			    	+ "   and dl_dt >= sysdate - " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + ")"
+			    	+ " or exists (select 'y' from usrStk where gz_flg = 1 and id = '" + stkid +  "' and add_dt > sysdate - " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + ")";
+			    log.info(sql);
+			    stm = con.createStatement();
+			    rs = stm.executeQuery(sql);
+			    if (!rs.next()) {
+			    	log.info("Stock:" + stkid + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + " days without trade record, should exit trade.");
+			    	should_exit = true;
+			    }
+			    rs.close();
+			    stm.close();
 			}
-			
-			rs.close();
-			stm.close();
-			
-			int daysCnt = StockMarket.getNumDaysAhead(stkid, STConstants.DEV_CALCULATE_DAYS);
-    		sql = "select avg(dev) dev from ("
- 				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atSuggestStockDay "
- 				   + "  from stkdat2 "
- 				   + " where id ='" + stkid + "'"
- 				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + daysCnt + ", 'yyyy-mm-dd')"
- 				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
- 		    log.info(sql);
- 		    stm = con.createStatement();
- 		    rs = stm.executeQuery(sql);
- 		    if (rs.next()) {
- 		    	 double dev = rs.getDouble("dev");
- 		    	 log.info("Stock: " + stkid + "'s " + STConstants.DEV_CALCULATE_DAYS + " dev is:" + dev + ", MIN_DEV_BEFORE_EXIT_TRADE:" + STConstants.MIN_DEV_BEFORE_EXIT_TRADE);
- 		    	if (dev < STConstants.MIN_DEV_BEFORE_EXIT_TRADE) {
- 		    		log.info("Stock:" + stkid + " dev value:"+ dev + " reached min threshold value " +STConstants.MIN_DEV_BEFORE_EXIT_TRADE + ", should exit trade.");
- 		    		should_exit = true;
- 		    	}
- 		    }
- 		
- 		    rs.close();
- 		    stm.close();
 		    con.close();
+		    
+		    log.info("Begin selector tell exit trade");
+	    	for (IStockSelector slt : selectors) {
+	    		if (slt.shouldStockExitTrade(stkid)) {
+	    			should_exit = true;
+	    			log.info("Now selector says stock:" + stkid + " should exit for trading.");
+	    			break;
+	    		}
+	    	}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		log.info("Should exit is:" + should_exit);
 		return should_exit;
 	}
 	

@@ -17,6 +17,7 @@ public interface IStockSelector {
     public boolean isTargetStock(Stock s, ICashAccount ac);
     public boolean isORCriteria();
     public boolean isMandatoryCriteria();
+    public boolean shouldStockExitTrade(String s);
     public boolean adjustCriteria(boolean harder);
     public Integer getTradeModeId();
 }

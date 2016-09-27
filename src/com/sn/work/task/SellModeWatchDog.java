@@ -18,9 +18,7 @@ import com.sn.stock.StockMarket;
 import com.sn.trade.strategy.imp.STConstants;
 import com.sn.trade.strategy.selector.stock.AvgClsPriSellModeSelector;
 import com.sn.trade.strategy.selector.stock.AvgPriSellModeSelector;
-import com.sn.trade.strategy.selector.stock.BadTradeSellModeSelector;
 import com.sn.trade.strategy.selector.stock.CurPriLostSellModeSelector;
-import com.sn.trade.strategy.selector.stock.DefaultSellModeSelector;
 import com.sn.trade.strategy.selector.stock.IStockSelector;
 import com.sn.trade.strategy.selector.stock.QtyDisableTradeStockSelector;
 import com.sn.work.WorkManager;
@@ -174,11 +172,6 @@ public class SellModeWatchDog implements IWork {
        	   	   suggest_flg = false;
        	   	   break;
        	   }
-       }
-       
-       if (SuggestStock.shouldStockExitTrade(s.getID())) {
-    	   log.info("Stock:" + s.getID() + ":" + s.getName() + " matches shouldStockExitTrade(), can not disable sell mode.");
-    	   suggest_flg = false;
        }
        
        //If we are going to disable sell mode, make more safe check.

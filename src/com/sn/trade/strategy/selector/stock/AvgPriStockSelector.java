@@ -104,4 +104,9 @@ public class AvgPriStockSelector implements IStockSelector {
         // TODO Auto-generated method stub
         return STConstants.TRADE_MODE_ID_AVGPRI;
     }
+	@Override
+	public boolean shouldStockExitTrade(String s) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

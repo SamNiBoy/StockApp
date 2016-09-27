@@ -70,4 +70,10 @@ public class PriceStockSelector implements IStockSelector {
         // TODO Auto-generated method stub
         return null;
     }
+	@Override
+	public boolean shouldStockExitTrade(String s) {
+		// TODO Auto-generated method stub
+		log.info("shouldStockExitTrade for:" + s + " return false");
+		return false;
+	}
 }
