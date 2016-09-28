@@ -35,16 +35,18 @@ public class MostPlusStockSelector implements IStockSelector {
     
 	private class StockPlusCount implements Comparable<StockPlusCount>{
     	public String stkID;
-    	public int past_count;
-    	public int today_count;
+    	public int past_sell_count;
+    	public int past_buy_count;
+    	public int today_sell_count;
+    	public int today_buy_count;
     	StockPlusCount(String stk) {
     		stkID = stk;
-    		past_count = today_count = 0;
+    		past_sell_count = past_buy_count = today_sell_count = today_buy_count = 0;
     	}
 		@Override
 		public int compareTo(StockPlusCount other) {
 			// TODO Auto-generated method stub
-			return -((past_count + today_count) - (other.past_count + other.today_count));
+			return -((past_sell_count + past_buy_count + today_sell_count + today_buy_count) - (other.past_sell_count + other.past_buy_count + other.today_sell_count + other.today_buy_count));
 		}
     }
 	public MostPlusStockSelector() {
@@ -88,8 +90,10 @@ public class MostPlusStockSelector implements IStockSelector {
                 String stkId = "", pre_stkId = "";
                 String dayStr = "", todayStr = "", pre_dayStr = "";
                 StockPlusCount spc = null;
+                int minIdx=0, maxIdx = 0, idx = 0;
                 
                 while (rs.next()) {
+                	idx++;
                 	stkId = rs.getString("id");
                 	curpri = rs.getDouble("cur_pri");
                 	yt_cls_pri = rs.getDouble("yt_cls_pri");
@@ -98,7 +102,11 @@ public class MostPlusStockSelector implements IStockSelector {
                 	
                 	if (!stkId.equals(pre_stkId)) {
                 		if (spc != null && pre_stkId.length() > 0) {
-                			log.info("Create Stock:" + spc.stkID + ", past_count:" + spc.past_count + ", today_count:" + spc.today_count);
+                    		log.info("Storing1 counts for Stock:" + spc.stkID
+                    				+ ", past_sell_count:" + spc.past_sell_count
+                    				+ ", past_buy_count:" + spc.past_buy_count
+                    				+ ", today_sell_count:" + spc.today_sell_count
+                    				+ ", today_buy_count:" + spc.today_buy_count);
                 			allStocks.put(pre_stkId, spc);
                 		}
                 	    spc = new StockPlusCount(stkId);
@@ -107,31 +115,53 @@ public class MostPlusStockSelector implements IStockSelector {
                 	
                 	if (!pre_dayStr.equals(dayStr)) {
                 		maxPri = minPri = 0;
+                		minIdx = maxIdx = 0;
                 		pre_dayStr = dayStr;
                 	}
                 	
                 	if (maxPri < curpri) {
                 		maxPri = curpri;
+                		maxIdx = idx;
                 	}
                 	
                 	if (minPri > curpri || minPri == 0) {
                 		minPri = curpri;
+                		minIdx = idx;
                 	}
                 	
                 	if ((maxPri - minPri) / yt_cls_pri * 1.0 > STConstants.BASE_TRADE_THRESH) {
                 		if (dayStr.equals(todayStr)) {
-                			spc.today_count++;
+                			if (maxIdx > minIdx) {
+                				spc.today_sell_count++;
+                			}
+                			else {
+                				spc.today_buy_count++;
+                			}
                 		}
                 		else {
-                		    spc.past_count++;
+                			if (maxIdx > minIdx) {
+                				spc.past_sell_count++;
+                			}
+                			else {
+                				spc.past_buy_count++;
+                			}
                 		}
-                		log.info("Added counts for Stock:" + spc.stkID + ", past_count:" + spc.past_count + ", today_count:" + spc.today_count);
+                		log.info("New1 counts for Stock:" + spc.stkID
+                				+ ", past_sell_count:" + spc.past_sell_count
+                				+ ", past_buy_count:" + spc.past_buy_count
+                				+ ", today_sell_count:" + spc.today_sell_count
+                				+ ", today_buy_count:" + spc.today_buy_count);
                 		maxPri = minPri = 0;
+                		minIdx = maxIdx = 0;
                 	}
                 }
                 
         		if (spc != null && pre_stkId.length() > 0) {
-        			log.info("Last Create Stock:" + spc.stkID + ", past_count:" + spc.past_count + ", today_count:" + spc.today_count);
+            		log.info("Created for Stock:" + spc.stkID
+            				+ ", past_sell_count:" + spc.past_sell_count
+            				+ ", past_buy_count:" + spc.past_buy_count
+            				+ ", today_sell_count:" + spc.today_sell_count
+            				+ ", today_buy_count:" + spc.today_buy_count);
         			allStocks.put(pre_stkId, spc);
         		}
         		
@@ -172,8 +202,10 @@ public class MostPlusStockSelector implements IStockSelector {
                     double maxPri = 0, minPri = 0, curpri = 0, yt_cls_pri = 0;
                     String stkId = "", pre_stkId = "";
                     StockPlusCount spc = null;
+                    int minIdx=0, maxIdx = 0, idx = 0;
                     
                     while (rs.next()) {
+                    	idx++;
                     	stkId = rs.getString("id");
                     	curpri = rs.getDouble("cur_pri");
                     	yt_cls_pri = rs.getDouble("yt_cls_pri");
@@ -181,7 +213,11 @@ public class MostPlusStockSelector implements IStockSelector {
                     	if (!stkId.equals(pre_stkId)) {
                     		
                     		if (spc != null && pre_stkId.length() > 0) {
-                    			log.info("Update Stock:" + spc.stkID + ", past_count:" + spc.past_count + ", today_count:" + spc.today_count);
+                        		log.info("Storing2 counts for Stock:" + spc.stkID
+                        				+ ", past_sell_count:" + spc.past_sell_count
+                        				+ ", past_buy_count:" + spc.past_buy_count
+                        				+ ", today_sell_count:" + spc.today_sell_count
+                        				+ ", today_buy_count:" + spc.today_buy_count);
                     			allStocks.put(pre_stkId, spc);
                     			DataChanged = true;
                     		}
@@ -190,22 +226,36 @@ public class MostPlusStockSelector implements IStockSelector {
                     			log.info("this should never happen:" + stkId);
                     			continue;
                     		}
-                    		spc.today_count = 0;
+                    		spc.today_buy_count = 0;
+                    		spc.today_sell_count = 0;
                     	    pre_stkId = stkId;
+                    	    minIdx = maxIdx = 0;
                     	}
                     	
                     	if (maxPri < curpri) {
                     		maxPri = curpri;
+                    		maxIdx = idx;
                     	}
                     	
                     	if (minPri > curpri || minPri == 0) {
                     		minPri = curpri;
+                    		minIdx = idx;
                     	}
                     	
                     	if ((maxPri - minPri) / yt_cls_pri * 1.0 > STConstants.BASE_TRADE_THRESH) {
-                    	    spc.today_count++;
-                    	    log.info("Increase today_count for Stock:" + spc.stkID + ", past_count:" + spc.past_count + ", today_count:" + spc.today_count);
+                			if (maxIdx > minIdx) {
+                				spc.today_sell_count++;
+                			}
+                			else {
+                				spc.today_buy_count++;
+                			}
+                    		log.info("New2 counts for Stock:" + spc.stkID
+                    				+ ", past_sell_count:" + spc.past_sell_count
+                    				+ ", past_buy_count:" + spc.past_buy_count
+                    				+ ", today_sell_count:" + spc.today_sell_count
+                    				+ ", today_buy_count:" + spc.today_buy_count);
                     		maxPri = minPri = 0;
+                    		minIdx = maxIdx = 0;
                     	}
                     }
                     rs.close();
@@ -225,14 +275,23 @@ public class MostPlusStockSelector implements IStockSelector {
             
             for (int j = 0; j < lst.size(); j++) {
             	spc = lst.get(j);
-            	log.info("Print No." + (j+1) + " Stock:" + spc.stkID + ", past_count:" +spc.past_count + ", today_count:" + spc.today_count);
+        		log.info("Print No." + (j+1) + " Stock:" + spc.stkID
+        				+ ", past_sell_count:" + spc.past_sell_count
+        				+ ", past_buy_count:" + spc.past_buy_count
+        				+ ", today_sell_count:" + spc.today_sell_count
+        				+ ", today_buy_count:" + spc.today_buy_count);
             }
             
             topStocks.clear();
             for (int i = 0; i < lst.size(); i++) {
             	spc = lst.get(i);
-            	if (spc.past_count >= MIN_PRE_COUNT && spc.today_count >= MIN_TODAY_COUNT) {
-            	    log.info("Adding to topStocks, Stock:" + spc.stkID + ", past_count:" +spc.past_count + ", today_count:" + spc.today_count);
+            	if ((spc.past_buy_count + spc.past_sell_count) >= MIN_PRE_COUNT &&
+            	    (spc.today_buy_count + spc.today_sell_count) >= MIN_TODAY_COUNT) {
+            		log.info("Candidating Stock:" + spc.stkID
+            				+ ", past_sell_count:" + spc.past_sell_count
+            				+ ", past_buy_count:" + spc.past_buy_count
+            				+ ", today_sell_count:" + spc.today_sell_count
+            				+ ", today_buy_count:" + spc.today_buy_count);
             	    topStocks.put(lst.get(i).stkID, lst.get(i));
             	}
             }
@@ -298,12 +357,44 @@ public class MostPlusStockSelector implements IStockSelector {
 	@Override
 	public boolean shouldStockExitTrade(String stkId) {
 		// TODO Auto-generated method stub
+		try {
+			int daysCnt = StockMarket.getNumDaysAhead(stkId, STConstants.DEV_CALCULATE_DAYS);
+			boolean skipChecking = false;
+            Connection con = DBManager.getConnection();
+            Statement stm = con.createStatement();
+            String sql = "select 'x' from dual "
+            		     + "where not exists (select 'y' "
+            		     + " from sellbuyrecord"
+            		     + " where dl_dt < sysdate - " + daysCnt
+                         + "   and stkid ='" + stkId + "')";
+            log.info(sql);
+            ResultSet rs = stm.executeQuery(sql);
+            if (rs.next()) {
+            	skipChecking = true;
+            }
+        	rs.close();
+        	stm.close();
+        	con.close();
+        	
+        	if (skipChecking) {
+        	    log.info("Stock:" + stkId + " is not trading for long enough time, do not skip trading.");
+        	    return false;
+        	}
+		}
+		catch(Exception e) {
+			log.error(e.getMessage());
+		}
+		
 		StockPlusCount spc = null;
 		spc = allStocks.get(stkId);
 		
 		if (spc != null) {
-			log.info("shouldStockExitTrade for:" + stkId + " return today_count:" + spc.today_count + " past_count:" + spc.past_count + " <= 0 " + (spc.today_count + spc.past_count <= 0));
-			if (spc.today_count + spc.past_count <= 0) {
+    		log.info("Should exist trade for Stock:" + spc.stkID
+    				+ ", past_sell_count:" + spc.past_sell_count
+    				+ ", past_buy_count:" + spc.past_buy_count
+    				+ ", today_sell_count:" + spc.today_sell_count
+    				+ ", today_buy_count:" + spc.today_buy_count);
+    		if ((spc.past_buy_count + spc.past_sell_count + spc.today_buy_count + spc.today_sell_count) < STConstants.DEV_CALCULATE_DAYS) {
 				log.info("stock:" + stkId + " no trade chance, should exit trade.");
 				return true;
 			}
