@@ -63,16 +63,13 @@ public class MonitorStockData implements IWork {
     public void run()
     {
         // TODO Auto-generated method stub
-            StockDataFetcher.lock.lock();
             try {
                 log.info("Waiting before start mointor stocks...");
-                StockDataFetcher.finishedOneRoundFetch.await();
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
             finally {
-                StockDataFetcher.lock.unlock();
             }
 
             StockObserverable spo = new StockObserverable();

@@ -17,7 +17,7 @@ public class PriceStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(PriceStockSelector.class);
     double HighestPrice = 30;
-    double LowestPrice = 10;
+    double LowestPrice = 5;
     /**
      * @param args
      */

@@ -1671,10 +1671,11 @@ public class Stock implements Comparable<Stock>{
     /**
      * @param args
      */
-    String id;
-    String name;
-    StockData sd;
-    Integer trade_mode_id = null;
+    private String id;
+    private String name;
+    private StockData sd;
+    private Integer trade_mode_id = null;
+    private boolean sell_mode = false;
     
     
     public int getTrade_mode_id() {
@@ -1703,6 +1704,29 @@ public class Stock implements Comparable<Stock>{
             log.info("stock:" + id + "'s cached trade mode is:" + trade_mode_id);
         }
         return trade_mode_id;
+    }
+    
+    public boolean getSell_mode() {
+        try {
+            Connection con = DBManager.getConnection();
+            Statement stm = con.createStatement();
+            String sql = "select sell_mode_flg "
+                       + "  from usrStk "
+                       + " where id ='" + id + "'";
+            log.info(sql);
+            ResultSet rs = stm.executeQuery(sql);
+            if (rs.next()) {
+            	sell_mode = (rs.getInt("sell_mode_flg") == 1) ? true : false;
+                log.info("sell_mode for stock:" + id + " is: " + sell_mode);
+            }
+            rs.close();
+            stm.close();
+            con.close();
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+        return sell_mode;
     }
 
     public void setId(String id) {

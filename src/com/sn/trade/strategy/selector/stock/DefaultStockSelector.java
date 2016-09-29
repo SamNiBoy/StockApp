@@ -28,10 +28,15 @@ public class DefaultStockSelector implements IStockSelector {
     	}
         if (StockMarket.isMarketTooCold(s.getDl_dt()) &&
             StockMarket.hasMostDecStock()) {
-                log.info("returned false because market is too cool.");
-                return false;
+            log.info("returned false because market is too cool.");
+            return false;
         }
-        log.info("returned true for isGoodStock()");
+        
+        if (s.getSell_mode()) {
+        	log.info("no sell mode stock can be suggested, return false");
+        	return false;
+        }
+        log.info("returned true from DefaultStockSelector");
         return true;
     }
 	@Override

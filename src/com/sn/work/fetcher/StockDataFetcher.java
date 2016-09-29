@@ -43,9 +43,6 @@ public class StockDataFetcher implements IWork {
     static StockDataFetcher self = null;
     static StockDataConsumer cnsmr = null;
     
-    public static ReentrantLock lock = new ReentrantLock();
-    public static Condition finishedOneRoundFetch = lock.newCondition();
-    
     static Logger log = Logger.getLogger(StockDataFetcher.class);
     
     public static String getResMsg() {
@@ -94,7 +91,7 @@ public class StockDataFetcher implements IWork {
     {
         Statement stm = null;
         ResultSet rs = null;
-        String sql = "select area, id from stk";
+        String sql = "select area, id from stk where bu <> 'StopTrade' order by id";
 
         StringBuilder stkLst = new StringBuilder();
         
@@ -134,6 +131,7 @@ public class StockDataFetcher implements IWork {
 
     private String lstStkDat = "";
     private int failCnt = 0;
+    private String fs [] = null;
 
     public void run()
     {
@@ -142,7 +140,9 @@ public class StockDataFetcher implements IWork {
 
         log.info("Now StockDataFetcher start!!!");
         try {
-            String fs [] = getFetchLst().split("#"), cs;
+        	if (fs == null) {
+                fs = getFetchLst().split("#");
+        	}
             RawStockData srd = null;
             String stkSql = "http://hq.sinajs.cn/list=";
             for (int i = 0; i < fs.length; i++)
@@ -190,8 +190,8 @@ public class StockDataFetcher implements IWork {
                         continue;
                     }
                     
-                    log.info("StockDataFetcher put rawdata to queue with size:" + cnsmr.getDq().size());
                     cnsmr.getDq().put(srd);
+                    log.info("StockDataFetcher put rawdata to queue with size:" + cnsmr.getDq().size());
                 }
                 br.close();
                 if (failCnt > 0)
@@ -201,19 +201,9 @@ public class StockDataFetcher implements IWork {
                     break;
                 }
             }
-            
-            if (failCnt == 0) {
-                lock.lock();
-                try {
-                    finishedOneRoundFetch.signalAll();
-                }
-                finally {
-                    lock.unlock();
-                }
-            }
-            
         } catch (Exception e) {
             e.printStackTrace();
+            log.error("Fatal error:" + e.getMessage());
         }
         log.info("Now StockDataFetcher exit!!!");
     }

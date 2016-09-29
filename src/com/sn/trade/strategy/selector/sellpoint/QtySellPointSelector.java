@@ -154,17 +154,16 @@ public class QtySellPointSelector implements ISellPointSelector {
             String dt = s.getDl_dt().toString().substring(0, 10);
             int sellableAmt = ac.getSellableAmt(s.getID(), dt);
             
-            if (sellableAmt >= 400) {
-            	sellMnt = sellableAmt / 2;
-            	sellMnt = sellMnt - sellMnt % 100;
-            }
-            else {
-            	sellMnt = sellableAmt;
-            }
+            double useableMny = ac.getMaxAvaMny();
+            int buyMaxMnt = (int)(useableMny/s.getCur_pri()) / 100 * 100;
+            
+            sellableAmt = (sellableAmt < buyMaxMnt) ? sellableAmt : buyMaxMnt;
+            
+            sellMnt = sellableAmt;
             log.info("getSellQty, sellableAmt:" + sellableAmt + " sellMnt:" + sellMnt);
         }
         else {
-        	if (s.getCur_pri() <= 10) {
+        	if (s.getCur_pri() <= 20) {
         		sellMnt = 200;
         	}
         	else {
