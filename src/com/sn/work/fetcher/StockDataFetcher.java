@@ -172,10 +172,10 @@ public class StockDataFetcher implements IWork {
                     LocalDateTime lt = LocalDateTime.now();
                     int hr = lt.getHour();
                     
-                    if (hr <= 8 || hr >= 15) {
-                        log.info(" hour is not in market time: " + hr + ", will not save the data!");
-                        continue;
-                    }
+                    //if (hr <= 8 || hr >= 15) {
+                    //    log.info(" hour is not in market time: " + hr + ", will not save the data!");
+                    //    continue;
+                    //}
                     
                     log.info(str);
                     srd = RawStockData.createStockData(str);

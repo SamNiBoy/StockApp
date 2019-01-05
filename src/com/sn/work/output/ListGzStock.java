@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.sim.strategy.imp.STConstants;
+import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
 import com.sn.work.itf.IWork;
@@ -74,7 +75,8 @@ public class ListGzStock implements IWork {
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
         Map<String, Integer> sellmodes = new HashMap<String, Integer> ();
-        DecimalFormat df = new DecimalFormat("##.###");
+        DecimalFormat df2 = new DecimalFormat("##.##");
+        DecimalFormat df3 = new DecimalFormat("##.###");
 
         try {
         	Connection con = DBManager.getConnection();
@@ -91,9 +93,8 @@ public class ListGzStock implements IWork {
                 double dev = 0;
                 double cur_pri = 0;
 
-                content += stock + ":" + Stocks.get(stock) + "\n";
                 
-                String sellMode = (sellmodes.get(stock) == 1) ? "Yes" : "No";
+                String sellMode = (sellmodes.get(stock) == 1) ? "是" : "否";
 
                 try {
                     sql = "select avg(dev) dev from ("
@@ -108,7 +109,8 @@ public class ListGzStock implements IWork {
                     if (rs.next()) {
                     	dev = rs.getDouble("dev");
                     }
-                    Double cur_pri1 = StockMarket.getStocks().get(stock).getCur_pri();
+                    Stock2 stk = StockMarket.getStocks().get(stock);
+                    Double cur_pri1 = stk.getCur_pri();
                     if (cur_pri1 != null) {
                         cur_pri = cur_pri1;
                     }
@@ -116,7 +118,54 @@ public class ListGzStock implements IWork {
                     	log.info("cur_pri for stock:" + stock + " is null, use -1.");
                     	cur_pri = -1;
                     }
-                    content += "价:" + df.format(cur_pri) + " stddev:" + df.format(dev) + " sellMode: " + sellMode + "\n";
+                    
+                    Integer dl_stk_num = stk.getDl_stk_num();
+                    Double dl_mny_num = stk.getDl_mny_num();
+                    
+                    Double hst_pri = stk.getMaxTd_hst_pri();
+                    Double lst_pri = stk.getMinTd_lst_pri();
+                    Double b1_pri = stk.getB1_pri();
+                    Double b2_pri = stk.getB2_pri();
+                    Double b3_pri = stk.getB3_pri();
+                    Double b4_pri = stk.getB4_pri();
+                    Double b5_pri = stk.getB5_pri();
+                    Integer b1_num = stk.getB1_num();
+                    Integer b2_num = stk.getB2_num();
+                    Integer b3_num = stk.getB3_num();
+                    Integer b4_num = stk.getB4_num();
+                    Integer b5_num = stk.getB5_num();
+                    Double s1_pri = stk.getS1_pri();
+                    Double s2_pri = stk.getS2_pri();
+                    Double s3_pri = stk.getS3_pri();
+                    Double s4_pri = stk.getS4_pri();
+                    Double s5_pri = stk.getS5_pri();
+                    Integer s1_num = stk.getS1_num();
+                    Integer s2_num = stk.getS2_num();
+                    Integer s3_num = stk.getS3_num();
+                    Integer s4_num = stk.getS4_num();
+                    Integer s5_num = stk.getS5_num();
+                    Double opn_pri = stk.getOpen_pri();
+                    Double yt_cls_pri = stk.getYtClsPri();
+                    Double dlt_pri = cur_pri - yt_cls_pri;
+                    Double pct = dlt_pri / yt_cls_pri * 100;
+                    
+                    content += "[" + stock + "]:" + Stocks.get(stock) + " 昨收" + df2.format(yt_cls_pri) + "\n";
+                    content += "现价:" + df2.format(cur_pri) + "    今开:" + df2.format(opn_pri) + "\n";
+                    content += "涨跌:" + df2.format(dlt_pri) + "    涨幅:" + df2.format(pct) + "%\n";
+                    content += "最高:" + df2.format(hst_pri) + "    最低:" + df2.format(lst_pri) + "\n";
+                    content += "成交:" + df2.format(dl_stk_num / 1000000.0) + "万手" + "  金额:" + df2.format(dl_mny_num / 10000000) + "千万\n";
+                    content += "买五:" + df2.format(b5_pri) + "   手:" + b5_num / 100 + "\n";
+                    content += "买四:" + df2.format(b4_pri) + "   手:" + b4_num / 100 + "\n";
+                    content += "买三:" + df2.format(b3_pri) + "   手:" + b3_num / 100 + "\n";
+                    content += "买二:" + df2.format(b2_pri) + "   手:" + b2_num / 100 + "\n";
+                    content += "买一:" + df2.format(b1_pri) + "   手:" + b1_num / 100 + "\n";
+                    content += "--------------------\n";
+                    content += "卖一:" + df2.format(s1_pri) + "   手:" + s1_num / 100 + "\n";
+                    content += "卖二:" + df2.format(s2_pri) + "   手:" + s2_num / 100 + "\n";
+                    content += "卖三:" + df2.format(s3_pri) + "   手:" + s3_num / 100 + "\n";
+                    content += "卖四:" + df2.format(s4_pri) + "   手:" + s4_num / 100 + "\n";
+                    content += "卖五:" + df2.format(s5_pri) + "   手:" + s5_num / 100 + "\n";
+                    content += "统计:" + " 七天dev:" + df3.format(dev) + " sellMode: " + sellMode + "\n\n";
                     rs.close();
                 } catch(SQLException e0) {
                     log.info("No price infor for stock:" + stock + " continue...");

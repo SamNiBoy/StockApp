@@ -349,6 +349,16 @@ public class Stock2 implements Comparable<Stock2>{
         public List<Integer> getB1_num_lst() {
             return b1_num_lst;
         }
+        
+        public Integer getB1_num() {
+            int sz = b1_num_lst.size();
+            if (sz > 0) {
+                return b1_num_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
 
         public void setB1_num_lst(List<Integer> b1NumLst) {
             b1_num_lst = b1NumLst;
@@ -358,6 +368,16 @@ public class Stock2 implements Comparable<Stock2>{
             return b1_pri_lst;
         }
 
+        public Double getB1_pri() {
+            int sz = b1_pri_lst.size();
+            if (sz > 0) {
+                return b1_pri_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
+        
         public void setB1_pri_lst(List<Double> b1PriLst) {
             b1_pri_lst = b1PriLst;
         }
@@ -366,6 +386,16 @@ public class Stock2 implements Comparable<Stock2>{
             return b2_num_lst;
         }
 
+        public Integer getB2_num() {
+            int sz = b2_num_lst.size();
+            if (sz > 0) {
+                return b2_num_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
+        
         public void setB2_num_lst(List<Integer> b2NumLst) {
             b2_num_lst = b2NumLst;
         }
@@ -374,6 +404,16 @@ public class Stock2 implements Comparable<Stock2>{
             return b2_pri_lst;
         }
 
+        public Double getB2_pri() {
+            int sz = b2_pri_lst.size();
+            if (sz > 0) {
+                return b2_pri_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
+        
         public void setB2_pri_lst(List<Double> b2PriLst) {
             b2_pri_lst = b2PriLst;
         }
@@ -381,11 +421,31 @@ public class Stock2 implements Comparable<Stock2>{
         public List<Integer> getB3_num_lst() {
             return b3_num_lst;
         }
+        
+        public Integer getB3_num() {
+            int sz = b3_num_lst.size();
+            if (sz > 0) {
+                return b3_num_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
 
         public void setB3_num_lst(List<Integer> b3NumLst) {
             b3_num_lst = b3NumLst;
         }
 
+        public Double getB3_pri() {
+            int sz = b3_pri_lst.size();
+            if (sz > 0) {
+                return b3_pri_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
+        
         public List<Double> getB3_pri_lst() {
             return b3_pri_lst;
         }
@@ -401,10 +461,30 @@ public class Stock2 implements Comparable<Stock2>{
         public void setB4_num_lst(List<Integer> b4NumLst) {
             b4_num_lst = b4NumLst;
         }
+        
+        public Integer getB4_num() {
+            int sz = b4_num_lst.size();
+            if (sz > 0) {
+                return b4_num_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
 
         public List<Double> getB4_pri_lst() {
             return b4_pri_lst;
         }
+        public Double getB4_pri() {
+            int sz = b4_pri_lst.size();
+            if (sz > 0) {
+                return b4_pri_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
+        
 
         public void setB4_pri_lst(List<Double> b4PriLst) {
             b4_pri_lst = b4PriLst;
@@ -414,6 +494,15 @@ public class Stock2 implements Comparable<Stock2>{
             return b5_num_lst;
         }
 
+        public Integer getB5_num() {
+            int sz = b5_num_lst.size();
+            if (sz > 0) {
+                return b5_num_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
         public void setB5_num_lst(List<Integer> b5NumLst) {
             b5_num_lst = b5NumLst;
         }
@@ -426,10 +515,29 @@ public class Stock2 implements Comparable<Stock2>{
             b5_pri_lst = b5PriLst;
         }
 
+        public Double getB5_pri() {
+            int sz = b5_pri_lst.size();
+            if (sz > 0) {
+                return b5_pri_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
+        
         public List<Integer> getS1_num_lst() {
             return s1_num_lst;
         }
 
+        public Integer getS1_num() {
+            int sz = s1_num_lst.size();
+            if (sz > 0) {
+                return s1_num_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
         public void setS1_num_lst(List<Integer> s1NumLst) {
             s1_num_lst = s1NumLst;
         }
@@ -438,12 +546,30 @@ public class Stock2 implements Comparable<Stock2>{
             return s1_pri_lst;
         }
 
+        public Double getS1_pri() {
+            int sz = s1_pri_lst.size();
+            if (sz > 0) {
+                return s1_pri_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
         public void setS1_pri_lst(List<Double> s1PriLst) {
             s1_pri_lst = s1PriLst;
         }
 
         public List<Integer> getS2_num_lst() {
             return s2_num_lst;
+        }
+        public Integer getS2_num() {
+            int sz = s2_num_lst.size();
+            if (sz > 0) {
+                return s2_num_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
         }
 
         public void setS2_num_lst(List<Integer> s2NumLst) {
@@ -453,6 +579,15 @@ public class Stock2 implements Comparable<Stock2>{
         public List<Double> getS2_pri_lst() {
             return s2_pri_lst;
         }
+        public Double getS2_pri() {
+            int sz = s2_pri_lst.size();
+            if (sz > 0) {
+                return s2_pri_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
 
         public void setS2_pri_lst(List<Double> s2PriLst) {
             s2_pri_lst = s2PriLst;
@@ -460,6 +595,15 @@ public class Stock2 implements Comparable<Stock2>{
 
         public List<Integer> getS3_num_lst() {
             return s3_num_lst;
+        }
+        public Integer gets3_num() {
+            int sz = s3_num_lst.size();
+            if (sz > 0) {
+                return s3_num_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
         }
 
         public void setS3_num_lst(List<Integer> s3NumLst) {
@@ -469,6 +613,15 @@ public class Stock2 implements Comparable<Stock2>{
         public List<Double> getS3_pri_lst() {
             return s3_pri_lst;
         }
+        public Double getS3_pri() {
+            int sz = s3_pri_lst.size();
+            if (sz > 0) {
+                return s3_pri_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
 
         public void setS3_pri_lst(List<Double> s3PriLst) {
             s3_pri_lst = s3PriLst;
@@ -476,6 +629,15 @@ public class Stock2 implements Comparable<Stock2>{
 
         public List<Integer> getS4_num_lst() {
             return s4_num_lst;
+        }
+        public Integer getS4_num() {
+            int sz = s4_num_lst.size();
+            if (sz > 0) {
+                return s4_num_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
         }
 
         public void setS4_num_lst(List<Integer> s4NumLst) {
@@ -485,6 +647,15 @@ public class Stock2 implements Comparable<Stock2>{
         public List<Double> getS4_pri_lst() {
             return s4_pri_lst;
         }
+        public Double getS4_pri() {
+            int sz = s4_pri_lst.size();
+            if (sz > 0) {
+                return s4_pri_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
 
         public void setS4_pri_lst(List<Double> s4PriLst) {
             s4_pri_lst = s4PriLst;
@@ -493,6 +664,15 @@ public class Stock2 implements Comparable<Stock2>{
         public List<Integer> getS5_num_lst() {
             return s5_num_lst;
         }
+        public Integer getS5_num() {
+            int sz = s5_num_lst.size();
+            if (sz > 0) {
+                return s5_num_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
+        }
 
         public void setS5_num_lst(List<Integer> s5NumLst) {
             s5_num_lst = s5NumLst;
@@ -500,6 +680,15 @@ public class Stock2 implements Comparable<Stock2>{
 
         public List<Double> getS5_pri_lst() {
             return s5_pri_lst;
+        }
+        public Double getS5_pri() {
+            int sz = s5_pri_lst.size();
+            if (sz > 0) {
+                return s5_pri_lst.get(sz - 1);
+            }
+            else {
+                return null;
+            }
         }
 
         public void setS5_pri_lst(List<Double> s5PriLst) {
@@ -650,7 +839,7 @@ public class Stock2 implements Comparable<Stock2>{
             s5_pri_lst = new BoundArrayList<Double>(MAX_SZ);
             dl_dt_lst = new BoundArrayList<Timestamp>(MAX_SZ);
             
-            Connection con = DBManager.getConnection();
+            /*Connection con = DBManager.getConnection();
             try {
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDlyInfo where id ='" + stkId + "' order by dt";
@@ -671,7 +860,7 @@ public class Stock2 implements Comparable<Stock2>{
             }
             catch(SQLException e) {
                 e.printStackTrace();
-            }
+            }*/
         }
         
         StockData(String stkId, String start_dte, String end_dte, int sz) {
@@ -714,7 +903,7 @@ public class Stock2 implements Comparable<Stock2>{
             s5_pri_lst = new BoundArrayList<Double>(MAX_SZ);
             dl_dt_lst = new BoundArrayList<Timestamp>(MAX_SZ);
 
-            Connection con = DBManager.getConnection();
+            /*Connection con = DBManager.getConnection();
             try {
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDlyInfo where id ='" + stkId + "' order by dt";
@@ -735,7 +924,7 @@ public class Stock2 implements Comparable<Stock2>{
             }
             catch(SQLException e) {
                 e.printStackTrace();
-            }
+            }*/
         }
         
         boolean LoadData() {
@@ -780,6 +969,10 @@ public class Stock2 implements Comparable<Stock2>{
                     s5_num_lst.add(rs.getInt("s5_num"));
                     s5_pri_lst.add(rs.getDouble("s5_pri"));
                     dl_dt_lst.add(rs.getTimestamp("dl_dt"));
+                    td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
+                    yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
+                    td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
+                    td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
                 }
                 rs.close();
                 stm.close();
@@ -834,6 +1027,10 @@ public class Stock2 implements Comparable<Stock2>{
                     s5_num_lst.add(rs.getInt("s5_num"));
                     s5_pri_lst.add(rs.getDouble("s5_pri"));
                     dl_dt_lst.add(rs.getTimestamp("dl_dt"));
+                    td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
+                    yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
+                    td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
+                    td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
                 }
                 rs.close();
                 stm.close();
@@ -881,6 +1078,10 @@ public class Stock2 implements Comparable<Stock2>{
                     s5_num_lst.add(rs.getInt("s5_num"));
                     s5_pri_lst.add(rs.getDouble("s5_pri"));
                     dl_dt_lst.add(rs.getTimestamp("dl_dt"));
+                    td_opn_pri_lst.add(rs.getDouble("td_opn_pri"));
+                    yt_cls_pri_lst.add(rs.getDouble("yt_cls_pri"));
+                    td_hst_pri_lst.add(rs.getDouble("td_hst_pri"));
+                    td_lst_pri_lst.add(rs.getDouble("td_lst_pri"));
             }
             catch(SQLException e) {
                 e.printStackTrace();
@@ -920,6 +1121,10 @@ public class Stock2 implements Comparable<Stock2>{
                 s5_num_lst.add(rsd.s5_num);
                 s5_pri_lst.add(rsd.s5_pri);
                 dl_dt_lst.add(Timestamp.valueOf(rsd.dl_dt + " " + rsd.dl_tm));
+                td_opn_pri_lst.add(rsd.td_opn_pri);
+                yt_cls_pri_lst.add(rsd.yt_cls_pri);
+                td_hst_pri_lst.add(rsd.td_hst_pri);
+                td_lst_pri_lst.add(rsd.td_lst_pri);
             }
             else {
                 return false;
@@ -1040,6 +1245,41 @@ public class Stock2 implements Comparable<Stock2>{
 			}
 			return null;
 		}
+        
+		public Double getMinTd_lst_pri() {
+			// TODO Auto-generated method stub
+			int sz = td_lst_pri_lst.size();
+			double minPri = 100000;
+			if (sz > 0) {
+			    for (int i = 0; i < sz; i++) {
+			    	if (minPri > td_lst_pri_lst.get(i) && td_lst_pri_lst.get(i) > 0) {
+			    		minPri = td_lst_pri_lst.get(i);
+			    	}
+			    }
+			}
+			log.info("got min td_lst_pri for stock:" + id + ":" + minPri);
+			if (minPri > 0) {
+				return minPri;
+			}
+			return null;
+		}
+		public Double getMaxTd_hst_pri() {
+			// TODO Auto-generated method stub
+			int sz = td_hst_pri_lst.size();
+			double maxPri = 0;
+			if (sz > 0) {
+			    for (int i = 0; i < sz; i++) {
+			    	if (maxPri < td_hst_pri_lst.get(i)) {
+			    		maxPri = td_hst_pri_lst.get(i);
+			    	}
+			    }
+			}
+			log.info("got max td_hst_pri for stock:" + id + ":" + maxPri);
+			if (maxPri > 0) {
+				return maxPri;
+			}
+			return null;
+		}
 		
 		public Double getMaxYtClsPri(int Days) {
 			// TODO Auto-generated method stub
@@ -1095,6 +1335,27 @@ public class Stock2 implements Comparable<Stock2>{
 			if (sz > 0) {
 				log.info("yt_cls_pri for stock:" + id + " is:" +yt_cls_pri_lst.get(sz - 1));
 				return yt_cls_pri_lst.get(sz - 1);
+			}
+			return null;
+		}
+        
+		public Double getDl_mny_num() {
+			// TODO Auto-generated method stub
+			int sz = dl_mny_num_lst.size();
+			
+			if (sz > 0) {
+				log.info("last dl_mny_num for stock:" + id + " is:" +dl_mny_num_lst.get(sz - 1));
+				return dl_mny_num_lst.get(sz - 1);
+			}
+			return null;
+		}
+		public Integer getDl_stk_num() {
+			// TODO Auto-generated method stub
+			int sz = dl_stk_num_lst.size();
+			
+			if (sz > 0) {
+				log.info("last dl_stk_num for stock:" + id + " is:" + dl_stk_num_lst.get(sz - 1));
+				return dl_stk_num_lst.get(sz - 1);
 			}
 			return null;
 		}
@@ -1356,14 +1617,90 @@ public class Stock2 implements Comparable<Stock2>{
     
     public Double getOpen_pri() {
     	Double opn_pri = null;
-        if (!sd.cur_pri_lst.isEmpty()) {
+        if (!sd.td_opn_pri_lst.isEmpty()) {
         	opn_pri = sd.td_opn_pri_lst.get(sd.td_opn_pri_lst.size() - 1);
         	log.info("Got opn_pri:" + opn_pri + " for stock:" + id);
             return opn_pri;
         }
         return opn_pri;
     }
+    
+    public Double getDl_mny_num() {
+        return sd.getDl_mny_num();
+    }
 
+    public Integer getDl_stk_num() {
+        return sd.getDl_stk_num();
+    }
+    
+    public Integer getB1_num() {
+        return sd.getB1_num();
+    }
+    public Integer getB2_num() {
+        return sd.getB2_num();
+    }
+    public Integer getB3_num() {
+        return sd.getB3_num();
+    }
+    public Integer getB4_num() {
+        return sd.getB4_num();
+    }
+    public Integer getB5_num() {
+        return sd.getB5_num();
+    }
+    public Integer getS1_num() {
+        return sd.getS1_num();
+    }
+    public Integer getS2_num() {
+        return sd.getS2_num();
+    }
+    public Integer getS3_num() {
+        return sd.gets3_num();
+    }
+    public Integer getS4_num() {
+        return sd.getS4_num();
+    }
+    public Integer getS5_num() {
+        return sd.getS5_num();
+    }
+    
+    
+    public Double getB1_pri() {
+        return sd.getB1_pri();
+    }
+    public Double getB2_pri() {
+        return sd.getB2_pri();
+    }
+    public Double getB3_pri() {
+        return sd.getB3_pri();
+    }
+    public Double getB4_pri() {
+        return sd.getB4_pri();
+    }
+    public Double getB5_pri() {
+        return sd.getB5_pri();
+    }
+    public Double getS1_pri() {
+        return sd.getS1_pri();
+    }
+    public Double getS2_pri() {
+        return sd.getS2_pri();
+    }
+    public Double getS3_pri() {
+        return sd.getS3_pri();
+    }
+    public Double getS4_pri() {
+        return sd.getS4_pri();
+    }
+    public Double getS5_pri() {
+        return sd.getS5_pri();
+    }
+    public Double getMaxTd_hst_pri() {
+        return sd.getMaxTd_hst_pri();
+    }
+    public Double getMinTd_lst_pri() {
+        return sd.getMinTd_lst_pri();
+    }
     public String getID() {
         // TODO Auto-generated method stub
         return id;
