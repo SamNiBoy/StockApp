@@ -20,15 +20,15 @@ public class DBManager {
     /**
      * ���ӵ�ַ�����������ṩ������ס jdbc:oracle:thin:@localhost:1521:ORCL localhost ��ip��ַ��
      */
-    private static final String url1 = "jdbc:oracle:thin:@localhost:1521:ORCL";
-    private static final String url2 = "jdbc:oracle:thin:@192.168.0.106:1521:ORCL";
-    private static final String url3 = "jdbc:oracle:thin:@localhost:1521:MAINT";
+    private static final String url1 = "jdbc:oracle:thin:@localhost:1523:ORCL12";
+    private static final String url2 = "jdbc:oracle:thin:@192.168.0.103:1523:ORCL12";
+    private static final String url3 = "jdbc:oracle:thin:@localhost:1523:MAINT";
     /**
      * �û� ����
      */
-    private static final String DBUSER = "sam";
-    private static final String password = "sam";
-    private static final String AppDir1 = "D:/tomcat8/webapps/StockApp";
+    private static final String DBUSER = "stockapp";
+    private static final String password = "stockapp";
+    private static final String AppDir1 = "D:/tomcat7/webapps/StockApp";
     private static final String AppDir2 = "E:/mfc/stockapp";
 
     static ComboPooledDataSource  ds = null;

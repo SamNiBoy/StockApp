@@ -72,6 +72,7 @@ public class TaskManager {
     
     public static boolean isTasksStarted()
     {
+        log.info("is task started:"+tskStarted);
         return tskStarted;
     }
 

@@ -25,7 +25,7 @@ public class Stock2 implements Comparable<Stock2>{
 
     	static public final int BIG_SZ = 270;  // store 4.5 hours data.
     	static public final int SMALL_SZ = 60; // store 1 hour data.
-    	static public final int SECONDS_PER_FETCH = 60;
+    	static public final int SECONDS_PER_FETCH = 600;
         int MAX_SZ = 800;
         //Save all history data
         String stkid;

@@ -86,9 +86,11 @@ public class WeChatReporter extends BaseWCReporter{
         log.info("got input:[" + content + "], firstly let's check tasks");
         if (!TaskManager.isTasksStarted())
         {
+            log.info("starting tasks");
             TaskManager.startTasks();
         }
 
+            log.info("after starting tasks, content:" + content + ", length:" + content.length());
         if (msgType.equals("event")) {
         	if (content.equals("subscribe")) {
         		resContent = "欢迎关注微信:\n"
@@ -156,7 +158,7 @@ public class WeChatReporter extends BaseWCReporter{
                     resContent = sdp.getWorkResult();
                 }
             }
-            else if (content.length() == 6 && !content.contains("@")) {
+            else if (content.length() == 6) {
                 String stk = content;
                 GzStock sdp = new GzStock(0, 3, this.getFromUserName(), stk);
                 if (!WorkManager.submitWork(sdp)) {
@@ -166,7 +168,7 @@ public class WeChatReporter extends BaseWCReporter{
                     resContent = sdp.getWorkResult();
                 }
             }
-            else if (content.contains("@")) {
+            else if (content.indexOf("@") > 0) {
                     AddMail us = new AddMail(0, 0, this.getFromUserName(), content);
                     if (!WorkManager.submitWork(us)) {
                         resContent = "AddMail already scheduled, can not do it again!";
