@@ -642,11 +642,18 @@ public class StockObserverable extends Observable {
 		int Total = 0, cnt = 0;
 		try {
 			stm = con.createStatement();
-			String sql = "select id, name from stk order by id";
+			String sql = "select count(distinct id) totCnt from stk";
 			rs = stm.executeQuery(sql);
+			rs.next();
+			Total = rs.getInt("totCnt");
 
 			String id, name;
 
+            rs.close();
+            stm.close();
+			stm = con.createStatement();
+			sql = "select id, name from stk order by id";
+			rs = stm.executeQuery(sql);
 			while (rs.next()) {
 				id = rs.getString("id");
 				name = rs.getString("name");
@@ -655,7 +662,7 @@ public class StockObserverable extends Observable {
 				// s.constructFollowers();
 				// stocks.put(id, s);
 				cnt++;
-				log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
+				log.info("LoadStocks completed:" + cnt * 1.0 / Total);
 			}
 			rs.close();
 			stm.close();

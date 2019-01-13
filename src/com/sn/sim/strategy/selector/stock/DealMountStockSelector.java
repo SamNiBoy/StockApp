@@ -13,23 +13,24 @@ import com.sn.sim.strategy.imp.TradeStrategyImp;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 
-public class StddevStockSelector implements IStockSelector {
+public class DealMountStockSelector implements IStockSelector {
 
-    static Logger log = Logger.getLogger(StddevStockSelector.class);
+    static Logger log = Logger.getLogger(DealMountStockSelector.class);
     int days = 7;
-	double maxStddev = 0.1;
-	double minStddev = 0.023;
+	long minAvgStkNum = 20000000;
+	double minAvgMnyNum = 300000000;
     /**
      * @param args
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
     	boolean isgood = false;
-    	double dev = -1;
+        long avgStkNum = 0;
+        double avgMnyNum = 0.0;
     	try {
     		Connection con = DBManager.getConnection();
     		Statement stm = con.createStatement();
-    		String sql = "select avg(dev) dev from ("
-    				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
+    		String sql = "select avg(max_mny_num) avg_mny_num, avg(max_stk_num) avg_stk_num from ("
+    				   + "select max(dl_mny_num) max_mny_num, max(dl_stk_num) max_stk_num, to_char(dl_dt, 'yyyy-mm-dd') atDay "
     				   + "  from stkdat2 "
     				   + " where id ='" + s.getID() + "'"
     				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + days + ", 'yyyy-mm-dd')"
@@ -37,8 +38,9 @@ public class StddevStockSelector implements IStockSelector {
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
     		if (rs.next()) {
-    			 dev = rs.getDouble("dev");
-    			if (dev >= minStddev && dev <= maxStddev) {
+    			 avgStkNum = rs.getLong("avg_stk_num");
+    			 avgMnyNum = rs.getDouble("avg_mny_num");
+    			if (avgStkNum > minAvgStkNum && avgMnyNum > minAvgMnyNum) {
     				isgood = true;
     			}
     		}
@@ -49,7 +51,7 @@ public class StddevStockSelector implements IStockSelector {
     	catch(Exception e) {
     		e.printStackTrace();
     	}
-    	log.info("dev:" + dev + ", minStddev:" + minStddev + ", maxStddev:" + maxStddev + " return " + (isgood ? " true":"false"));
+    	log.info("avgStkNum:" + avgStkNum + ", minAvgStkNum:" + minAvgStkNum + ", avgMnyNum:" + avgMnyNum + ", minAvgMnyNum:" + minAvgMnyNum + " return " + (isgood ? " true":"false"));
         return isgood;
     }
 	@Override
@@ -65,20 +67,6 @@ public class StddevStockSelector implements IStockSelector {
 	@Override
 	public boolean adjustCriteria(boolean harder) {
 		// TODO Auto-generated method stub
-		if (harder) {
-			minStddev += 0.002;
-			if (minStddev >= maxStddev) {
-				minStddev = maxStddev;
-			}
-		}
-		else {
-			minStddev -= 0.001;
-			if (minStddev <= 0.01) {
-				log.info("minStddev is lower than 0.01, use 0.01.");
-				minStddev = 0.01;
-			}
-			log.info("Now maxStddve:" + maxStddev + ", minStddev:" + minStddev);
-		}
 		return true;
 	}
 }

@@ -177,7 +177,7 @@ public class sndStkStat implements IWork {
     
     private static boolean getToken() {
         String APPID="wx23bd4a8c2f6afbef";
-        String APPSECRET="d67ad4ccd309506bdad0313098dfbe42";
+        String APPSECRET="c8aa54857b93e6d78408eb8adbeb0281";
         String url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + APPID + "&secret=" + APPSECRET;
         URL ul;
         try {

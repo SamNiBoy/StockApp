@@ -16,13 +16,13 @@ import com.sn.stock.StockMarket;
 public class PriceStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(PriceStockSelector.class);
-    double HighestPrice = 20;
+    double HighestPrice = 50;
     /**
      * @param args
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
         if (s.getCur_pri() != null && s.getCur_pri() <= HighestPrice) {
-                    log.info("returned true because price is <= 20.");
+                    log.info("returned true because price is <= " + HighestPrice);
                     return true;
         }
         log.info("returned false for PriceStockSelector");
@@ -41,26 +41,6 @@ public class PriceStockSelector implements IStockSelector {
 	@Override
 	public boolean adjustCriteria(boolean harder) {
 		// TODO Auto-generated method stub
-		log.info("Try " + (harder ? "Harder" : "Loose") + " criteria for HighestPrice " + HighestPrice);
-		if (harder) {
-			if (HighestPrice < 5) {
-				log.info("HighestPrice can not less than 5");
-				return false;
-			}
-			else {
-			    HighestPrice = HighestPrice * 0.9;
-			}
-		}
-		else {
-			if (HighestPrice > 50) {
-				log.info("HighestPrice can not more than 50");
-				return false;
-			}
-			else {
-			    HighestPrice = HighestPrice * 1.1;
-			}
-		}
-		log.info("HighestPrice is now: " + HighestPrice);
 		return false;
 	}
 }

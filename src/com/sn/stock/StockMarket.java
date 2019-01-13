@@ -46,6 +46,11 @@ public class StockMarket{
     		                             + "  and u.gz_flg = 1 "
     		                             + "  and u.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_USER + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "') "
     		                             + "order by s.id";
+    public static String GZ_STOCK_CNT_SELECT = "select count(distinct s.id) TotalCnt "
+    		                             + "from stk s, usrStk u "
+    		                             + "where s.id = u.id "
+    		                             + "  and u.gz_flg = 1 "
+    		                             + "  and u.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_USER + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "') ";
     /**
      * @param args
      */
@@ -66,20 +71,28 @@ public class StockMarket{
         stocks.clear();
         Stock2 s = null;
         int cnt = 0;
+        int Total = 0;
         try {
             stm = con.createStatement();
-            String sql = "select id, name from stk order by id";
+            String sql = "select count(distinct id) totCnt from stk";
             rs = stm.executeQuery(sql);
-            
+            rs.next();
+            Total = rs.getInt("totCnt");
+
             String id, name;
-            
+
+            rs.close();
+            stm.close();
+            stm = con.createStatement();
+            sql = "select id, name from stk order by id";
+            rs = stm.executeQuery(sql);
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
                 s = new Stock2(id, name, StockData.SMALL_SZ);
                 stocks.put(id, s);
                 cnt++;
-                log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
+                log.info("Load All Stocks completed:" + cnt * 1.0 / Total);
             }
             rs.close();
             stm.close();
@@ -102,11 +115,19 @@ public class StockMarket{
         gzstocks.clear();
         Stock2 s = null;
         int cnt = 0;
+        int Total = 0;
         try {
             stm = con.createStatement();
-            rs = stm.executeQuery(GZ_STOCK_SELECT);
+            rs = stm.executeQuery(GZ_STOCK_CNT_SELECT);
+            rs.next();
+            Total = rs.getInt("TotalCnt");
+            rs.close();
+            stm.close();
             
             String id, name;
+            stm = con.createStatement();
+            rs = stm.executeQuery(GZ_STOCK_SELECT);
+            rs.next();
             
             while (rs.next()) {
                 id = rs.getString("id");
@@ -114,7 +135,7 @@ public class StockMarket{
                 s = new Stock2(id, name, StockData.BIG_SZ);
                 gzstocks.put(id, s);
                 cnt++;
-                log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
+                log.info("Load GZStocks completed:" + cnt * 1.0 / Total);
             }
             rs.close();
             stm.close();

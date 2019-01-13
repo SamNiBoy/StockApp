@@ -63,20 +63,22 @@ public class SimTrader implements IWork{
     private TimeUnit tu = TimeUnit.MILLISECONDS;
     
     private boolean simOnGzStk = true;
+    private boolean run_on_night = false;
     
     public String resMsg = "Initial msg for work SimTrader.";
     
     static Connection con = null;
     SimStockDriver ssd = new SimStockDriver();
 
-    public SimTrader(long id, long dbn, boolean onlyGzStk) {
+    public SimTrader(long id, long dbn, boolean onlyGzStk, boolean ron) {
         initDelay = id;
         delayBeforNxtStart = dbn;
         simOnGzStk = onlyGzStk;
+        run_on_night = ron;
     }
 
     static public void main(String[] args) throws Exception {
-        SimTrader st = new SimTrader(0, 0, false);
+        SimTrader st = new SimTrader(0, 0, false, false);
         st.run();
     }
 
@@ -85,19 +87,19 @@ public class SimTrader implements IWork{
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "delete from tradedtl where acntid like 'Sim%'";
+			sql = "delete from tradedtl where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
 			
 			stm = con.createStatement();
-			sql = "delete from tradehdr where acntid like 'Sim%'";
+			sql = "delete from tradehdr where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
 			
 			stm = con.createStatement();
-			sql = "delete from CashAcnt where  dft_acnt_flg = 0 and acntid like 'Sim%'";
+			sql = "delete from CashAcnt where  dft_acnt_flg = 0 and acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
@@ -109,7 +111,7 @@ public class SimTrader implements IWork{
 	}
 	
 	public static void start() {
-        SimTrader st = new SimTrader(0, 0, false);
+        SimTrader st = new SimTrader(0, 0, false, false);
 	    WorkManager.submitWork(st);
 	}
 	
@@ -121,8 +123,8 @@ public class SimTrader implements IWork{
         
         int time = hr*100 + mnt;
         log.info("SimWork, time:" + time);
-        // Only run after 22:30 PM.
-        while (time < 2230 && time > 700) {
+        // Only run after 21:30 PM.
+        while (time < 2130 && time > 700 && run_on_night) {
             try {
 				Thread.currentThread().sleep(30*60*1000);
 			} catch (InterruptedException e) {
@@ -148,8 +150,8 @@ public class SimTrader implements IWork{
         else {
             sql = "select * from stk where id in "
             	+ "(select s.id from stkdat2 s "
-            	+ "  where s.yt_cls_pri <= 20 and s.yt_cls_pri >= 10 "
-            	+ "    and not exists (select 'x' from stkdat2 s2 where s2.id = s.id and s2.dt > s.dt))";
+            	+ "  where s.yt_cls_pri <= 100 and s.yt_cls_pri >= 2 "
+            	+ "    and not exists (select 'x' from stkdat2 s2 where s2.id = s.id and s2.dl_dt > s.dl_dt)) ";
         }
 
         ArrayList<String> stks = new ArrayList<String>();

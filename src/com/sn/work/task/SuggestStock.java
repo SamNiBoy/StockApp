@@ -17,6 +17,7 @@ import com.sn.db.DBManager;
 import com.sn.mail.reporter.RecommandStockObserverable;
 import com.sn.sim.strategy.imp.STConstants;
 import com.sn.sim.strategy.selector.stock.AvgClsPriStockSelector;
+import com.sn.sim.strategy.selector.stock.DealMountStockSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.sim.strategy.selector.stock.KeepGainStockSelector;
@@ -111,9 +112,10 @@ public class SuggestStock implements IWork {
 		selectors.add(new DefaultStockSelector());
 		selectors.add(new PriceStockSelector());
 		selectors.add(new StddevStockSelector());
-		selectors.add(new AvgClsPriStockSelector());
+		selectors.add(new DealMountStockSelector());
+		//selectors.add(new AvgClsPriStockSelector());
 //		selectors.add(new ClosePriceTrendStockSelector());
-		selectors.add(new KeepGainStockSelector());
+		//selectors.add(new KeepGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
 	}
 

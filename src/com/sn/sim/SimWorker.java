@@ -25,6 +25,7 @@ import com.sn.cashAcnt.CashAcntManger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.sim.strategy.ITradeStrategy;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.sim.strategy.imp.TradeStrategyGenerator;
 import com.sn.stock.RawStockData;
 import com.sn.stock.Stock2;
@@ -83,7 +84,7 @@ public class SimWorker implements IWork {
     public static void main(String[] args) throws Exception {
 
         SimWorker sw = new SimWorker(0, 0, "testSimWorker");
-        sw.stkToSim.add("002388");
+        sw.stkToSim.add("300265");
         sw.startSim();
     }
 
@@ -98,7 +99,7 @@ public class SimWorker implements IWork {
     	try {
     		con = DBManager.getConnection();
     		stm = con.createStatement();
-    		sql = "select to_char(sysdate - 5, 'yyyy-mm-dd') sd, to_char(sysdate, 'yyyy-mm-dd') ed from dual ";
+    		sql = "select to_char(max(dl_dt) - " + STConstants.SIM_DAYS + ", 'yyyy-mm-dd') sd, to_char(max(dl_dt), 'yyyy-mm-dd') ed from stkdat2";
     		log.info(sql);
     		rs = stm.executeQuery(sql);
     		rs.next();

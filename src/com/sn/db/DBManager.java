@@ -72,7 +72,7 @@ public class DBManager {
 
         try {
             conn = ds.getConnection();
-            log.info("problem connection number:" + ds.getNumUnclosedOrphanedConnections());
+            //log.info("problem connection number:" + ds.getNumUnclosedOrphanedConnections());
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

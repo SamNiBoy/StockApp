@@ -12,6 +12,7 @@ public class STConstants {
     public static final double DFT_MAX_USE_PCT = 0.8;
     public static final String ACNT_TRADE_PREFIX = "ACNT";
     public static final String ACNT_SIM_PREFIX = "SIM";
+    public static final int SIM_DAYS = 5;
     
     //class vars.
     public static final int MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK = 3;

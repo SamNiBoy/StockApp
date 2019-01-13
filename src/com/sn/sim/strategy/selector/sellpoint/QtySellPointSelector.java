@@ -65,7 +65,6 @@ public class QtySellPointSelector implements ISellPointSelector {
 				log.info("Stock " + stk.getID() + " is in sell mode, at sell point, return true.");
 				return true;
 			}
-			log.info("common bad sell point.");
 		} else {
 			log.info("isGoodSellPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
 		}

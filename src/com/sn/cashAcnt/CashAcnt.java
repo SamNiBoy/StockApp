@@ -350,7 +350,7 @@ public class CashAcnt implements ICashAccount {
 						+ df.format(rs.getDouble("pft_price")) + "\t\t|" + rs.getString("add_dt") + "|");
 				Statement stmdtl = con.createStatement();
 				String sqldtl = "select stkid, seqnum, price, amount, to_char(dl_dt, 'yyyy-mm-dd hh24:mi:ss') dl_dt, buy_flg "
-						+ "  from tradedtl where stkid ='" + rs.getString("stkId") + "' order by seqnum";
+						+ "  from tradedtl where acntId ='" + actId + "' order by seqnum";
 				// log.info(sql);
 
 				ResultSet rsdtl = stmdtl.executeQuery(sqldtl);
