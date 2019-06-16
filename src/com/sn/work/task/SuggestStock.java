@@ -234,11 +234,11 @@ public class SuggestStock implements IWork {
 				sql = "";
 				if (rs2.next()) {
 					if (rs2.getLong("gz_flg") == 0) {
-						sql = "update usrStk set gz_flg = 1, suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMUPDATE + "' where openID = '" + openID
+						sql = "update usrStk set gz_flg = 1, suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "' where openID = '" + openID
 								+ "' and id = '" + s.getID() + "'";
 					}
 				} else {
-					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'SYSTEM',sysdate)";
+					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "',sysdate)";
 				}
 				rs2.close();
 				stm2.close();

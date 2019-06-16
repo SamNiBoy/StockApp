@@ -20,16 +20,13 @@ public class DBManager {
     /**
      * ���ӵ�ַ�����������ṩ������ס jdbc:oracle:thin:@localhost:1521:ORCL localhost ��ip��ַ��
      */
-    private static final String url1 = "jdbc:oracle:thin:@localhost:1523:ORCL12";
-    private static final String url2 = "jdbc:oracle:thin:@192.168.0.103:1523:ORCL12";
-    private static final String url3 = "jdbc:oracle:thin:@localhost:1523:MAINT";
+    private static final String url = "jdbc:oracle:thin:@localhost:1521:ORCL122";
     /**
      * �û� ����
      */
-    private static final String DBUSER = "stockapp";
-    private static final String password = "stockapp";
-    private static final String AppDir1 = "D:/tomcat7/webapps/StockApp";
-    private static final String AppDir2 = "E:/mfc/stockapp";
+    private static final String DBUSER = "hpcapp";
+    private static final String password = "default_16";
+    private static final String AppDir = "D:/tomcat7/webapps/HPCApp";
 
     static ComboPooledDataSource  ds = null;
     static Connection conn = null;
@@ -55,9 +52,9 @@ public class DBManager {
             log.info("Getting db connection...");
             try {
                 Class.forName(drive);
-                log.info("connecting db using:" + url2 + "\n Usr/pwd:" + DBUSER
+                log.info("connecting db using:" + url + "\n Usr/pwd:" + DBUSER
                         + "/" + password);
-                conn = DriverManager.getConnection(url2, DBUSER, password);
+                conn = DriverManager.getConnection(url, DBUSER, password);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -82,13 +79,13 @@ public class DBManager {
     }
 
     static void initLog4j() {
-        PropertyConfigurator.configure(AppDir1
+        PropertyConfigurator.configure(AppDir
                 + "/WEB-INF/conf/log4j.properties");
     }
 
     static void initDataSource()
     {
-        log.info("connecting db using:" + url3 + "\n Usr/pwd:" + DBUSER
+        log.info("connecting db using:" + url + "\n Usr/pwd:" + DBUSER
                 + "/" + password);
         ds = new ComboPooledDataSource();
 
@@ -99,7 +96,7 @@ public class DBManager {
             e.printStackTrace();
             log.error("Can not load driver class:" + drive);
         }
-        ds.setJdbcUrl(url1);
+        ds.setJdbcUrl(url);
         ds.setUser(DBUSER);
         ds.setPassword(password);
         ds.setMaxPoolSize(200);
