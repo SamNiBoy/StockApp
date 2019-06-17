@@ -1,12 +1,17 @@
 create table usr(
-openID varchar2(100 byte) not null,
-host_flg number not null,
-add_dt date not null,
+username varchar2(20 byte) not null,
+password varchar2(8 byte) not null,
+account_type number not null, /*0: admin, 1:promptor, 2: brandownder, 3: qiehuo, 4:broker*/
 mail varchar2(100 byte),
-buy_sell_enabled number not null,
-suggest_stock_enabled number not null,
-CONSTRAINT "usr_PK" PRIMARY KEY (OpenID)
+phone varchar2(100 byte),
+address varchar2(200 byte),
+add_dt date not null,
+CONSTRAINT "usr_PK" PRIMARY KEY (username, password)
 );
+
+insert into usr values('SUPER', 'SUPER', 0, 'yl_nxj@163.com', '1391638409', '嘉定依玛路389弄', sysdate);
+insert into usr values('NXJ', 'SUPER', 1, 'yl_nxj@163.com', '1391638409', '嘉定依玛路389弄', sysdate);
+insert into usr values('SAM', 'SUPER', 2, 'yl_nxj@163.com', '1391638409', '嘉定依玛路389弄', sysdate);
 
 create table usrStk(
 openID varchar2(100 byte) not null,

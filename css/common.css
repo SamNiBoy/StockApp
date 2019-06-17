@@ -15,16 +15,40 @@
     justify-content: space-between;
     align-items: flex-start;
 }
-.register
+.content
+{
+    height: 350px;
+}
+
+.logout
 {
     padding-right:20px;
     font-size: 16px;
     color: #FFFFFF;
 }
-.content
+
+.menugroup
 {
-    height: 350px;
+   height:300px;
 }
+.menuitem
+{
+    margin-top:20px;
+    padding-top: 10px;
+    color:#FFFFFF;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+.register
+{
+    padding-top:10px;
+    padding-right:20px;
+    font-size: 16px;
+    color: #FFFFFF;
+}
+
 
 .footer
 {
@@ -41,6 +65,8 @@
     justify-content: space-between;
     align-items: center;
 }
+
+
 
 .loginForm
 {

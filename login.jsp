@@ -12,7 +12,6 @@
 <body class="body">
 <div class="header" >
 <div>您好${username}, 欢迎您使用汇品苍系统</div>
-<div><a class="register" href="registered.jsp" color="white">注册</a></div>
 </div>
 <div class="content">
 <form action="doLogin" method="post">
