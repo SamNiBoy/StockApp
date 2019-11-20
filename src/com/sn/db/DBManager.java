@@ -26,7 +26,7 @@ public class DBManager {
      */
     private static final String DBUSER = "hpcapp";
     private static final String password = "default_16";
-    private static final String AppDir = "D:/tomcat7/webapps/HPCApp";
+    private static final String AppDir = "D:/tomcat7/webapps/LaMai";
 
     static ComboPooledDataSource  ds = null;
     static Connection conn = null;
