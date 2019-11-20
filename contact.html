@@ -43,6 +43,27 @@
 	<script src="js/respond.min.js"></script>
 	<![endif]-->
 
+	<script type="text/javascript">
+    function sendMessage()
+    {
+       var nameLen=document.forms[0][0].textLength;
+       var mailLen=document.forms[0][1].textLength;
+       var phoneLen=document.forms[0][2].textLength;
+       var messageLen=document.forms[0][3].textLength;
+       if (nameLen <= 0 || mailLen <= 0 || phoneLen <= 0 || messageLen <= 0)
+       {
+           alert("Please provide necessary information before submit!");
+           return false
+       }
+       else
+       {
+           alert("You message has been sent!");
+           document.forms[0].submit();
+           //window.location.href="contact.html";
+           return false;
+       }
+    }
+    </script>
 	</head>
 	<body>
 	<div id="fh5co-page">
@@ -116,27 +137,27 @@
 						<h2>Get In Touch</h2>
 					</div>
 				</div>
-				<form action="/HPCApp/doLogin" method="post">
+				<form action="sendMessage" method="post" id="msgForm">
 					<div class="row">
 						<div class="col-md-12">
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group">
-										<input type="text" class="form-control" placeholder="Name">
+										<input type="text" class="form-control" placeholder="Name" name="name">
 									</div>
 									<div class="form-group">
-										<input type="text" class="form-control" placeholder="Email">
+										<input type="text" class="form-control" placeholder="Email" name="mail">
 									</div>
 									<div class="form-group">
-										<input type="text" class="form-control" placeholder="Phone">
+										<input type="text" class="form-control" placeholder="Phone" name="phone">
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
-										<textarea name="" id="message" cols="30" rows="7" class="form-control" placeholder="Message"></textarea>
+										<textarea id="message" cols="30" rows="7" class="form-control" placeholder="Message" name="message"></textarea>
 									</div>
 									<div class="form-group">
-										<input type="submit" class="btn btn-primary btn-md" value="Send Message">
+										<input type="button" class="btn btn-primary btn-md" value="Send Message" onClick="sendMessage()">
 									</div>
 								</div>
 								
