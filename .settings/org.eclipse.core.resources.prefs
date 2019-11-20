@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding//WEB-INF/tags/table.tag=UTF-8
 encoding//scripts/perlstk.pl=ISO-8859-1
 encoding//src/com/sn/draw/StockStat/DrwStockStat.java=UTF-8
 encoding//src/com/sn/draw/itf/Draw.java=UTF-8
