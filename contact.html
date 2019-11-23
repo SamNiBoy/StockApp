@@ -35,14 +35,28 @@
 	<link rel="stylesheet" href="css/flexslider.css">
 	<!-- Theme style  -->
 	<link rel="stylesheet" href="css/style.css">
-
+	<link rel="stylesheet" href="css/common.css">
 	<!-- Modernizr JS -->
 	<script src="js/modernizr-2.6.2.min.js"></script>
 	<!-- FOR IE9 below -->
 	<!--[if lt IE 9]>
 	<script src="js/respond.min.js"></script>
 	<![endif]-->
-
+	   <!-- jQuery -->
+	    <script src="js/jquery.min.js"></script>
+	    <!-- jQuery Easing -->
+	    <script src="js/jquery.easing.1.3.js"></script>
+	    <!-- Bootstrap -->
+	    <script src="js/bootstrap.min.js"></script>
+	    <!-- Waypoints -->
+	    <script src="js/jquery.waypoints.min.js"></script>
+	    <!-- Flexslider -->
+	    <script src="js/jquery.flexslider-min.js"></script>
+	    <!-- Google Map -->
+	    <!---<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCefOgb1ZWqYtj7raVSmN4PL2WkTrc-KyA&sensor=false"></script>
+	    <script src="js/google_map.js"></script>--->
+	    <!-- MAIN JS -->
+	    <script src="js/main.js"></script>
 	<script type="text/javascript">
     function sendMessage()
     {
@@ -68,30 +82,10 @@
 	<body>
 	<div id="fh5co-page">
 		<a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle"><i></i></a>
-		<aside id="fh5co-aside" role="complementary" class="border js-fullheight">
-
-			<h1 id="fh5co-logo"><a href="index.html">LaMai</a></h1>
-			<nav id="fh5co-main-menu" role="navigation">
-				<ul>
-					<li><a href="index.html">Home</a></li>
-					<li><a href="expertise.html">Expertise</a></li>
-					<li><a href="case.html">Case Study</a></li>
-					<li><a href="about.html">About</a></li>
-					<li class="fh5co-active"><a href="contact.html">Contact</a></li>
-				</ul>
-			</nav>
-
-			<div class="fh5co-footer">
-				<p>Copyright &copy; 2019.LaMai All rights reserved.</p>
-				<ul>
-					<li><a href="#"><i class="icon-facebook2"></i></a></li>
-					<li><a href="#"><i class="icon-twitter2"></i></a></li>
-					<li><a href="#"><i class="icon-instagram"></i></a></li>
-					<li><a href="#"><i class="icon-linkedin2"></i></a></li>
-				</ul>
-			</div>
-
-		</aside>
+		<div id="aside"></div>
+        <script>
+              $("#aside").load("aside.html");
+        </script>
 
 		<div id="fh5co-main">
 			<div class="fh5co-more-contact">
@@ -103,7 +97,7 @@
 									<i class="icon-globe"></i>
 								</div>
 								<div class="fh5co-text">
-									<p><a href="mailto:yl_nxj@163.com">yl_nxj@163.com</a></p>
+									<p><a href="mailto:sam.ni@lamaisys.com">sam.ni@lamaisys.com</a></p>
 								</div>
 							</div>
 						</div>
@@ -168,26 +162,13 @@
 				</form>
 			</div>
 			<div id="map"></div>	
+            <div id="footer"></div>
+            <script>
+                  $("#footer").load("footer.html");
+            </script>
 		</div>
 	</div>
 
-	<!-- jQuery -->
-	<script src="js/jquery.min.js"></script>
-	<!-- jQuery Easing -->
-	<script src="js/jquery.easing.1.3.js"></script>
-	<!-- Bootstrap -->
-	<script src="js/bootstrap.min.js"></script>
-	<!-- Waypoints -->
-	<script src="js/jquery.waypoints.min.js"></script>
-	<!-- Flexslider -->
-	<script src="js/jquery.flexslider-min.js"></script>
-	<!-- Google Map -->
-	<!---<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCefOgb1ZWqYtj7raVSmN4PL2WkTrc-KyA&sensor=false"></script>
-	<script src="js/google_map.js"></script>--->
-	
-	
-	<!-- MAIN JS -->
-	<script src="js/main.js"></script>
 
 	</body>
 </html>

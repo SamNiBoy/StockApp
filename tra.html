@@ -25,7 +25,6 @@
 	<!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 	<link rel="shortcut icon" href="favicon.ico">
 
-	
 	<!-- Animate.css -->
 	<link rel="stylesheet" href="css/animate.css">
 	<!-- Icomoon Icon Fonts-->
@@ -63,52 +62,56 @@
 	<body>
 	<div id="fh5co-page">
 		<a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle"><i></i></a>
-        <div id="aside"></div>
-        <script>
-              $("#aside").load("aside2exp.html");
-        </script>
 
+		<div id="aside"></div>
+        <script>
+              $("#aside").load("asideproduct.html");
+        </script>
+        
 		<div id="fh5co-main">
 			<div class="fh5co-narrow-content">
-				<h2 class="fh5co-heading animate-box" data-animate-effect="fadeInLeft">Expertise & Experience</h2>
 				<div class="row row-bottom-padded-md">
-					<div class="col-md-3 col-sm-6 col-padding animate-box" data-animate-effect="fadeInLeft">
-						<div class="blog-entry">
-							<a href="wms2exp.html" class="blog-img"><img src="images/samni.jpg" class="img-responsive" alt="Free HTML5 Bootstrap Template by FreeHTML5.co"></a>
-							<div class="desc">
-								<h3>Over 11 Years experience</h3>
-								<span><small>by Sam Ni</small> / <small> JDA WMS </small> / <small> <i class="icon-comment"></i> 20 Nov. 2019</small></span>
-								<p>Worked on JDA WMS from RedPrairie since 2008</p>
-								<a href="wms2exp.html" class="lead">Learn More <i class="icon-arrow-right3"></i></a>
-							</div>
-						</div>
+					<div class="col-md-6 animate-box pic-for-detail-page" data-animate-effect="fadeInLeft">
+						<img class="img-responsive" src="images/tra.jpg" alt="Free HTML5 Bootstrap Template by FreeHTML5.co">
+					</div>
+					<div class="col-md-6 animate-box txt-for-detail-page" data-animate-effect="fadeInLeft">
+						<h2 class="fh5co-heading">Trace Digger</h2>
+						<p>Trace Digger was developed in 2010, at that time I worked in WMS maintainance team, in daily basis
+						I need to investigate a lot of traces for troubleshooting, we already have a very good tool named LextEdit for investigating MOCA structed trace,
+						however, given the frequency of investigating trace, I need a tool which can give me more flexibilty:
+	                    <ul>
+                            <li>Ability for Quick Search and Navigating</li>
+                            <li>Order Command/SQL by Performance</li>
+                            <li>Bookmark a Command/SQL for Switching between Nodes</li>
+                            <li>Ability for Investigating MTF trace</li>
+                            <li>...</li>
+                        </ul>
+						</p>
+						<p>There is a document on the internet talked about more detail, See <a href="http://www.bleum.com/resolve-issues-faster-with-bleums-jda-wms-trace-tool/">Here</a> for more.</p>
+                        <p>The latest version is 2.1, comparing to previous version, a few issues fixed:
+	                    <ul>
+                            <li>Used a new font for hilighted trace</li>
+                            <li>Made the search bar more wider, so can type more chars to search</li>
+                            <li>Fixed the issue of can not open Unix system generated trace file</li>
+                        </ul>
+                        </p>
+						<p>If you interested in Trace Digger, please email to Sam to get latest:<a href="mailto:sam.ni@lamaisys.com">sam.ni@lamaisys.com</a></p>
 					</div>
 				</div>
+                
 			</div>
-		
-			<div id="get-in-touch">
-				<div class="fh5co-narrow-content">
-					<div class="row">
-						<div class="col-md-4 animate-box" data-animate-effect="fadeInLeft">
-							<h1 class="fh5co-heading-colored">Get in touch</h1>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-md-6 col-md-offset-3 col-md-pull-3 animate-box" data-animate-effect="fadeInLeft">
-							<p class="fh5co-lead">Want to know more? let's get in touch</p>
-							<p><a href="contact.html" class="btn btn-primary">Click to Contact</a></p>
-						</div>
-						
-					</div>
-				</div>
-			</div>
+
+                <div class="col-md-8 col-md-offset-2 text-center js-fullheight">
+                    <div><a class="btn btn-primary text-center" href="javascript:window.history.back(-1);">Back</a></div>
+                </div>
             <div id="footer"></div>
             <script>
                   $("#footer").load("footer.html");
             </script>
 		</div>
-	</div>
 
+
+	</div>
 
 
 	</body>

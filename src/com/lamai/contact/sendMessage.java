@@ -52,7 +52,7 @@ public class sendMessage extends BaseHttpServlet{
         // 发送邮件
         SimpleMailSender sms = MailSenderFactory.getSender();
         List<String> recipients = new ArrayList<String>();
-        recipients.add("yl_nxj@163.com");
+        recipients.add("sam.ni@lamaisys.com");
         // recipients.add("samniboy@gmail.com");
         String subject = "LaMai Vistor Message";
         String content = "Message from LaMai:<br/>" +
