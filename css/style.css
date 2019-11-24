@@ -116,7 +116,7 @@ figure figcaption {
 }
 @media screen and (max-width: 768px) {
   #fh5co-aside {
-    width: 270px;
+    width: 200px;
     -moz-transform: translateX(-270px);
     -webkit-transform: translateX(-270px);
     -ms-transform: translateX(-270px);
@@ -276,7 +276,7 @@ figure figcaption {
 }
 #fh5co-main .fh5co-narrow-content {
   position: relative;
-  width: 93%;
+  width: 95%;
   margin: 0 auto;
   padding: 4em 0;
   clear: both;

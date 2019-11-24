@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+	<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+  	<!-- Facebook and Twitter integration -->
+	<meta property="og:title" content=""/>
+	<meta property="og:image" content=""/>
+	<meta property="og:url" content=""/>
+	<meta property="og:site_name" content=""/>
+	<meta property="og:description" content=""/>
+	<meta name="twitter:title" content="" />
+	<meta name="twitter:image" content="" />
+	<meta name="twitter:url" content="" />
+	<meta name="twitter:card" content="" />
+
+	<!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+	<link rel="shortcut icon" href="favicon.ico">
+
+	<!-- Animate.css -->
+	<link rel="stylesheet" href="../../css/animate.css">
+	<!-- Icomoon Icon Fonts-->
+	<link rel="stylesheet" href="../../css/icomoon.css">
+	<!-- Bootstrap  -->
+	<link rel="stylesheet" href="../../css/bootstrap.css">
+	<!-- Flexslider  -->
+	<link rel="stylesheet" href="../../css/flexslider.css">
+	<!-- Theme style  -->
+	<link rel="stylesheet" href="../../css/style.css">
+	<link rel="stylesheet" href="../../css/common.css">
+
+	<!-- Modernizr JS -->
+	<script src="../../js/modernizr-2.6.2.min.js"></script>
+	<!-- FOR IE9 below -->
+	<!--[if lt IE 9]>
+	<script src="../../js/respond.min.js"></script>
+	<![endif]-->
+    <!-- jQuery -->
+    <script src="../../js/jquery.min.js"></script>
+    <!-- jQuery Easing -->
+    <script src="../../js/jquery.easing.1.3.js"></script>
+    <!-- Bootstrap -->
+    <script src="../../js/bootstrap.min.js"></script>
+    <!-- Waypoints -->
+    <script src="../../js/jquery.waypoints.min.js"></script>
+    <!-- Flexslider -->
+    <script src="../../js/jquery.flexslider-min.js"></script>
+    
+    
+    <!-- MAIN JS -->
+    <script src="../../js/main.js"></script>
+
+	</head>
+	<body>
+	<div id="fh5co-page">
+		<a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle"><i></i></a>
+
+		<div id="aside"></div>
+        <script>
+              $("#aside").load("asidedomain.html");
+        </script>
+        
+		<div id="fh5co-main">
+			<div class="fh5co-narrow-content js-fullheight">
+				<div class="row row-bottom-padded-md">
+					<div class="col-md-6 animate-box pic-for-detail-page" data-animate-effect="fadeInLeft">
+						<img class="img-responsive" src="../../images/samni.jpg" alt="Free HTML5 Bootstrap Template by FreeHTML5.co">
+					</div>
+					<div class="col-md-6 animate-box txt-for-detail-page" data-animate-effect="fadeInLeft">
+						<h2 class="fh5co-heading">Facility Setup</h2>
+						<p>
+                        When we considering setup a warehouse, there are certain aspects:
+			            <ul>
+	                        <li><a href="#MDDockStage">Dock & Stage</a></li>
+	                        <li><a href="#MDStorage">Storage Zone</a></li>
+	                        <li><a href="#MDPick">Picking Zone</a></li>
+	                        <li><a href="#MDMovement">Movement Zone</a></li>
+	                        <li><a href="#MDPnD">Pick and Deposit</a></li>
+	                    </ul>
+	                    </p>
+                        <div id="MDDockStage">
+                            <p><strong>Dock Location:</strong> Dock is a location, it defines a physical dock slot either used by receiving truck or by shipping truck.</p>
+                            <p><strong>Stage Location:</strong> Stage is a location, it defines a physical location used for storing pallets before Putaway(Receiving Stage) or before Loading trailer(Shipping Stage).
+                            for shipping stage location, system can be setup with a resource code that can be a Shipment ID, a Stop ID, or a Load, this way system will assure only
+                            inventory belongs to the same Shipment/Stop/Load can be stored in the same stage location; it can also setup with capacity tracked if the stage location
+                            is space critical.</p>
+                        </div>
+                        <div id="MDStorage">
+                            <p><strong>Storage Zone:</strong> Defines a group of locations that can be used for inventory Putaway, typically Storage Zone
+                            can be added to Storage Configuration Rule to tell system storage preference during Putaway system allocate a location.
+                        </div>
+                        <div id="MDPick">
+                        <p><strong>Pick Zone:</strong> Defines a set of locations that system can use it to configure outbound picking. e.g we can defined
+                        pallet pick zone for pallet pick, case picking zone for case pick and each picking zone for detail pick.
+                        </p>
+                        </div>
+                        <div id="MDMovement">
+                        <p><strong>Movement Zone:</strong> Defines some features when inventory move in/out of this zone, a typical user case is when
+                        receiving carton, cartons needs to be built into pallet before Putaway, in this case we can define a Movement Path that when move
+                        inventory from Receive Stage Movement Zone to Storage Movement Zone, go to Hop Movement Zone 'Pallet Build' zone;
+                        For outbound scenario, Hop area is more often used for outbound picked inventory to provide additional process, for example for
+                        each carton picked, need to go to movement zone for labeling service.
+                        </p>
+                        </div>
+                        <div id="MDPnD">
+                        <p><strong>Pick and Deposit:</strong> PnD location is a special location where system allows you deposit inventory into the location
+                        and then pickup from the location as needed. e.g, when do List Picking, user can 'set down' the half-way picked list into a PnD location,
+                        and 2nd operator can resume the list pick by scanning the LPN from PnD location.
+                        </p>
+                        </div>
+					</div>
+				</div>
+			</div>
+
+            <div id="footer"></div>
+            <script>
+                  $("#footer").load("../../footer.html");
+            </script>
+		</div>
+
+
+	</div>
+
+
+	</body>
+</html>
+

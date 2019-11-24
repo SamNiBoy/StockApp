@@ -41,7 +41,6 @@
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
-	
 }
 
 .pic-for-detail-page
@@ -53,4 +52,12 @@
 .txt-for-detail-page
 {
 	padding: 0 0 0 50px;
+}
+
+.more-contact
+{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: left;
 }

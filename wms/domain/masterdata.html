@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+	<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+  	<!-- Facebook and Twitter integration -->
+	<meta property="og:title" content=""/>
+	<meta property="og:image" content=""/>
+	<meta property="og:url" content=""/>
+	<meta property="og:site_name" content=""/>
+	<meta property="og:description" content=""/>
+	<meta name="twitter:title" content="" />
+	<meta name="twitter:image" content="" />
+	<meta name="twitter:url" content="" />
+	<meta name="twitter:card" content="" />
+
+	<!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+	<link rel="shortcut icon" href="favicon.ico">
+
+	<!-- Animate.css -->
+	<link rel="stylesheet" href="../../css/animate.css">
+	<!-- Icomoon Icon Fonts-->
+	<link rel="stylesheet" href="../../css/icomoon.css">
+	<!-- Bootstrap  -->
+	<link rel="stylesheet" href="../../css/bootstrap.css">
+	<!-- Flexslider  -->
+	<link rel="stylesheet" href="../../css/flexslider.css">
+	<!-- Theme style  -->
+	<link rel="stylesheet" href="../../css/style.css">
+	<link rel="stylesheet" href="../../css/common.css">
+
+	<!-- Modernizr JS -->
+	<script src="../../js/modernizr-2.6.2.min.js"></script>
+	<!-- FOR IE9 below -->
+	<!--[if lt IE 9]>
+	<script src="../../js/respond.min.js"></script>
+	<![endif]-->
+    <!-- jQuery -->
+    <script src="../../js/jquery.min.js"></script>
+    <!-- jQuery Easing -->
+    <script src="../../js/jquery.easing.1.3.js"></script>
+    <!-- Bootstrap -->
+    <script src="../../js/bootstrap.min.js"></script>
+    <!-- Waypoints -->
+    <script src="../../js/jquery.waypoints.min.js"></script>
+    <!-- Flexslider -->
+    <script src="../../js/jquery.flexslider-min.js"></script>
+    
+    
+    <!-- MAIN JS -->
+    <script src="../../js/main.js"></script>
+
+	</head>
+	<body>
+	<div id="fh5co-page">
+		<a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle"><i></i></a>
+
+		<div id="aside"></div>
+        <script>
+              $("#aside").load("asidedomain.html");
+        </script>
+        
+		<div id="fh5co-main">
+			<div class="fh5co-narrow-content js-fullheight">
+				<div class="row row-bottom-padded-md">
+					<div class="col-md-6 animate-box pic-for-detail-page" data-animate-effect="fadeInLeft">
+						<img class="img-responsive" src="../../images/samni.jpg" alt="Free HTML5 Bootstrap Template by FreeHTML5.co">
+					</div>
+					<div class="col-md-6 animate-box txt-for-detail-page" data-animate-effect="fadeInLeft">
+						<h2 class="fh5co-heading">Master Data</h2>
+						<p>
+                        WMS system running with certain master data:
+			            <ul>
+	                        <li><a href="#MDItem">Item</a></li>
+	                        <li><a href="#MDFootprint">Item Footprint</a></li>
+	                        <li><a href="#MDSupplier">Supplier</a></li>
+	                        <li><a href="#MDAddress">Address</a></li>
+	                        <li><a href="#MDFacility">Facility</a></li>
+	                    </ul>
+	                    </p>
+                        <div id="MDItem">
+                            <p><strong>Item:</strong> Item is an ID identifier used in WMS for a specific item, alternatively it is called SKU,
+                            or Part Number in JDA WMS.</p>
+                        </div>
+                        <div id="MDFootprint">
+                            <p><strong>Item Footprint:</strong> Footprint defines package information for an item, all named TiHi, it is defined by UOM(Unit Of Measure),
+                            with footprint we can define:
+                            <ul>
+                            <li>How many different UOMs for this item?</li>
+                            Most of item has at least 3 different UOM: EA, CS, and PA, some item has additional UOM like IP, LA etc.
+                            UOM defines an unique measure unit information: quantity, length, width, height, weight.
+                            <li>EA</li>
+                            It defines information for a single piece of the item, unit quantity is 1 which means 1EA = 1 piece, also it defines the length,
+                            height, and width dimension of 1 EA, and weigth for 1EA.
+                            <li>IP</li>
+                            It defines information for a single Inner Pack of the item, unit quantity is 5 which means 1IP = 5EA, also it defines the length,
+                            height, and width dimension of 1 IP, and weigth for 1IP.
+                            <li>CS</li>
+                            It defines information for a single case of the item, if one case has 2 Inner Pack then means 1CS = 2IP = 10EA, similary we can define the length,
+                            height, and width dimension of 1 case, and weight for 1CS.
+                            <li>LA</li>
+                            It defines information for a single layer of the item, if one layer has 10 case then means 1LA = 10CS = 20IP = 100EA, similary we can define the length,
+                            height, and width dimension of 1 layer, and weight for 1LA.
+                            <li>PA</li>
+                            It defines information for a single pallet of the item, if one pallet has 5 layers then means 1PA = 5LA = 50CS = 100IP = 500EA, similary we can define the length,
+                            height, and width dimension of 1 pallet, and weight for 1PA. PA is the biggest UOM for any item.
+                            </ul>
+                        </div>
+                        <div id="MDSupplier">
+                        <p><strong>Supplier:</strong> Supplier defines who supplys a purchase order, with which the inbound shipment can be created for receiving.
+                        Supplier must be defined with an address information.
+                        </p>
+                        </div>
+                        <div id="MDAddress">
+                        <p><strong>Address:</strong> Address defines some entity's address information, for example, Supplier has address, warehouse address, outbound order ship to address.
+                        </p>
+                        </div>
+                        <div id="MDFacility">
+                        <p><strong>Facility:</strong> Facility defines the warehouse physical information:
+                            <ul>
+                                <li>Warehouse</li>
+                                Warehouse defines a brief information about a warehouse, like the name of the warehouse, address, timezone information.
+                                <li>Building</li>
+                                Building defines physical buildings defined in same warehouse.
+                                <li>Area</li>
+                                Area is a division for a physical area, in earlier version of JDA WMS, area plays an important role as there a number of
+                                configurations were defined in area level, however this has been changed as new design pulled these configurations into 3 different
+                                zones: Movement Zone, Pick Zone, and Storage Zone. Area now has less important role.
+                                <li>Location</li>
+                                Location is the most important master data which defines a single unit of space for storage, most importantly in location master
+                                data you can define, the location capacity code by whicy we tell system the location capacity is tracked by:
+                                <ul>
+                                <li>loccod = P</li>
+                                Pallet: Location capacity will be tracked by the number of Pallet. e.g if the maximum QVL is 5, it means in maximum this location
+                                can store 5 pallets by counting the number of LPN(License Pallet Number).
+                                <li>loccod = V</li>
+                                Volume: Location capacity will be tracked by the dimension of location height, width and length. e.g if location lenght, width and height are all 100CM,
+                                then the maximum QVL of the location will be 100*100*100 = 1000000CM^3. how many pallet or carton can be stored in the location depends on the dimension
+                                of pallet or carton which defined in item footprint UOM master data.
+                                <li>loccod = L</li>
+                                Length: Location capacity will be tracked by the dimension of location length. e.g if location lenght is 500CM,
+                                then the maximum QVL of the location will be 500CM. how many pallet or carton can be stored in the location depends on the length dimension 
+                                of pallet, usually by the length of Handling Unit on which the pallet is sitting on.
+                                <li>loccod = E</li>
+                                Each: Location capacity will be tracked by a number of EA. e.g if location lenght is 500EA,
+                                then the maximum QVL of the location will be 500 eaches for any item.
+                                </ul>
+                             Which location code to use is determined by the business requirement to see which is fitting your business well.
+                             See <a href="facilitysetup.html">Facility Setup</a> for how to setup your warehouse.
+                            </ul>
+                        </p>
+                        </div>
+					</div>
+				</div>
+			</div>
+
+            <div id="footer"></div>
+            <script>
+                  $("#footer").load("../../footer.html");
+            </script>
+		</div>
+
+
+	</div>
+
+
+	</body>
+</html>
+
