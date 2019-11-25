@@ -88,6 +88,7 @@ html[xmlns] .flexslider .slides {
 }
 .flexslider .slides {
   zoom: 1;
+  height: 250px;
 }
 .flexslider .slides img {
   height: auto;

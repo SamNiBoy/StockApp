@@ -16,7 +16,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.sn.BaseHttpServlet;
-import com.sn.db.DBManager;
 import com.sn.mail.reporter.MailSenderFactory;
 import com.sn.mail.reporter.SimpleMailSender;
 import com.sn.mail.reporter.StockObserverable;
@@ -38,10 +37,13 @@ import org.apache.log4j.PropertyConfigurator;
 public class sendMessage extends BaseHttpServlet{
      
     static Logger log = Logger.getLogger(sendMessage.class);
+    static {
+        PropertyConfigurator.configure("/usr/share/tomcat/webapp/LaMai/WEB-INF/conf/log4j.properties");
+    }
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException{
-        before(request, response);
+        //before(request, response);
         String user=request.getParameter("name");
         String mail=request.getParameter("mail");
         String phone =request.getParameter("phone");

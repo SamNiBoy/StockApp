@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.apache.log4j.Logger;
-import com.sn.db.DBManager;
 import java.io.PrintWriter;
  
 import javax.servlet.ServletException;
@@ -29,10 +28,10 @@ public class BaseHttpServlet extends HttpServlet{
         response.setHeader("Content-type", "text/html;charset=UTF-8");
         response.setCharacterEncoding("utf-8");
         try {
-            if (_con == null) {
+            /*if (_con == null) {
                     _con = DBManager.getConnection();
                     _stmt = _con.createStatement();
-            }
+            }*/
            
         }
         catch(Exception e) {
