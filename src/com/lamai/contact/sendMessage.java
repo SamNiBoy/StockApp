@@ -38,7 +38,8 @@ public class sendMessage extends BaseHttpServlet{
      
     static Logger log = Logger.getLogger(sendMessage.class);
     static {
-        PropertyConfigurator.configure("/usr/share/tomcat/webapp/LaMai/WEB-INF/conf/log4j.properties");
+        log.info("LaMai Initial log4j.properties...");
+        PropertyConfigurator.configure("/usr/share/tomcat/webapps/LaMai/WEB-INF/conf/log4j.properties");
     }
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -68,6 +69,7 @@ public class sendMessage extends BaseHttpServlet{
             for (String recipient : recipients) {
                 sms.send(recipient, subject, content);
             }
+        log.info("mail sent");
         } catch (AddressException e) {
             e.printStackTrace();
         } catch (MessagingException e) {
@@ -108,6 +110,7 @@ public class sendMessage extends BaseHttpServlet{
             out.print(e);
         }*/
         //out.print("<font color=red>"+user+"</font>mail:" + mail + ", phone:" + phone + "<br>message:"+message+", <a href=\"contact.html>Return</a>");
+        log.info("before dispatch to contact.html");
         request.getRequestDispatcher("contact.html").forward(request, response);
         log.info("Finished sendMessage...");
         //after(request, response);
