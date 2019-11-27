@@ -76,7 +76,7 @@ public class sendMessage extends BaseHttpServlet{
             e.printStackTrace();
         }
     
-        String sql = "insert into msg select case when max(id) is null then 1 else max(id)+1 end,'" + user + "','"+mail+"','" +phone+"','" + message+"' from msg";
+        String sql = "insert into msg select case when max(id) is null then 1 else max(id)+1 end,'" + user + "','"+mail+"','" +phone+"','" + message+"', now() from msg";
         try{
                 log.info("executing..." + sql);
                 _stmt.executeUpdate(sql);
