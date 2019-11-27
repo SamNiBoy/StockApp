@@ -44,7 +44,7 @@ public class sendMessage extends BaseHttpServlet{
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException{
-        //before(request, response);
+        before(request, response);
         String user=request.getParameter("name");
         String mail=request.getParameter("mail");
         String phone =request.getParameter("phone");
@@ -76,41 +76,16 @@ public class sendMessage extends BaseHttpServlet{
             e.printStackTrace();
         }
     
-        /*String sql = "select * from usr where username='"+user+"'";
+        String sql = "insert into msg value(1, '" + user + "','"+mail+"'," +phone+"','" + message+"')";
         try{
                 log.info("executing..." + sql);
                 rs=_stmt.executeQuery(sql);
-                if(rs.next()){
-                    sql = "select * from usr where username='"+user+"' and password='"+password+"'";
-                    log.info("executing..." + sql);
-                    rs=_stmt.executeQuery(sql);
-                    if(rs.next()){
-                        //out.print(user+"登录成功");
-                        int account_type = rs.getInt("account_type");
-                        request.setAttribute("username", user);
-                        request.setAttribute("account_type", account_type);
-                        if (account_type == 0) {
-                            request.setAttribute("role", "管理员");
-                        }
-                        else if (account_type == 1)
-                        {
-                            request.setAttribute("role", "推广员");
-                        }
-                        else {
-                            request.setAttribute("role", "品牌商");
-                        }
-                        request.getRequestDispatcher("main.jsp").forward(request, response);
-                    }else{
-                        out.print("密码输入错误！！！<br>"+"重新<a href=\"login.jsp\">登录</a>");
-                    }
-                }else{
-                    out.print("<font color=red>"+user+"</font>用户不存在！！！<br>"+"请点击<a href=\"registered.jsp\">注册</a>");
-                }
+                log.info("insert msg table success..." + sql);
         }catch(Exception e){
+            log.info("insert msg table failed" + sql);
             out.print(e);
-        }*/
+        }
         //out.print("<font color=red>"+user+"</font>mail:" + mail + ", phone:" + phone + "<br>message:"+message+", <a href=\"contact.html>Return</a>");
-        log.info("before dispatch to contact.html");
         request.getRequestDispatcher("contact.html").forward(request, response);
         log.info("Finished sendMessage...");
         //after(request, response);

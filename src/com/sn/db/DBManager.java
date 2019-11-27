@@ -16,17 +16,19 @@ import com.sn.work.output.TopTenWst;
 public class DBManager {
 
     static Logger log = Logger.getLogger(DBManager.class);
-    public static final String drive = "oracle.jdbc.driver.OracleDriver";
+    //public static final String drive = "oracle.jdbc.driver.OracleDriver";
+    public static final String drive = "org.gjt.mm.mysql.Driver";
     /**
      * ���ӵ�ַ�����������ṩ������ס jdbc:oracle:thin:@localhost:1521:ORCL localhost ��ip��ַ��
      */
-    private static final String url = "jdbc:oracle:thin:@localhost:1521:ORCL122";
+    //private static final String url = "jdbc:oracle:thin:@localhost:1521:ORCL122";
+    private static final String url = "jdbc:mysql://localhost/lamai";
     /**
      * �û� ����
      */
-    private static final String DBUSER = "hpcapp";
-    private static final String password = "default_16";
-    private static final String AppDir = "D:/tomcat7/webapps/LaMai";
+    private static final String DBUSER = "root";
+    private static final String password = "mysql,16";
+    private static final String AppDir = "/usr/share/tomcat/webapps/LaMai";
 
     static ComboPooledDataSource  ds = null;
     static Connection conn = null;

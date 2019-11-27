@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+<Resource 
+       name="jdbc/lamai" 
+       auth="Container" 
+       type="javax.sql.DataSource"
+       maxActive="100" 
+       maxIdle="30" 
+       maxWait="10000"
+       username="root" 
+       password="mysql,16" 
+       driverClassName="org.gjt.mm.mysql.Driver"
+       url="jdbc:mysql://localhost/lamai?user=root&password=mysql,16&useUnicode=true&characterEncoding=utf-8"
+       validationQuery="select 'x' from msg where rownum < 2"
+    />
+</Context>

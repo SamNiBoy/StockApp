@@ -23,6 +23,12 @@
   version="3.0"
   metadata-complete="false">
 
+<resource-ref>
+      <res-ref-name>jdbc/lamai</res-ref-name>
+      <res-type>javax.sql.DataSource</res-type>
+      <res-auth>Container</res-auth>
+</resource-ref>
+
   <display-name>WeChat</display-name>
   <description>
      Welcome to WeChat
