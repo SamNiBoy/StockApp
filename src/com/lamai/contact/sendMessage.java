@@ -76,14 +76,13 @@ public class sendMessage extends BaseHttpServlet{
             e.printStackTrace();
         }
     
-        String sql = "insert into msg value(1, '" + user + "','"+mail+"'," +phone+"','" + message+"')";
+        String sql = "insert into msg select case when max(id) is null then 1 else max(id)+1 end,'" + user + "','"+mail+"','" +phone+"','" + message+"' from msg";
         try{
                 log.info("executing..." + sql);
-                rs=_stmt.executeQuery(sql);
+                _stmt.executeUpdate(sql);
                 log.info("insert msg table success..." + sql);
         }catch(Exception e){
-            log.info("insert msg table failed" + sql);
-            out.print(e);
+            log.info("insert msg table failed:" + sql +"\n"+e.getMessage());
         }
         //out.print("<font color=red>"+user+"</font>mail:" + mail + ", phone:" + phone + "<br>message:"+message+", <a href=\"contact.html>Return</a>");
         request.getRequestDispatcher("contact.html").forward(request, response);
