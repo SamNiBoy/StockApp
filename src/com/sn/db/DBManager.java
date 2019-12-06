@@ -22,13 +22,15 @@ public class DBManager {
      * ���ӵ�ַ�����������ṩ������ס jdbc:oracle:thin:@localhost:1521:ORCL localhost ��ip��ַ��
      */
     //private static final String url = "jdbc:oracle:thin:@localhost:1521:ORCL122";
-    private static final String url = "jdbc:mysql://localhost/lamai";
+    //private static final String url = "jdbc:mysql://localhost/lamai?autoReconnect=true&failOverReadOnly=false";
+    private static final String url = "jdbc:mysql://111.229.27.150/lamai?autoReconnect=true&failOverReadOnly=false";
     /**
      * �û� ����
      */
     private static final String DBUSER = "root";
     private static final String password = "mysql,16";
-    private static final String AppDir = "/usr/share/tomcat/webapps/LaMai";
+    //private static final String AppDir = "/usr/share/tomcat/webapps/LaMai";
+    private static final String AppDir = "D:/tomcat7/logs/LaMai";
 
     static ComboPooledDataSource  ds = null;
     static Connection conn = null;
