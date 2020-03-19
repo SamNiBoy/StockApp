@@ -939,7 +939,7 @@ public class Stock2 implements Comparable<Stock2>{
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDat2 where ft_id > " + lst_ft_id +
                 " and id = '" + stkid +
-                "' and to_char(dl_dt,'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') order by dl_dt";
+                "' and left(dl_dt,10) = left(sysdate(), 10) order by dl_dt";
                 
                 log.info(sql);
                 ResultSet rs = stm.executeQuery(sql);
@@ -997,7 +997,7 @@ public class Stock2 implements Comparable<Stock2>{
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDat2 where ft_id > " + lst_ft_id +
                 " and id = '" + stkid +
-                "' and to_char(dl_dt,'yyyy-mm-dd') >= '" + stat_dte + "' and to_char(dl_dt,'yyyy-mm-dd') <= '" + end_dte + "' order by dl_dt";
+                "' and left(dl_dt, 10) >= '" + stat_dte + "' and left(dl_dt, 10) <= '" + end_dte + "' order by dl_dt";
                 
                 log.info(sql);
                 ResultSet rs = stm.executeQuery(sql);
@@ -1537,7 +1537,7 @@ public class Stock2 implements Comparable<Stock2>{
             + " s5_num,"
             + " s5_pri,"
             + " dl_dt)"
-            + " values (SEQ_STKDAT_PK.nextval," +
+            + " select case when max(ft_id) is null then 0 else max(ft_id) end + 1," +
             "'" + rsd.id + "',"
                 + rsd.td_opn_pri + ","
                 + rsd.yt_cls_pri + ","
@@ -1568,9 +1568,9 @@ public class Stock2 implements Comparable<Stock2>{
                 + rsd.s4_pri + ","
                 + rsd.s5_num + ", "
                 + rsd.s5_pri + ","
-            + "to_date('" + rsd.dl_dt.toString() +" " + rsd.dl_tm +"', 'yyyy-mm-dd hh24:mi:ss'))";
+            + "str_to_date('" + rsd.dl_dt.toString() +" " + rsd.dl_tm +"', '%Y-%m-%d %H:%i:%s') from stkDat2";
         
-        //log.info(sql);
+        log.info(sql);
         try {
             Statement stm = con.createStatement();
             stm.execute(sql);

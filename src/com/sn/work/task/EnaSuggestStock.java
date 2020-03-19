@@ -68,7 +68,6 @@ public class EnaSuggestStock implements IWork {
             String sql = "update usr set suggest_stock_enabled = 1 - suggest_stock_enabled where openID = '" + frmUsr + "'";
             log.info("EnaUsrBuySell:" + sql);
             mainStm.executeUpdate(sql);
-            con.commit();
             mainStm.close();
             
             sql = "select mail, suggest_stock_enabled from usr where openID = '" + frmUsr + "' and mail is not null";

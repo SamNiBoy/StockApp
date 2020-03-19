@@ -146,7 +146,7 @@ public abstract class BaseWCReporter implements IWCMsg {
                 stm.close();
             } else {
                 sql = "insert into usr values ('" + usr + "',"
-                        + (hst_flg == true ? 1 : 0) + "," + "sysdate, '', 0, 0)";
+                        + (hst_flg == true ? 1 : 0) + "," + "sysdate(), '', 0, 0)";
                 stm.executeUpdate(sql);
                 log.info("User:" + frmUsr + " added as "
                         + (hst_flg == true ? 1 : 0));
@@ -172,10 +172,13 @@ public abstract class BaseWCReporter implements IWCMsg {
              * toUsrID varchar2(100 byte) not null, crtTime number not null,
              * mstType varchar2(20 byte) not null, content varchar2(1000 byte)
              * not null,
+             *
+             * sql = "insert into msg values (SEQ_MSG_PK.nextval,'" + msgId + "', '" + frmUsr
+             *         + "', '" + toUsr + "', " + crtTime + ", 'text', '"
+             *         + content + "')";
              */
-            sql = "insert into msg values (SEQ_MSG_PK.nextval,'" + msgId + "', '" + frmUsr
-                    + "', '" + toUsr + "', " + crtTime + ", 'text', '"
-                    + content + "')";
+            sql = "insert into msg select case when max(msg_id) is null then 0 else max(msg_id) end +1,'" + msgId + "', '" + frmUsr
+                    + "', '" + toUsr + "', " + crtTime + ", 'text', '" + content + "' from msg";
             log.info("Creating msg:" + sql);
             int crted = stm.executeUpdate(sql);
             if (crted == 1) {

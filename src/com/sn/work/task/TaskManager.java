@@ -36,10 +36,10 @@ public class TaskManager {
             log.info("Starting tasks...");
             tskStarted = true;
             StockDataFetcher.start();
-            GzStockDataFetcher.start();
-        	SuggestStock.start();
-        	SellModeWatchDog.start();
-            SimTrader.start();
+            //GzStockDataFetcher.start();
+        	//SuggestStock.start();
+        	//SellModeWatchDog.start();
+            //SimTrader.start();
             return true;
         }
         else {

@@ -62,7 +62,7 @@ public class WeChatReporter extends BaseWCReporter{
         resContent = "你可以发送以下代码:\n"
                 + "1.获取我关注的股票.\n" + "2.获取系统推荐股票.\n"
                 + "3.启用/停止买卖.\n" + "4.启用/停止推荐.\n"
-                + "5.报告数据情况.\n" + "6.关机.\n" 
+                + "5.报告数据情况.\n"
                 + "xxxxxx 关注/取消关注股票.\n"
                 + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
     	}
@@ -149,7 +149,7 @@ public class WeChatReporter extends BaseWCReporter{
                     resContent = cfs.getWorkResult();
                 }
             }
-            else if (content.equals("6")) {
+            /*else if (content.equals("6")) {
                 ShutDownPC sdp = new ShutDownPC(0, 3);
                 if (!WorkManager.submitWork(sdp)) {
                     resContent = "ShutDownPC already scheduled, can not do it again!";
@@ -157,7 +157,7 @@ public class WeChatReporter extends BaseWCReporter{
                 else {
                     resContent = sdp.getWorkResult();
                 }
-            }
+            }*/
             else if (content.length() == 6) {
                 String stk = content;
                 GzStock sdp = new GzStock(0, 3, this.getFromUserName(), stk);

@@ -69,7 +69,6 @@ public class EnaUsrBuySell implements IWork {
             
             log.info("EnaUsrBuySell:" + sql);
             mainStm.executeUpdate(sql);
-            con.commit();
             mainStm.close();
             
             sql = "select buy_sell_enabled, mail from usr where openID = '" + frmUsr + "'";
