@@ -30,8 +30,8 @@ public class LoadStk {
             con.setAutoCommit(false);
             stm = con.createStatement();
 
-            FileReader fr = new FileReader(".\\scripts\\stockcodes.txt");
-            BufferedReader br = new BufferedReader(fr);
+           // FileReader fr = new FileReader(".\\scripts\\stockcodes.txt");
+           // BufferedReader br = new BufferedReader(fr);
 
 //            String s = br.readLine();
 //            while (s != null && false) {
@@ -42,7 +42,7 @@ public class LoadStk {
 //            }
             LoadRest(stm, con);
             con.commit();
-            br.close();
+            //br.close();
         } catch (Exception e) {
             e.printStackTrace();
             try {
