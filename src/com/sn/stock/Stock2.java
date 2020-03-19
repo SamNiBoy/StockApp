@@ -25,7 +25,7 @@ public class Stock2 implements Comparable<Stock2>{
 
     	static public final int BIG_SZ = 270;  // store 4.5 hours data.
     	static public final int SMALL_SZ = 60; // store 1 hour data.
-    	static public final int SECONDS_PER_FETCH = 600;
+    	static public final int SECONDS_PER_FETCH = 60 * 5;
         int MAX_SZ = 800;
         //Save all history data
         String stkid;
@@ -65,8 +65,8 @@ public class Stock2 implements Comparable<Stock2>{
         List<Timestamp> dl_dt_lst =null;
         
         boolean is_jumpping_water = false;
-        int tailSz_jumpping_water = 100;
-        double pct_jumpping_water = 0.8;
+        int tailSz_jumpping_water = 30;
+        double pct_jumpping_water = 0.08;
         
         
         public boolean keepDaysClsPriLost(int days, double threshold) {
@@ -782,13 +782,15 @@ public class Stock2 implements Comparable<Stock2>{
         	double yt_cls_pri = this.getYtClsPri();
         	int ts = tailSz;
         	double detPri = 0;
-        	while (tailSz > 0) {
+        	while (ts > 0) {
         		if (cur_pri_lst.get(idx) < cur_pri_lst.get(idx - 1)) {
         			detPri += cur_pri_lst.get(idx) - cur_pri_lst.get(idx - 1);
         		}
         		idx--;
         		ts--;
         	}
+            
+        	detPri = detPri / tailSz;
         	log.info("check isStopjumpWater, cur_pri_lst.size: " + cur_pri_lst.size() + " TailSz:" + tailSz + " yt_cls_pri:" + yt_cls_pri
         			+ " detPri:" + detPri + ", detPri/yt_cls_pri pct:" + detPri * 1.0 / yt_cls_pri + " passed pct/2:" + pct_jumpping_water/2);
         	if (detPri * 1.0 / yt_cls_pri >= pct_jumpping_water / 2) {
@@ -1700,6 +1702,12 @@ public class Stock2 implements Comparable<Stock2>{
     }
     public Double getMinTd_lst_pri() {
         return sd.getMinTd_lst_pri();
+    }
+    public boolean priceDownAfterSharpedUp(int periods, int upTimes) {
+        return sd.priceDownAfterSharpedUp(periods, upTimes);
+    }
+    public boolean priceUpAfterSharpedDown(int periods, int upTimes) {
+        return sd.priceUpAfterSharpedDown(periods, upTimes);
     }
     public String getID() {
         // TODO Auto-generated method stub

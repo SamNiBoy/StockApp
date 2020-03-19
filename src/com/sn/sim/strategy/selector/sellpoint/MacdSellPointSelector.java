@@ -22,7 +22,7 @@ public class MacdSellPointSelector implements ISellPointSelector {
 	 */
 	public boolean isGoodSellPoint(Stock2 stk, ICashAccount ac) {
 
-		int s = 12, l = 26, m = 9;
+		int s = 2, l = 6, m = 4;
 
 		MACD macd = new MACD(s, l, m, stk);
 
@@ -41,7 +41,31 @@ public class MacdSellPointSelector implements ISellPointSelector {
 
 	@Override
 	public int getSellQty(Stock2 s, ICashAccount ac) {
-		// TODO Auto-generated method stub
-		return 100;
-	}
+        // TODO Auto-generated method stub
+        int sellMnt = 0;
+        
+        if (ac != null) {
+            String dt = s.getDl_dt().toString().substring(0, 10);
+            int sellableAmt = ac.getSellableAmt(s.getID(), dt);
+            
+            if (sellableAmt >= 400) {
+                sellMnt = sellableAmt / 2;
+                sellMnt = sellMnt - sellMnt % 100;
+            }
+            else {
+                sellMnt = sellableAmt;
+            }
+            log.info("getSellQty, sellableAmt:" + sellableAmt + " sellMnt:" + sellMnt);
+        }
+        else {
+            if (s.getCur_pri() <= 10) {
+                sellMnt = 200;
+            }
+            else {
+                sellMnt = 100;
+            }
+            log.info("getSellQty, cur_pri:" + s.getCur_pri() + " sellMnt:" + sellMnt);
+        }
+        return sellMnt;
+    }
 }

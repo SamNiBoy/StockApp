@@ -29,17 +29,18 @@ public class TestDriver {
         }
     }
 
-    public static final String drive = "oracle.jdbc.driver.OracleDriver";
+    //public static final String drive = "oracle.jdbc.driver.OracleDriver";
+    public static final String drive = "org.gjt.mm.mysql.Driver";
     /**
      * ���ӵ�ַ�����������ṩ������ס jdbc:oracle:thin:@localhost:1521:ORCL localhost ��ip��ַ��
      */
-    public static final String url1 = "jdbc:oracle:thin:@localhost:1521:ORCL";
+    private static final String url = "jdbc:mysql://111.229.27.150/stockApp?autoReconnect=true&failOverReadOnly=false";
     public static final String url2 = "jdbc:oracle:thin:@localhost:1521:ORCL";
     /**
      * �û� ����
      */
-    public static final String DBUSER = "sam";
-    public static final String password = "sam";
+    public static final String DBUSER = "root";
+    public static final String password = "mysql,16";
 
     static Logger log = Logger.getLogger(TestDriver.class);
     public static void testDB() throws Exception {
@@ -48,7 +49,7 @@ public class TestDriver {
         Statement stmt = null;// ��ʾ��ݿ�ĸ���
         ResultSet result = null;// ��ѯ��ݿ�
         Class.forName(drive);// ʹ��class�������س���
-        conn = DriverManager.getConnection(url1, DBUSER, password); // ������ݿ�
+        conn = DriverManager.getConnection(url, DBUSER, password); // ������ݿ�
         // Statement�ӿ�Ҫͨ��connection�ӿ�������ʵ�����
         stmt = conn.createStatement();
         // ִ��SQL�������ѯ��ݿ�
@@ -202,7 +203,7 @@ public class TestDriver {
         ResultSet result = null;// ��ѯ��ݿ�
         try {
         Class.forName(drive);// ʹ��class�������س���
-        conn = DriverManager.getConnection(url2, DBUSER, password); // ������ݿ�
+        conn = DriverManager.getConnection(url, DBUSER, password); // ������ݿ�
         // Statement�ӿ�Ҫͨ��connection�ӿ�������ʵ�����
         stmt = conn.createStatement();
         stmt.execute(sql);

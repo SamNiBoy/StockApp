@@ -14,30 +14,37 @@ import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.stock.indicator.MACD;
 
-public class MacdBuyPointSelector implements IBuyPointSelector {
+public class PriceTurnBuyPointSelector implements IBuyPointSelector {
 
-	static Logger log = Logger.getLogger(MacdBuyPointSelector.class);
+	static Logger log = Logger.getLogger(PriceTurnBuyPointSelector.class);
 
 
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
 
-		int s = 2, l = 6, m = 4;
-
-		MACD macd = new MACD(s, l, m, stk);
-
-		if (macd.DIF == null || macd.DEF == null || macd.MACD == null) {
-			log.info("MACD is not calculatable, returned false");
-			return false;
-		}
-		if (macd.DIF > macd.DEF && macd.DEF < -0.001 && macd.DIF - macd.DEF < 0.004) {
-			log.info("MACD good, buy it.");
-			return true;
-		}
-
-		log.info("MACD returned false for buy.");
-		return false;
-	}
+        if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {
+            if (stk.priceUpAfterSharpedDown(10, 6)) {
+                log.info("isGoodBuyPoint true as price goes up after 6/10 times down!");
+                return true;
+            }
+            else {
+                log.info("isGoodBuyPoint false as price goes up after 6/10 times down!");
+            }
+        } else {
+            // has stock in hand;
+            Double lstBuy = ac.getLstBuyPri(stk);
+            Double cur_pri = stk.getCur_pri();
+            Double yt_cls_pri = stk.getYtClsPri();
+            if (lstBuy != null && cur_pri != null && yt_cls_pri != null) {
+                if ((lstBuy - cur_pri) / yt_cls_pri > 0.05 && stk.priceUpAfterSharpedDown(10, 6)) {
+                    log.info("isGoodBuyPoint Buy true as price up after 6/10 times down:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:"
+                            + lstBuy + " curPri:" + cur_pri + " yt_cls_pri:" + yt_cls_pri);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 
 	@Override
