@@ -44,13 +44,13 @@ public class StockMarket{
     		                             + "from stk s, usrStk u "
     		                             + "where s.id = u.id "
     		                             + "  and u.gz_flg = 1 "
-    		                             + "  and u.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_USER + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "') "
+                                         + "  and u.suggested_by <> '" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "'"
     		                             + "order by s.id";
     public static String GZ_STOCK_CNT_SELECT = "select count(distinct s.id) TotalCnt "
     		                             + "from stk s, usrStk u "
     		                             + "where s.id = u.id "
     		                             + "  and u.gz_flg = 1 "
-    		                             + "  and u.suggested_by in ('" + STConstants.SUGGESTED_BY_FOR_USER + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "') ";
+                                         + "  and u.suggested_by <> '" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "'";
     /**
      * @param args
      */
@@ -72,10 +72,13 @@ public class StockMarket{
         try {
             stm = con.createStatement();
             String sql = "select count(distinct id) totCnt from stk";
+            log.info(sql);
             rs = stm.executeQuery(sql);
             rs.next();
             Total = rs.getInt("totCnt");
 
+            log.info("Now load total:" + Total + " stocks.");
+            rs = stm.executeQuery(sql);
             String id, name;
 
             rs.close();
@@ -92,12 +95,20 @@ public class StockMarket{
                 log.info("Load All Stocks completed:" + cnt * 1.0 / Total);
             }
             rs.close();
-            stm.close();
-            con.close();
         }
         catch(SQLException e)
         {
             e.printStackTrace();
+        }
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.info(e.getMessage() + " errored:" + e.getErrorCode());
+            }
         }
         log.info("StockMarket loadStock " + cnt + " successed!");
         return true;
@@ -115,16 +126,18 @@ public class StockMarket{
         int Total = 0;
         try {
             stm = con.createStatement();
+            log.info(GZ_STOCK_CNT_SELECT);
             rs = stm.executeQuery(GZ_STOCK_CNT_SELECT);
             rs.next();
             Total = rs.getInt("TotalCnt");
+            log.info("Now load Gzed total:" + Total + " stocks.");
             rs.close();
             stm.close();
             
             String id, name;
             stm = con.createStatement();
+            log.info(GZ_STOCK_SELECT);
             rs = stm.executeQuery(GZ_STOCK_SELECT);
-            rs.next();
             
             while (rs.next()) {
                 id = rs.getString("id");
@@ -135,14 +148,23 @@ public class StockMarket{
                 log.info("Load GZStocks completed:" + cnt * 1.0 / Total);
             }
             rs.close();
-            stm.close();
-            con.close();
         }
         catch(SQLException e)
         {
             e.printStackTrace();
+            log.error(e.getMessage() + " with error0:" + e.getErrorCode());
         }
-        log.info("StockMarket loadStock " + cnt + " successed!");
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.error(e.getMessage() + " with error:" + e.getErrorCode());
+            }
+        }
+        log.info("StockMarket loadGzStock " + cnt + " successed!");
         return true;
     }
     
@@ -205,7 +227,7 @@ public class StockMarket{
     }
     
     public static ConcurrentHashMap<String, Stock2> getStocks() {
-        synchronized (StockMarket.class) {
+        synchronized (stocks) {
             if (stocks.isEmpty()) {
                 loadStocks();
             }
@@ -218,10 +240,12 @@ public class StockMarket{
     }
 
     public static ConcurrentHashMap<String, Stock2> getGzstocks() {
-        if (gzstocks.isEmpty()) {
-            loadGzStocks();
+        synchronized (gzstocks) {
+            if (gzstocks.isEmpty()) {
+                loadGzStocks();
+            }
+            return gzstocks;
         }
-        return gzstocks;
     }
 
     public static void setGzstocks(ConcurrentHashMap<String, Stock2> gzstocks) {

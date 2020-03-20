@@ -100,13 +100,18 @@ public class SellModeWatchDog implements IWork {
 	        	Stock2 s = stks.get(stk);
 	        	
 	        	if (!isStockInSellMode(s) && stockMatchSellMode(s)) {
+            		log.info("put stock:" + s.getID() + ", name:" + s.getName() + " into sell mode.");
 	        		setStockSellMode(s, true);
 	        		stocksSellModeWaitForMail.add(s);
 	        	}
 	        	else if (isStockInSellMode(s) && stockMatchUnSellMode(s)) {
+            		log.info("put stock:" + s.getID() + ", name:" + s.getName() + " back to non-sell mode.");
 	        		setStockSellMode(s, false);
 	        		stocksUnSellModeWaitForMail.add(s);
 	        	}
+                else {
+            		log.info("stock:" + s.getID() + ", name:" + s.getName() + " sell mode does not need to change.");
+                }
 	       }
 
 	       rso.addStockToSellMode(stocksSellModeWaitForMail);

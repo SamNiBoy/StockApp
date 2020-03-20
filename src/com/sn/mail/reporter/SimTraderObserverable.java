@@ -55,7 +55,7 @@ public class SimTraderObserverable extends Observable {
     	try {
     		Connection con = DBManager.getConnection();
     		Statement stm = con.createStatement();
-    		String sql = "select u.* from usr u where u.mail is not null and u.buy_sell_enabled = 1";
+    		String sql = "select u.* from usr u where length(u.mail) > 1 and u.buy_sell_enabled = 1";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
     		String openId;

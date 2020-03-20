@@ -83,7 +83,7 @@ public class GzStockBuySellPointObserverable extends Observable {
     	ms.clear();
     	try {
     		Statement stm = con.createStatement();
-    		String sql = "select s.*, u.* from usrStk s, usr u where s.openID = u.openID and s.gz_flg = 1 and u.mail is not null and u.buy_sell_enabled = 1";
+    		String sql = "select s.*, u.* from usrStk s, usr u where s.openID = u.openID and s.gz_flg = 1 and length(u.mail) > 1 and u.buy_sell_enabled = 1";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
     		String openId;

@@ -69,7 +69,7 @@ public class RecommandStockObserverable extends Observable {
     	try {
     		Connection con = DBManager.getConnection();
     		Statement stm = con.createStatement();
-    		String sql = "select  u.* from usr u where u.mail is not null and u.suggest_stock_enabled = 1";
+    		String sql = "select  u.* from usr u where length(u.mail) > 1 and u.suggest_stock_enabled = 1";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
     		String openId;

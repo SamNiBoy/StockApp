@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
@@ -59,6 +60,37 @@ public class SellModeStockObserverable extends Observable {
 			}
 			return false;
 		}
+        boolean StockGzedBySubscriber(Stock2 s) {
+    	    boolean gzed_flg = false;
+  		    Connection con = DBManager.getConnection();
+   		    Statement stm = null;
+    	    try {
+    	    	stm = con.createStatement();
+    	    	String sql = "select 'check gzed stock before sending mail to user' from usrStk where gz_flg = 1 and suggested_by <> '" + STConstants.SUGGESTED_BY_FOR_SYSTEM +"' and openID = '" + openID + "' and id = '" + s.getID() + "'";
+    	    	log.info(sql);
+    	    	ResultSet rs = stm.executeQuery(sql);
+    	    	if (rs.next()) {
+    	    	    gzed_flg = true;
+    	    	}
+    	    	rs.close();
+    	    }
+    	    catch (Exception e) {
+    	    	e.printStackTrace();
+                log.error(e.getMessage() + " errored:" + e.getCause());
+    	    }
+    	    finally {
+    	    	try {
+                    stm.close();
+            		con.close();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    log.error(e.getMessage() + " errored:" + e.getErrorCode());
+                }
+    	    }
+            log.info("get user gzed_flg:" + gzed_flg);
+    	    return gzed_flg;
+        }
 		public boolean setMailed(Stock2 s) {
 			stockMailed.add(s);
 			return true;
@@ -70,10 +102,11 @@ public class SellModeStockObserverable extends Observable {
     }
     private boolean loadMailScb() {
     	boolean load_success = false;
+  		Connection con = DBManager.getConnection();
+   		Statement stm = null;
     	try {
-    		Connection con = DBManager.getConnection();
-    		Statement stm = con.createStatement();
-    		String sql = "select  u.* from usr u where u.mail is not null and u.suggest_stock_enabled = 1";
+    		stm = con.createStatement();
+    		String sql = "select  u.* from usr u where length(u.mail) > 1 and u.suggest_stock_enabled = 1";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
     		String openId;
@@ -86,11 +119,20 @@ public class SellModeStockObserverable extends Observable {
     			load_success = true;
     		}
     		rs.close();
-    		stm.close();
-    		con.close();
     	}
     	catch (Exception e) {
     		e.printStackTrace();
+            log.error(e.getMessage() + " errored:" + e.getCause());
+    	}
+    	finally {
+    		try {
+                stm.close();
+        		con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.error(e.getMessage() + " errored:" + e.getErrorCode());
+            }
     	}
     	return load_success;
     }
@@ -122,7 +164,7 @@ public class SellModeStockObserverable extends Observable {
                     "<th> Price</th></tr>");
             DecimalFormat df = new DecimalFormat("##.##");
             for (Stock2 s : stocksToSellMode) {
-            	if (!u.alreadyMailed(s)) {
+            	if (!u.alreadyMailed(s) && u.StockGzedBySubscriber(s)) {
                     body.append("<tr> <td>" + s.getID() + "</td>" +
                     "<td> " + s.getName() + "</td>" +
                     "<td>  1 </td>" +
