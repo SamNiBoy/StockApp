@@ -51,7 +51,8 @@ public class GzStockDataFetcher implements IWork {
     }
 
     static public boolean start() {
-        self = new GzStockDataFetcher(0, Stock2.StockData.SECONDS_PER_FETCH * 1000);
+        //Fetch every 30 seconds
+        self = new GzStockDataFetcher(0,  30 * 1 * 1000);
         cnsmr = new GzStockDataConsumer(0, 0);
         if (WorkManager.submitWork(self)) {
             log.info("Newly created GzStockDataFetcher and started!");

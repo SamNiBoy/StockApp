@@ -78,10 +78,10 @@ public class QtySellPointSelector implements ISellPointSelector {
     	Timestamp tm = stk.getDl_dt();
         String deadline = null;
         if (tm == null) {
-        	deadline = "sysdate";
+        	deadline = "sysdate()";
         }
         else {
-        	deadline = "to_date('" + tm.toLocaleString() + "', 'yyyy-mm-dd HH24:MI:SS')";
+        	deadline = "str_to_date('" + tm.toLocaleString() + "', '%Y-%m-%d %H:%i:%s')";
         }
         
     	try {
@@ -90,7 +90,7 @@ public class QtySellPointSelector implements ISellPointSelector {
     		String sql = "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev "
     				   + "  from stkdat2 "
     				   + " where id ='" + stk.getID() + "'"
-    				   + "   and to_char(dl_dt, 'yyyy-mm-dd') = to_char(" + deadline + ", 'yyyy-mm-dd')";
+    				   + "   and left(dl_dt, 10) = left(" + deadline + ", 10)";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
     		if (rs.next()) {

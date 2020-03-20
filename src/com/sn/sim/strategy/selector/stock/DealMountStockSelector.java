@@ -2,6 +2,7 @@ package com.sn.sim.strategy.selector.stock;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
@@ -26,15 +27,16 @@ public class DealMountStockSelector implements IStockSelector {
     	boolean isgood = false;
         long avgStkNum = 0;
         double avgMnyNum = 0.0;
+ 		Connection con = DBManager.getConnection();
+   		Statement stm = null;
     	try {
-    		Connection con = DBManager.getConnection();
-    		Statement stm = con.createStatement();
+     		stm = con.createStatement();
     		String sql = "select avg(max_mny_num) avg_mny_num, avg(max_stk_num) avg_stk_num from ("
-    				   + "select max(dl_mny_num) max_mny_num, max(dl_stk_num) max_stk_num, to_char(dl_dt, 'yyyy-mm-dd') atDay "
+    				   + "select max(dl_mny_num) max_mny_num, max(dl_stk_num) max_stk_num, left(dl_dt, 10) atDay "
     				   + "  from stkdat2 "
     				   + " where id ='" + s.getID() + "'"
-    				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + days + ", 'yyyy-mm-dd')"
-    				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
+    				   + "   and left(dl_dt, 10) >= left(sysdate() - interval " + days + " day, 10)"
+    				   + " group by left(dl_dt, 10)) t";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
     		if (rs.next()) {
@@ -44,13 +46,20 @@ public class DealMountStockSelector implements IStockSelector {
     				isgood = true;
     			}
     		}
-    		rs.close();
-    		stm.close();
-    		con.close();
+            rs.close();
     	}
     	catch(Exception e) {
     		e.printStackTrace();
     	}
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.info(e.getMessage());
+            }
+        }
     	log.info("avgStkNum:" + avgStkNum + ", minAvgStkNum:" + minAvgStkNum + ", avgMnyNum:" + avgMnyNum + ", minAvgMnyNum:" + minAvgMnyNum + " return " + (isgood ? " true":"false"));
         return isgood;
     }

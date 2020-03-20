@@ -3,6 +3,7 @@ package com.sn.work.output;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
@@ -53,9 +54,10 @@ public class GzStock implements com.sn.work.itf.IWork {
     {        // //////////////////Menu
         String msg = "";
         Connection con = DBManager.getConnection();
+        Statement stm = null;
         String sql = "select gz_flg from usrStk where id = '" + stockID + "' and openID = '" + frmUsr + "'";
         try {
-            Statement stm = con.createStatement();
+            stm = con.createStatement();
             ResultSet rs = null;
             rs = stm.executeQuery(sql);
 
@@ -96,12 +98,19 @@ public class GzStock implements com.sn.work.itf.IWork {
         		    StockMarket.addGzStocks(stockID);
             	}
             }
-            con.commit();
-            stm.close();
-            con.close();
             res = msg;
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.error(e.getMessage() + " with error: " + e.getErrorCode());
+            }
         }
     }
 

@@ -85,7 +85,7 @@ public class StockDataConsumer implements IWork {
                 if ((cnt >= ss.size() && s != null) || dataqueue.isEmpty()) {
                 	log.info("after fetch:" + cnt + " rows, and calIndex at:" + s.getDl_dt());
                     Timestamp ts = s.getDl_dt();
-                    StockMarket.calIndex(ts);
+                    //StockMarket.calIndex(null);
                     cnt = 0;
                     con.commit();
                 }

@@ -88,7 +88,7 @@ public class SellModeWatchDog implements IWork {
 		delayBeforNxtStart = dbn;
 		//selectors.add(new DefaultSellModeSelector());
 		selectors.add(new AvgClsPriSellModeSelector());
-		selectors.add(new CurPriLostSellModeSelector());
+		//selectors.add(new CurPriLostSellModeSelector());
 		selectors.add(new BadTradeSellModeSelector());
 	}
 
@@ -217,6 +217,7 @@ public class SellModeWatchDog implements IWork {
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+                log.error(e.getMessage() + " with error:" + e.getErrorCode());
 			}
 		}
 		log.info("Stock " + s.getName() + "'s sell mode is:" + is_in_sell_mode);
@@ -232,11 +233,20 @@ public class SellModeWatchDog implements IWork {
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);
-			con.commit();
-			stm.close();
-			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+            log.error(e.getMessage() + " with error0:" + e.getCause());
+		}
+		finally {
+		    try {
+		    	//log.info("Closing statement and connection!");
+				stm.close();
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+                log.error(e.getMessage() + " with error:" + e.getErrorCode());
+			}
 		}
 	}
 	

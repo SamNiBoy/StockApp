@@ -33,7 +33,7 @@ public class WeChatReporter extends BaseWCReporter{
         "<FromUserName><![CDATA[osCWfs-ZVQZfrjRK0ml-eEpzeop0]]></FromUserName>" +
         "<CreateTime>1431827441</CreateTime>" +
         "<MsgType><![CDATA[text]]></MsgType>" +
-        "<Content><![CDATA[0]]></Content>" +
+        "<Content><![CDATA[1]]></Content>" +
         "<MsgId>6149652032815793242</MsgId>" +
         "</xml>";
         
@@ -47,7 +47,7 @@ public class WeChatReporter extends BaseWCReporter{
         "</xml>";
 
         WeChatReporter wcr = new WeChatReporter();
-        wcr.setWcMsg(wcMsg2);
+        wcr.setWcMsg(wcMsg);
         wcr.getResponse();
     }
 
@@ -72,6 +72,7 @@ public class WeChatReporter extends BaseWCReporter{
                     + "2.获取系统推荐股票数据.\n"
                     + "3.启用/停止股票买卖.\n"
                     + "4.启用/停止推荐.\n"
+                    + "5.报告数据情况.\n"
                     + "xxxxxx 关注/取消关注股票.\n"
                     + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
     	}
@@ -100,14 +101,11 @@ public class WeChatReporter extends BaseWCReporter{
         else {
         	// remap key for other user.
         	if (!is_admin_flg) {
-        		if (!content.equals("1") && content.length() == 1) {
-        			content = "0";
-        		}
         	}
             if (content.equals("1")) {
                 ListGzStock ttb = new ListGzStock(0, 3, this.getFromUserName());
                 if (!WorkManager.submitWork(ttb)) {
-                    resContent = "ListGzStock already scheduled, can not do it again!";
+                    resContent = "正在获取关注的股票详细信息,请稍后再试.";
                 }
                 else {
                     resContent = ttb.getWorkResult();
@@ -162,7 +160,7 @@ public class WeChatReporter extends BaseWCReporter{
                 String stk = content;
                 GzStock sdp = new GzStock(0, 3, this.getFromUserName(), stk);
                 if (!WorkManager.submitWork(sdp)) {
-                    resContent = "GzStock already scheduled, can not do it again!";
+                    resContent = "正在处理关注的股票,请稍后再试.";
                 }
                 else {
                     resContent = sdp.getWorkResult();

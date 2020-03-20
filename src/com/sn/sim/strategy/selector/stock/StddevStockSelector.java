@@ -2,6 +2,7 @@ package com.sn.sim.strategy.selector.stock;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
@@ -25,15 +26,16 @@ public class StddevStockSelector implements IStockSelector {
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
     	boolean isgood = false;
     	double dev = -1;
+   		Connection con = DBManager.getConnection();
+   		Statement stm = null;
     	try {
-    		Connection con = DBManager.getConnection();
-    		Statement stm = con.createStatement();
+     		stm = con.createStatement();
     		String sql = "select avg(dev) dev from ("
-    				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
+    				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, left(dl_dt, 10) atDay "
     				   + "  from stkdat2 "
     				   + " where id ='" + s.getID() + "'"
-    				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - " + days + ", 'yyyy-mm-dd')"
-    				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
+    				   + "   and left(dl_dt, 10) >= left(sysdate() - interval " + days + " day , 10)"
+    				   + " group by left(dl_dt, 10)) t";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
     		if (rs.next()) {
@@ -43,12 +45,19 @@ public class StddevStockSelector implements IStockSelector {
     			}
     		}
     		rs.close();
-    		stm.close();
-    		con.close();
     	}
     	catch(Exception e) {
     		e.printStackTrace();
     	}
+        finally {
+    		try {
+                stm.close();
+         		con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+               log.error(e.getMessage() + " with error code:" + e.getErrorCode()); 
+            }
+        }
     	log.info("dev:" + dev + ", minStddev:" + minStddev + ", maxStddev:" + maxStddev + " return " + (isgood ? " true":"false"));
         return isgood;
     }

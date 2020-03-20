@@ -56,10 +56,7 @@ public class StockMarket{
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-            for (String s : stocks.keySet()) {
-                Stock2 stk = stocks.get(s);
-                stk.printStockInfo();
-            }
+        log.info(getShortDesc());
     }
     
     static public boolean loadStocks() {
@@ -372,10 +369,10 @@ public class StockMarket{
         Statement stm = null;
         String deadline = null;
         if (tm == null) {
-        	deadline = "sysdate";
+        	deadline = "sysdate()";
         }
         else {
-        	deadline = "to_date('" + tm.toLocaleString() + "', 'yyyy-mm-dd HH24:MI:SS')";
+        	deadline = "str_to_date('" + tm.toLocaleString() + "', '%Y-%m-%d %H:%i:%s')";
         }
 
         int catagory = -2;
@@ -420,25 +417,37 @@ public class StockMarket{
                     totIncDlMny = rs.getDouble("totDlMny");
                 }
             }
-            
+            log.info("TotDec:" + TotDec);
+            log.info("AvgDecPct:" + AvgDecPct);
+            log.info("totDecDlMny:" + totDecDlMny);
+            log.info("TotEql:" + TotEql);
+            log.info("totEqlDlMny:" + totEqlDlMny);
+            log.info("TotInc:" + TotInc);
             StkNum = TotDec + TotInc + TotEql;
             Degree = (TotInc * AvgIncPct + TotDec * AvgDecPct) * 100.0 / (TotInc * 0.1 + TotDec * 0.1);
             
             rs.close();
-            stm.close();
-            con.close();
         }
         catch(SQLException e)
         {
             e.printStackTrace();
         }
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.error(e.getMessage() + " with error code:" + e.getErrorCode());
+            }
+            
+        }
         return true;
     }
     
     static public String getShortDesc() {
-    	if (Degree == 0.0) {
-    		calIndex(null);
-    	}
+    	calIndex(null);
     	DecimalFormat df = new DecimalFormat("##.##");
         return "温度:" + df.format(Degree) + "[" + StkNum + "/" + df.format((totDecDlMny +totEqlDlMny + totIncDlMny)/100000000) + "亿 "
     			+ TotInc + "/" + df.format(AvgIncPct) + "/" + df.format(totIncDlMny/100000000) + "亿涨 "

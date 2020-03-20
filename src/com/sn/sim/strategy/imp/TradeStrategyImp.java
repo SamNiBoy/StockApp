@@ -432,11 +432,11 @@ public class TradeStrategyImp implements ITradeStrategy {
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and dl_dt >= sysdate - "
+			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and dl_dt >= sysdate() - interval "
 					+ days
 					// + " and to_char(dl_dt, 'hh24:mi:ss') > '08:00:00'"
 					// + " and to_char(dl_dt, 'hh24:mi:ss') < '16:00:00'"
-					+ " order by stkid, sb_id";
+					+ " day order by stkid, sb_id";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
@@ -516,10 +516,10 @@ public class TradeStrategyImp implements ITradeStrategy {
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and stkid ='" + s.getID() + "'  and dl_dt >= sysdate - " + days
+			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and stkid ='" + s.getID() + "'  and dl_dt >= sysdate() - interval " + days
 					// + " and to_char(dl_dt, 'hh24:mi:ss') > '08:00:00'"
 					// + " and to_char(dl_dt, 'hh24:mi:ss') < '16:00:00'"
-					+ " order by stkid, sb_id";
+					+ " day order by stkid, sb_id";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
@@ -713,7 +713,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                     + s.getID() + "',"
                     + s.getCur_pri()*sellableAmt + ","
                     + sellableAmt + ","
-                    + s.getCur_pri() + ",to_date('" + s.getDl_dt().toLocaleString() + "','yyyy-mm-dd hh24:mi:ss'))";
+                    + s.getCur_pri() + ",str_to_date('" + s.getDl_dt().toLocaleString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s'))";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -731,7 +731,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                 + seqnum + ","
                 + s.getCur_pri() + ", "
                 + sellableAmt
-                + ", to_date('" + s.getDl_dt().toLocaleString() + "', 'yyyy-mm-dd hh24:mi:ss'), 0)";
+                + ", str_to_date('" + s.getDl_dt().toLocaleString().substring(0, 19) + "', '%Y-%m-%d %H:%i:%s'), 0)";
             log.info(sql);
             stm.execute(sql);
             
@@ -845,7 +845,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                     + s.getID() + "',"
                     + s.getCur_pri()*buyMnt + ","
                     + buyMnt + ","
-                    + s.getCur_pri() + ",to_date('" + s.getDl_dt().toLocaleString() + "','yyyy-mm-dd hh24:mi:ss'))";
+                    + s.getCur_pri() + ",str_to_date('" + s.getDl_dt().toLocaleString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s'))";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -862,7 +862,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                 + seqnum + ","
                 + s.getCur_pri() + ", "
                 + buyMnt
-                + ", to_date('" + s.getDl_dt().toLocaleString() + "','yyyy-mm-dd hh24:mi:ss'), 1)";
+                + ", str_to_date('" + s.getDl_dt().toLocaleString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s'), 1)";
             log.info(sql);
             stm.execute(sql);
             
@@ -893,7 +893,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			sql = "insert into SellBuyRecord values(SEQ_SBR_PK.nextval,'" + openID + "','" + s.getID() + "'," + s.getCur_pri()
 					+ "," + qtyToTrade + ","
 					+ (is_buy_flg ? 1 : 0)
-					+ ",to_date('" + s.getDl_dt().toString().substring(0, 19) + "', 'yyyy-mm-dd hh24:mi:ss'))";
+					+ ",str_to_date('" + s.getDl_dt().toString().substring(0, 19) + "', '%Y-%m-%d %H:%i:%s'))";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();

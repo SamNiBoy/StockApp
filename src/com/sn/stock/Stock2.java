@@ -841,7 +841,7 @@ public class Stock2 implements Comparable<Stock2>{
             s5_pri_lst = new BoundArrayList<Double>(MAX_SZ);
             dl_dt_lst = new BoundArrayList<Timestamp>(MAX_SZ);
             
-            LoadData();
+            //LoadData();
             /*Connection con = DBManager.getConnection();
             try {
                 Statement stm = con.createStatement();

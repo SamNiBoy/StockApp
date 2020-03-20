@@ -70,7 +70,6 @@ public class AddMail implements IWork {
             String sql = "update usr set mail = '" + mail + "' where openID = '" + frmUsr + "'";
             log.info("AddMail:" + sql);
             mainStm.executeUpdate(sql);
-            con.commit();
             con.close();
             resContent = "成功添加邮箱:" + mail;
         } catch (Exception e) {

@@ -2,6 +2,7 @@ package com.sn.work.task;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -238,7 +239,7 @@ public class SuggestStock implements IWork {
 								+ "' and id = '" + s.getID() + "'";
 					}
 				} else {
-					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "',sysdate)";
+					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "',sysdate())";
 				}
 				rs2.close();
 				stm2.close();
@@ -247,16 +248,23 @@ public class SuggestStock implements IWork {
 					log.info(sql);
 					stm2 = con.createStatement();
 					stm2.execute(sql);
-					con.commit();
 					stm2.close();
 				}
 			}
 			rs.close();
-			stm.close();
-			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+        finally {
+			try {
+     			stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.error(e.getMessage() + " with error code: " + e.getErrorCode());
+            }
+            
+        }
 	}
 	
 	private void electStockforTrade() {
@@ -287,11 +295,19 @@ public class SuggestStock implements IWork {
 				stm2.close();
 			}
 			rs.close();
-			stm.close();
-			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+        finally {
+			try {
+     			stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.error(e.getMessage() + " with error code: " + e.getErrorCode());
+            }
+        }
 		
 		if (exiter > 0) {
 			moveStockToTrade(exiter);
@@ -319,7 +335,7 @@ public class SuggestStock implements IWork {
 			rs = stm.executeQuery(sql);
 			while (rs.next() && maxCnt-- > 0) {
 				String id = rs.getString("id");
-				sql = "update usrStk set suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "',  gz_flg = 1, sell_mode_flg = 0, add_dt = sysdate where id ='" + id + "'";
+				sql = "update usrStk set suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "',  gz_flg = 1, sell_mode_flg = 0, add_dt = sysdate() where id ='" + id + "'";
 				Statement stm2 = con.createStatement();
 				stm2.execute(sql);
 				con.commit();
@@ -328,11 +344,19 @@ public class SuggestStock implements IWork {
 				stockMoved.add(id);
 			}
 			rs.close();
-			stm.close();
-			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.error(e.getMessage() + " with error code: " + e.getErrorCode());
+            }
+        }
 		
 		Iterator<Stock2> it = stocksWaitForMail.iterator();
 		while(it.hasNext())
@@ -355,12 +379,19 @@ public class SuggestStock implements IWork {
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);
-			con.commit();
-			stm.close();
-			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.error(e.getMessage() + " with error code: " + e.getErrorCode());
+            }
+        }
 	}
 	
 	public static boolean shouldStockExitTrade(String stkid) {
@@ -408,8 +439,8 @@ public class SuggestStock implements IWork {
 			}
 			
 			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "' and acntid like 'ACNT%' "
-				+ "   and dl_dt >= sysdate - " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + ")"
-				+ " or exists (select 'y' from usrStk where gz_flg = 1 and id = '" + stkid +  "' and add_dt > sysdate - " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + ")";
+				+ "   and dl_dt >= sysdate() - interval " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + " day)"
+				+ " or exists (select 'y' from usrStk where gz_flg = 1 and id = '" + stkid +  "' and add_dt > sysdate() - interval " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + " day)";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
@@ -419,11 +450,19 @@ public class SuggestStock implements IWork {
 			}
 			
 			rs.close();
-			stm.close();
-			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.error(e.getMessage() + " with error code: " + e.getErrorCode());
+            }
+        }
 
 		return false;
 	}
@@ -437,12 +476,19 @@ public class SuggestStock implements IWork {
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);
-			con.commit();
-			stm.close();
-			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+            log.error(e.getMessage() + " with error code:" + e.getCause()); 
 		}
+        finally {
+			try {
+    			stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+               log.error(e.getMessage() + " with error code:" + e.getErrorCode()); 
+            }
+        }
 	}
 
 	public String getWorkResult() {
