@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.stock.StockMarket;
 import com.sn.trader.StockTrader;
 import com.sn.work.itf.IWork;
@@ -55,7 +56,7 @@ public class GzStock implements com.sn.work.itf.IWork {
         String msg = "";
         Connection con = DBManager.getConnection();
         Statement stm = null;
-        String sql = "select gz_flg from usrStk where id = '" + stockID + "' and openID = '" + frmUsr + "'";
+        String sql = "select gz_flg, suggested_by from usrStk where id = '" + stockID + "' and openID = '" + frmUsr + "'";
         try {
             stm = con.createStatement();
             ResultSet rs = null;
@@ -63,13 +64,20 @@ public class GzStock implements com.sn.work.itf.IWork {
 
             if (rs.next()) {
             	long gz_flg = rs.getLong("gz_flg");
+            	String suggested_by = rs.getString("suggested_by");
             	rs.close();
             	stm.close();
-            	sql = "update usrStk set gz_flg = 1 - gz_flg, suggested_by = '" + frmUsr + "' where id = '" + stockID + "' and openID = '" + frmUsr + "'";
+                if (gz_flg == 1 && suggested_by.equals(STConstants.SUGGESTED_BY_FOR_SYSTEM))
+                {
+            	    sql = "update usrStk set suggested_by = '" + frmUsr + "' where id = '" + stockID + "' and openID = '" + frmUsr + "'";
+                }
+                else {
+            	    sql = "update usrStk set gz_flg = 1 - gz_flg, suggested_by = '" + frmUsr + "' where id = '" + stockID + "' and openID = '" + frmUsr + "'";
+                }
             	stm = con.createStatement();
             	log.info(sql);
             	stm.execute(sql);
-            	if (gz_flg == 1) {
+            	if (gz_flg == 1 && !suggested_by.equals(STConstants.SUGGESTED_BY_FOR_SYSTEM)) {
             	    msg = "成功取消关注:" + stockID;
             	    StockMarket.removeGzStocks(stockID);
             	}
