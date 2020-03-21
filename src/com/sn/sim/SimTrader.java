@@ -99,11 +99,10 @@ public class SimTrader implements IWork{
 			stm.close();
 			
 			stm = con.createStatement();
-			sql = "delete from CashAcnt where  dft_acnt_flg = 0 and acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			sql = "delete from CashAcnt where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
-			con.commit();
 			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();

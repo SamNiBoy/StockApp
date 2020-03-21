@@ -87,8 +87,8 @@ public class StockObserverable extends Observable {
 				+ "   and s2.id = s3.id "
 				+ "   and s2.ft_id > s3.ft_id "
 				+ "   and not exists (select 'x' from stkdat2 s4 where s4.id = s2.id and s4.ft_id < s2.ft_id and s4.ft_id > s3.ft_id) "
-				+ "   and s2.dl_dt >= sysdate - 5 / (60 * 24) "
-				+ "   and to_char(s2.dl_dt, 'yyyy-mm-dd') = to_char(s3.dl_dt, 'yyyy-mm-dd') "
+				+ "   and s2.dl_dt >= sysdate() - interval (5 / (60 * 24)) day "
+				+ "   and left(s2.dl_dt, 10) = left(s3.dl_dt, 10) "
 				+ "   and s2.yt_cls_pri > 0"
 				+ "  group by s1.id, s1.name "
 				+ "  order by avgSpeed desc";
@@ -124,8 +124,8 @@ public class StockObserverable extends Observable {
 					+ "   and s2.id = s3.id "
 					+ "   and s2.ft_id > s3.ft_id "
 					+ "   and not exists (select 'x' from stkdat2 s4 where s4.id = s2.id and s4.ft_id < s2.ft_id and s4.ft_id > s3.ft_id) "
-					+ "   and s2.dl_dt >= sysdate - 5 / (60 * 24) "
-					+ "   and to_char(s2.dl_dt, 'yyyy-mm-dd') = to_char(s3.dl_dt, 'yyyy-mm-dd') "
+					+ "   and s2.dl_dt >= sysdate() - interval (5 / (60 * 24)) day "
+					+ "   and left(s2.dl_dt, 10) = left(s3.dl_dt, 10) "
 					+ "   and s2.yt_cls_pri > 0"
 					+ "  group by s1.id, s1.name "
 					+ "  order by avgSpeed asc";
@@ -251,12 +251,12 @@ public class StockObserverable extends Observable {
 				+ "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 8.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 7.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c8,  "
 				+ "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 9.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 8.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c9,  "
 				+ "       sum(case when s2.cur_pri < t.lst_pri + (t.hst_pri - t.lst_pri) * 10.0/ 10 and s2.cur_pri > t.lst_pri + (t.hst_pri - t.lst_pri) * 9.0/ 10 then 1 else 0 end * (s2.dl_stk_num - s1.dl_stk_num)) c10,"
-				+ "       sysdate                                                                                                                                                                                           "
+				+ "       sysdate()                                                                                                                                                                                           "
 				+ "  from stkdat2 s2, (select id, min(cur_pri) lst_pri, max(cur_pri) hst_pri from stkdat2 sx group by sx.id) t,                                                                                             "
 				+ "       stkdat2 s1                                                                                                                                                                                        "
 				+ " where s2.id = s1.id                                                                                                                                                                                     "
 				+ "   and s2.ft_id > s1.ft_id                                                                                                                                                                               "
-				+ "   and to_char(s2.dl_dt,'yyyy-mm-dd') = to_char(s1.dl_dt,'yyyy-mm-dd')                                                                                                                                   "
+				+ "   and left(s2.dl_dt, 10) = left(s1.dl_dt, 10)                                                                                                                                   "
 				+ "   and not exists (select 'x' from stkdat2 ss where ss.id = s2.id and ss.ft_id > s1.ft_id and ss.ft_id < s2.ft_id)                                                                                       "
 				+ "   and s2.id = t.id                                                                                                                                                                                      "
 				+ "   and s2. id = '" + stkId + "'"
@@ -337,10 +337,9 @@ public class StockObserverable extends Observable {
 			for (String stock : gzStocks.keySet()) {
 				try {
 					sql = "select cur_pri, td_opn_pri, dl_stk_num, yt_cls_pri, dl_mny_num from stkdat2 where id ='"
-							+ stock + "' and to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate , 'yyyy-mm-dd') "
-							// + "' and to_char(dl_dt, 'yyyy-mm-dd') >=
+							+ stock + "' and left(dl_dt, 10) = left(sysdate() , 10) "
 							// '2016-02-05'"
-							+ "  and dl_dt >= sysdate - (5*1.0)/(24*60.0) " + "  and td_opn_pri > 0 order by ft_id ";
+							+ "  and dl_dt >= sysdate() - interval ((5*1.0)/(24*60.0)) day " + "  and td_opn_pri > 0 order by ft_id ";
 
 					log.info(sql);
 
@@ -390,9 +389,9 @@ public class StockObserverable extends Observable {
 
 					rs.close();
 					int rowCnt = 0, daysToTrack = 4;
-					sql = "select * from (" + "select id, to_char(dl_dt, 'yyyy-mm-dd') dt, max(yt_cls_pri) yt_cls_pri "
+					sql = "select * from (" + "select id, left(dl_dt, 10) dt, max(yt_cls_pri) yt_cls_pri "
 							+ "from stkdat2 " + "where id = '" + stock + "' "
-							+ "group by to_char(dl_dt, 'yyyy-mm-dd'), id " + "order by dt desc) " + "where rownum <= "
+							+ "group by left(dl_dt, 10), id " + "order by dt desc) " + "where rownum <= "
 							+ daysToTrack;
 
 					log.info(sql);

@@ -75,7 +75,7 @@ public class SimStockDriver {
         Statement stm = null;
         ResultSet rs = null;
 
-        String sql = "select 'x' from dual where to_char(sysdate, 'yyyy-mm-dd') = '" + end_dt + "'";
+        String sql = "select 'x' from dual where left(sysdate(), 10) = '" + end_dt + "'";
         try {
             stm = con.createStatement();
             rs = stm.executeQuery(sql);
@@ -196,8 +196,8 @@ public class SimStockDriver {
         }
         
         log.info("got idClause: " + idClause);
-        String sql = "select * from stkdat2 where to_char(dl_dt, 'yyyy-mm-dd') >= '" + start_dt + 
-        "'"+ " and to_char(dl_dt, 'yyyy-mm-dd') <= '" + end_dt + "'" + idClause + " order by id, ft_id";
+        String sql = "select * from stkdat2 where left(dl_dt, 10) >= '" + start_dt + 
+        "'"+ " and left(dl_dt, 10) <= '" + end_dt + "'" + idClause + " order by id, ft_id";
         log.info(sql);
         try {
             SimStm = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -229,8 +229,8 @@ public class SimStockDriver {
         
         String idClause = " and id = '" + stkId + "'";
         
-        String sql = "select * from stkdat2 where to_char(dl_dt, 'yyyy-mm-dd') >= '" + start_dt + 
-        "'"+ " and to_char(dl_dt, 'yyyy-mm-dd') <= '" + end_dt + "'" + idClause + " order by id, ft_id";
+        String sql = "select * from stkdat2 where left(dl_dt, 10) >= '" + start_dt + 
+        "'"+ " and left(dl_dt, 10) <= '" + end_dt + "'" + idClause + " order by id, ft_id";
         log.info(sql);
         try {
             if (DtRs != null) {

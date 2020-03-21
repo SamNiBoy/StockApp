@@ -135,7 +135,7 @@ public class sndStkStat implements IWork {
                     + "                       decode(sum(case when cur_pri <= (td_opn_pri - 0.01) then 1 else 0 end), 0, 1, sum(case when cur_pri <= (td_opn_pri - 0.01) then 1 else 0 end)) avgDscPct,"
                     + "       sum(case when abs(cur_pri - td_opn_pri) < 0.01 then 1 else 0 end) equNum"
                     + "  from stkdat2 "
-                    + " where to_char(dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') "
+                    + " where left(dl_dt, 10) = left(sysdate(), 10) "
                     + "   and ft_id in (select max(ft_id) from stkdat2 group by ID)";
             log.info("usrStock:" + sql);
             mainRs = mainStm.executeQuery(sql);
@@ -149,14 +149,14 @@ public class sndStkStat implements IWork {
             mainRs.close();
             sql = "select (sd.cur_pri - sd.td_opn_pri) / sd.td_opn_pri stkIncPct," +
                     "      sd.cur_pri," +
-                    "      to_char(sd.dl_dt, 'yyyy-mm-dd HH24:MI:SS') tm, " +
+                    "      left(sd.dl_dt, 10) tm, " +
                     "      s.name, " +
                     "      s.id "
                     + " from stkdat2 sd, stk s "
                     + "where sd.id in (select id from monStk)"
                     + "  and sd.id = s.id "
                     + "  and sd.ft_id = (select max(ft_id) from stkdat2 where id =s.id)"
-                    + "  and to_char(sd.dl_dt, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd') ";
+                    + "  and left(sd.dl_dt, 10) = left(sysdate(), 10) ";
             log.info("sndStkStat:" + sql);
             mainRs = mainStm.executeQuery(sql);
             if (mainRs.next()) {

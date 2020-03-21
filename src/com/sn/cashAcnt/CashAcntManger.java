@@ -64,7 +64,7 @@ public class CashAcntManger {
             con.close();
             return false;
         }
-        sql = "insert into cashacnt values('testCashAct001',20000,0,0,4,0.5,1,sysdate)";
+        sql = "insert into cashacnt values('testCashAct001',20000,0,0,4,0.5,1,sysdate())";
         stm.execute(sql);
         con.commit();
         rs.close();

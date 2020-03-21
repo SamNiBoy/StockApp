@@ -99,7 +99,7 @@ public class SimWorker implements IWork {
     	try {
     		con = DBManager.getConnection();
     		stm = con.createStatement();
-    		sql = "select to_char(max(dl_dt) - " + STConstants.SIM_DAYS + ", 'yyyy-mm-dd') sd, to_char(max(dl_dt), 'yyyy-mm-dd') ed from stkdat2";
+    		sql = "select left(max(dl_dt) - interval " + STConstants.SIM_DAYS + " day, 10) sd, left(max(dl_dt), 10) ed from stkdat2";
     		log.info(sql);
     		rs = stm.executeQuery(sql);
     		rs.next();

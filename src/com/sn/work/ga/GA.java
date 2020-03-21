@@ -117,7 +117,7 @@ public class GA implements IWork {
         String sql = "select (cur_pri - td_opn_pri) /td_opn_pri pct, id" +
                        " from stkdat2 s1 " +
                        "where td_opn_pri > 0 " +
-                       "  and dl_dt >= sysdate - 5 * 1.0 / (24 * 60)" +
+                       "  and dl_dt >= sysdate() - interval (5 * 1.0 / (24 * 60)) day " +
                        " order by id, ft_id ";
         log.info(sql);
         try{

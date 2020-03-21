@@ -435,8 +435,6 @@ public class TradeStrategyImp implements ITradeStrategy {
 			Statement stm = con.createStatement();
 			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and dl_dt >= sysdate() - interval "
 					+ days
-					// + " and to_char(dl_dt, 'hh24:mi:ss') > '08:00:00'"
-					// + " and to_char(dl_dt, 'hh24:mi:ss') < '16:00:00'"
 					+ " day order by stkid, sb_id";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
@@ -518,8 +516,6 @@ public class TradeStrategyImp implements ITradeStrategy {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and stkid ='" + s.getID() + "'  and dl_dt >= sysdate() - interval " + days
-					// + " and to_char(dl_dt, 'hh24:mi:ss') > '08:00:00'"
-					// + " and to_char(dl_dt, 'hh24:mi:ss') < '16:00:00'"
 					+ " day order by stkid, sb_id";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);

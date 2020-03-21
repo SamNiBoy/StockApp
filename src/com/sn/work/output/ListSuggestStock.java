@@ -88,12 +88,12 @@ public class ListSuggestStock implements IWork {
 
                 try {
                     sql = "select avg(dev) dev from ("
-         				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, to_char(dl_dt, 'yyyy-mm-dd') atDay "
+         				   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, left(dl_dt, 10) atDay "
         				   + "  from stkdat2 "
         				   + " where id ='" + stock + "'"
         				   + "   and yt_cls_pri > 0 "
-        				   + "   and to_char(dl_dt, 'yyyy-mm-dd') >= to_char(sysdate - 7, 'yyyy-mm-dd')"
-        				   + " group by to_char(dl_dt, 'yyyy-mm-dd'))";
+        				   + "   and left(dl_dt, 10) >= left(sysdate() - interval 7 day, 10)"
+        				   + " group by left(dl_dt, 10))";
                     log.info(sql);
                     rs = stm.executeQuery(sql);
                     if (rs.next()) {

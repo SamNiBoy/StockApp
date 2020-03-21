@@ -72,7 +72,7 @@ public class CalStkDDF implements IWork {
                     String id = mainRs.getString("id");
 
                     Statement stmLstDt = con.createStatement();
-                    String sqlLstDt = "select decode(max(to_char(dl_dt,'yyyy-mm-dd HH24:MI:SS')), null, 'xxxx', max(to_char(dl_dt,'yyyy-mm-dd HH24:MI:SS'))) lst_dl_dt from stkddf where id = '"
+                    String sqlLstDt = "select decode(max(left(dl_dt,10)), null, 'xxxx', max(left(dl_dt, 10))) lst_dl_dt from stkddf where id = '"
                             + id + "'";
                     ResultSet rsLstDt = stmLstDt.executeQuery(sqlLstDt);
 

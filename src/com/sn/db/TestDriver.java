@@ -163,7 +163,7 @@ public class TestDriver {
                                + " dl_dt,"
                                + " dl_tm,"
                                + " ft_dt)"
-                               + " values (SEQ_STKDAT_PK.nextval," +
+                               + " select case when max(ft_id) is null then 0 else max(ft_id) end + 1," +
                                "'" + stkID + "',"
                                    + td_opn_pri + ","
                                    + yt_cls_pri + ","
@@ -194,8 +194,8 @@ public class TestDriver {
                                    + s4_pri + ","
                                    + s5_num + ", "
                                    + s5_pri + ","
-                               + "to_date('" + dl_dt.toString() +" " + dl_tm +"', 'yyyy-mm-dd hh24:mi:ss')" + ", '"
-                               + dl_tm + "'," +"sysdate)";
+                               + "str_to_date('" + dl_dt.toString() +" " + dl_tm +"', '%Y-%m-%d %T')" + ", '"
+                               + dl_tm + "'," +"sysdate() from stkDat2";
         log.info("sql:" + sql);
 
         Connection conn = null;// ��ʾ��ݿ�����

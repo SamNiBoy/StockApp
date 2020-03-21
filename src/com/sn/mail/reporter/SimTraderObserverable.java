@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 import com.sn.trader.StockTrader;
@@ -103,11 +104,11 @@ public class SimTraderObserverable extends Observable {
         	
             body.append("<table bordre = 1>" +
                     "<tr>" +
-                    "<th> ACNTCNT</th> " +
-                    "<th> AvgPft</th> " +
-                    "<th> AvgPP</th> " +
-                    "<th> AvgBuyCnt</th> " +
-                    "<th> AvgSellCnt</th></tr>");
+                    "<th> Sim Account</th> " +
+                    "<th> Avg Profit</th> " +
+                    "<th> Avg Profit Pct</th> " +
+                    "<th> Avg Buy Cnt</th> " +
+                    "<th> Avg Sell Cnt</th></tr>");
             
             DecimalFormat df = new DecimalFormat("##.##");
             int ACNTCNT = 0;
@@ -120,8 +121,8 @@ public class SimTraderObserverable extends Observable {
         		Connection con = DBManager.getConnection();
         		Statement stm = con.createStatement();
         		String sql = "select count(distinct(ac.acntid)) ACNTCNT, "
-        				   + "       avg(ac.pft_mny - ac.used_mny) avgPft, "
-        				   + "       avg((ac.pft_mny - ac.used_mny) / ac.init_mny) avgPP,"
+        				   + "       avg(ac.pft_mny) avgPft, "
+        				   + "       avg((ac.pft_mny) / ac.init_mny) avgPP,"
         				   + "       avg(tmp.buyCnt) buyCnt,"
         				   + "       avg(tmp.sellCnt) sellCnt, "
         				   + "       case when ac.pft_mny > ac.used_mny then 1 when ac.pft_mny = ac.used_mny then 0 else -1 end cat"
@@ -134,8 +135,8 @@ public class SimTraderObserverable extends Observable {
         			       + "          and th.stkid = td.stkid "
         			       + "         group by th.acntid ) tmp"
         			       + " where ac.acntid = tmp.acntid"
-        			       + "   and ac.dft_acnt_flg = 0"
-        			       + "   group by case when ac.pft_mny > ac.used_mny then 1 when ac.pft_mny = ac.used_mny then 0 else -1 end "
+        			       + "   and ac.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'"
+        			       + "   group by case when ac.pft_mny > 0 then 1 when ac.pft_mny = 0 then 0 else -1 end "
         			       + "   order by cat";
         		
         		log.info(sql);
@@ -170,28 +171,28 @@ public class SimTraderObserverable extends Observable {
                     body.append("<table bordre = 1>" +
                             "<tr>" +
                             "<th> ID </th> " +
-                            "<th> Acnt_ID </th> " +
-                            "<th> Init_Mny </th> " +
-                            "<th> Used_Mny </th> " +
-                            "<th> Pft_Mny </th> " +
-                            "<th> Split_Num </th> " +
-                            "<th> Max_Useable_Pct </th> " +
-                            "<th> Dft_Acnt_flg </th> " +
+                            "<th> Acnt ID </th> " +
+                            "<th> Init Mny </th> " +
+                            "<th> Used Mny </th> " +
+                            "<th> Profit Mny </th> " +
+                            "<th> Split Num </th> " +
+                            "<th> Max Useable Pct </th> " +
+                            "<th> Default Acount flg </th> " +
                             "<th> Profit</th>" +
-                            "<th> Proft_Pct</th>" +
-                            "<th> Add_Dt </th></tr>");
+                            "<th> Profit Pct</th>" +
+                            "<th> Add Date </th></tr>");
                     
         			int ID = 1, TopN = 10;
         			
         			stm = con.createStatement();
         			
-        			sql = "select ca.pft_mny - ca.used_mny profit, "
-        			    + "       (ca.pft_mny - ca.used_mny) / ca.init_mny PP, "
-        			    + "       to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') add_dte, "
+        			sql = "select ca.pft_mny profit, "
+        			    + "       ca.pft_mny / ca.init_mny PP, "
+        			    + "       left(sysdate(), 10) add_dte, "
         			    + "       ca.* "
         			    + "  from cashacnt ca "
-        			    + "   where ca.dft_acnt_flg = 0"
-        			    + " order by (ca.pft_mny - ca.used_mny) desc ";
+        			    + "   where ac.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'"
+        			    + " order by ca.pft_mny desc ";
         			
         			log.info(sql);
         			rs = stm.executeQuery(sql);
@@ -218,16 +219,16 @@ public class SimTraderObserverable extends Observable {
                     body.append("<table bordre = 1>" +
                             "<tr>" +
                             "<th> ID </th> " +
-                            "<th> Acnt_ID </th> " +
-                            "<th> Init_Mny </th> " +
-                            "<th> Used_Mny </th> " +
-                            "<th> Pft_Mny </th> " +
-                            "<th> Split_Num </th> " +
-                            "<th> Max_Useable_Pct </th> " +
-                            "<th> Dft_Acnt_flg </th> " +
+                            "<th> Acnt ID </th> " +
+                            "<th> Init Mny </th> " +
+                            "<th> Used Mny </th> " +
+                            "<th> Profit Mny </th> " +
+                            "<th> Split Num </th> " +
+                            "<th> Max Useable Pct </th> " +
+                            "<th> Dft Acnt flg </th> " +
                             "<th> Profit</th>" +
-                            "<th> Proft_Pct</th>" +
-                            "<th> Add_Dt </th></tr>");
+                            "<th> Profit Pct</th>" +
+                            "<th> Add Date </th></tr>");
                     
         			ID = 1;
         			TopN = 10;
@@ -236,10 +237,10 @@ public class SimTraderObserverable extends Observable {
         			
         			sql = "select ca.pft_mny - ca.used_mny profit, "
         			    + "       (ca.pft_mny - ca.used_mny) / ca.init_mny PP, "
-        			    + "       to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') add_dte, "
+        			    + "       left(sysdate(), 10) add_dte, "
         			    + "       ca.* "
         			    + "  from cashacnt ca "
-        			    + "  where ca.dft_acnt_flg = 0"
+        			    + " where ac.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'"
         			    + " order by (ca.pft_mny - ca.used_mny) asc ";
         			
         			log.info(sql);
