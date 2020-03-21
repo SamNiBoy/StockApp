@@ -105,7 +105,6 @@ public class CashAcntManger {
         Statement stm = con.createStatement();
         stm.execute(sql);
         stm.close();
-        con.commit();
         
         stm = con.createStatement();
         sql = "insert into cashacnt values(" +
@@ -116,10 +115,9 @@ public class CashAcntManger {
         		+ splitNum + ","
         		+ maxUsePct + ","
         		+ (dftAcnt ? 1 : 0) +
-        		",sysdate)";
+        		",sysdate())";
         log.info(sql);
         stm.execute(sql);
-        con.commit();
         con.close();
         log.info("successfully created account " + actId);
         return true;

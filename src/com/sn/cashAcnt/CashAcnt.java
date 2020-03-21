@@ -34,6 +34,8 @@ public class CashAcnt implements ICashAccount {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
+        CashAcnt ac = new CashAcnt("ACNT000975");
+        ac.reportAcntProfitWeb();
 	}
 
 	public CashAcnt(String id) {
@@ -134,7 +136,7 @@ public class CashAcnt implements ICashAccount {
 		Connection con = DBManager.getConnection();
 		String sql = "select case when sum(b.amount) is null then 0 else sum(b.amount) end SellableAmt from TradeDtl b "
 				+ "      where b.stkId = '" + stkId + "'" + "        and acntId = '" + actId + "'"
-				+ "        and b.buy_flg = 1 " + "        and to_char(dl_dt, 'yyyy-mm-dd') < '" + sellDt + "' "
+				+ "        and b.buy_flg = 1 " + "        and left(dl_dt, 10) < '" + sellDt + "' "
 				+ "      order by b.seqnum";
 		ResultSet rs = null;
 
@@ -152,20 +154,18 @@ public class CashAcnt implements ICashAccount {
 			rs.close();
 			stm.close();
 
-			if (sellableAmt > 0) {
-				stm = con.createStatement();
-				sql = "select case when sum(b.amount) is null then 0 else sum(b.amount) end SoldAmt from TradeDtl b "
-						+ "      where b.stkId = '" + stkId + "'" + "        and acntId = '" + actId + "'"
-						+ "        and b.buy_flg = 0 " + "      order by b.seqnum";
-
-				log.info(sql);
-				rs = stm.executeQuery(sql);
-				if (rs.next()) {
-					soldAmt = rs.getInt("SoldAmt");
-				}
-				rs.close();
-				stm.close();
-			}
+		    stm = con.createStatement();
+		    sql = "select case when sum(b.amount) is null then 0 else sum(b.amount) end SoldAmt from TradeDtl b "
+		    		+ "      where b.stkId = '" + stkId + "'" + "        and acntId = '" + actId + "'"
+		    		+ "        and b.buy_flg = 0 " + "      order by b.seqnum";
+            
+		    log.info(sql);
+		    rs = stm.executeQuery(sql);
+		    if (rs.next()) {
+		    	soldAmt = rs.getInt("SoldAmt");
+		    }
+		    rs.close();
+		    stm.close();
 			con.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -179,7 +179,7 @@ public class CashAcnt implements ICashAccount {
 		Connection con = DBManager.getConnection();
 		String sql = "select case when sum(b.amount) is null then 0 else sum(b.amount) end unSellableAmt from TradeDtl b "
 				+ "      where b.stkId = '" + stkId + "'" + "        and b.acntId = '" + actId + "'"
-				+ "        and b.buy_flg = 1 " + "        and to_char(b.dl_dt, 'yyyy-mm-dd') = '" + sellDt + "' "
+				+ "        and b.buy_flg = 1 " + "        and left(b.dl_dt, 10) = '" + sellDt + "' "
 				+ "      order by b.seqnum";
 		ResultSet rs = null;
 
@@ -210,7 +210,7 @@ public class CashAcnt implements ICashAccount {
 
 		ResultSet rs = null;
 		pftMny = 0;
-		double subpftMny = 0;
+		double in_hand_stk_mny = 0;
 		try {
 			Statement stm = con.createStatement();
 			rs = stm.executeQuery(sql);
@@ -222,9 +222,9 @@ public class CashAcnt implements ICashAccount {
 				int inHandMnt = getSellableAmt(stkId, ForDt) + getUnSellableAmt(stkId, ForDt);
 
 				log.info("in hand amt:" + inHandMnt + " price:" + s.getCur_pri() + " with cost:" + usedMny);
-				subpftMny = inHandMnt * s.getCur_pri();
+				in_hand_stk_mny = inHandMnt * s.getCur_pri();
 
-				sql = "update TradeHdr set pft_mny = " + subpftMny + ", pft_price =" + s.getCur_pri()
+				sql = "update TradeHdr set in_hand_stk_mny = " + in_hand_stk_mny + ", in_hand_stk_price =" + s.getCur_pri()
 						+ ", in_hand_qty = " + inHandMnt + " where acntId ='" + actId + "' and stkId ='" + stkId + "'";
 				Statement stm2 = con.createStatement();
 				log.info(sql);
@@ -235,25 +235,24 @@ public class CashAcnt implements ICashAccount {
 			rs.close();
 			stm.close();
 
-			sql = "select sum(pft_mny) tot_pft_mny from TradeHdr h where acntId = '" + actId + "'";
+			sql = "select sum(in_hand_stk_mny) in_hand_stk_mny from TradeHdr h where acntId = '" + actId + "'";
 
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
 
-			double tot_pft_mny = 0.0;
+			double in_hand_stk_mny2 = 0.0;
 			if (rs.next()) {
-				tot_pft_mny = rs.getDouble("tot_pft_mny");
-				sql = "update CashAcnt set pft_mny = " + tot_pft_mny + " where acntId = '" + actId + "'";
+			    in_hand_stk_mny2 = rs.getDouble("in_hand_stk_mny");
+				sql = "update CashAcnt set pft_mny = " + in_hand_stk_mny2 + " - used_mny where acntId = '" + actId + "'";
 				Statement stm2 = con.createStatement();
 
-				pftMny = tot_pft_mny;
+				pftMny = in_hand_stk_mny2 - usedMny;
 
 				log.info(sql);
 
 				stm2.execute(sql);
 				stm2.close();
 			}
-			con.commit();
 			rs.close();
 			stm.close();
 			con.close();
@@ -266,34 +265,59 @@ public class CashAcnt implements ICashAccount {
 	}
 
 	public String reportAcntProfitWeb() {
-		String msg = "Account: " + this.actId + " profit report<br/>";
+		String msg = "<b>Account: " + this.actId + " profit report</b><br/>";
 		msg += "<table border = 1>" + "<tr>" + "<th> Cash Account</th> " + "<th> Init Money </th> "
 				+ "<th> Used Money </th> " + "<th> Split Number </th> " + "<th> MaxUse Pct</th> "
 				+ "<th> Default Account</th> " + "<th> Account Profit</th> " + "<th> Report Date</th> </tr> ";
 
 		String dt = "";
-		SimpleDateFormat f = new SimpleDateFormat("HH:mm:ss");
+		SimpleDateFormat f = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
 		Date date = new Date();
 		dt = f.format(date);
 
 		msg += "<tr> <td>" + actId + "</td>" + "<td> " + initMny + "</td>" + "<td> " + usedMny + "</td>" + "<td> "
 				+ splitNum + "</td>" + "<td> " + maxUsePct + "</td>" + "<td> " + (dftAcnt ? "yes" : "No") + "</td>"
 				+ "<td> " + pftMny + "</td>" + "<td> " + dt + "</td> </tr> </table>";
+        
+		
+	      String headTran = "<b>Transactions header information:</b><br/>";
+    	  String detailTran = "";
 
-		String detailTran = "Detail Transactions <br/>";
+	      headTran += "<table border = 1>" + "<tr>" + "<th> Cash Account</th> " + "<th> Stock Id </th> "
+	                + "<th> In Hand Quantity</th> " + "<th> Stock Price </th> " + "<th> In Hand Stock Money</th> " + "<th> Add Date</th> </tr> ";
 
-		detailTran += "<table border = 1>" + "<tr>" + "<th> Cash Account</th> " + "<th> Stock Id </th> "
+	      Connection con = DBManager.getConnection();
+	      String sql = "select  acntid, stkid, in_hand_qty, in_hand_stk_price, in_hand_stk_mny,   date_format(add_dt, '%Y-%m-%d %T') add_dt"
+	                + " from TradeHdr h"
+	                + " where h.acntId ='" + actId + "' order by h.stkId";
+
+	      try {
+	            Statement stm = con.createStatement();
+	            ResultSet rs = stm.executeQuery(sql);
+	            if (rs.next()) {
+	                headTran += "<tr> <td>" + actId + "</td>" + "<td> " + rs.getString("stkId") + "</td>" + "<td> "
+	                        + rs.getLong("in_hand_qty") + "</td>" + "<td> " + rs.getDouble("in_hand_stk_price") + "</td>" + "<td> "
+	                        + rs.getInt("in_hand_stk_mny") + "</td>" 
+	                        + "<td> " + rs.getString("add_dt") + "</td></tr>";
+	            }
+
+	        headTran += "</table>";
+
+		    detailTran = "<b>Transaction details:</b><br/>";
+            
+		    detailTran += "<table border = 1>" + "<tr>" + "<th> Cash Account</th> " + "<th> Stock Id </th> "
 				+ "<th> Sequence Number </th> " + "<th> Price </th> " + "<th> Amount </th> " + "<th> Buy/Sell </th> "
 				+ "<th> Transaction Date</th> </tr> ";
 
-		Connection con = DBManager.getConnection();
-		String sql = "select stkId," + "           seqnum," + "           round(price, 2) price," + "           amount,"
-				+ "           buy_flg," + "           to_char(dl_dt, 'hh:mi:ss yyyy-mm-dd') dl_dt" + " from TradeDtl d "
+		    sql = "select stkId," + "           seqnum," + "           round(price, 2) price," + "           amount,"
+				+ "           buy_flg," + "           date_format(dl_dt, '%Y-%m-%d %T') dl_dt" + " from TradeDtl d "
 				+ " where d.acntId ='" + actId + "' order by d.stkId, d.seqnum ";
 
-		try {
-			Statement stm = con.createStatement();
-			ResultSet rs = stm.executeQuery(sql);
+            rs.close();
+            stm.close();
+           
+			stm = con.createStatement();
+			rs = stm.executeQuery(sql);
 			while (rs.next()) {
 				detailTran += "<tr> <td>" + actId + "</td>" + "<td> " + rs.getString("stkId") + "</td>" + "<td> "
 						+ rs.getInt("seqnum") + "</td>" + "<td> " + rs.getDouble("price") + "</td>" + "<td> "
@@ -309,8 +333,8 @@ public class CashAcnt implements ICashAccount {
 			e.printStackTrace();
 		}
 
-		String totMsg = msg + detailTran;
-		log.info("got profit information:" + totMsg);
+		String totMsg = msg + headTran + detailTran;
+		log.info("got profit information:\n" + totMsg);
 
 		return totMsg;
 
@@ -318,10 +342,10 @@ public class CashAcnt implements ICashAccount {
 
 	public void printAcntInfo() {
 		DecimalFormat df = new DecimalFormat("##.##");
-		String pftPct = df.format((pftMny - usedMny) / usedMny * 100);
-		String profit = df.format(pftMny - usedMny);
+		String pftPct = df.format(pftMny / initMny * 100);
+		String profit = df.format(pftMny);
 		log.info("##################################################################################################");
-		log.info("|AccountId\t|InitMny\t|UsedMny\t|PftMny\t|SplitNum\t|MaxUsePct\t|DftAcnt\t|PP\t|Profit|");
+		log.info("|AccountId\t|InitMny\t|UsedMny\t|PftMny\t|SplitNum\t|MaxUsePct\t|DftAcnt\t|ProfictPct|Profit|");
 		log.info("|" + actId + "\t|" + df.format(initMny) + "\t\t|" + df.format(usedMny) + "\t\t|" + df.format(pftMny)
 				+ "\t|" + splitNum + "\t\t|" + df.format(maxUsePct) + "\t\t|" + dftAcnt + "\t\t|" + pftPct + "%\t|"
 				+ profit + "\t|");
@@ -337,26 +361,26 @@ public class CashAcnt implements ICashAccount {
 		DecimalFormat df = new DecimalFormat("##.##");
 		try {
 			stm = con.createStatement();
-			sql = "select acntId," + "     stkId," + "    round(pft_mny, 2) pft_mny, " + "    in_hand_qty, "
-					+ "    round(pft_price, 2) pft_price, " + "    to_char(add_dt, 'yyyy-mm-dd hh24:mi:ss') add_dt "
+			sql = "select acntId," + "     stkId," + "    round(in_hand_stk_mny, 2) in_hand_stk_mny, " + "    in_hand_qty, "
+					+ "    round(in_hand_stk_price, 2) in_hand_stk_price, " + "    date_format(add_dt, '%Y-%m-%d %T') add_dt "
 					+ "from TradeHdr where acntId = '" + actId + "' order by stkid ";
-			// log.info(sql);
+			//log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 			log.info("=======================================================================================");
-			log.info("|AccountID\t|StockID\t|Pft_mny\t|InHandQty\t|PftPrice\t|TranDt|");
+			log.info("|AccountID\t|StockID\t|InHandStkMny\t|InHandQty\t|PftPrice|TranDt|");
 			while (rs.next()) {
 				log.info("|" + rs.getString("acntId") + "\t|" + rs.getString("stkId") + "\t\t|"
-						+ rs.getString("pft_mny") + "\t\t|" + rs.getInt("in_hand_qty") + "\t\t|"
-						+ df.format(rs.getDouble("pft_price")) + "\t\t|" + rs.getString("add_dt") + "|");
+						+ rs.getString("in_hand_stk_mny") + "\t|" + rs.getInt("in_hand_qty") + "\t\t|"
+						+ df.format(rs.getDouble("in_hand_stk_price")) + "\t|" + rs.getString("add_dt") + "|");
 				Statement stmdtl = con.createStatement();
-				String sqldtl = "select stkid, seqnum, price, amount, to_char(dl_dt, 'yyyy-mm-dd hh24:mi:ss') dl_dt, buy_flg "
+				String sqldtl = "select stkid, seqnum, price, amount, date_format(dl_dt, '%Y-%m-%d %T') dl_dt, buy_flg "
 						+ "  from tradedtl where acntId ='" + actId + "' order by seqnum";
-				// log.info(sql);
+				//log.info(sql);
 
 				ResultSet rsdtl = stmdtl.executeQuery(sqldtl);
-				log.info("\tStockID\tSeqnum\tPrice\tAmount\tB/S\tsubTotal\tTranDt");
+				log.info("StockID\tSeqnum\tPrice\tAmount\tB/S\tsubTotal\tTranDt");
 				while (rsdtl.next()) {
-					log.info("\t" + rsdtl.getString("stkid") + "\t" + rsdtl.getInt("seqnum") + "\t"
+					log.info(rsdtl.getString("stkid") + "\t" + rsdtl.getInt("seqnum") + "\t"
 							+ df.format(rsdtl.getDouble("price")) + "\t" + rsdtl.getInt("amount") + "\t"
 							+ (rsdtl.getInt("buy_flg") > 0 ? "B" : "S") + "\t"
 							+ df.format((rsdtl.getInt("buy_flg") > 0 ? -1 : 1) * rsdtl.getDouble("price")
@@ -386,9 +410,8 @@ public class CashAcnt implements ICashAccount {
 			stm.execute(sql);
 			stm.close();
 			stm = con.createStatement();
-			sql = "insert into cashacnt values('testCashAct001',50000,0,0,8,0.5,1,sysdate)";
+			sql = "insert into cashacnt values('testCashAct001',50000,0,0,8,0.5,1,sysdate())";
 			stm.execute(sql);
-			con.commit();
 			stm.close();
 			con.close();
 			loadAcnt(actId);

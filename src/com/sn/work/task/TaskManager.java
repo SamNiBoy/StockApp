@@ -26,7 +26,7 @@ public class TaskManager {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-
+        startTasks();
     }
     
     public static boolean startTasks()

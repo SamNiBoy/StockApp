@@ -90,7 +90,8 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         	deadline = "sysdate()";
         }
         else {
-        	deadline = "str_to_date('" + tm.toLocaleString() + "', '%Y-%m-%d %H:%i:%s')";
+     		log.info("getBuyThreshValueByDegree: stk.getDl_dt().toLocaleString():" +  stk.getDl_dt().toLocaleString());
+        	deadline = "str_to_date('" + stk.getDl_dt().toLocaleString() + "', '%Y-%m-%d %H:%i:%s')";
         }
         
     	try {

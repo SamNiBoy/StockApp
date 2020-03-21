@@ -24,7 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
+import com.sn.cashAcnt.CashAcnt;
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 import com.sn.trader.StockTrader;
@@ -129,13 +131,6 @@ public class GzStockBuySellPointObserverable extends Observable {
         	u.content = "";
         	body = new StringBuffer();
         	usr_need_mail = false;
-            body.append("<table bordre = 1>" +
-                    "<tr>" +
-                    "<th> ID</th> " +
-                    "<th> Name</th> " +
-                    "<th> Price</th> " +
-                    "<th> Buy/Sell</th> " +
-                    "<th> Time</th></tr>");
             DecimalFormat df = new DecimalFormat("##.##");
             for (StockBuySellEntry e : sbse) {
             	if (u.gzStk(e.id)) {
@@ -143,11 +138,21 @@ public class GzStockBuySellPointObserverable extends Observable {
             		if (u.subject.length() <= 0) {
             			u.subject = e.name + "/" + df.format(e.price) + "/" + (e.is_buy_point ? "买 " : "卖 ") + subject + returnStr;
             		}
+                    body.append("<table border = 1>" +
+                    "<tr>" +
+                    "<th> ID</th> " +
+                    "<th> Name</th> " +
+                    "<th> Price</th> " +
+                    "<th> Buy/Sell</th> " +
+                    "<th> Time</th></tr>");
                     body.append("<tr> <td>" + e.id + "</td>" +
                     "<td> " + e.name + "</td>" +
                     "<td> " + df.format(e.price) + "</td>" +
                     "<td> " + (e.is_buy_point ? "B" : "S") + "</td>" +
-                    "<td> " + e.dl_dt + "</td></tr>");
+                    "<td> " + e.dl_dt + "</td></tr></table>");
+                    
+                    CashAcnt ac = new CashAcnt(STConstants.ACNT_TRADE_PREFIX + e.id);
+                    body.append(ac.reportAcntProfitWeb());
                     usr_need_mail = true;
                     generated_mail = true;
             	}

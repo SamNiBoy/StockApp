@@ -1,7 +1,7 @@
 create table if not exists usr(
 openID varchar(100 ) not null,
 host_flg int not null,
-add_dt date not null,
+add_dt datetime not null,
 mail varchar(100 ),
 buy_sell_enabled int not null,
 suggest_stock_enabled int not null,
@@ -14,7 +14,7 @@ id varchar(6 ) not null,
 gz_flg int not null,
 sell_mode_flg int not null,
 suggested_by varchar(100 ) not null,
-add_dt date not null,
+add_dt datetime not null,
 CONSTRAINT usrStk_PK PRIMARY KEY (OpenID, id)
 );
 
@@ -87,8 +87,8 @@ td_hst_pri int not null,
 td_lst_pri int not null,
 b1_bst_pri int not null,
 s1_bst_pri int not null,
-dl_stk_num int not null,
-dl_mny_num int not null,
+dl_stk_num bigint not null,
+dl_mny_num decimal(20, 2) not null,
 b1_num int not null,
 b1_pri int not null,
 b2_num int not null,
@@ -164,8 +164,8 @@ td_hst_pri decimal(8, 2) not null,
 td_lst_pri decimal(8, 2) not null,
 b1_bst_pri decimal(8, 2) not null,
 s1_bst_pri decimal(8, 2) not null,
-dl_stk_num int not null,
-dl_mny_num int not null,
+dl_stk_num bigint not null,
+dl_mny_num decimal(20, 2) not null,
 b1_num int not null,
 b1_pri decimal(8, 2) not null,
 b2_num int not null,
@@ -267,7 +267,7 @@ s4_num_df int not null,
 s4_pri_df int not null,
 s5_num_df int not null,
 s5_pri_df int not null,
-dl_dt date not null,
+dl_dt datetime not null,
 CONSTRAINT stkddf_PK PRIMARY KEY (ft_id, gap, id)
 );
 
@@ -285,26 +285,26 @@ c7 int not null,
 c8 int not null,
 c9 int not null,
 c10 int not null,
-add_dt date not null
+add_dt datetime not null
 );
 
 create table if not exists CashAcnt(
 acntId varchar(20 ) not null,
-init_mny int not null,
-used_mny int not null,
-pft_mny int,
+init_mny decimal(8, 2) not null,
+used_mny decimal(8, 2) not null,
+pft_mny decimal(8, 2),
 split_num int not null,
-max_useable_pct int not null,
+max_useable_pct decimal(8, 2) not null,
 dft_acnt_flg int not null,
-add_dt date not null,
+add_dt datetime not null,
 CONSTRAINT CashAcnt_PK PRIMARY KEY (acntId, dft_acnt_flg)
 );
 
 create table if not exists arc_CashAcnt(
 acntId varchar(20 ) not null,
-init_mny int not null,
-used_mny int not null,
-pft_mny int,
+init_mny decimal(8, 2) not null,
+used_mny decimal(8, 2) not null,
+pft_mny decimal(8, 2),
 split_num int not null,
 max_useable_pct int not null,
 dft_acnt_flg int not null,
@@ -316,29 +316,29 @@ insert into cashacnt values('testCashAct001',20000,0,0,4,0.5,1,sysdate());
 create table if not exists TradeHdr(
 acntId varchar(20 ) not null,
 stkId varchar(6 ) not null,
-pft_mny int not null, /* the money of your stock */
+in_hand_stk_mny decimal(8, 2) not null, /* the money of your stock */
 in_hand_qty int not null,
-pft_price int not null,
-add_dt date not null,
+in_hand_stk_price decimal(8, 2) not null,
+add_dt datetime not null,
 CONSTRAINT TradeHdr_PK PRIMARY KEY (acntId, stkId)
 );
 
 create table if not exists arc_TradeHdr(
 acntId varchar(20 ) not null,
 stkId varchar(6 ) not null,
-pft_mny int not null, /* the money of your stock */
+in_hand_stk_mny decimal(8, 2) not null, /* the money of your stock */
 in_hand_qty int not null,
-pft_price int not null,
-add_dt date not null
+pft_price decimal(8, 2) not null,
+add_dt datetime not null
 );
 
 create table if not exists TradeDtl(
 acntId varchar(20 ) not null,
 stkId varchar(6 ) not null,
 seqnum int not null,
-price int not null,
+price decimal(8, 2) not null,
 amount int not null,
-dl_dt date not null,
+dl_dt datetime not null,
 buy_flg int not null,
 CONSTRAINT TradeDtl_PK PRIMARY KEY (acntId, stkId, seqnum)
 );
@@ -347,9 +347,9 @@ create table if not exists arc_TradeDtl(
 acntId varchar(20 ) not null,
 stkId varchar(6 ) not null,
 seqnum int not null,
-price int not null,
+price decimal(8, 2) not null,
 amount int not null,
-dl_dt date not null,
+dl_dt datetime not null,
 buy_flg int not null
 );
 
@@ -360,7 +360,7 @@ stkId varchar(6 ) not null,
 price int not null,
 qty int not null,
 buy_flg int not null,
-dl_dt date not null
+dl_dt datetime not null
 );
 
 create table if not exists arc_SellBuyRecord(
@@ -370,7 +370,7 @@ stkId varchar(6 ) not null,
 price int not null,
 qty int not null,
 buy_flg int not null,
-dl_dt date not null
+dl_dt datetime not null
 );
 
 create index stkdat2_id_dldt_idx on stkDat2 (id, ft_id, dl_dt);

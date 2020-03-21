@@ -139,6 +139,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			        
 			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
 			        sm.put(s.getID(), s);
+                    log.info("TradeStock date string:" + s.getDl_dt().toString().substring(0, 10));
 			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
 			    	if (!sim_mode) {
 			            createBuySellRecord(s, STConstants.openID, true, qtyToTrade);
@@ -731,7 +732,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                 + seqnum + ","
                 + s.getCur_pri() + ", "
                 + sellableAmt
-                + ", str_to_date('" + s.getDl_dt().toLocaleString().substring(0, 19) + "', '%Y-%m-%d %H:%i:%s'), 0)";
+                + ", str_to_date('" + s.getDl_dt().toLocaleString() + "', '%Y-%m-%d %H:%i:%s'), 0)";
             log.info(sql);
             stm.execute(sql);
             
@@ -745,7 +746,6 @@ public class TradeStrategyImp implements ITradeStrategy {
             sql = "update CashAcnt set used_mny = used_mny - " + relasedMny + " where acntId = '" + ac.getActId() + "'";
             log.info(sql);
             stm.execute(sql);
-            con.commit();
             con.close();
             return true;
         }
@@ -845,7 +845,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                     + s.getID() + "',"
                     + s.getCur_pri()*buyMnt + ","
                     + buyMnt + ","
-                    + s.getCur_pri() + ",str_to_date('" + s.getDl_dt().toLocaleString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s'))";
+                    + s.getCur_pri() + ",str_to_date('" + s.getDl_dt().toLocaleString() + "','%Y-%m-%d %H:%i:%s'))";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -862,7 +862,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                 + seqnum + ","
                 + s.getCur_pri() + ", "
                 + buyMnt
-                + ", str_to_date('" + s.getDl_dt().toLocaleString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s'), 1)";
+                + ", str_to_date('" + s.getDl_dt().toLocaleString() + "','%Y-%m-%d %H:%i:%s'), 1)";
             log.info(sql);
             stm.execute(sql);
             
@@ -874,8 +874,8 @@ public class TradeStrategyImp implements ITradeStrategy {
             stm.close();
             stm = con.createStatement();
             sql = "update CashAcnt set used_mny = " + usedMny + " where acntId = '" + ac.getActId() + "'";
+            log.info(sql);
             stm.execute(sql);
-            con.commit();
             con.close();
             return true;
         }
@@ -890,14 +890,13 @@ public class TradeStrategyImp implements ITradeStrategy {
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "insert into SellBuyRecord values(SEQ_SBR_PK.nextval,'" + openID + "','" + s.getID() + "'," + s.getCur_pri()
+			sql = "insert into SellBuyRecord select case when max(sb_id) is null then 1 else max(sb_id) + 1 end,'" + openID + "','" + s.getID() + "'," + s.getCur_pri()
 					+ "," + qtyToTrade + ","
 					+ (is_buy_flg ? 1 : 0)
-					+ ",str_to_date('" + s.getDl_dt().toString().substring(0, 19) + "', '%Y-%m-%d %H:%i:%s'))";
+					+ ",str_to_date('" + s.getDl_dt().toLocaleString() + "', '%Y-%m-%d %H:%i:%s') from SellBuyRecord";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
-			con.commit();
 			con.close();
 			// Here once after we trade a stock, clear it's historic memory
 			// data.
@@ -925,7 +924,7 @@ public class TradeStrategyImp implements ITradeStrategy {
             if (acnt == null) {
             	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
                 CashAcntManger
-                .crtAcnt(AcntForStk, STConstants.DFT_INIT_MNY, 0.0, 0.0, STConstants.DFT_SPLIT, STConstants.DFT_MAX_USE_PCT, !sim_mode);
+                .crtAcnt(AcntForStk, STConstants.DFT_INIT_MNY, 0.0, 0.0, STConstants.DFT_SPLIT, STConstants.DFT_MAX_USE_PCT, true);
                 acnt = CashAcntManger.loadAcnt(AcntForStk);
             }
             
