@@ -1,0 +1,57 @@
+/////////////////////////////////////////////////////////////////////////
+///@system  TradeX新一代交易系统
+///@company 华创证券有限责任公司
+///@brief   错误信息定义
+///@author  cuiyc
+/////////////////////////////////////////////////////////////////////////
+#ifndef _TRADEX_ERROR_MSG_TRADER_
+#define _TRADEX_ERROR_MSG_TRADER_
+
+namespace com
+{
+namespace tradex
+{
+namespace api
+{
+
+#define ERROR_NULL_PARAMETERS -1
+#define ERROR_UNKNOWN_REASONS -2
+
+#define ERROR_ALREADY_LOGIN 1001
+#define ERROR_LOGIN_TIMEOUT 1002
+#define ERROR_NOT_LOGIN 1003
+#define ERROR_TRADING_DAY_UNMATCH 1004
+
+#define ERROR_NOT_CONNECTED_TO_AUTH_SERVICE 1101
+#define ERROR_NOT_CONNECTED_TO_TRADE_SERVICE 1102
+#define ERROR_NOT_CONNECTED_TO_QUERY_SERVICE 1103
+
+#define ERROR_CLIENT_ID_MISSED 1201
+#define ERROR_PASSWORD_MISSED 1202
+#define ERROR_LOCAL_IP_ADDRESS_MISSED 1203
+#define ERROR_LOCAL_MAC_ADDRESS_MISSED 1204
+#define ERROR_LOGIN_URL_MISSED 1205
+#define ERROR_TRADE_UNIT_MISSED 1206
+#define ERROR_CLIENT_ORDER_ID_MISSED 1206
+#define ERROR_SYMBOL_MISSED 1207
+#define ERROR_MARKET_MISSED 1208
+#define ERROR_NO_BASKET_LEGS 1209
+#define ERROR_TOO_MANY_BASKET_LEGS 1210
+#define ERROR_CLIENT_BASKET_ID_MISSED 1211
+#define ERROR_DUPLICATED_SYMBOL 1212
+#define ERROR_ORDER_SIDE_MISSED 1213
+#define ERROR_DUPLICATED_CLIENT_ORDER_ID 1214
+#define ERROR_ORDER_ID_MISSED 1215
+#define ERROR_BASKET_ID_MISSED 1216
+#define ERROR_TOO_MANY_QUERY_REQUEST 1217
+#define ERROR_REQUEST_ID_MISSED 1218
+
+#define ERROR_ALGO_NAME_MISSED 1301
+#define ERROR_ALGO_START_TIME_MISSED 1302
+#define ERROR_ALGO_END_TIME_MISSED 1303
+
+} // namespace api
+} // namespace tradex
+} // namespace com
+
+#endif
