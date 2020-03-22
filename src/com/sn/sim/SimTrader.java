@@ -58,7 +58,7 @@ public class SimTrader implements IWork{
     /*
      * Seconds delay befor executing next work.
      */
-    private long delayBeforNxtStart = 5;
+    private long delayBeforNxtStart = 23 * 60 * 60;
 
     private TimeUnit tu = TimeUnit.MILLISECONDS;
     
@@ -110,7 +110,7 @@ public class SimTrader implements IWork{
 	}
 	
 	public static void start() {
-        SimTrader st = new SimTrader(0, 0, false, true);
+        SimTrader st = new SimTrader(5, 23 * 60 * 60 * 1000, false, true);
 	    WorkManager.submitWork(st);
 	}
 	
@@ -264,7 +264,7 @@ public class SimTrader implements IWork{
     @Override
     public boolean isCycleWork() {
         // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
 }

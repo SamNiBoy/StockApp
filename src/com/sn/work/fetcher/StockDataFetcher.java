@@ -142,6 +142,7 @@ public class StockDataFetcher implements IWork {
         String str;
 
         log.info("Now StockDataFetcher start!!!");
+        failCnt = 0;
         try {
             String fs [] = getFetchLst().split("#"), cs;
             RawStockData srd = null;
@@ -197,7 +198,6 @@ public class StockDataFetcher implements IWork {
                 br.close();
                 if (failCnt > 0)
                 {
-                    failCnt = 0;
                     log.info("Stock data is same, break loop from StockDataFetcher...");
                     break;
                 }

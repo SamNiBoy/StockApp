@@ -21,6 +21,7 @@ import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
+import com.sn.work.fetcher.StockDataFetcher;
 import com.sn.work.itf.IWork;
 
 public class SellModeWatchDog implements IWork {
@@ -93,6 +94,20 @@ public class SellModeWatchDog implements IWork {
 	}
 
 	public void run() {
+        
+        StockDataFetcher.lock.lock();
+        try {
+            log.info("Waiting finishedOneRondFetch before run SellModeWatchDog...");
+            StockDataFetcher.finishedOneRoundFetch.await();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            log.error("\"Waiting finishedOneRondFetch before run SellModeWatchDog errored:" + e.getMessage() + ", code:" + e.getCause());
+        }
+        finally {
+            StockDataFetcher.lock.unlock();
+        }
+
 		// TODO Auto-generated method stub
 		try {
 	        Map<String, Stock2> stks = StockMarket.getGzstocks();
