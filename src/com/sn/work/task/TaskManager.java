@@ -39,7 +39,7 @@ public class TaskManager {
             GzStockDataFetcher.start();
         	SuggestStock.start();
         	SellModeWatchDog.start();
-            SimTrader.start();
+            SimTrader.start(); 
             return true;
         }
         else {
