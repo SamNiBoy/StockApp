@@ -396,7 +396,7 @@ public class StockMarket{
         	deadline = "sysdate()";
         }
         else {
-        	deadline = "str_to_date('" + tm.toLocaleString() + "', '%Y-%m-%d %H:%i:%s')";
+        	deadline = "str_to_date('" + tm.toString() + "', '%Y-%m-%d %H:%i:%s')";
         }
 
         int catagory = -2;
@@ -412,7 +412,7 @@ public class StockMarket{
                          "               when cur_pri = td_opn_pri then 0 end catagory " +
                          " from stkdat2 " +
                          " where td_opn_pri > 0 " +
-                         "   and dl_dt <= " + deadline +
+                         "   and left(dl_dt, 10) = " + "left(" + deadline + ", 10)" +
                          "   and not exists (select 'x' from stkdat2 skd where skd.id = stkdat2.id and skd.ft_id > stkdat2.ft_id and skd.dl_dt <= " + deadline + ")" +
                          " group by case when cur_pri > td_opn_pri then 1 " +
                          "               when cur_pri < td_opn_pri then -1 " +

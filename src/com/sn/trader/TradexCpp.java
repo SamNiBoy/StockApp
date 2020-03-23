@@ -14,8 +14,10 @@ package com.sn.trader;
 public class TradexCpp
 {
     static {
+        System.loadLibrary("tradex");
         System.loadLibrary("TradexCpp");
     }
+    private boolean login_flg = false;
     public native boolean doLogin(String account, String password);
     public native String placeOrder();
     public static void main(String[] args) {
