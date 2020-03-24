@@ -79,17 +79,18 @@ public class StockMarket{
 
             log.info("Now load total:" + Total + " stocks.");
             rs = stm.executeQuery(sql);
-            String id, name;
+            String id, name, area;
 
             rs.close();
             stm.close();
             stm = con.createStatement();
-            sql = "select id, name from stk order by id";
+            sql = "select id, name, area from stk order by id";
             rs = stm.executeQuery(sql);
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, StockData.SMALL_SZ);
+                area = rs.getString("area");
+                s = new Stock2(id, name, area, StockData.SMALL_SZ);
                 stocks.put(id, s);
                 cnt++;
                 log.info("Load All Stocks completed:" + cnt * 1.0 / Total);
@@ -134,7 +135,7 @@ public class StockMarket{
             rs.close();
             stm.close();
             
-            String id, name;
+            String id, name, area;
             stm = con.createStatement();
             log.info(GZ_STOCK_SELECT);
             rs = stm.executeQuery(GZ_STOCK_SELECT);
@@ -142,7 +143,8 @@ public class StockMarket{
             while (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, StockData.BIG_SZ);
+                area = rs.getString("area");
+                s = new Stock2(id, name, area, StockData.BIG_SZ);
                 gzstocks.put(id, s);
                 cnt++;
                 log.info("Load GZStocks completed:" + cnt * 1.0 / Total);
@@ -183,15 +185,16 @@ public class StockMarket{
         Stock2 s = null;
         try {
             stm = con.createStatement();
-            String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and s.id = '" + stkId + "'";
+            String sql = "select s.id, s.name, s.area from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and s.id = '" + stkId + "'";
             rs = stm.executeQuery(sql);
             
-            String id, name;
+            String id, name, area;
             
             if (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
-                s = new Stock2(id, name, StockData.BIG_SZ);
+                area = rs.getString("area");
+                s = new Stock2(id, name, area, StockData.BIG_SZ);
                 gzstocks.put(id, s);
                 log.info("addGzStocks completed for: " + stkId);
             }

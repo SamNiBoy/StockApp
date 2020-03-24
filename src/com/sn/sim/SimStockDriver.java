@@ -123,15 +123,16 @@ public class SimStockDriver {
         try {
             if (stk_list.isEmpty()) {
                 stm = con.createStatement();
-                String sql = "select id, name from stk order by id";
+                String sql = "select id, name, area from stk order by id";
                 rs = stm.executeQuery(sql);
                 
-                String id, name;
+                String id, name, area;
                 
                 while (rs.next()) {
                     id = rs.getString("id");
                     name = rs.getString("name");
-                    s = new Stock2(id, name, start_dt, end_dt, StockData.BIG_SZ);
+                    area = rs.getString("area");
+                    s = new Stock2(id, name, area, start_dt, end_dt, StockData.BIG_SZ);
                     simstocks.put(id, s);
                     cnt++;
                     log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -142,15 +143,16 @@ public class SimStockDriver {
             else {
                 for (String stkId : stk_list) {
                     stm = con.createStatement();
-                    String sql = "select id, name from stk where id ='" + stkId + "'";
+                    String sql = "select id, name, area from stk where id ='" + stkId + "'";
                     rs = stm.executeQuery(sql);
                     
-                    String id, name;
+                    String id, name, area;
                     
                     if (rs.next()) {
                         id = rs.getString("id");
                         name = rs.getString("name");
-                        s = new Stock2(id, name, start_dt, end_dt, StockData.BIG_SZ);
+                        area = rs.getString("area");
+                        s = new Stock2(id, name, area, start_dt, end_dt, StockData.BIG_SZ);
                         simstocks.put(id, s);
                         cnt++;
                         log.info("LoadStocks completed:" + cnt * 1.0 / stk_list.size());

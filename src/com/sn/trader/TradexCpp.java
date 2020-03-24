@@ -17,20 +17,25 @@ public class TradexCpp
         System.loadLibrary("tradex");
         System.loadLibrary("TradexCpp");
     }
-    private boolean login_flg = false;
     public native boolean doLogin(String account, String password);
-    public native String placeOrder();
+    public native boolean doLogout();
+    /* Return: order_status,client_order_id,order_id,qty,price*/
+    public native String placeBuyOrder(String ID, String area, int qty, double price);
+    public native String placeSellOrder(String ID, String area, int qty, double price);
     public static void main(String[] args) {
         String account = "nxj";
         String password = "123456";
         TradexCpp t = new TradexCpp();
-        String msg = t.placeOrder();
-        System.out.println("Got message from native code:" + msg);
         if(t.doLogin(account, password)) {
             System.out.println("in Java, you login success with:" + account + ", password:" + password);
         }
         else {
             System.out.println("in Java, you login failed with:" + account + ", password:" + password);
         }
+        String buy_rtncode = t.placeBuyOrder("000975", "sz", 100, 10.4);
+        System.out.println("Got code from buy place order:" + buy_rtncode );
+        String sell_rtncode = t.placeSellOrder("000975", "sz", 100, 11.4);
+        System.out.println("Got code from sell place order:" + sell_rtncode );
+        t.doLogout();
     }
 }

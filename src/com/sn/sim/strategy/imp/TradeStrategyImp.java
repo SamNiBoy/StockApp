@@ -30,6 +30,7 @@ import com.sn.sim.strategy.selector.sellpoint.ISellPointSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
+import com.sn.trader.TradexCpp;
 
 public class TradeStrategyImp implements ITradeStrategy {
 
@@ -41,6 +42,8 @@ public class TradeStrategyImp implements ITradeStrategy {
     ICashAccount cash_account = null;
     
     private boolean sim_mode = false;
+    
+    private static TradexCpp tradex_trader = new TradexCpp();
     
     public IBuyPointSelector getBuypoint_selector() {
         return buypoint_selector;
@@ -405,9 +408,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 				log.info("Adding trade record for stock as: " + s.getID());
 				StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
                                                               s.getName(),
-                                                              s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
+                                                              (double)s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
                                                               is_buy_flg,
-                                                              s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+                                                              (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
 				stk.printStockInfo();
 			    rcds.add(stk);
 				return true;
@@ -416,9 +419,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 			log.info("Adding today first trade record for stock as: " + s.getID());
 			StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
                     s.getName(),
-                    s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
+                    (double)s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
                     is_buy_flg,
-                    s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+                    (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
 			stk.printStockInfo();
 			rcds = new LinkedList<StockBuySellEntry>();
 			rcds.add(stk);
@@ -879,6 +882,18 @@ public class TradeStrategyImp implements ITradeStrategy {
             e.printStackTrace();
         }
         return false;
+    }
+    /* Now do acutal trade to Tradex system*/
+    private static boolean placeSellTradeToTradex(Stock2 s, int qtyToTrade, double price) {
+        tradex_trader.placeSellOrder(s.getID(), s.getArea(), qtyToTrade, price); 
+        
+        return true;
+    }
+	
+    /* Now do acutal trade to Tradex system*/
+    private static boolean placeBuyTradeToTradex(Stock2 s, int qtyToTrade, double price) {
+        tradex_trader.placeBuyOrder(s.getID(), s.getArea(), qtyToTrade, price); 
+        return true;
     }
 	
 	private static boolean createBuySellRecord(Stock2 s, String openID, boolean is_buy_flg, String qtyToTrade) {

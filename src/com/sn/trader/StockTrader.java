@@ -78,10 +78,10 @@ public class StockTrader {
 		
 		resetTest();
 		
-		Stock2 s1 = new Stock2("600503", "abcdef", StockData.SMALL_SZ);
-		Stock2 s2 = new Stock2("000975", "hijklmn", StockData.SMALL_SZ);
-		Stock2 s3 = new Stock2("600871", "abcdef", StockData.SMALL_SZ);
-		Stock2 s4 = new Stock2("002269", "lllll", StockData.SMALL_SZ);
+		Stock2 s1 = new Stock2("600503", "abcdef", "sh", StockData.SMALL_SZ);
+		Stock2 s2 = new Stock2("000975", "hijklmn", "sh", StockData.SMALL_SZ);
+		Stock2 s3 = new Stock2("600871", "abcdef", "sh", StockData.SMALL_SZ);
+		Stock2 s4 = new Stock2("002269", "lllll", "sh", StockData.SMALL_SZ);
 		
 		StockMarket.addGzStocks(s1);
 		StockMarket.addGzStocks(s2);

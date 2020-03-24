@@ -1369,6 +1369,7 @@ public class Stock2 implements Comparable<Stock2>{
      */
     String id;
     String name;
+    String area;
     StockData sd;
     
     
@@ -1382,6 +1383,14 @@ public class Stock2 implements Comparable<Stock2>{
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String ara) {
+        this.area = ara;
     }
 
     public StockData getSd() {
@@ -1397,12 +1406,12 @@ public class Stock2 implements Comparable<Stock2>{
         Connection con = DBManager.getConnection();
         try {
             Statement stm = con.createStatement();
-            String sql = "select id, name from stk where id = '002654'";
+            String sql = "select id, name, area from stk where id = '002654'";
             
             ResultSet rs = stm.executeQuery(sql);
             List<Stock2> sl = new LinkedList<Stock2>();
             while(rs.next()) {
-                Stock2 s = new Stock2(rs.getString("id"), rs.getString("name"), StockData.SMALL_SZ);
+                Stock2 s = new Stock2(rs.getString("id"), rs.getString("name"), rs.getString("area"), StockData.SMALL_SZ);
                 sl.add(s);
             }
             for (int i = 0; i < sl.size(); i++) {
@@ -1417,17 +1426,19 @@ public class Stock2 implements Comparable<Stock2>{
         }
     }
     
-    public Stock2(String ids, String nm, int sz)
+    public Stock2(String ids, String nm, String ara, int sz)
     {
         id = ids;
         name = nm;
+        area = ara;
         sd = new StockData(id, sz);
     }
     
-    public Stock2(String ids, String nm, String start_dte, String end_dte, int sz)
+    public Stock2(String ids, String nm, String ara, String start_dte, String end_dte, int sz)
     {
         id = ids;
         name = nm;
+        area = ara;
         sd = new StockData(id, start_dte, end_dte, sz);
     }
 

@@ -17,10 +17,34 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin
 
 /*
  * Class:     com_sn_trader_TradexCpp
- * Method:    placeOrder
- * Signature: ()Ljava/lang/String;
+ * Method:    doLogout
+ * Signature: ()Z
  */
-JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeOrder
+JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogout
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sn_trader_TradexCpp
+ * Method:    placeBuyOrder
+ * Signature: (Ljava/lang/String;Ljava/lang/String;ID)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeBuyOrder
+  (JNIEnv *, jobject, jstring, jstring, jint, jdouble);
+
+/*
+ * Class:     com_sn_trader_TradexCpp
+ * Method:    placeSellOrder
+ * Signature: (Ljava/lang/String;Ljava/lang/String;ID)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeSellOrder
+  (JNIEnv *, jobject, jstring, jstring, jint, jdouble);
+
+/*
+ * Class:     com_sn_trader_TradexCpp
+ * Method:    queryTradeResult
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_queryTradeResult
   (JNIEnv *, jobject);
 
 #ifdef __cplusplus

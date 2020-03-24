@@ -96,7 +96,8 @@ public:
 
 class TradeXSample
 {
-
+public:
+    std::unordered_map<std::string, std::string> statusMapForQuery;
 private:
     TradeXApi *api;
     TradeXCallback callback;
@@ -111,12 +112,14 @@ private:
     std::unordered_map<order_id_t, order_id_t> clOrdId2OrderIdMap;
     std::unordered_map<basket_id_t, basket_id_t> clientBasketId2BasketIdMap;
 
+
     std::string log_path;
 
 public:
     TradeXSample();
     ~TradeXSample();
 
+    TradeXApi * getAPI();
     void initialize(const std::string &log_path);
     void close();
     void login(const TRXLoginRequest *login);
@@ -143,6 +146,8 @@ public:
 	void QuerySecurityLiability();
 	void QueryFinancingLiability();
 	void QueryBorrowingSecurity();
+    
+	std::string get_TradeResult(order_id_t client_order_id, uint64_t request_id);
 
     void set_normal_account(trade_unit_t id) { normal_trade_unit = id; }
     void set_credit_account(trade_unit_t id) { credit_trade_unit = id; }

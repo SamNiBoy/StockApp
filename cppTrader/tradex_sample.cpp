@@ -72,12 +72,50 @@ void TradeXCallback::OnOrderEvent(const TRXOrderReport *orderReport) {
 	std::cout << "OrderEvent,client_order_id[" << orderReport->client_order_id << "],order_id[" << orderReport->order_id << "],status[" << orderReport->order_status << "]" << std::endl;
 	if (orderReport->order_status == TRXOrderStatus::Rejected) {
 		std::cout << "Reject:" << orderReport->error_message << std::endl;
+        std::string key = std::to_string(orderReport->client_order_id) + "_trade_report";
+        std::string value = "error:order_status" + orderReport->order_status;
+        auto b = main->statusMapForQuery.find(key);
+        if (b != main->statusMapForQuery.end()) {
+            std::cout<<"OnOrderEvent, Updating queryTrade key:"<<key<<std::endl;
+            std::cout<<"OnOrderEvent, Updating queryTrade value:"<<value<<std::endl;
+            main->statusMapForQuery[key] = value;
+        }
+        else {
+            std::cout<<"OnOrderEvent, Inserting queryTrade key:"<<key<<std::endl;
+            std::cout<<"OnOrderEvent, Inserting queryTrade value:"<<value<<std::endl;
+            main->statusMapForQuery.insert(std::make_pair(key, value));
+        }
 	}
 }
 /// 返回的成交回报信息
 /// <param name="tradeReport"></param>
 void TradeXCallback::OnTradeEvent(const TRXTradeReport *tradeReport) {
 	std::cout << "TradeEvent,client_order_id[" << tradeReport->client_order_id << "],order_id[" << tradeReport->order_id << std::endl;
+    std::cout << "Trade:" << tradeReport->trade_unit << ":" << tradeReport->order_id << ":" << tradeReport->trade_quantity << std::endl;
+    std::string key = std::to_string(tradeReport->client_order_id) + "_trade_report";
+    std::string value = "order:" + std::to_string(tradeReport->order_id) + "|symbol:" + tradeReport->symbol + "|price:" + std::to_string(tradeReport->trade_price) +
+                        "|quantity:" + std::to_string(tradeReport->trade_quantity) + "trade_amount:" + std::to_string(tradeReport->trade_amount);
+    auto b = main->statusMapForQuery.find(key);
+    if (b != main->statusMapForQuery.end()) {
+        std::cout<<"Updating queryTrade key:"<<key<<std::endl;
+        std::cout<<"Updating queryTrade value:"<<value<<std::endl;
+        main->statusMapForQuery[key] = value;
+    }
+    else {
+        std::cout<<"Inserting queryTrade key:"<<key<<std::endl;
+        std::cout<<"Inserting queryTrade value:"<<value<<std::endl;
+        main->statusMapForQuery.insert(std::make_pair(key, value));
+    }
+    /*order_id_t find_order_id(order_id_t client_order_id)
+    {
+        auto b = clOrdId2OrderIdMap.find(client_order_id);
+        if (b != clOrdId2OrderIdMap.end())
+        {
+            return b->second;
+        }
+
+        return 0;
+    }*/
 }
 /// 交易单元连接状态通知
 /// <param name="notice"></param>
@@ -122,12 +160,73 @@ void TradeXCallback::OnQueryOrder(const TRXOrderReport *order, const text_t erro
 }
 /// 成交回报查询返回结果
 /// <param name="tradeReportList"></param>
+/*
+struct TRXTradeReport
+{
+    client_id_t client_id;        // 登录用户名
+    trade_unit_t trade_unit;      // 交易单元
+    symbol_t symbol;              // 交易标的代码，需填入交易所认可的交易标的代码
+    order_id_t client_order_id;   // 调用方填写的委托ID
+    order_id_t order_id;          // 委托的订单ID，该ID由系统返回
+    basket_id_t basket_id;        // 篮子委托ID
+    basket_id_t client_basket_id; // 用户定义的篮子委托ID
+    trade_id_t trade_id;          // 成交编号
+    TRXMarket market;             // 此订单的交易市场
+    TRXSide side;                 // 买卖方向，及两融操作：担保品买入、担保品卖出、融资买入、融券卖出、买券还券、卖券还款
+    TRXOpenClose open_close;      // 开平标志
+    price_t trade_price;          // 本次成交的成交价
+    quantity_t trade_quantity;    // 本次成交的成交数量
+    timestamp_t trade_time;       // 本次成交的成交时间
+    money_t trade_amount;         // 本次成交的成交金额
+    price_t avg_price;            // 平均成交价格
+    quantity_t cum_qty;           // 累计成交量
+    quantity_t leaves_qty;        // 剩余数量
+    money_t total_trading_amount; // 累计成交额
+};*/
 void TradeXCallback::OnQueryTrade(const TRXTradeReport *tradeReport, const text_t error_message, const request_id_t request_id, const bool is_last, const bool is_success) {
 	if (tradeReport) {
 		std::cout << "Trade:" << tradeReport->trade_unit << ":" << tradeReport->order_id << ":" << tradeReport->trade_quantity << std::endl;
+        std::string key = std::to_string(tradeReport->client_order_id) + "_trade_report";
+        std::string value = "order:" + std::to_string(tradeReport->order_id) + "|symbol:" + tradeReport->symbol + "|price:" + std::to_string(tradeReport->trade_price) +
+                            "|quantity:" + std::to_string(tradeReport->trade_quantity) + "|trade_amount:" + std::to_string(tradeReport->trade_amount);
+	    auto b = main->statusMapForQuery.find(key);
+	    if (b != main->statusMapForQuery.end()) {
+            std::cout<<"Updating queryTrade key:"<<key<<std::endl;
+            std::cout<<"Updating queryTrade value:"<<value<<std::endl;
+	        main->statusMapForQuery[key] = value;
+	    }
+	    else {
+            std::cout<<"Inserting queryTrade key:"<<key<<std::endl;
+            std::cout<<"Inserting queryTrade value:"<<value<<std::endl;
+	        main->statusMapForQuery.insert(std::make_pair(key, value));
+	    }
+	    /*order_id_t find_order_id(order_id_t client_order_id)
+	    {
+	        auto b = clOrdId2OrderIdMap.find(client_order_id);
+	        if (b != clOrdId2OrderIdMap.end())
+	        {
+	            return b->second;
+	        }
+
+	        return 0;
+	    }*/
 	}
 	else {
-		std::cout << "Trade:" << is_last << ":" << error_message << std::endl;
+		std::cout << "Trade query Trader error:" << is_last << ":" << error_message << ", request_id:"<<request_id<<std::endl;
+		std::string key_request_id = std::to_string(request_id) + "_request_id";
+        std::string ermsg = error_message;
+		std::string key_value = "error:" + ermsg;
+	    auto b = main->statusMapForQuery.find(key_request_id);
+	    if (b != main->statusMapForQuery.end()) {
+	        std::cout<<"Updating queryTrade request_id key:"<<key_request_id<<std::endl;
+	        std::cout<<"Updating queryTrade key_value:"<<key_value<<std::endl;
+	        main->statusMapForQuery[key_request_id] = key_value;
+	    }
+	    else {
+	        std::cout<<"Inserting queryTrade key_request_id:"<<key_request_id<<std::endl;
+	        std::cout<<"Inserting queryTrade key_value:"<<key_value<<std::endl;
+	        main->statusMapForQuery.insert(std::make_pair(key_request_id, key_value));
+	    }
 	}
 }
 /// 可融券查询返回结果
@@ -177,6 +276,18 @@ TradeXSample::TradeXSample() : api(nullptr), callback(this), normal_trade_unit(0
 }
 TradeXSample::~TradeXSample()
 {
+}
+
+TradeXApi* TradeXSample::getAPI()
+{
+    if (api)
+    {
+        return api;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 void TradeXSample::initialize(const std::string &log_path)
@@ -620,6 +731,36 @@ void TradeXSample::QueryOrders() {
 	if (!rtn) {
 		std::cout << rtn << std::endl;
 	}
+}
+
+std::string TradeXSample::get_TradeResult(order_id_t client_order_id, uint64_t request_id)
+{
+    std::string key = std::to_string(client_order_id) + "_trade_report";
+    while(true)
+    {
+        auto b = statusMapForQuery.find(key);
+        if (b != statusMapForQuery.end())
+        {
+            statusMapForQuery.erase(key);
+            return b->second;
+        }
+        else
+        {
+            if (request_id > 0)
+            {
+                std::string key_request_id = std::to_string(request_id) + "_request_id";
+                //errored, return error message.
+                b = statusMapForQuery.find(key_request_id);
+                if (b != statusMapForQuery.end())
+                {
+                    statusMapForQuery.erase(key_request_id);
+                    return b->second;
+                }
+            }
+            std::cout <<"get "<<key<<" not ready, wait for 1 second."<< std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    }
 }
 void TradeXSample::QueryTrades() {
 	TRXTradeQueryRequest request;

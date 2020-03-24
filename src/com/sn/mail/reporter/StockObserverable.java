@@ -646,17 +646,18 @@ public class StockObserverable extends Observable {
 			rs.next();
 			Total = rs.getInt("totCnt");
 
-			String id, name;
+			String id, name, area;
 
             rs.close();
             stm.close();
 			stm = con.createStatement();
-			sql = "select id, name from stk order by id";
+			sql = "select id, name, area from stk order by id";
 			rs = stm.executeQuery(sql);
 			while (rs.next()) {
 				id = rs.getString("id");
 				name = rs.getString("name");
-				s = new Stock2(id, name, StockData.BIG_SZ);
+				area = rs.getString("area");
+				s = new Stock2(id, name, area, StockData.BIG_SZ);
 				// s.setCur_pri(7.8);
 				// s.constructFollowers();
 				// stocks.put(id, s);
