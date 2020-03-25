@@ -98,6 +98,8 @@ class TradeXSample
 {
 public:
     std::unordered_map<std::string, std::string> statusMapForQuery;
+    int tran_status_code = 0;
+    std::string tran_status_message = "";
 private:
     TradeXApi *api;
     TradeXCallback callback;
@@ -147,7 +149,26 @@ public:
 	void QueryFinancingLiability();
 	void QueryBorrowingSecurity();
     
-	std::string get_TradeResult(order_id_t client_order_id, uint64_t request_id);
+    void initTranStatus()
+    {
+        tran_status_code = -1;
+        tran_status_message = "";
+    };
+    
+    void setTranStatus(int tran_sts, std::string tran_msg)
+    {
+        std::cout<<"set TranStats:"<<std::endl;
+        std::cout<<"tran_status_code:"<<tran_sts<<std::endl<<"tran_status_message:"<<tran_msg<<std::endl;
+        tran_status_code = tran_sts;
+        tran_status_message = tran_msg;
+    }
+    
+    int PlaceOrder(TRXSingleOrder* pOrder)
+    {
+        initTranStatus();
+        return api->PlaceOrder(pOrder);
+    };
+	std::string getTranStatus();
 
     void set_normal_account(trade_unit_t id) { normal_trade_unit = id; }
     void set_credit_account(trade_unit_t id) { credit_trade_unit = id; }

@@ -12,8 +12,6 @@
 #else
 #endif // 
 
-
-
 namespace com
 {
 namespace tradex
@@ -69,22 +67,10 @@ void TradeXCallback::OnOrderEvent(const TRXOrderReport *orderReport) {
 		std::cout << "link client_basket_id[" << orderReport->client_basket_id << "] to basket_id[" << orderReport->basket_id << "]." << std::endl;
 	}
 
-	std::cout << "OrderEvent,client_order_id[" << orderReport->client_order_id << "],order_id[" << orderReport->order_id << "],status[" << orderReport->order_status << "]" << std::endl;
+	//std::cout << "OrderEvent,client_order_id[" << orderReport->client_order_id << "],order_id[" << orderReport->order_id << "],status[" << orderReport->order_status << "]" << std::endl;
 	if (orderReport->order_status == TRXOrderStatus::Rejected) {
 		std::cout << "Reject:" << orderReport->error_message << std::endl;
-        std::string key = std::to_string(orderReport->client_order_id) + "_trade_report";
-        std::string value = "error:order_status" + orderReport->order_status;
-        auto b = main->statusMapForQuery.find(key);
-        if (b != main->statusMapForQuery.end()) {
-            std::cout<<"OnOrderEvent, Updating queryTrade key:"<<key<<std::endl;
-            std::cout<<"OnOrderEvent, Updating queryTrade value:"<<value<<std::endl;
-            main->statusMapForQuery[key] = value;
-        }
-        else {
-            std::cout<<"OnOrderEvent, Inserting queryTrade key:"<<key<<std::endl;
-            std::cout<<"OnOrderEvent, Inserting queryTrade value:"<<value<<std::endl;
-            main->statusMapForQuery.insert(std::make_pair(key, value));
-        }
+        main->setTranStatus(orderReport->order_status, orderReport->error_message);
 	}
 }
 /// 返回的成交回报信息
@@ -94,27 +80,20 @@ void TradeXCallback::OnTradeEvent(const TRXTradeReport *tradeReport) {
     std::cout << "Trade:" << tradeReport->trade_unit << ":" << tradeReport->order_id << ":" << tradeReport->trade_quantity << std::endl;
     std::string key = std::to_string(tradeReport->client_order_id) + "_trade_report";
     std::string value = "order:" + std::to_string(tradeReport->order_id) + "|symbol:" + tradeReport->symbol + "|price:" + std::to_string(tradeReport->trade_price) +
-                        "|quantity:" + std::to_string(tradeReport->trade_quantity) + "trade_amount:" + std::to_string(tradeReport->trade_amount);
-    auto b = main->statusMapForQuery.find(key);
+                        "|quantity:" + std::to_string(tradeReport->trade_quantity) + "|trade_amount:" + std::to_string(tradeReport->trade_amount);
+    main->setTranStatus(0, value);
+    /*auto b = main->statusMapForQuery.find(key);
     if (b != main->statusMapForQuery.end()) {
         std::cout<<"Updating queryTrade key:"<<key<<std::endl;
         std::cout<<"Updating queryTrade value:"<<value<<std::endl;
         main->statusMapForQuery[key] = value;
     }
     else {
-        std::cout<<"Inserting queryTrade key:"<<key<<std::endl;
-        std::cout<<"Inserting queryTrade value:"<<value<<std::endl;
-        main->statusMapForQuery.insert(std::make_pair(key, value));
-    }
-    /*order_id_t find_order_id(order_id_t client_order_id)
-    {
-        auto b = clOrdId2OrderIdMap.find(client_order_id);
-        if (b != clOrdId2OrderIdMap.end())
-        {
-            return b->second;
-        }
-
-        return 0;
+        std::cout<<"OnTradeEvent: Before Inserting queryTrade key:"<<key<<", value:"<<value<<std::endl;
+        std::pair<std::string, std::string> pr = std::make_pair(key, value);
+        std::cout<<"middle of insert..."<<std::endl;
+        main->statusMapForQuery.insert(pr);
+        std::cout<<"OnTradeEvent: After Inserting queryTrade key:"<<key<<", value:"<<value<<std::endl;
     }*/
 }
 /// 交易单元连接状态通知
@@ -189,17 +168,20 @@ void TradeXCallback::OnQueryTrade(const TRXTradeReport *tradeReport, const text_
         std::string key = std::to_string(tradeReport->client_order_id) + "_trade_report";
         std::string value = "order:" + std::to_string(tradeReport->order_id) + "|symbol:" + tradeReport->symbol + "|price:" + std::to_string(tradeReport->trade_price) +
                             "|quantity:" + std::to_string(tradeReport->trade_quantity) + "|trade_amount:" + std::to_string(tradeReport->trade_amount);
-	    auto b = main->statusMapForQuery.find(key);
+        
+        main->setTranStatus(0, value);
+	    /*auto b = main->statusMapForQuery.find(key);
 	    if (b != main->statusMapForQuery.end()) {
             std::cout<<"Updating queryTrade key:"<<key<<std::endl;
             std::cout<<"Updating queryTrade value:"<<value<<std::endl;
 	        main->statusMapForQuery[key] = value;
 	    }
 	    else {
-            std::cout<<"Inserting queryTrade key:"<<key<<std::endl;
-            std::cout<<"Inserting queryTrade value:"<<value<<std::endl;
+            std::cout<<"OnQuery Trade Inserting queryTrade key:"<<key<<std::endl;
+            std::cout<<"OnQuery Trade Inserting queryTrade value:"<<value<<std::endl;
 	        main->statusMapForQuery.insert(std::make_pair(key, value));
-	    }
+            std::cout<<"After Inserting queryTrade value:"<<value<<std::endl;
+	    }*/
 	    /*order_id_t find_order_id(order_id_t client_order_id)
 	    {
 	        auto b = clOrdId2OrderIdMap.find(client_order_id);
@@ -212,7 +194,7 @@ void TradeXCallback::OnQueryTrade(const TRXTradeReport *tradeReport, const text_
 	    }*/
 	}
 	else {
-		std::cout << "Trade query Trader error:" << is_last << ":" << error_message << ", request_id:"<<request_id<<std::endl;
+		/*std::cout << "Trade query Trader error:" << is_last << ":" << error_message << ", request_id:"<<request_id<<std::endl;
 		std::string key_request_id = std::to_string(request_id) + "_request_id";
         std::string ermsg = error_message;
 		std::string key_value = "error:" + ermsg;
@@ -226,7 +208,7 @@ void TradeXCallback::OnQueryTrade(const TRXTradeReport *tradeReport, const text_
 	        std::cout<<"Inserting queryTrade key_request_id:"<<key_request_id<<std::endl;
 	        std::cout<<"Inserting queryTrade key_value:"<<key_value<<std::endl;
 	        main->statusMapForQuery.insert(std::make_pair(key_request_id, key_value));
-	    }
+	    }*/
 	}
 }
 /// 可融券查询返回结果
@@ -733,9 +715,10 @@ void TradeXSample::QueryOrders() {
 	}
 }
 
-std::string TradeXSample::get_TradeResult(order_id_t client_order_id, uint64_t request_id)
+std::string TradeXSample::getTranStatus()
 {
-    std::string key = std::to_string(client_order_id) + "_trade_report";
+    /*std::string key = std::to_string(client_order_id) + "_trade_report";
+    std::cout <<"get "<<key<<" start from get_TradeResult."<< std::endl;
     while(true)
     {
         auto b = statusMapForQuery.find(key);
@@ -760,7 +743,27 @@ std::string TradeXSample::get_TradeResult(order_id_t client_order_id, uint64_t r
             std::cout <<"get "<<key<<" not ready, wait for 1 second."<< std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
+    }*/
+    std::string final_msg = "";
+    while(true)
+    {
+        if(tran_status_code == -1)
+        {
+            std::cout <<"trans not ready, wait for 1 second."<< std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            continue;
+        }
+        if (tran_status_code)
+        {
+            final_msg = "error#" + std::to_string(tran_status_code) + "#" + tran_status_message;
+        }
+        else
+        {
+            final_msg = "success#" + tran_status_message;
+        }
+        break;
     }
+    return final_msg;
 }
 void TradeXSample::QueryTrades() {
 	TRXTradeQueryRequest request;

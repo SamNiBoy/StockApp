@@ -111,7 +111,7 @@ public class SimTrader implements IWork{
 	
 	public static void start() {
         log.info("Starting task SimTrader...");
-        SimTrader st = new SimTrader(5, 23 * 60 * 60 * 1000, false, true);
+        SimTrader st = new SimTrader(5, 2 * 60 * 60 * 1000, false, true);
 	    WorkManager.submitWork(st);
 	}
 	

@@ -12,6 +12,123 @@ using namespace com::tradex::sample;
 //Global var area:
 TradeXSample sample;
 trade_unit_t my_trade_unit = 6001045;
+trade_unit_t my_credit_account = 7001004;
+client_id_t my_client_id = 5001093;
+std::string my_client_psd = "Admin@12345";
+std::string my_login_url = "219.143.244.232:5570";
+std::string my_hard_drive = "ST1000DM010-2EP102";
+std::string my_mac = "8C:EC:4B:52:62:F4";
+std::string my_ip = "124.127.131.218";
+std::string my_log_path = "/usr/share/tomcat/logs/";
+
+jstring placeOrder(JNIEnv * env, jobject thiz, jstring ID, jstring area, jint qty, jdouble price, jboolean is_buy)
+{
+
+    std::cout<<"Now Place "<<(is_buy? "buy":"Sell") <<" order..."<<std::endl;
+    char * stock_id_p = NULL;
+    char * area_p = NULL;
+    //std::cout << "Now place order from Cpp!" << std::endl;
+    jclass clsstring = env->FindClass("java/lang/String");
+    jstring strencode = env->NewStringUTF("utf-8");
+    jmethodID mid = env->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
+    
+    jbyteArray stock_id_arr= (jbyteArray)env->CallObjectMethod(ID, mid, strencode);
+    jsize stock_id_len = env->GetArrayLength(stock_id_arr);
+    jbyte* stock_id_ba = env->GetByteArrayElements(stock_id_arr, JNI_FALSE);
+ 
+    if (stock_id_len > 0)
+    {
+        stock_id_p = (char*)malloc(stock_id_len + 1);
+ 
+        memcpy(stock_id_p, stock_id_ba, stock_id_len);
+        stock_id_p[stock_id_len] = 0;
+    }
+    env->ReleaseByteArrayElements(stock_id_arr, stock_id_ba, 0);
+    
+    
+    jbyteArray area_arr= (jbyteArray)env->CallObjectMethod(area, mid, strencode);
+    jsize area_len = env->GetArrayLength(area_arr);
+    jbyte* area_ba = env->GetByteArrayElements(area_arr, JNI_FALSE);
+ 
+    if (area_len > 0)
+    {
+        area_p = (char*)malloc(area_len + 1);
+ 
+        memcpy(area_p, area_ba, area_len);
+        area_p[area_len] = 0;
+    }
+    env->ReleaseByteArrayElements(area_arr, area_ba, 0);
+    
+    uint64_t client_order_id = timestamp_now();
+    sample.update_order_id(client_order_id, 0);
+
+    TRXSingleOrder order;
+    memset(&order, 0, sizeof(order));
+    strcpy(order.symbol, stock_id_p);
+
+    if (strcmp(area_p, "sh") == 0)
+    {
+        order.market = TRXMarket::SH_A;
+    }
+    else
+    {
+        order.market = TRXMarket::SZ_A;
+    }
+    
+    delete area_p;
+    delete stock_id_p;
+    //order.trade_unit = my_trade_unit;
+    order.trade_unit = my_trade_unit;
+    order.client_order_id = client_order_id;
+    
+    order.price = (double)price;
+    order.quantity = (int)qty;
+    order.side = (is_buy ? TRXSide::Buy : TRXSide::Sell);
+    order.price_type = TRXPriceType::LIMIT;
+
+    int rtn = sample.PlaceOrder(&order);
+    
+    std::string rtstr = sample.getTranStatus();
+    
+   
+    /*TRXTradeQueryRequest request;
+    memset(&request, 0, sizeof(request));
+
+    request.trade_unit = my_trade_unit;
+    request.request_id = timestamp_now();
+    request.client_order_id = client_order_id;
+
+    std::cout<<"sending QueryTrade with request_id:" << request.request_id<<std::endl;
+    rtn = sample.getAPI()->QueryTrade(&request);
+    if (!rtn) {
+        std::cout << rtn << std::endl;
+    }
+    
+    std::string rtstr = sample.get_queryTrade(client_order_id, request.request_id);*/
+    
+    jmethodID ctorID = env->GetMethodID(clsstring, "<init>", "([BLjava/lang/String;)V");
+    jbyteArray bytes = env->NewByteArray(strlen(rtstr.c_str()));
+    env->SetByteArrayRegion(bytes, 0, strlen(rtstr.c_str()), (jbyte*)rtstr.c_str());
+    jstring encoding = env->NewStringUTF("utf-8");
+    jstring result = (jstring)env->NewObject(clsstring, ctorID, bytes, encoding);
+
+    std::cout<<"Return "<<(is_buy? "buy":"Sell") <<" order result:"<<rtstr<<std::endl;
+    /*std::this_thread::sleep_for(std::chrono::seconds(5));
+
+    order_id_t order_id = find_order_id(client_order_id);
+    if (order_id > 0) {
+        TRXOrderCancelRequest cancel;
+        cancel.order_id = order_id;
+        cancel.trade_unit = my_trade_unit;
+
+        api->CancelOrder(&cancel);
+    }
+
+    
+    sample.QueryTrades();*/
+    return result;
+}
+
 
 JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin(JNIEnv * env, jobject thiz, jstring account, jstring password)
 {
@@ -48,23 +165,22 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin(JNIEnv * env, jo
         password_p[password_len] = 0;
     }
     env->ReleaseByteArrayElements(password_arr, password_ba, 0);
-    std::cout << "in Cpp got account:"<<account_p<<", password:"<<password_p<< std::endl;
     
     
     delete account_p;
     delete password_p;
     
 
-    sample.initialize("/usr/share/tomcat/logs/");
+    sample.initialize(my_log_path);
     sample.set_normal_account(my_trade_unit);
-    sample.set_credit_account(7001004);
+    sample.set_credit_account(my_credit_account);
 
-    client_id_t cleint_id = 5001093;
-    std::string pwd = "Admin@12345";
-    std::string login_url = "219.143.244.232:5570";
-    std::string hard_drive = "ST1000DM010-2EP102";
-    std::string mac = "8C:EC:4B:52:62:F4";
-    std::string ip = "124.127.131.218";
+    client_id_t cleint_id = my_client_id;
+    std::string pwd = my_client_psd;
+    std::string login_url = my_login_url;
+    std::string hard_drive = my_hard_drive;
+    std::string mac = my_mac;
+    std::string ip = my_ip;
 
     /*client_id_t cleint_id = 5001093;
     std::string password = "Admin@123";
@@ -137,216 +253,12 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogout(JNIEnv *env, jo
 JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeBuyOrder
 (JNIEnv * env, jobject thiz, jstring ID, jstring area, jint qty, jdouble price)
 {
-    
-    char * stock_id_p = NULL;
-    char * area_p = NULL;
-    std::cout << "Now place order from Cpp!" << std::endl;
-    jclass clsstring = env->FindClass("java/lang/String");
-    jstring strencode = env->NewStringUTF("utf-8");
-    jmethodID mid = env->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
-    
-    jbyteArray stock_id_arr= (jbyteArray)env->CallObjectMethod(ID, mid, strencode);
-    jsize stock_id_len = env->GetArrayLength(stock_id_arr);
-    jbyte* stock_id_ba = env->GetByteArrayElements(stock_id_arr, JNI_FALSE);
- 
-    if (stock_id_len > 0)
-    {
-        stock_id_p = (char*)malloc(stock_id_len + 1);
- 
-        memcpy(stock_id_p, stock_id_ba, stock_id_len);
-        stock_id_p[stock_id_len] = 0;
-    }
-    env->ReleaseByteArrayElements(stock_id_arr, stock_id_ba, 0);
-    
-    
-    jbyteArray area_arr= (jbyteArray)env->CallObjectMethod(area, mid, strencode);
-    jsize area_len = env->GetArrayLength(area_arr);
-    jbyte* area_ba = env->GetByteArrayElements(area_arr, JNI_FALSE);
- 
-    if (area_len > 0)
-    {
-        area_p = (char*)malloc(area_len + 1);
- 
-        memcpy(area_p, area_ba, area_len);
-        area_p[area_len] = 0;
-    }
-    env->ReleaseByteArrayElements(area_arr, area_ba, 0);
-    
-    uint64_t client_order_id = timestamp_now();
-    sample.update_order_id(client_order_id, 0);
-
-    TRXSingleOrder order;
-    memset(&order, 0, sizeof(order));
-    strcpy(order.symbol, stock_id_p);
-
-    if (strcmp(area_p, "sh") == 0)
-    {
-        order.market = TRXMarket::SH_A;
-    }
-    else
-    {
-        order.market = TRXMarket::SZ_A;
-    }
-    
-    delete area_p;
-    delete stock_id_p;
-    //order.trade_unit = my_trade_unit;
-    order.trade_unit = my_trade_unit;
-    order.client_order_id = client_order_id;
-    
-    order.price = (double)price;
-    order.quantity = (int)qty;
-    order.side = TRXSide::Buy;
-    order.price_type = TRXPriceType::LIMIT;
-
-    int rtn = sample.getAPI()->PlaceOrder(&order);
-    
-    std::string rtstr = sample.get_TradeResult(client_order_id, 0);
-    
-    std::cout<<"after Place a buy order, reutrn:"<<rtstr<<std::endl;
-   
-    /*TRXTradeQueryRequest request;
-    memset(&request, 0, sizeof(request));
-
-    request.trade_unit = my_trade_unit;
-    request.request_id = timestamp_now();
-    request.client_order_id = client_order_id;
-
-    std::cout<<"sending QueryTrade with request_id:" << request.request_id<<std::endl;
-    rtn = sample.getAPI()->QueryTrade(&request);
-    if (!rtn) {
-        std::cout << rtn << std::endl;
-    }
-    
-    std::string rtstr = sample.get_queryTrade(client_order_id, request.request_id);*/
-    
-    jmethodID ctorID = env->GetMethodID(clsstring, "<init>", "([BLjava/lang/String;)V");
-    jbyteArray bytes = env->NewByteArray(strlen(rtstr.c_str()));
-    env->SetByteArrayRegion(bytes, 0, strlen(rtstr.c_str()), (jbyte*)rtstr.c_str());
-    jstring encoding = env->NewStringUTF("utf-8");
-    jstring result = (jstring)env->NewObject(clsstring, ctorID, bytes, encoding);
-
-    std::cout<<"return buy order result:"<<rtstr<<std::endl;
-    /*std::this_thread::sleep_for(std::chrono::seconds(5));
-
-    order_id_t order_id = find_order_id(client_order_id);
-    if (order_id > 0) {
-        TRXOrderCancelRequest cancel;
-        cancel.order_id = order_id;
-        cancel.trade_unit = my_trade_unit;
-
-        api->CancelOrder(&cancel);
-    }
-
-    
-    sample.QueryTrades();*/
-    return result;
+    placeOrder(env, thiz, ID, area, qty, price, true);
 }
 
 JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeSellOrder
 (JNIEnv * env, jobject thiz, jstring ID, jstring area, jint qty, jdouble price)
 {
-    char * stock_id_p = NULL;
-    char * area_p = NULL;
-    std::cout << "Now place order from Cpp!" << std::endl;
-    jclass clsstring = env->FindClass("java/lang/String");
-    jstring strencode = env->NewStringUTF("utf-8");
-    jmethodID mid = env->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
-    
-    jbyteArray stock_id_arr= (jbyteArray)env->CallObjectMethod(ID, mid, strencode);
-    jsize stock_id_len = env->GetArrayLength(stock_id_arr);
-    jbyte* stock_id_ba = env->GetByteArrayElements(stock_id_arr, JNI_FALSE);
- 
-    if (stock_id_len > 0)
-    {
-        stock_id_p = (char*)malloc(stock_id_len + 1);
- 
-        memcpy(stock_id_p, stock_id_ba, stock_id_len);
-        stock_id_p[stock_id_len] = 0;
-    }
-    env->ReleaseByteArrayElements(stock_id_arr, stock_id_ba, 0);
-    
-    
-    jbyteArray area_arr= (jbyteArray)env->CallObjectMethod(area, mid, strencode);
-    jsize area_len = env->GetArrayLength(area_arr);
-    jbyte* area_ba = env->GetByteArrayElements(area_arr, JNI_FALSE);
- 
-    if (area_len > 0)
-    {
-        area_p = (char*)malloc(area_len + 1);
- 
-        memcpy(area_p, area_ba, area_len);
-        area_p[area_len] = 0;
-    }
-    env->ReleaseByteArrayElements(area_arr, area_ba, 0);
-    
-    uint64_t client_order_id = timestamp_now();
-    sample.update_order_id(client_order_id, 0);
-
-    TRXSingleOrder order;
-    memset(&order, 0, sizeof(order));
-    strcpy(order.symbol, stock_id_p);
-
-    if (strcmp(area_p, "sh") == 0)
-    {
-        order.market = TRXMarket::SH_A;
-    }
-    else
-    {
-        order.market = TRXMarket::SZ_A;
-    }
-    
-    delete area_p;
-    delete stock_id_p;
-    //order.trade_unit = my_trade_unit;
-    order.trade_unit = my_trade_unit;
-    order.client_order_id = client_order_id;
-    
-    order.price = (double)price;
-    order.quantity = (int)qty;
-    order.side = TRXSide::Sell;
-    order.price_type = TRXPriceType::LIMIT;
-
-    int rtn = sample.getAPI()->PlaceOrder(&order);
-    
-    std::string rtstr = sample.get_TradeResult(client_order_id, 0);
-    
-    std::cout<<"after Place a sell order, reutrn:"<<rtstr<<std::endl;
-   
-    /*TRXTradeQueryRequest request;
-    memset(&request, 0, sizeof(request));
-
-    request.trade_unit = my_trade_unit;
-    request.request_id = timestamp_now();
-    request.client_order_id = client_order_id;
-
-    std::cout<<"sending QueryTrade with request_id:" << request.request_id<<std::endl;
-    rtn = sample.getAPI()->QueryTrade(&request);
-    if (!rtn) {
-        std::cout << rtn << std::endl;
-    }
-    
-    std::string rtstr = sample.get_queryTrade(client_order_id, request.request_id);*/
-    
-    jmethodID ctorID = env->GetMethodID(clsstring, "<init>", "([BLjava/lang/String;)V");
-    jbyteArray bytes = env->NewByteArray(strlen(rtstr.c_str()));
-    env->SetByteArrayRegion(bytes, 0, strlen(rtstr.c_str()), (jbyte*)rtstr.c_str());
-    jstring encoding = env->NewStringUTF("utf-8");
-    jstring result = (jstring)env->NewObject(clsstring, ctorID, bytes, encoding);
-
-    std::cout<<"return sell order result:"<<rtstr<<std::endl;
-    /*std::this_thread::sleep_for(std::chrono::seconds(5));
-
-    order_id_t order_id = find_order_id(client_order_id);
-    if (order_id > 0) {
-        TRXOrderCancelRequest cancel;
-        cancel.order_id = order_id;
-        cancel.trade_unit = my_trade_unit;
-
-        api->CancelOrder(&cancel);
-    }
-
-    
-    sample.QueryTrades();*/
-    return result;
+    placeOrder(env, thiz, ID, area, qty, price, false);
 }
+
