@@ -2,8 +2,6 @@ package com.sn.trader;
 
 import org.apache.log4j.Logger;
 
-import sun.util.logging.resources.logging;
-
 /*
  * This java file is used for calling cpp code to communicate to Tradex system for trading.
  * Steps to build:
@@ -20,13 +18,14 @@ public class TradexCpp
     static {
         System.loadLibrary("tradex");
         System.loadLibrary("TradexCpp");
+        System.out.println(System.getProperty("java.class.path"));
     }
     
     static Logger log = Logger.getLogger(TradexCpp.class);
     
-    private boolean is_login_success = false;
     private native boolean doLogin(String account, String password);
     private native boolean doLogout();
+    private native boolean checkLoginAlready();
     /* Return: order_status,client_order_id,order_id,qty,price*/
     private native String placeBuyOrder(String ID, String area, int qty, double price);
     private native String placeSellOrder(String ID, String area, int qty, double price);
@@ -47,9 +46,10 @@ public class TradexCpp
     
     void doLoginCheck() throws Exception 
     {
-       if (!is_login_success) 
+       if (!checkLoginAlready()) 
        {
-           is_login_success = doLogin("dummyUsr", "dummyPswd");
+           boolean is_login_success = doLogin("dummyUsr", "dummyPswd");
+           
            if (!is_login_success)
            {
                throw new Exception("Can not login Thradex success!");

@@ -235,6 +235,11 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogout(JNIEnv *env, jo
     return (jboolean)true;
 }
 
+JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_checkLoginAlready(JNIEnv *env, jobject obj)
+{
+    std::cout << "Now checkLoginAlready..." << std::endl;
+    return sample.is_login_ready();
+}
 
 /*
  * Return a string to java:

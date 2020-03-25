@@ -1,3 +1,4 @@
+default: tradex build_java_so
 tradex: main.o nanolog.o tradex_sample.o
 	g++ -std=c++11 -o tradex -Xlinker main.o nanolog.o tradex_sample.o -L ./lib  -ltradex
 tradex_sample.o: tradex_sample.cpp
@@ -17,4 +18,4 @@ build_java_so:
 	javah -d include -classpath ../src/ com.sn.trader.TradexCpp
 	g++ -fPIC -shared -std=c++11 -o ./lib/libTradexCpp.so TradexCpp.cpp -I./include -I/usr/local/software/jdk1.8.0_241/include/ -I/usr/local/software/jdk1.8.0_241/include/linux/ -Xlinker nanolog.o tradex_sample.o -L ./lib -ltradex
 	javac ../src/com/sn/trader/TradexCpp.java
-	java -Djava.library.path=./lib -cp ../src/ com.sn.trader.TradexCpp
+	java -Djava.library.path=./lib -classpath ../src/:../WEB-INF/lib/log4j-1.2.17.jar com.sn.trader.TradexCpp
