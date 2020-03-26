@@ -25,6 +25,14 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogout
 
 /*
  * Class:     com_sn_trader_TradexCpp
+ * Method:    checkLoginAlready
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_checkLoginAlready
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_sn_trader_TradexCpp
  * Method:    placeBuyOrder
  * Signature: (Ljava/lang/String;Ljava/lang/String;ID)Ljava/lang/String;
  */
@@ -41,10 +49,10 @@ JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeSellOrder
 
 /*
  * Class:     com_sn_trader_TradexCpp
- * Method:    queryTradeResult
- * Signature: ()Z
+ * Method:    loadAcnt
+ * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_queryTradeResult
+JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_loadAcnt
   (JNIEnv *, jobject);
 
 #ifdef __cplusplus

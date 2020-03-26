@@ -72,6 +72,9 @@ void TradeXCallback::OnOrderEvent(const TRXOrderReport *orderReport) {
 		std::cout << "Reject:" << orderReport->error_message << std::endl;
         main->setTranStatus(orderReport->order_status, orderReport->error_message);
 	}
+	else if(orderReport->order_status == TRXOrderStatus::Canceled) {
+	    main->setTranStatus(0, "Order canceled success.");
+	}
 }
 /// 返回的成交回报信息
 /// <param name="tradeReport"></param>
@@ -103,15 +106,35 @@ void TradeXCallback::OnTradeUnitStatus(const TRXTradeUnitConnStatusNotice *notic
 /// <param name="cancelReject"></param>
 void TradeXCallback::OnCancelReject(const TRXOrderCancelReject *cancelReject) {
 	std::cout << "CancelRejected:" << cancelReject->order_id << ";" << cancelReject->error_message << std::endl;
+	main->setTranStatus(1, cancelReject->error_message);
 }
 /// 持仓查询返回结果
 /// <param name="positionsList"></param>
+/*
+struct TRXPosition
+{
+    trade_unit_t trade_unit;  // 交易单元
+    symbol_t symbol;          // 交易标的代码，需填入交易所认可的交易标的代码
+    TRXSide side;             // 买卖方向，期货及期权
+    TRXHedgeFlag hedge_flag;  // 股指期货投机套保标志
+    TRXMarket market;         // 此持仓的交易市场
+    quantity_t yesterday_qty; // 昨日持仓
+    quantity_t latest_qty;    // 最新持仓
+    quantity_t available_qty; // 可用数量
+    quantity_t frozen_qty;    // 冻结数量
+    money_t margin;           // 保证金(期货、期权)
+};
+ */
 void TradeXCallback::OnQueryPosition(const TRXPosition *position, const text_t error_message, const request_id_t request_id, const bool is_last, const bool is_success) {
 	if (position) {
 		std::cout << "Position:" << position->symbol << ":" << position->latest_qty << ";is_last:"<< is_last << std::endl;
+        std::string value = "trade_unit:" + std::to_string(position->trade_unit) + "|symbol:" + position->symbol + "|side:" + std::to_string(position->side) + "|yesterday_qty:" + std::to_string(position->yesterday_qty) +
+                            "|latest_qty:" + std::to_string(position->latest_qty) + "|available_qty:" + std::to_string(position->available_qty) + "|frozen_qty:" + std::to_string(position->frozen_qty);
+        main->setTranStatus(0, value);
 	}
 	else {
 		std::cout << "Position:" << is_last << ":" << error_message << std::endl;
+        main->setTranStatus(1, error_message);
 	}
 }
 /// 标准券持仓查询返回结果
@@ -119,12 +142,38 @@ void TradeXCallback::OnQueryPosition(const TRXPosition *position, const text_t e
 void TradeXCallback::OnQueryStandardCouponPosition(const TRXPosition *position, const text_t error_message, const request_id_t request_id, const bool is_last, const bool is_success) {}
 /// 账户资金查询返回结果
 /// <param name="balanceList"></param>
+/*struct TRXBalance
+{
+    trade_unit_t trade_unit;        // 交易单元
+    money_t initial_balance;        // 日初资金，资金划转、出入金会影响该值，否则该值为日初或昨日结算后资金余额
+    money_t available_balance;      // 可用资金
+    money_t frozen_balance;         // 冻结资金
+    money_t margin;                 // 保证金(期货、期权)
+    money_t hk_available_balance;   // 港股可用资金
+    money_t market_value;           // 证券市值
+    money_t total_asset;            // 总资产
+    money_t withdrawable_balance;   // 可取资金
+    money_t available_margin;       // 可用保证金(两融)
+    money_t normal_borrowing_cash;  // 普通头寸可融资金
+    money_t special_borrowing_cash; // 专项头寸可融资金
+};*/
 void TradeXCallback::OnQueryBalance(const TRXBalance *balance, const text_t error_message, const request_id_t request_id, const bool is_last, const bool is_success) {
 	if (balance) {
+	    /*private String acntID;
+          private double init_mny;
+          private double usable_mny;
+          private double fetchable_mny;
+          private double stock_value;
+          private double total_value;*/
 		std::cout << "Balance:" << balance->trade_unit << ":" << balance->available_balance << ";is_last=" << is_last << std::endl;
+        std::string msg = "trade_unit:"+ std::to_string(balance->trade_unit) + "|initial_balance:" + std::to_string(balance->initial_balance) + "|available_balance:" + std::to_string(balance->available_balance) +
+                "|withdrawable_balance:" + std::to_string(balance->withdrawable_balance) + "|market_value:" + std::to_string(balance->market_value) + "|total_asset:" + std::to_string(balance->total_asset);
+        main->setTranStatus(0, msg);
+        
 	}
 	else {
 		std::cout << "Balance:" << is_last << ":" << error_message << std::endl;
+		main->setTranStatus(1, error_message);
 	}
 }
 /// 委托查询返回结果
@@ -670,7 +719,7 @@ void TradeXSample::QueryCash() {
 	TRXBalanceQueryRequest request;
 	memset(&request, 0, sizeof(request));
 
-	request.trade_unit = normal_trade_unit;
+	request.trade_unit = 6001045;
 	request.request_id = timestamp_now();
 
 	int rtn = api->QueryBalance(&request);
@@ -717,33 +766,6 @@ void TradeXSample::QueryOrders() {
 
 std::string TradeXSample::getTranStatus()
 {
-    /*std::string key = std::to_string(client_order_id) + "_trade_report";
-    std::cout <<"get "<<key<<" start from get_TradeResult."<< std::endl;
-    while(true)
-    {
-        auto b = statusMapForQuery.find(key);
-        if (b != statusMapForQuery.end())
-        {
-            statusMapForQuery.erase(key);
-            return b->second;
-        }
-        else
-        {
-            if (request_id > 0)
-            {
-                std::string key_request_id = std::to_string(request_id) + "_request_id";
-                //errored, return error message.
-                b = statusMapForQuery.find(key_request_id);
-                if (b != statusMapForQuery.end())
-                {
-                    statusMapForQuery.erase(key_request_id);
-                    return b->second;
-                }
-            }
-            std::cout <<"get "<<key<<" not ready, wait for 1 second."<< std::endl;
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-    }*/
     std::string final_msg = "";
     while(true)
     {

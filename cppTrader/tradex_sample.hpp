@@ -7,6 +7,7 @@
 #include <chrono>
 #include <string>
 #include<random>
+#include<memory.h>
 #include <ctime>
 
 using namespace com::tradex::api;
@@ -168,6 +169,27 @@ public:
         initTranStatus();
         return api->PlaceOrder(pOrder);
     };
+    
+    int QueryBalance(TRXBalanceQueryRequest * p)
+    {
+        initTranStatus();
+        
+        int rtn = api->QueryBalance(p);
+        return rtn;
+    }
+    
+    int CancelOrder(TRXOrderCancelRequest * p)
+    {
+        initTranStatus();
+        int rtn = api->CancelOrder(p);
+        return rtn;
+    }
+    
+    int QueryStockInHand(TRXPositionQueryRequest *p)
+    {
+        initTranStatus();
+        int rtn = api->QueryPosition(p);
+    }
 	std::string getTranStatus();
 
     void set_normal_account(trade_unit_t id) { normal_trade_unit = id; }

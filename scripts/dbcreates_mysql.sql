@@ -336,6 +336,7 @@ create table if not exists TradeDtl(
 acntId varchar(20 ) not null,
 stkId varchar(6 ) not null,
 seqnum int not null,
+order_id int,
 price decimal(8, 2) not null,
 amount int not null,
 dl_dt datetime not null,

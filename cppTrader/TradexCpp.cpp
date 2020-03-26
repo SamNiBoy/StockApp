@@ -267,3 +267,96 @@ JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeSellOrder
     placeOrder(env, thiz, ID, area, qty, price, false);
 }
 
+JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_loadAcnt
+(JNIEnv * env, jobject thizCls)
+{
+    TRXBalanceQueryRequest request;
+    memset(&request, 0, sizeof(request));
+
+    request.trade_unit = my_trade_unit;
+    request.request_id = timestamp_now();
+
+    int rtn = sample.QueryBalance(&request);
+    //sample.QueryCash();
+    std::string rtstr = sample.getTranStatus();
+    
+    
+    jclass clsstring = env->FindClass("java/lang/String");
+    jmethodID ctorID = env->GetMethodID(clsstring, "<init>", "([BLjava/lang/String;)V");
+    jbyteArray bytes = env->NewByteArray(strlen(rtstr.c_str()));
+    env->SetByteArrayRegion(bytes, 0, strlen(rtstr.c_str()), (jbyte*)rtstr.c_str());
+    jstring encoding = env->NewStringUTF("utf-8");
+    jstring result = (jstring)env->NewObject(clsstring, ctorID, bytes, encoding);
+    
+    return result;
+}
+
+JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_cancelOrder
+(JNIEnv * env, jobject thiz, jint order_id)
+{
+    TRXOrderCancelRequest cancel;
+    cancel.order_id = order_id;
+    cancel.trade_unit = my_trade_unit;
+    sample.CancelOrder(&cancel);
+    
+    std::string rtstr = sample.getTranStatus();
+    
+    jclass clsstring = env->FindClass("java/lang/String");
+    jmethodID ctorID = env->GetMethodID(clsstring, "<init>", "([BLjava/lang/String;)V");
+    jbyteArray bytes = env->NewByteArray(strlen(rtstr.c_str()));
+    env->SetByteArrayRegion(bytes, 0, strlen(rtstr.c_str()), (jbyte*)rtstr.c_str());
+    jstring encoding = env->NewStringUTF("utf-8");
+    jstring result = (jstring)env->NewObject(clsstring, ctorID, bytes, encoding);
+    
+    return result;
+}
+
+JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_queryStockInHand
+(JNIEnv * env, jobject thiz, jstring ID)
+{
+    
+    std::cout<<"Now queryStockInHand "<<" for stock:"<<ID<<std::endl;
+    char * symbol_p = NULL;
+    //std::cout << "Now place order from Cpp!" << std::endl;
+    jclass clsstring = env->FindClass("java/lang/String");
+    jstring strencode = env->NewStringUTF("utf-8");
+    jmethodID mid = env->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
+    
+    jbyteArray symbol_arr= (jbyteArray)env->CallObjectMethod(ID, mid, strencode);
+    jsize symbol_len = env->GetArrayLength(symbol_arr);
+    jbyte* symbol_ba = env->GetByteArrayElements(symbol_arr, JNI_FALSE);
+ 
+    if (symbol_len > 0)
+    {
+        symbol_p = (char*)malloc(symbol_len + 1);
+ 
+        memcpy(symbol_p, symbol_ba, symbol_len);
+        symbol_p[symbol_len] = 0;
+    }
+    env->ReleaseByteArrayElements(symbol_arr, symbol_ba, 0);
+    
+    
+    TRXPositionQueryRequest request;
+    memset(&request, 0, sizeof(request));
+
+    request.trade_unit = my_trade_unit;
+    request.request_id = timestamp_now();
+    strcpy(request.symbol, symbol_p);
+    
+    delete symbol_p;
+    
+    std::cout<<"Query stockinhand for:"<<request.symbol<<std::endl;
+
+    int rtn = sample.QueryStockInHand(&request);
+    
+    std::string rtstr = sample.getTranStatus();
+    
+    
+    jmethodID ctorID = env->GetMethodID(clsstring, "<init>", "([BLjava/lang/String;)V");
+    jbyteArray bytes = env->NewByteArray(strlen(rtstr.c_str()));
+    env->SetByteArrayRegion(bytes, 0, strlen(rtstr.c_str()), (jbyte*)rtstr.c_str());
+    jstring encoding = env->NewStringUTF("utf-8");
+    jstring result = (jstring)env->NewObject(clsstring, ctorID, bytes, encoding);
+    
+    return result;
+}
