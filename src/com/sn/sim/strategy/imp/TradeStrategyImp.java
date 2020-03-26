@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.CashAcnt;
 import com.sn.cashAcnt.CashAcntManger;
 import com.sn.cashAcnt.ICashAccount;
+import com.sn.cashAcnt.TradexAcnt;
 import com.sn.db.DBManager;
 import com.sn.sim.strategy.ITradeStrategy;
 import com.sn.sim.strategy.selector.buypoint.IBuyPointSelector;
@@ -30,6 +31,7 @@ import com.sn.sim.strategy.selector.sellpoint.ISellPointSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
+import com.sn.trader.TradexBuySellResult;
 import com.sn.trader.TradexCpp;
 
 public class TradeStrategyImp implements ITradeStrategy {
@@ -44,6 +46,7 @@ public class TradeStrategyImp implements ITradeStrategy {
     private boolean sim_mode = false;
     
     private static TradexCpp tradex_trader = new TradexCpp();
+    private static TradexAcnt tradex_acnt = new TradexAcnt();
     
     public IBuyPointSelector getBuypoint_selector() {
         return buypoint_selector;
@@ -111,7 +114,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean buyStock(Stock2 s) {
 		// TODO Auto-generated method stub
 		loadStocksForTrade();
-		ICashAccount ac = getVirtualCashAcntForStock(s.getID());
+		ICashAccount ac = getCashAcntForStock(s.getID());
 		int qtb = 0;
 		
 		qtb = buypoint_selector.getBuyQty(s, ac);
@@ -130,22 +133,29 @@ public class TradeStrategyImp implements ITradeStrategy {
 			    try {
 			        // Save string like "B600503" to clipboard for buy stock.
 			    	if (!sim_mode) {
-			            String txt = "";
+			            /*String txt = "";
 			            Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			            txt = "B" + s.getID() + qtyToTrade;
 			            
 			            StringSelection sel = new StringSelection(txt);
-			            cpb.setContents(sel, null);
+			            cpb.setContents(sel, null);*/
+                        if (!placeBuyTradeToTradex(s, qtb, s.getCur_pri()))
+                        {
+                            log.info("failed to placeBuyOrder to Tradex, skipping create tradehdr/tradedtl record.");
+                            break;
+                        }
 			    	}
 			        
 			        createBuyTradeRecord(s, qtyToTrade, ac);
 			        
-			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
-			        sm.put(s.getID(), s);
-                    log.info("TradeStock date string:" + s.getDl_dt().toString().substring(0, 10));
-			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
 			    	if (!sim_mode) {
 			            createBuySellRecord(s, STConstants.openID, true, qtyToTrade);
+			    	}
+			    	else {
+	                    Map<String, Stock2> sm = new HashMap<String, Stock2>();
+	                    sm.put(s.getID(), s);
+	                    log.info("TradeStock date string:" + s.getDl_dt().toString().substring(0, 10));
+	                    ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
 			    	}
 			        break;
 			    }
@@ -172,7 +182,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean sellStock(Stock2 s) {
 		// TODO Auto-generated method stub
 		loadStocksForTrade();
-		ICashAccount ac = getVirtualCashAcntForStock(s.getID());
+		ICashAccount ac = getCashAcntForStock(s.getID());
 		int qtb = 0;
 		
 		qtb = sellpoint_selector.getSellQty(s, ac);
@@ -195,21 +205,29 @@ public class TradeStrategyImp implements ITradeStrategy {
 			    try {
 			        // Save string like "S600503" to clipboard for sell stock.
 			    	if (!sim_mode) {
-			            String txt = "";
+			            /*String txt = "";
 			            Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			            txt = "S" + s.getID() + qtyToTrade;
 			            
 			            StringSelection sel = new StringSelection(txt);
-			            cpb.setContents(sel, null);
+			            cpb.setContents(sel, null);*/
+			    	    if (!placeSellTradeToTradex(s, qtb, s.getCur_pri()))
+			    	    {
+			    	        log.info("failed to placeSellOrder to Tradex, skipping create tradehdr/tradedtl record.");
+                            break;
+			    	    }
 			    	}
 			        
+                    
 			        createSellTradeRecord(s, qtyToTrade, ac);
 			        
-			        Map<String, Stock2> sm = new HashMap<String, Stock2>();
-			        sm.put(s.getID(), s);
-			        ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
 			    	if (!sim_mode) {
 			            createBuySellRecord(s, STConstants.openID, false, qtyToTrade);
+			    	}
+			    	else {
+	                    Map<String, Stock2> sm = new HashMap<String, Stock2>();
+	                    sm.put(s.getID(), s);
+	                    ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
 			    	}
 			        break;
 			    }
@@ -685,7 +703,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return sell_mode_flg == 1;
 	}
 	
-	private static boolean createSellTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac) {
+	private boolean createSellTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac) {
 
         log.info("now start to sell stock " + s.getName()
                 + " price:" + s.getCur_pri()
@@ -713,7 +731,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                     + s.getID() + "',"
                     + s.getCur_pri()*sellableAmt + ","
                     + sellableAmt + ","
-                    + s.getCur_pri() + ",str_to_date('" + s.getDl_dt().toLocaleString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s'))";
+                    + s.getCur_pri() + ",str_to_date('" + s.getDl_dt().toString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s'))";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -731,21 +749,24 @@ public class TradeStrategyImp implements ITradeStrategy {
                 + seqnum + ","
                 + s.getCur_pri() + ", "
                 + sellableAmt
-                + ", str_to_date('" + s.getDl_dt().toLocaleString() + "', '%Y-%m-%d %H:%i:%s'), 0)";
+                + ", str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s'), 0)";
             log.info(sql);
             stm.execute(sql);
-            
-            //now sync used money
-            double usedMny = ac.getUsedMny();
-            usedMny -= relasedMny;
-            ac.setUsedMny(usedMny);
-            
             stm.close();
-            stm = con.createStatement();
-            sql = "update CashAcnt set used_mny = used_mny - " + relasedMny + " where acntId = '" + ac.getActId() + "'";
-            log.info(sql);
-            stm.execute(sql);
-            con.close();
+            
+            if (sim_mode)
+            {
+                //now sync used money
+                double usedMny = ac.getUsedMny();
+                usedMny -= relasedMny;
+                ac.setUsedMny(usedMny);
+                
+                stm = con.createStatement();
+                sql = "update CashAcnt set used_mny = used_mny - " + relasedMny + " where acntId = '" + ac.getActId() + "'";
+                log.info(sql);
+                stm.execute(sql);
+                con.close();
+            }
             return true;
         }
         catch(SQLException e) {
@@ -815,7 +836,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         return qtyToTrade;
     }
 	
-	private static boolean createBuyTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac) {
+	private boolean createBuyTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac) {
         
 		int buyMnt = Integer.valueOf(qtyToTrade);
 		double occupiedMny = buyMnt * s.getCur_pri();
@@ -864,18 +885,21 @@ public class TradeStrategyImp implements ITradeStrategy {
                 + ", str_to_date('" + s.getDl_dt().toLocaleString() + "','%Y-%m-%d %H:%i:%s'), 1)";
             log.info(sql);
             stm.execute(sql);
-            
-            //now sync used money
-            double usedMny = ac.getUsedMny();
-            usedMny += occupiedMny;
-            ac.setUsedMny(usedMny);
-            
             stm.close();
-            stm = con.createStatement();
-            sql = "update CashAcnt set used_mny = " + usedMny + " where acntId = '" + ac.getActId() + "'";
-            log.info(sql);
-            stm.execute(sql);
-            con.close();
+            
+            if(sim_mode)
+            {
+                //now sync used money
+                double usedMny = ac.getUsedMny();
+                usedMny += occupiedMny;
+                ac.setUsedMny(usedMny);
+                
+                stm = con.createStatement();
+                sql = "update CashAcnt set used_mny = " + usedMny + " where acntId = '" + ac.getActId() + "'";
+                log.info(sql);
+                stm.execute(sql);
+                con.close();
+            }
             return true;
         }
         catch(SQLException e) {
@@ -885,15 +909,38 @@ public class TradeStrategyImp implements ITradeStrategy {
     }
     /* Now do acutal trade to Tradex system*/
     private static boolean placeSellTradeToTradex(Stock2 s, int qtyToTrade, double price) {
-        tradex_trader.placeSellOrder(s.getID(), s.getArea(), qtyToTrade, price); 
-        
-        return true;
+        try {
+            TradexBuySellResult tbsr = tradex_trader.processSellOrder(s.getID(), s.getArea(), qtyToTrade, price);
+            
+            if (!tbsr.isTranSuccess()) {
+                log.error("Sell: placeSellTradeToTradex failed with error:" + tbsr.getError_code() + ", message:" + tbsr.getError_msg());
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error("Sell: placeSellTradeToTradex exception:" + e.getMessage());
+            return false;
+        } 
     }
 	
     /* Now do acutal trade to Tradex system*/
     private static boolean placeBuyTradeToTradex(Stock2 s, int qtyToTrade, double price) {
-        tradex_trader.placeBuyOrder(s.getID(), s.getArea(), qtyToTrade, price); 
-        return true;
+        try {
+            TradexBuySellResult tbsr = tradex_trader.processBuyOrder(s.getID(), s.getArea(), qtyToTrade, price);
+            
+            if (!tbsr.isTranSuccess()) {
+                log.error("Buy: placeSellTradeToTradex failed with error:" + tbsr.getError_code() + ", message:" + tbsr.getError_msg());
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error("Buy: placeSellTradeToTradex exception:" + e.getMessage());
+            return false;
+        } 
     }
 	
 	private static boolean createBuySellRecord(Stock2 s, String openID, boolean is_buy_flg, String qtyToTrade) {
@@ -921,31 +968,36 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return true;
 	}
 	
-	public ICashAccount getVirtualCashAcntForStock(String stk) {
-        String AcntForStk = STConstants.ACNT_TRADE_PREFIX + stk;
+	public ICashAccount getCashAcntForStock(String stk) {
         
         if (sim_mode) {
-        	AcntForStk = STConstants.ACNT_SIM_PREFIX + stk;
-        }
-        
-        ICashAccount acnt = cash_account_map.get(AcntForStk);
-        if (acnt == null) {
-        	log.info("No cashAccount for stock:" + stk + " in memory, load from db.");
-            acnt = CashAcntManger.loadAcnt(AcntForStk);
+        	String AcntForStk = STConstants.ACNT_SIM_PREFIX + stk;
+            ICashAccount acnt = cash_account_map.get(AcntForStk);
             if (acnt == null) {
-            	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
-                CashAcntManger
-                .crtAcnt(AcntForStk, STConstants.DFT_INIT_MNY, 0.0, 0.0, STConstants.DFT_SPLIT, STConstants.DFT_MAX_USE_PCT, true);
+            	log.info("No cashAccount for stock:" + stk + " in memory, load from db.");
                 acnt = CashAcntManger.loadAcnt(AcntForStk);
+                if (acnt == null) {
+                	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
+                    CashAcntManger
+                    .crtAcnt(AcntForStk, STConstants.DFT_INIT_MNY, 0.0, 0.0, STConstants.DFT_SPLIT, STConstants.DFT_MAX_USE_PCT, true);
+                    acnt = CashAcntManger.loadAcnt(AcntForStk);
+                }
+                
+                if (acnt != null) {
+                	log.info("put the loaded/created virtual account into memory.");
+                	cash_account_map.put(AcntForStk, acnt);
+                }
             }
-            
-            if (acnt != null) {
-            	log.info("put the loaded/created virtual account into memory.");
-            	cash_account_map.put(AcntForStk, acnt);
+            return acnt;
+        }
+        else {
+            if (cash_account_map.get(tradex_acnt.getAcntID()) == null)
+            {
+                cash_account_map.put(tradex_acnt.getAcntID(), tradex_acnt);
             }
+            return tradex_acnt;
         }
         
-        return acnt;
 	}
 
 	@Override
