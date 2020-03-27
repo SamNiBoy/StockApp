@@ -95,23 +95,17 @@ public class StockTrader {
 //          Thread.currentThread().sleep(seconds_to_delay);
 //          tradeStock(r1);
             
-            StockBuySellEntry r20 = new StockBuySellEntry("000975", "B1", 19.0, true,
-                    Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
             s2.getSd().getCur_pri_lst().add(19.0);
             s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
             Thread.currentThread().sleep(seconds_to_delay);
             st.strategy.buyStock(s2);
             
             
-             StockBuySellEntry r21 = new StockBuySellEntry("000975", "B1", 17.0, true,
-                        Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 11, 30)));
-                s2.getSd().getCur_pri_lst().add(17.0);
-                s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
-                Thread.currentThread().sleep(seconds_to_delay);
-                st.strategy.buyStock(s2);
+            s2.getSd().getCur_pri_lst().add(17.0);
+            s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
+            Thread.currentThread().sleep(seconds_to_delay);
+            st.strategy.buyStock(s2);
             
-            StockBuySellEntry r22 = new StockBuySellEntry("000975", "B2", 28.2, false,
-                    Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 14, 30)));
             s2.getSd().getCur_pri_lst().add(28.2);
             s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
             

@@ -120,11 +120,11 @@ public class TradeStrategyImp implements ITradeStrategy {
 		qtb = buypoint_selector.getBuyQty(s, ac);
 		
 		if (qtb <= 0) {
-			log.info("qty to buy/sell is zero by Virtual CashAccount, switch to sellbuyrecord to get qtyToTrade.");
-			qtb = getTradeQty(s, true, STConstants.openID);
+			log.info("qty to buy is zero, can not buyStock.");
+            return false;
 		}
 		
-		if (canTradeRecord(s, true, STConstants.openID)) {
+		if (canTradeRecord(s, true)) {
 			
 			String qtyToTrade = String.valueOf(qtb);
 			LocalDateTime lt = LocalDateTime.now();
@@ -189,16 +189,12 @@ public class TradeStrategyImp implements ITradeStrategy {
 		
 		qtb = sellpoint_selector.getSellQty(s, ac);
 		
-		if (qtb <= 0 && !sim_mode) {
-			log.info("qty to buy/sell is zero by Virtual CashAccount, switch to sellbuyrecord to get qtyToTrade.");
-			qtb = getTradeQty(s, false, STConstants.openID);
-		}
-		else if (qtb <= 0 && sim_mode) {
-			log.info("Simulation mode, can not sell before buy!");
+		if (qtb <= 0) {
+			log.info("qtb is <=0, can not sell!");
 			return false;
 		}
 		
-		if (canTradeRecord(s, false, STConstants.openID)) {
+		if (canTradeRecord(s, false)) {
 			
 			String qtyToTrade = String.valueOf(qtb);
 			LocalDateTime lt = LocalDateTime.now();
@@ -330,30 +326,30 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return true;
 	}
 	
-	private boolean canTradeRecord(Stock2 s, boolean is_buy_flg, String openID) {
+	private boolean canTradeRecord(Stock2 s, boolean is_buy_flg) {
 		//For sim_mode, we don't care if user gzed the stock.
 		if ((tradeStocks == null || !tradeStocks.contains(s.getID())) && !sim_mode) {
 			log.info("stock " + s.getID() + " is not available for trade.");
 			return false;
 		}
 		
-		if (isInSellMode(openID, s) && is_buy_flg) {
+		if (isInSellMode(s) && is_buy_flg) {
 			log.info("Stock:" + s.getID() + " is in sell mode, can not buy it!");
 			return false;
 		}
 
-		if (!skipRiskCheck(openID, is_buy_flg, s)) {
+		if (!skipRiskCheck(is_buy_flg, s)) {
 
 			boolean overall_risk = false;
 			// If recently we lost continuously overall, stop trading.
-			if (stopTradeForPeriod(openID, 5)) {
-				log.info("Now account " + openID + " trade unsuccess for 3 days, stop trade.");
+			if (stopTradeForPeriod(5)) {
+				log.info("Now trade unsuccess for 3 days, stop trade.");
 				overall_risk = true;
 			}
 
 			// If recently we lost continuously for the stock, stop trading.
-			if (stopTradeForStock(openID, s, 5)) {
-				log.info("Now account " + openID + " trade unsuccess for 3 days for stock:" + s.getName()
+			if (stopTradeForStock(s, 5)) {
+				log.info("Now trade unsuccess for 3 days for stock:" + s.getName()
 						+ ", stop trade.");
 				if (overall_risk && !is_buy_flg) {
 					log.info("Now both overall risk or risk for stock:" + s.getName()
@@ -427,40 +423,28 @@ public class TradeStrategyImp implements ITradeStrategy {
 						return false;
 					}
 				}
-				log.info("Adding trade record for stock as: " + s.getID());
-				StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
-                                                              s.getName(),
-                                                              (double)s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
-                                                              is_buy_flg,
-                                                              (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
-				stk.printStockInfo();
-			    rcds.add(stk);
 				return true;
 			}
-		} else {
-			log.info("Adding today first trade record for stock as: " + s.getID());
-			StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
-                    s.getName(),
-                    (double)s.getSd().getCur_pri_lst().get(s.getSd().getCur_pri_lst().size() - 1),
-                    is_buy_flg,
-                    (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
-			stk.printStockInfo();
-			rcds = new LinkedList<StockBuySellEntry>();
-			rcds.add(stk);
-			tradeRecord.put(stk.id, rcds);
-			return true;
 		}
+    	return true;
 	}
 	
-	private static boolean stopTradeForPeriod(String openID, int days) {
+	private boolean stopTradeForPeriod(int days) {
 		String sql;
 		boolean shouldStopTrade = false;
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and dl_dt >= sysdate() - interval "
+            
+	         String acntId = STConstants.ACNT_SIM_PREFIX;
+	            
+	         if (!sim_mode) {
+	             acntId = tradex_acnt.getActId();
+	         }
+	            
+			sql = "select * from tradedtl " + " where acntId like '" + acntId + "%'" + "   and dl_dt >= sysdate() - interval "
 					+ days
-					+ " day order by stkid, sb_id";
+					+ " day order by stkid, seqnum";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
@@ -534,14 +518,21 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return shouldStopTrade;
 	}
 	
-	private static boolean stopTradeForStock(String openID, Stock2 s, int days) {
+	private boolean stopTradeForStock(Stock2 s, int days) {
 		String sql;
 		boolean shouldStopTrade = false;
+        
+        String acntId = STConstants.ACNT_SIM_PREFIX + s.getID();
+        
+        if (!sim_mode) {
+            acntId = tradex_acnt.getActId();
+        }
+        
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and stkid ='" + s.getID() + "'  and dl_dt >= sysdate() - interval " + days
-					+ " day order by stkid, sb_id";
+			sql = "select * from tradedtl " + " where acntId ='" + acntId + "'" + "   and stkid ='" + s.getID() + "'  and dl_dt >= sysdate() - interval " + days
+					+ " day order by stkid, seqnum";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
@@ -614,7 +605,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return shouldStopTrade;
 	}
 	
-	private static boolean skipRiskCheck(String openID, boolean is_buy_flg, Stock2 s) {
+	private boolean skipRiskCheck(boolean is_buy_flg, Stock2 s) {
 
 		String sql;
 		boolean shouldSkipCheck = false;
@@ -623,9 +614,15 @@ public class TradeStrategyImp implements ITradeStrategy {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 
+            
+			String acntId = STConstants.ACNT_SIM_PREFIX + s.getID();
+			
+			if (!sim_mode) {
+			    acntId = tradex_acnt.getActId();
+			}
 			// get last trade record.
-			sql = "select * from SellBuyRecord " + " where openID ='" + openID + "'" + "   and stkid ='" + s.getID()
-					+ "' order by sb_id desc";
+			sql = "select * from tradedtl " + " where acntId ='" + acntId + "'" + "   and stkId ='" + s.getID()
+					+ "' order by seqnum desc";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
@@ -676,7 +673,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	}
 	
 
-	private static boolean isInSellMode(String openID, Stock2 s) {
+	private static boolean isInSellMode(Stock2 s) {
 
 		String sql;
 		int sell_mode_flg = 0;
@@ -695,7 +692,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 				sell_mode_flg = rs.getInt("sell_mode_flg");
 			    log.info("stock:" + s.getID() + "'s sell mode:" + sell_mode_flg);
 			} else {
-				log.info("Looks stock:" + s.getID() + " is not in usrStk usr:" + openID + ", can not judge sell mode.");
+				log.info("Looks stock:" + s.getID() + " is not in usrStk, can not judge sell mode.");
 				sell_mode_flg = 0;
 			}
 			rs.close();
@@ -787,6 +784,31 @@ public class TradeStrategyImp implements ITradeStrategy {
                 stm.execute(sql);
                 con.close();
             }
+            
+            LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
+            if (rcds != null) {
+                log.info("Adding trade record for stock as: " + s.getID());
+                StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
+                                                              s.getName(),
+                                                              soldPrice,
+                                                              sellableAmt,
+                                                              false,
+                                                              (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+                stk.printStockInfo();
+                rcds.add(stk);
+            } else {
+                log.info("Adding today first trade record for stock as: " + s.getID());
+                StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
+                        s.getName(),
+                        soldPrice,
+                        sellableAmt,
+                        false,
+                        (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+                stk.printStockInfo();
+                rcds = new LinkedList<StockBuySellEntry>();
+                rcds.add(stk);
+                tradeRecord.put(stk.id, rcds);
+            }
             return true;
         }
         catch(SQLException e) {
@@ -794,66 +816,6 @@ public class TradeStrategyImp implements ITradeStrategy {
         }
         return false;
     
-    }
-	
-	private static int getTradeQty(Stock2 s, boolean is_buy_flg, String openID) {
-        String sql;
-        int qtyToTrade = 100;
-        try {
-            Connection con = DBManager.getConnection();
-            Statement stm = con.createStatement();
-            
-            sql = "select count(*) cnt, buy_flg from SellBuyRecord "
-                + " where openID = '"  + openID + "'"
-            	+ " and stkid ='" + s.getID() + "'"
-            	+ " group by buy_flg";
-            
-            log.info(sql);
-            ResultSet rs = stm.executeQuery(sql);
-            
-            int buyCnt = 0;
-            int sellCnt = 0;
-            int buy_flg = 0;
-            
-            while (rs.next()) {
-            	buy_flg = rs.getInt("buy_flg");
-            	if (buy_flg == 1) {
-            		buyCnt = rs.getInt("cnt");
-            	}
-            	else {
-            		sellCnt = rs.getInt("cnt");
-            	}
-            }
-            
-            rs.close();
-            stm.close();
-            con.close();
-            
-            if (is_buy_flg) {
-                if (buyCnt > sellCnt) {
-                	qtyToTrade = 100;
-                }
-                else if (s.getCur_pri() <= 20) {
-                	qtyToTrade = 200;
-                }
-                else {
-                	qtyToTrade = 100;
-                }
-            }
-            else {
-            	//is sell trade.
-                if (s.getCur_pri() <= 20) {
-                	qtyToTrade = 200;
-                }
-                else {
-                	qtyToTrade = 100;
-                }
-            }
-            log.info("For stock:" + s.getName() + " will " + (is_buy_flg ? "buy " : "sell ") + qtyToTrade + " with buyCnt:" + buyCnt + " sellCnt:" + sellCnt);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return qtyToTrade;
     }
 	
 	private boolean createBuyTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac, TradexBuySellResult tbsr) {
@@ -936,6 +898,32 @@ public class TradeStrategyImp implements ITradeStrategy {
                 stm.execute(sql);
                 con.close();
             }
+            
+            LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
+            if (rcds != null) {
+                log.info("Adding trade record for stock as: " + s.getID());
+                StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
+                                                              s.getName(),
+                                                              buyPrice,
+                                                              buyMnt,
+                                                              true,
+                                                              (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+                stk.printStockInfo();
+                rcds.add(stk);
+            } else {
+                log.info("Adding today first trade record for stock as: " + s.getID());
+                StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
+                        s.getName(),
+                        buyPrice,
+                        buyMnt,
+                        true,
+                        (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+                stk.printStockInfo();
+                rcds = new LinkedList<StockBuySellEntry>();
+                rcds.add(stk);
+                tradeRecord.put(stk.id, rcds);
+            }
+            
             return true;
         }
         catch(SQLException e) {

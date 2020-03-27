@@ -203,7 +203,7 @@ public class CashAcnt implements ICashAccount {
 		return unSellableAmt;
 	}
 
-	public boolean calProfit(String ForDt, Map<String, Stock2> stockSet) {
+	public boolean calProfit(String ForDt, Map stockSet) {
 		Connection con = DBManager.getConnection();
 
 		String sql = "select stkId from TradeHdr h where h.acntId = '" + actId + "'";

@@ -25,6 +25,7 @@ public class TradexAcnt implements ICashAccount {
 	static Logger log = Logger.getLogger(CashAcnt.class);
     private TradexCpp tc = new TradexCpp();
     private TradexAccount ta = null;
+    private TradexStockInHand tsih = null;
     private double max_mny_per_trade = 10000;
     private double max_pct_for_stock = 0.8;
 
@@ -87,7 +88,7 @@ public class TradexAcnt implements ICashAccount {
 		return false;
 	}
 
-	public boolean calProfit(String ForDt, Map<String, Stock2> stockSet) {
+	public boolean calProfit(String ForDt, Map stockSet) {
 		Connection con = DBManager.getConnection();
         Statement stm = null;
         
@@ -435,11 +436,29 @@ public class TradexAcnt implements ICashAccount {
 
     public int getSellableAmt(String stkId, String sellDt) {
         // TODO Auto-generated method stub
-        return 0;
+        try {
+            tsih = tc.processQueryStockInHand(stkId);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.info("in getSellalbeAmt errored:" + e.getMessage());
+            return 0;
+        }
+        log.info("in getSellalbeAmt get sellable qty:" + tsih.getAvailable_qty());
+        return tsih.getAvailable_qty();
     }
 
     public int getUnSellableAmt(String stkId, String sellDt) {
         // TODO Auto-generated method stub
-        return 0;
+        try {
+            tsih = tc.processQueryStockInHand(stkId);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.info("in getUnSellableAmt errored:" + e.getMessage());
+            return 0;
+        }
+        log.info("in getUnSellableAmt get unsellable qty:" + tsih.getFrozen_qty());
+        return tsih.getFrozen_qty();
     }
 }

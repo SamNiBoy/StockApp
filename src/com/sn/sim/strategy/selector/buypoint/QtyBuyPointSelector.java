@@ -157,13 +157,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
             useableMny = ac.getMaxAvaMny();
             maxMnt = (int)(useableMny/s.getCur_pri()) / 100 * 100;
             
-            if (maxMnt >= 400) {
-            	buyMnt = maxMnt / 2;
-            	buyMnt = buyMnt - buyMnt % 100;
-            }
-            else {
-            	buyMnt = maxMnt;
-            }
+           	buyMnt = maxMnt;
             log.info("getBuyQty, useableMny:" + useableMny + " buyMnt:" + buyMnt + " maxMnt:" + maxMnt);
         }
         else {
