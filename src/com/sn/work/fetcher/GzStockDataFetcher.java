@@ -201,7 +201,7 @@ public class GzStockDataFetcher implements IWork {
                 BufferedReader br = new BufferedReader(isr);
                 int j = 0;
                 while ((str = br.readLine()) != null) {
-                    if (str.equals(lstStkDat))
+                    if (str.equals(lstStkDat) || lstStkDat.length() == 0)
                     {
                         failCnt++;
                         break;
@@ -236,7 +236,7 @@ public class GzStockDataFetcher implements IWork {
                 br.close();
                 if (failCnt > 0)
                 {
-                    log.info("Stock data is same " + failCnt + " times, breaking loop from GzStockDataFetcher...");
+                    log.info("Stock data is same or first time " + failCnt + " times, breaking loop from GzStockDataFetcher...");
                     failCnt = 0;
                     //Thread.currentThread().sleep(60*1000);
                     //WorkManager.cancelWork(this.getWorkName());

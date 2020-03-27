@@ -156,7 +156,7 @@ public class StockDataFetcher implements IWork {
                 BufferedReader br = new BufferedReader(isr);
                 int j = 0;
                 while ((str = br.readLine()) != null) {
-                    if (str.equals(lstStkDat))
+                    if (str.equals(lstStkDat) || lstStkDat.length() == 0)
                     {
                         failCnt++;
                         break;
@@ -198,7 +198,7 @@ public class StockDataFetcher implements IWork {
                 br.close();
                 if (failCnt > 0)
                 {
-                    log.info("Stock data is same, break loop from StockDataFetcher...");
+                    log.info("Stock data is same or first time, break loop from StockDataFetcher...");
                     break;
                 }
             }

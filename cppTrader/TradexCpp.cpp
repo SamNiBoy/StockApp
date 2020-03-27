@@ -188,6 +188,8 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin(JNIEnv * env, jc
     delete account_p;
     delete password_p;
     delete trade_unit_p;
+    
+    std::cout<<"my_client_id:"<<my_client_id<<", my_clinet_psd:"<<my_client_psd<<"my_trade_unit:"<<my_trade_unit<<std::endl;
 
     sample.initialize(my_log_path);
     sample.set_normal_account(my_trade_unit);
@@ -218,6 +220,7 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin(JNIEnv * env, jc
     strncpy(l.mac,mac.c_str(),mac.size());
     strncpy(l.ip,ip.c_str(),ip.size());
 
+    std::cout<<"now start to login."<<std::endl;
     sample.login(&l);
 
     int max_attempts = 5;
@@ -234,6 +237,7 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin(JNIEnv * env, jc
     //sample.AlgoOrder();
     //sample.SHOrder();
     //sample.QueryTrades();
+    std::cout<<"now login returned."<<std::endl;
 
     return (jboolean)true;
 }
