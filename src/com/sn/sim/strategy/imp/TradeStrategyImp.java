@@ -45,8 +45,7 @@ public class TradeStrategyImp implements ITradeStrategy {
     
     private boolean sim_mode = false;
     
-    private static TradexCpp tradex_trader = new TradexCpp();
-    private static TradexAcnt tradex_acnt = new TradexAcnt();
+    private static TradexAcnt tradex_acnt = null;
     
     public IBuyPointSelector getBuypoint_selector() {
         return buypoint_selector;
@@ -934,7 +933,7 @@ public class TradeStrategyImp implements ITradeStrategy {
     /* Now do acutal trade to Tradex system*/
     private static TradexBuySellResult placeSellTradeToTradex(Stock2 s, int qtyToTrade, double price) {
         try {
-            TradexBuySellResult tbsr = tradex_trader.processSellOrder(s.getID(), s.getArea(), qtyToTrade, price);
+            TradexBuySellResult tbsr = TradexCpp.processSellOrder(s.getID(), s.getArea(), qtyToTrade, price);
             
             if (!tbsr.isTranSuccess()) {
                 log.error("Sell: placeSellTradeToTradex failed with error:" + tbsr.getError_code() + ", message:" + tbsr.getError_msg());
@@ -952,7 +951,7 @@ public class TradeStrategyImp implements ITradeStrategy {
     /* Now do acutal trade to Tradex system*/
     private static TradexBuySellResult placeBuyTradeToTradex(Stock2 s, int qtyToTrade, double price) {
         try {
-            TradexBuySellResult tbsr = tradex_trader.processBuyOrder(s.getID(), s.getArea(), qtyToTrade, price);
+            TradexBuySellResult tbsr = TradexCpp.processBuyOrder(s.getID(), s.getArea(), qtyToTrade, price);
             
             if (!tbsr.isTranSuccess()) {
                 log.error("Buy: placeSellTradeToTradex failed with error:" + tbsr.getError_code() + ", message:" + tbsr.getError_msg());
@@ -1015,6 +1014,10 @@ public class TradeStrategyImp implements ITradeStrategy {
             return acnt;
         }
         else {
+            TradexCpp.findBestClientForTrade(stk);
+            
+            tradex_acnt = new TradexAcnt();
+            
             if (cash_account_map.get(tradex_acnt.getActId()) == null)
             {
                 cash_account_map.put(tradex_acnt.getActId(), tradex_acnt);

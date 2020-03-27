@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     com_sn_trader_TradexCpp
  * Method:    doLogin
- * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin
-  (JNIEnv *, jobject, jstring, jstring);
+  (JNIEnv *, jclass, jstring, jstring, jstring);
 
 /*
  * Class:     com_sn_trader_TradexCpp
@@ -21,7 +21,7 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin
  * Signature: ()Z
  */
 JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogout
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_sn_trader_TradexCpp
@@ -29,7 +29,7 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogout
  * Signature: ()Z
  */
 JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_checkLoginAlready
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_sn_trader_TradexCpp
@@ -37,7 +37,7 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_checkLoginAlready
  * Signature: (Ljava/lang/String;Ljava/lang/String;ID)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeBuyOrder
-  (JNIEnv *, jobject, jstring, jstring, jint, jdouble);
+  (JNIEnv *, jclass, jstring, jstring, jint, jdouble);
 
 /*
  * Class:     com_sn_trader_TradexCpp
@@ -45,7 +45,23 @@ JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeBuyOrder
  * Signature: (Ljava/lang/String;Ljava/lang/String;ID)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeSellOrder
-  (JNIEnv *, jobject, jstring, jstring, jint, jdouble);
+  (JNIEnv *, jclass, jstring, jstring, jint, jdouble);
+
+/*
+ * Class:     com_sn_trader_TradexCpp
+ * Method:    cancelOrder
+ * Signature: (I)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_cancelOrder
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     com_sn_trader_TradexCpp
+ * Method:    queryStockInHand
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_queryStockInHand
+  (JNIEnv *, jclass, jstring);
 
 /*
  * Class:     com_sn_trader_TradexCpp
@@ -53,7 +69,7 @@ JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeSellOrder
  * Signature: ()Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_loadAcnt
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 #ifdef __cplusplus
 }

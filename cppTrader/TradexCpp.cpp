@@ -130,10 +130,11 @@ jstring placeOrder(JNIEnv * env, jobject thiz, jstring ID, jstring area, jint qt
 }
 
 
-JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin(JNIEnv * env, jobject thiz, jstring account, jstring password)
+JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin(JNIEnv * env, jclass tclz, jstring account, jstring password, jstring trade_unit)
 {
     char* account_p = NULL;
     char* password_p = NULL;
+    char* trade_unit_p = NULL;
     jclass clsstring = env->FindClass("java/lang/String");
     jstring strencode = env->NewStringUTF("utf-8");
     jmethodID mid = env->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
@@ -167,9 +168,26 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin(JNIEnv * env, jo
     env->ReleaseByteArrayElements(password_arr, password_ba, 0);
     
     
+    jbyteArray trade_unit_arr= (jbyteArray)env->CallObjectMethod(trade_unit, mid, strencode);
+    jsize trade_unit_len = env->GetArrayLength(trade_unit_arr);
+    jbyte* trade_unit_ba = env->GetByteArrayElements(trade_unit_arr, JNI_FALSE);
+ 
+    if (trade_unit_len > 0)
+    {
+        trade_unit_p = (char*)malloc(trade_unit_len + 1);
+ 
+        memcpy(trade_unit_p, trade_unit_ba, trade_unit_len);
+        trade_unit_p[trade_unit_len] = 0;
+    }
+    env->ReleaseByteArrayElements(trade_unit_arr, trade_unit_ba, 0);
+    
+    my_client_id = atoi(account_p);
+    my_client_psd = password_p;
+    my_trade_unit = atoi(trade_unit_p);
+    
     delete account_p;
     delete password_p;
-    
+    delete trade_unit_p;
 
     sample.initialize(my_log_path);
     sample.set_normal_account(my_trade_unit);
@@ -220,7 +238,7 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogin(JNIEnv * env, jo
     return (jboolean)true;
 }
 
-JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogout(JNIEnv *env, jobject obj)
+JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogout(JNIEnv *env, jclass clz)
 {
     std::cout << "Now logout user from tradex." << std::endl;
     if (sample.is_login_ready())
@@ -235,7 +253,7 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_doLogout(JNIEnv *env, jo
     return (jboolean)true;
 }
 
-JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_checkLoginAlready(JNIEnv *env, jobject obj)
+JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_checkLoginAlready(JNIEnv *env, jclass clz)
 {
     std::cout << "Now checkLoginAlready..." << std::endl;
     return sample.is_login_ready();
@@ -256,19 +274,19 @@ JNIEXPORT jboolean JNICALL Java_com_sn_trader_TradexCpp_checkLoginAlready(JNIEnv
  * 
  */
 JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeBuyOrder
-(JNIEnv * env, jobject thiz, jstring ID, jstring area, jint qty, jdouble price)
+(JNIEnv * env, jclass thiz, jstring ID, jstring area, jint qty, jdouble price)
 {
     placeOrder(env, thiz, ID, area, qty, price, true);
 }
 
 JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_placeSellOrder
-(JNIEnv * env, jobject thiz, jstring ID, jstring area, jint qty, jdouble price)
+(JNIEnv * env, jclass thiz, jstring ID, jstring area, jint qty, jdouble price)
 {
     placeOrder(env, thiz, ID, area, qty, price, false);
 }
 
 JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_loadAcnt
-(JNIEnv * env, jobject thizCls)
+(JNIEnv * env, jclass thizCls)
 {
     TRXBalanceQueryRequest request;
     memset(&request, 0, sizeof(request));
@@ -292,7 +310,7 @@ JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_loadAcnt
 }
 
 JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_cancelOrder
-(JNIEnv * env, jobject thiz, jint order_id)
+(JNIEnv * env, jclass thiz, jint order_id)
 {
     TRXOrderCancelRequest cancel;
     cancel.order_id = order_id;
@@ -312,7 +330,7 @@ JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_cancelOrder
 }
 
 JNIEXPORT jstring JNICALL Java_com_sn_trader_TradexCpp_queryStockInHand
-(JNIEnv * env, jobject thiz, jstring ID)
+(JNIEnv * env, jclass thiz, jstring ID)
 {
     
     std::cout<<"Now queryStockInHand "<<" for stock:"<<ID<<std::endl;

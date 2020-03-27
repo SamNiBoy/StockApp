@@ -5,6 +5,9 @@ add_dt datetime not null,
 mail varchar(100 ),
 buy_sell_enabled int not null,
 suggest_stock_enabled int not null,
+client_id varchar(20), //This is usr_id for login Tradex client
+client_pwd varchar(20), //This is the password for login Tradex client
+trade_unit varchar(20)  //This is money account associated with the client_id
 CONSTRAINT usr_PK PRIMARY KEY (OpenID)
 );
 
