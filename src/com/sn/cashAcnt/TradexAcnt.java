@@ -24,7 +24,7 @@ public class TradexAcnt implements ICashAccount {
 
 	static Logger log = Logger.getLogger(CashAcnt.class);
     private TradexCpp tc = new TradexCpp();
-    private TradexAccount ta = tc.processLoadAcnt();
+    private TradexAccount ta = null;
     private double max_mny_per_trade = 10000;
     private double max_pct_for_stock = 0.8;
 
@@ -56,11 +56,18 @@ public class TradexAcnt implements ICashAccount {
 	public boolean loadAcnt() {
 
 		log.info("load TradexAcnt info from Tradex system");
-		ta = tc.processLoadAcnt();
+		try {
+            ta = tc.processLoadAcnt();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+	     	log.info("load TradexAcnt error:" + e.getMessage());
+             return false;
+        }
 		return true;
 	}
 
-	public String getAcntID() {
+	public String getActId() {
 		return ta.getAcntID();
 	}
 
@@ -82,20 +89,29 @@ public class TradexAcnt implements ICashAccount {
 
 	public boolean calProfit(String ForDt, Map<String, Stock2> stockSet) {
 		Connection con = DBManager.getConnection();
-
+        Statement stm = null;
+        
 		String sql = "select stkId from TradeHdr h where h.acntId = '" + ta.getAcntID() + "'";
 
 		ResultSet rs = null;
 		double in_hand_stk_mny = 0;
 		try {
-			Statement stm = con.createStatement();
+            stm = con.createStatement();
 			rs = stm.executeQuery(sql);
 			Map<String, Stock2> stks = stockSet;
 			while (rs.next()) {
 				String stkId = rs.getString("stkId");
 				Stock2 s = stks.get(stkId);
 
-                TradexStockInHand tsih = tc.processQueryStockInHand(stkId);
+                TradexStockInHand tsih;
+                try {
+                    tsih = tc.processQueryStockInHand(stkId);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+	     			log.info("CalProfit processQueryStockInHand error:" + e.getMessage());
+                     return false;
+                }
 				int inHandMnt = tsih.getAvailable_qty();
 
 				log.info("in hand amt:" + inHandMnt + " price:" + s.getCur_pri());
@@ -109,13 +125,20 @@ public class TradexAcnt implements ICashAccount {
 				stm2.close();
 			}
 
-			rs.close();
-			stm.close();
-			con.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			log.info("calProfit returned with exception:" + e.getMessage());
 			return false;
+		}
+		finally {
+			try {
+                rs.close();
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 		}
 		return true;
 	}
@@ -232,19 +255,19 @@ public class TradexAcnt implements ICashAccount {
 						+ rs.getString("in_hand_stk_mny") + "\t|" + rs.getInt("in_hand_qty") + "\t\t|"
 						+ df.format(rs.getDouble("in_hand_stk_price")) + "\t|" + rs.getString("add_dt") + "|");
 				Statement stmdtl = con.createStatement();
-				String sqldtl = "select stkid, seqnum, price, amount, date_format(dl_dt, '%Y-%m-%d %T') dl_dt, buy_flg "
+				String sqldtl = "select stkid, seqnum, price, amount, date_format(dl_dt, '%Y-%m-%d %T') dl_dt, buy_flg, order_id "
 						+ "  from tradedtl where acntId ='" + ta.getAcntID() + "' order by seqnum";
 				//log.info(sql);
 
 				ResultSet rsdtl = stmdtl.executeQuery(sqldtl);
-				log.info("StockID\tSeqnum\tPrice\tAmount\tB/S\tsubTotal\tTranDt");
+				log.info("StockID\tSeqnum\tPrice\tAmount\tB/S\tsubTotal\tTranDt\tOrder_id");
 				while (rsdtl.next()) {
 					log.info(rsdtl.getString("stkid") + "\t" + rsdtl.getInt("seqnum") + "\t"
 							+ df.format(rsdtl.getDouble("price")) + "\t" + rsdtl.getInt("amount") + "\t"
 							+ (rsdtl.getInt("buy_flg") > 0 ? "B" : "S") + "\t"
 							+ df.format((rsdtl.getInt("buy_flg") > 0 ? -1 : 1) * rsdtl.getDouble("price")
 									* rsdtl.getInt("amount"))
-							+ "\t\t" + rsdtl.getString("dl_dt") + "\t");
+							+ "\t\t" + rsdtl.getString("dl_dt") + "\t" + rsdtl.getString("order_id"));
 				}
 				rsdtl.close();
 				stmdtl.close();
@@ -270,7 +293,14 @@ public class TradexAcnt implements ICashAccount {
 		log.info("now check if stock " + s.getName() + " in hand with price:" + s.getCur_pri() + " against CashAcount: "
 				+ ta.getAcntID());
 
-		TradexStockInHand StockInHand = tc.processQueryStockInHand(s.getID());
+		TradexStockInHand StockInHand;
+        try {
+            StockInHand = tc.processQueryStockInHand(s.getID());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return false;
+        }
 
 		return StockInHand.getAvailable_qty() > 0;
 	}

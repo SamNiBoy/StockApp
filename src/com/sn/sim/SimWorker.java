@@ -146,7 +146,7 @@ public class SimWorker implements IWork {
                         cs.reportTradeStat();
                     }
                     else if (lststp != null && !curstp.after(lststp)) {
-                    	log.info("skip trading same record for:" + s.getID() + " at:" + lststp.toLocaleString());
+                    	log.info("skip trading same record for:" + s.getID() + " at:" + lststp.toString());
                     }
                     
                     lst_stmp.put(s.getID(), curstp);

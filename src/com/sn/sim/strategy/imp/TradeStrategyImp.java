@@ -129,6 +129,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			String qtyToTrade = String.valueOf(qtb);
 			LocalDateTime lt = LocalDateTime.now();
 			int mnt = lt.getMinute();
+            int order_id = -1;
 			while(true) {
 			    try {
 			        // Save string like "B600503" to clipboard for buy stock.
@@ -139,14 +140,15 @@ public class TradeStrategyImp implements ITradeStrategy {
 			            
 			            StringSelection sel = new StringSelection(txt);
 			            cpb.setContents(sel, null);*/
-                        if (!placeBuyTradeToTradex(s, qtb, s.getCur_pri()))
+                        order_id = placeBuyTradeToTradex(s, qtb, s.getCur_pri());
+                        if (order_id < 0)
                         {
                             log.info("failed to placeBuyOrder to Tradex, skipping create tradehdr/tradedtl record.");
                             break;
                         }
 			    	}
 			        
-			        createBuyTradeRecord(s, qtyToTrade, ac);
+			        createBuyTradeRecord(s, qtyToTrade, ac, order_id);
 			        
 			    	if (!sim_mode) {
 			            createBuySellRecord(s, STConstants.openID, true, qtyToTrade);
@@ -201,6 +203,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			String qtyToTrade = String.valueOf(qtb);
 			LocalDateTime lt = LocalDateTime.now();
 			int mnt = lt.getMinute();
+            int order_id = -1;
 			while(true) {
 			    try {
 			        // Save string like "S600503" to clipboard for sell stock.
@@ -211,7 +214,8 @@ public class TradeStrategyImp implements ITradeStrategy {
 			            
 			            StringSelection sel = new StringSelection(txt);
 			            cpb.setContents(sel, null);*/
-			    	    if (!placeSellTradeToTradex(s, qtb, s.getCur_pri()))
+                        order_id = placeSellTradeToTradex(s, qtb, s.getCur_pri());
+			    	    if (order_id < 0)
 			    	    {
 			    	        log.info("failed to placeSellOrder to Tradex, skipping create tradehdr/tradedtl record.");
                             break;
@@ -219,7 +223,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			    	}
 			        
                     
-			        createSellTradeRecord(s, qtyToTrade, ac);
+			        createSellTradeRecord(s, qtyToTrade, ac, order_id);
 			        
 			    	if (!sim_mode) {
 			            createBuySellRecord(s, STConstants.openID, false, qtyToTrade);
@@ -703,7 +707,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return sell_mode_flg == 1;
 	}
 	
-	private boolean createSellTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac) {
+	private boolean createSellTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac, int order_id) {
 
         log.info("now start to sell stock " + s.getName()
                 + " price:" + s.getCur_pri()
@@ -731,25 +735,35 @@ public class TradeStrategyImp implements ITradeStrategy {
                     + s.getID() + "',"
                     + s.getCur_pri()*sellableAmt + ","
                     + sellableAmt + ","
-                    + s.getCur_pri() + ",str_to_date('" + s.getDl_dt().toString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s'))";
+                    + s.getCur_pri() + ",str_to_date('" + s.getDl_dt().toString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s.%f'))";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
                     stm2.close();
                     stm2 = null;
                 }
+                else {
+                    sql = "update TradeHdr set in_hand_qty = in_hand_qty - " + sellableAmt + ", in_hand_stk_price = " + s.getCur_pri() + ", in_hand_stk_mny = in_hand_qty * " + s.getCur_pri()
+                         + " where acntId = '" + ac.getActId() + "' and stkId = '" + s.getID() + "'";
+                    log.info(sql);
+                    Statement stm2 = con.createStatement();
+                    stm2.execute(sql);
+                    stm2.close();
+                    stm2 = null;
+                }
+
                 seqnum = rs.getInt("maxseq") + 1;
             }
             rs.close();
             stm.close();
             stm = con.createStatement();
-            sql = "insert into TradeDtl values( '"
+            sql = "insert into TradeDtl (acntId, stkId, seqnum, price, amount, dl_dt, buy_flg, order_id) values( '"
                 + ac.getActId() + "','"
                 + s.getID() + "',"
                 + seqnum + ","
                 + s.getCur_pri() + ", "
                 + sellableAmt
-                + ", str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s'), 0)";
+                + ", str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s.%f'), 0," + order_id + ")";
             log.info(sql);
             stm.execute(sql);
             stm.close();
@@ -836,7 +850,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         return qtyToTrade;
     }
 	
-	private boolean createBuyTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac) {
+	private boolean createBuyTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac, int order_id) {
         
 		int buyMnt = Integer.valueOf(qtyToTrade);
 		double occupiedMny = buyMnt * s.getCur_pri();
@@ -865,7 +879,16 @@ public class TradeStrategyImp implements ITradeStrategy {
                     + s.getID() + "',"
                     + s.getCur_pri()*buyMnt + ","
                     + buyMnt + ","
-                    + s.getCur_pri() + ",str_to_date('" + s.getDl_dt().toLocaleString() + "','%Y-%m-%d %H:%i:%s'))";
+                    + s.getCur_pri() + ",str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'))";
+                    log.info(sql);
+                    Statement stm2 = con.createStatement();
+                    stm2.execute(sql);
+                    stm2.close();
+                    stm2 = null;
+                }
+                else {
+                    sql = "update TradeHdr set in_hand_qty = in_hand_qty + " + buyMnt + ", in_hand_stk_price = " + s.getCur_pri() + ", in_hand_stk_mny = in_hand_qty * " + s.getCur_pri()
+                         + " where acntId = '" + ac.getActId() + "' and stkId = '" + s.getID() + "'";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -876,13 +899,13 @@ public class TradeStrategyImp implements ITradeStrategy {
             }
             stm.close();
             stm = con.createStatement();
-            sql = "insert into TradeDtl values('"
+            sql = "insert into TradeDtl (acntId, stkId, seqnum, price, amount, dl_dt, buy_flg, order_id) values('"
                 + ac.getActId() + "','"
                 + s.getID() + "',"
                 + seqnum + ","
                 + s.getCur_pri() + ", "
                 + buyMnt
-                + ", str_to_date('" + s.getDl_dt().toLocaleString() + "','%Y-%m-%d %H:%i:%s'), 1)";
+                + ", str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'), 1," + order_id + ")";
             log.info(sql);
             stm.execute(sql);
             stm.close();
@@ -908,38 +931,38 @@ public class TradeStrategyImp implements ITradeStrategy {
         return false;
     }
     /* Now do acutal trade to Tradex system*/
-    private static boolean placeSellTradeToTradex(Stock2 s, int qtyToTrade, double price) {
+    private static int placeSellTradeToTradex(Stock2 s, int qtyToTrade, double price) {
         try {
             TradexBuySellResult tbsr = tradex_trader.processSellOrder(s.getID(), s.getArea(), qtyToTrade, price);
             
             if (!tbsr.isTranSuccess()) {
                 log.error("Sell: placeSellTradeToTradex failed with error:" + tbsr.getError_code() + ", message:" + tbsr.getError_msg());
-                return false;
+                return -1;
             }
-            return true;
+            return tbsr.getOrder_id();
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             log.error("Sell: placeSellTradeToTradex exception:" + e.getMessage());
-            return false;
+            return -1;
         } 
     }
 	
     /* Now do acutal trade to Tradex system*/
-    private static boolean placeBuyTradeToTradex(Stock2 s, int qtyToTrade, double price) {
+    private static int placeBuyTradeToTradex(Stock2 s, int qtyToTrade, double price) {
         try {
             TradexBuySellResult tbsr = tradex_trader.processBuyOrder(s.getID(), s.getArea(), qtyToTrade, price);
             
             if (!tbsr.isTranSuccess()) {
                 log.error("Buy: placeSellTradeToTradex failed with error:" + tbsr.getError_code() + ", message:" + tbsr.getError_msg());
-                return false;
+                return -1;
             }
-            return true;
+            return tbsr.getOrder_id();
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             log.error("Buy: placeSellTradeToTradex exception:" + e.getMessage());
-            return false;
+            return -1;
         } 
     }
 	
@@ -951,7 +974,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			sql = "insert into SellBuyRecord select case when max(sb_id) is null then 1 else max(sb_id) + 1 end,'" + openID + "','" + s.getID() + "'," + s.getCur_pri()
 					+ "," + qtyToTrade + ","
 					+ (is_buy_flg ? 1 : 0)
-					+ ",str_to_date('" + s.getDl_dt().toLocaleString() + "', '%Y-%m-%d %H:%i:%s') from SellBuyRecord";
+					+ ",str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s.%f') from SellBuyRecord";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
@@ -991,9 +1014,9 @@ public class TradeStrategyImp implements ITradeStrategy {
             return acnt;
         }
         else {
-            if (cash_account_map.get(tradex_acnt.getAcntID()) == null)
+            if (cash_account_map.get(tradex_acnt.getActId()) == null)
             {
-                cash_account_map.put(tradex_acnt.getAcntID(), tradex_acnt);
+                cash_account_map.put(tradex_acnt.getActId(), tradex_acnt);
             }
             return tradex_acnt;
         }
