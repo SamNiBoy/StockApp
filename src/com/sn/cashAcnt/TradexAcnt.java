@@ -227,10 +227,14 @@ public class TradexAcnt implements ICashAccount {
 
 	public void printAcntInfo() {
 		DecimalFormat df = new DecimalFormat("##.##");
+        
+		loadAcnt();
+		
 		log.info("##################################################################################################");
-		log.info("|AccountId\t|InitMny\t|UseableMny\t|WithdrawableMny\t|MaxMnyPerTrade\t|MaxUsePct\t|");
-		log.info("|" + ta.getAcntID() + "\t|" + df.format(ta.getInit_mny()) + "\t\t|" + df.format(ta.getUsable_mny()) + "\t\t|" + df.format(ta.getFetchable_mny())
-				+ "\t|" + this.max_mny_per_trade + "\t\t|" + df.format(this.max_pct_for_stock) + "\t\t|");
+		log.info("|AccountId|InitMny\t|UseableMny\t|WithdrawableMny|Total Mny\t|Stock Mny\t|MaxMnyPerTrade\t|MaxUsePct\t|");
+		log.info("|" + ta.getAcntID() + "\t|" + df.format(ta.getInit_mny()) + "\t|" + df.format(ta.getUsable_mny()) + "\t|" + df.format(ta.getFetchable_mny()) +"\t|" + df.format(ta.getTotal_value()) + "\t|"
+		        + df.format(ta.getStock_value())
+				+ "\t\t|" + this.max_mny_per_trade + "\t|" + df.format(this.max_pct_for_stock) + "\t|");
 		log.info("##################################################################################################");
 	}
 
