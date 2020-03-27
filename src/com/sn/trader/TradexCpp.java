@@ -79,7 +79,10 @@ public class TradexCpp
        }
     }
     
-    public TradexStockInHand processQueryStockInHand(String ID) {
+    public TradexStockInHand processQueryStockInHand(String ID) throws Exception {
+        
+        doLoginCheck();
+        
         /*        std::string value = "trade_unit:" + std::to_string(position->trade_unit) + "|symbol:" + position->symbol + "|side:" + std::to_string(position->side) + "|yesterday_qty:" + std::to_string(position->yesterday_qty) +
                             "|latest_qty:" + std::to_string(position->latest_qty) + "|available_qty:" + std::to_string(position->available_qty) + "|frozen_qty:" + std::to_string(position->frozen_qty);*/
         String result = queryStockInHand(ID);
@@ -118,7 +121,10 @@ public class TradexCpp
         }
     }
     
-    public boolean processCancelOrder(int order_id) {
+    public boolean processCancelOrder(int order_id) throws Exception {
+        
+        doLoginCheck();
+        
         String result = cancelOrder(order_id);
         System.out.println("In Java processCancelOrder got:" + result);
         
@@ -135,7 +141,10 @@ public class TradexCpp
         }
     }
     
-    public TradexAccount processLoadAcnt() {
+    public TradexAccount processLoadAcnt() throws Exception {
+        
+        doLoginCheck();
+        
         String result = loadAcnt();
         System.out.println("In Java got:" + result);
         
