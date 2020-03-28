@@ -54,7 +54,14 @@ public class GzStockDataFetcher implements IWork {
     static public boolean start() {
         //Fetch every 30 seconds
         self = new GzStockDataFetcher(0,  30 * 1 * 1000);
-        cnsmr = new GzStockDataConsumer(0, 0);
+        try {
+            cnsmr = new GzStockDataConsumer(0, 0);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error("GzStockDataFetcher starts GzStockDataConsumer failed, stop continue:" + e.getMessage());
+            return false;
+        }
         if (WorkManager.submitWork(self)) {
             log.info("Newly created GzStockDataFetcher and started!");
             WorkManager.submitWork(cnsmr);
@@ -75,9 +82,9 @@ public class GzStockDataFetcher implements IWork {
     }
     /**
      * @param args
-     * @throws InterruptedException 
+     * @throws Exception 
      */
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
         // TODO Auto-generated method stub
     	GzStockDataFetcher fsd = new GzStockDataFetcher(0,4000);
     	cnsmr = new GzStockDataConsumer(0, 0);

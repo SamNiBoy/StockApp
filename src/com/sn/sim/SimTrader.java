@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -111,7 +112,7 @@ public class SimTrader implements IWork{
 	
 	public static void start() {
         log.info("Starting task SimTrader...");
-        SimTrader st = new SimTrader(5, 2 * 60 * 60 * 1000, false, true);
+        SimTrader st = new SimTrader(5, 1 * 60 * 60 * 1000, false, true);
 	    WorkManager.submitWork(st);
 	}
 	
@@ -123,19 +124,26 @@ public class SimTrader implements IWork{
         
         int time = hr*100 + mnt;
         log.info("SimWork, time:" + time);
-        // Only run after 21:30 PM.
-        while (time < 1730 && time > 700 && run_on_night) {
+        DayOfWeek week = lt.getDayOfWeek();
+        
+        if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
+        {
+            log.info("SimTrader skipped because of weekend, goto sleep 8 hours.");
             try {
-				Thread.currentThread().sleep(30*60*1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-            lt = LocalDateTime.now();
-            hr = lt.getHour();
-            mnt = lt.getMinute();
-            time = hr*100 + mnt;
-            log.info("SimWork, time2:" + time);
+                Thread.currentThread().sleep(8 * 60 * 60 * 1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return;
+        }
+        
+        //Only run at every night 8 clock.
+        if (hr != 20)
+        {
+            int hr_to_sleep = 0;
+            log.info("SimTrader skipped because of hour:" + hr + " not 20:00.");
+            return;
         }
         
         resetTest();
@@ -145,13 +153,10 @@ public class SimTrader implements IWork{
         ResultSet rs = null;
         String sql = "";
         if (simOnGzStk) {
-            sql = "select * from usrStk where gz_flg = 1 and openID ='" + STConstants.openID + "' and openID = suggested_by ";
+            sql = "select distinct id from usrStk where gz_flg = 1 and openID ='" + STConstants.openID + "' and openID = suggested_by ";
         }
         else {
-            sql = "select * from stk where id in "
-            	+ "(select s.id from stkdat2 s "
-            	+ "  where s.yt_cls_pri <= 100 and s.yt_cls_pri >= 2 "
-            	+ "    and not exists (select 'x' from stkdat2 s2 where s2.id = s.id and s2.dl_dt > s.dl_dt)) ";
+            sql = "select distinct id from usrStk";
         }
 
         ArrayList<String> stks = new ArrayList<String>();

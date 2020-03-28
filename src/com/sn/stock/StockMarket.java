@@ -414,9 +414,11 @@ public class StockMarket{
                          "               when cur_pri < td_opn_pri then -1 " +
                          "               when cur_pri = td_opn_pri then 0 end catagory " +
                          " from stkdat2 " +
+                         " join (select max(ft_id) max_ft_id, id from stkdat2 skd where skd.dl_dt <= " + deadline + " group by id) t" +
+                         "   on stkdat2.id = t.id " +
+                         "  and stkdat2.ft_id = t.max_ft_id " +
                          " where td_opn_pri > 0 " +
                          "   and left(dl_dt, 10) = " + "left(" + deadline + ", 10)" +
-                         "   and not exists (select 'x' from stkdat2 skd where skd.id = stkdat2.id and skd.ft_id > stkdat2.ft_id and skd.dl_dt <= " + deadline + ")" +
                          " group by case when cur_pri > td_opn_pri then 1 " +
                          "               when cur_pri < td_opn_pri then -1 " +
                          "               when cur_pri = td_opn_pri then 0 end" +

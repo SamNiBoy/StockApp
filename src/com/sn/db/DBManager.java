@@ -34,8 +34,8 @@ public class DBManager {
     private static final String DBUSER = "root";
     private static final String password = "mysql,16";
     
-    private static final String AppDir1 = "D:/tomcat7/webapps/StockApp";
-    private static final String AppDir = "/usr/share/tomcat/webapps/StockApp";
+    private static final String AppDir = "D:/tomcat7/webapps/StockApp";
+    private static final String AppDir1 = "/usr/share/tomcat/webapps/StockApp";
     private static final String AppDir2 = "E:/mfc/stockapp";
 
     static ComboPooledDataSource  ds = null;

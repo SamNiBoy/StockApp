@@ -16,4 +16,5 @@ public interface ISellPointSelector {
      */
     public boolean isGoodSellPoint(Stock2 s, ICashAccount ac);
     public int getSellQty(Stock2 s, ICashAccount ac);
+    public boolean isSimMode();
 }

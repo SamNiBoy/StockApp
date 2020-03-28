@@ -19,6 +19,14 @@ public class MacdBuyPointSelector implements IBuyPointSelector {
 	static Logger log = Logger.getLogger(MacdBuyPointSelector.class);
 
 
+    private boolean sim_mode;
+    
+    
+    MacdBuyPointSelector(boolean sm)
+    {
+        sim_mode = sm;
+    }
+    
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
 
@@ -70,5 +78,10 @@ public class MacdBuyPointSelector implements IBuyPointSelector {
             log.info("getBuyQty, cur_pri:" + s.getCur_pri() + " buyMnt:" + buyMnt);
         }
         return buyMnt;
+    }
+
+    public boolean isSimMode() {
+        // TODO Auto-generated method stub
+        return sim_mode;
     }
 }

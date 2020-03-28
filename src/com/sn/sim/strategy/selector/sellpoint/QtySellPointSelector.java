@@ -24,6 +24,15 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 	private double BASE_TRADE_THRESH = 0.03;
 	Map<String, Boolean> preSellMode = new HashMap<String, Boolean>();
+    
+    private boolean sim_mode;
+    
+    
+    public QtySellPointSelector(boolean sm)
+    {
+        sim_mode = sm;
+    }
+    
 	/**
 	 * @param args
 	 */
@@ -162,4 +171,9 @@ public class QtySellPointSelector implements ISellPointSelector {
         }
 		return sellMnt;
 	}
+
+    public boolean isSimMode() {
+        // TODO Auto-generated method stub
+        return sim_mode;
+    }
 }

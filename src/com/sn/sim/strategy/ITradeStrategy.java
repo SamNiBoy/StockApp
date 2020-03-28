@@ -24,6 +24,7 @@ public interface ITradeStrategy {
     public boolean sellStock(Stock2 s);
     public boolean buyStock(Stock2 s);
     
+    public void resetStrategyStatus();
     public boolean reportTradeStat();
     public ICashAccount getCashAccount();
     public void setCashAccount(ICashAccount ca);
@@ -32,4 +33,6 @@ public interface ITradeStrategy {
     public boolean performTrade(Stock2 s);
     public StockBuySellEntry getLstTradeRecord(Stock2 s);
     public void enableSimulationMode(boolean yes);
+    
+    public String getTradeStrategyName();
 }

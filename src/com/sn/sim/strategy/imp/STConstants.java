@@ -12,12 +12,12 @@ public class STConstants {
     public static final double DFT_MAX_USE_PCT = 0.8;
     public static final String ACNT_TRADE_PREFIX = "ACNT";
     public static final String ACNT_SIM_PREFIX = "SIM";
-    public static final int SIM_DAYS = 5;
+    public static final int SIM_DAYS = 1;
     
     //class vars.
-    public static final int MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK = 3;
-	public static final int MAX_TRADE_TIMES_PER_STOCK = 10;
-	public static final int MAX_TRADE_TIMES_PER_DAY = 40;
+    public static final int MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK = 20;
+	public static final int MAX_TRADE_TIMES_PER_STOCK = 50;
+	public static final int MAX_TRADE_TIMES_PER_DAY = 1000;
 	public static final int BUY_MORE_THEN_SELL_CNT = 2;
 	public static final String openID = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
 	

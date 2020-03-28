@@ -42,6 +42,7 @@ public class TradeStrategyImp implements ITradeStrategy {
     IBuyPointSelector buypoint_selector = null;
     ISellPointSelector sellpoint_selector = null;
     ICashAccount cash_account = null;
+    String name = "Default Trade Strategy";
     
     private boolean sim_mode = false;
     
@@ -90,10 +91,14 @@ public class TradeStrategyImp implements ITradeStrategy {
     
     public TradeStrategyImp(IBuyPointSelector bs,
                             ISellPointSelector ses,
-                            ICashAccount ca) {
+                            ICashAccount ca,
+                            String sn,
+                            boolean sm) {
         buypoint_selector = bs;
         sellpoint_selector = ses;
         cash_account = ca;
+        name = sn;
+        sim_mode = sm;
     }
 
 	public static void printTradeInfor() {
@@ -1032,4 +1037,17 @@ public class TradeStrategyImp implements ITradeStrategy {
 		// TODO Auto-generated method stub
 		sim_mode = yes;
 	}
+
+    public String getTradeStrategyName() {
+        // TODO Auto-generated method stub
+        return name;
+    }
+
+    public void resetStrategyStatus() {
+        // TODO Auto-generated method stub
+       	log.info("reset tradeStocks, tradeRecord, cash_account_map entries...");
+        tradeStocks.clear();
+        tradeRecord.clear();
+        cash_account_map.clear();
+    }
 }

@@ -16,4 +16,5 @@ public interface IBuyPointSelector {
      */
     public boolean isGoodBuyPoint(Stock2 s, ICashAccount ac);
     public int getBuyQty(Stock2 s, ICashAccount ac);
+    public boolean isSimMode();
 }

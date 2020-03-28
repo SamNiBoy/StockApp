@@ -45,8 +45,9 @@ import oracle.sql.DATE;
 public class StockTrader {
 
 	//interface vars.
-    ITradeStrategy strategy = TradeStrategyGenerator.generatorDefaultStrategy();
+    ITradeStrategy strategy = TradeStrategyGenerator.generatorDefaultStrategy(false);
     static private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
+    static private Map<String, StockBuySellEntry> lstTradeForStocks= new HashMap<String, StockBuySellEntry>();
     static private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
 	private boolean sim_mode = false;
 	
@@ -68,11 +69,20 @@ public class StockTrader {
 		strategy.enableSimulationMode(is_simulation_mode);
     }
     
-	public static void doTest() {
+	public static void doTest() throws Exception {
 
+	    List<ITradeStrategy> strategies = new ArrayList<ITradeStrategy>();
+        
+	    strategies.addAll(TradeStrategyGenerator.generatorStrategies(false));
+	    
         int seconds_to_delay = 5000;
         
-        StockTrader st = new StockTrader(false);
+        Timestamp t1 = Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30));
+        Timestamp t2 = Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 33));
+        
+        System.out.println("t2 - t1 = " + (t2.getTime() - t1.getTime()));
+        
+        StockTrader st = new StockTrader(true);
         
         resetTest();
         
@@ -87,112 +97,43 @@ public class StockTrader {
         StockMarket.addGzStocks(s4);
     
         try {
-//          StockBuySellEntry r1 = new StockBuySellEntry("600503", "A", 6.5, true,
-//                  Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
-//          s1.getSd().getCur_pri_lst().add(6.5);
-//          s1.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
-//          
-//          Thread.currentThread().sleep(seconds_to_delay);
-//          tradeStock(r1);
             
-            s2.getSd().getCur_pri_lst().add(19.0);
-            s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
-            Thread.currentThread().sleep(seconds_to_delay);
-            st.strategy.buyStock(s2);
+            for (ITradeStrategy cs : strategies) {
+                
+                st.setStrategy(cs);
+                
+                s2.getSd().getCur_pri_lst().add(19.0);
+                s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
+                Thread.currentThread().sleep(seconds_to_delay);
+                st.strategy.performTrade(s2);
+                
+                
+                s2.getSd().getCur_pri_lst().add(17.0);
+                s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
+                Thread.currentThread().sleep(seconds_to_delay);
+                st.strategy.performTrade(s2);
+                
+                s2.getSd().getCur_pri_lst().add(28.2);
+                s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
+                
+                Thread.currentThread().sleep(seconds_to_delay);
+                st.strategy.performTrade(s2);
+                //st.strategy.sellStock(s2);
+                
+                st.strategy.reportTradeStat();
+            }
             
-            
-            s2.getSd().getCur_pri_lst().add(17.0);
-            s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
-            Thread.currentThread().sleep(seconds_to_delay);
-            st.strategy.buyStock(s2);
-            
-            s2.getSd().getCur_pri_lst().add(28.2);
-            s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
-            
-            Thread.currentThread().sleep(seconds_to_delay);
-            st.strategy.sellStock(s2);
-            
-//          StockBuySellEntry r23 = new StockBuySellEntry("002431", "B3", 8.4, true,
-//                  Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
-//          s2.getSd().getCur_pri_lst().add(8.4);
-//          s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
-//          
-//          Thread.currentThread().sleep(seconds_to_delay);
-//          tradeStock(r23);
-//          
-//          StockBuySellEntry r24 = new StockBuySellEntry("002431", "B4", 8.3, false,
-//                  Timestamp.valueOf(LocalDateTime.of(2016, 04, 3, 10, 30)));
-//          s2.getSd().getCur_pri_lst().add(8.3);
-//          s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 3, 10, 30)));
-//          
-//          Thread.currentThread().sleep(seconds_to_delay);
-//          tradeStock(r24);
-//          
-//          StockBuySellEntry r25 = new StockBuySellEntry("002431", "B5", 8.7, true,
-//                  Timestamp.valueOf(LocalDateTime.of(2016, 04, 3, 10, 30)));
-//          s2.getSd().getCur_pri_lst().add(8.7);
-//          s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 3, 10, 30)));
-//          
-//          Thread.currentThread().sleep(seconds_to_delay);
-//          tradeStock(r25);
-//          
-//          StockBuySellEntry r26 = new StockBuySellEntry("002431", "B6", 8.5, false,
-//                  Timestamp.valueOf(LocalDateTime.of(2016, 04, 4, 10, 30)));
-//          s2.getSd().getCur_pri_lst().add(8.5);
-//          s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 4, 10, 30)));
-//          
-//          Thread.currentThread().sleep(seconds_to_delay);
-//          tradeStock(r26);
-//          
-//          StockBuySellEntry r27 = new StockBuySellEntry("002431", "B7", 8.9, true,
-//                  Timestamp.valueOf(LocalDateTime.of(2016, 04, 5, 10, 30)));
-//          s2.getSd().getCur_pri_lst().add(8.9);
-//          s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 5, 10, 30)));
-//          
-//          Thread.currentThread().sleep(seconds_to_delay);
-//          tradeStock(r27);
-//          
-//          StockBuySellEntry r28 = new StockBuySellEntry("002431", "B8", 8.3, true,
-//                  Timestamp.valueOf(LocalDateTime.of(2016, 04, 6, 10, 30)));
-//          s2.getSd().getCur_pri_lst().add(8.3);
-//          s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 6, 10, 30)));
-//          
-//          Thread.currentThread().sleep(seconds_to_delay);
-//          tradeStock(r28);
-//          
-//          StockBuySellEntry r3 = new StockBuySellEntry("600871", "C", 9.5, false,
-//                  Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
-//          s3.getSd().getCur_pri_lst().add(9.5);
-//          s3.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
-//          Thread.currentThread().sleep(seconds_to_delay);
-//          tradeStock(r3);
-//          
-//          StockBuySellEntry r41 = new StockBuySellEntry("002269", "D1", 9.9, true,
-//                  Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
-//          s4.getSd().getCur_pri_lst().add(9.9);
-//          s4.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
-//          
-//
-//          Thread.currentThread().sleep(seconds_to_delay);
-//          tradeStock(r41);
-//          
-//          StockBuySellEntry r42 = new StockBuySellEntry("002269", "D2", 9.4, false,
-//                  Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
-//          s4.getSd().getCur_pri_lst().add(9.4);
-//          s4.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 2, 10, 30)));
-//          Thread.currentThread().sleep(seconds_to_delay);
-//          tradeStock(r42);
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        st.strategy.reportTradeStat();
     
 	}
 	/**
 	 * @param args
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 	    doTest();
 	}
 	
@@ -239,6 +180,24 @@ public class StockTrader {
         	StockBuySellEntry rc = strategy.getLstTradeRecord(s);
         	rc.printStockInfo();
             stockTomail.add(rc);
+            
+            StockBuySellEntry pre = lstTradeForStocks.get(rc.id);
+            
+            if (pre == null)
+            {
+                log.info("Stock " + rc.id + " did new trade, add to lstTradeForStocks.");
+                lstTradeForStocks.put(rc.id, rc);
+            }
+            else if (rc.is_buy_point == pre.is_buy_point){
+                log.info("Stock " + rc.id + " did same direction trade, refresh lstTradeForStocks.");
+                pre.price = (pre.price * pre.quantity + rc.price * rc.quantity) / (pre.quantity + rc.quantity);
+                pre.quantity = (pre.quantity + rc.quantity);
+                lstTradeForStocks.put(pre.id, pre);
+            }
+            else {
+                log.info("Stock " + rc.id + " did revserse trade, clean up lstTradeForStocks.");
+                lstTradeForStocks.remove(rc.id);
+            }
         }
         
         if (!stockTomail.isEmpty() && !sim_mode) {
@@ -255,4 +214,8 @@ public class StockTrader {
         }
         return false;
 	}
+    
+    public static Map<String, StockBuySellEntry> getLstTradeForStocks() {
+        return lstTradeForStocks;
+    }
 }

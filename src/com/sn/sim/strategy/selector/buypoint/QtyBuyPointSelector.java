@@ -19,6 +19,15 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
 	static Logger log = Logger.getLogger(QtyBuyPointSelector.class);
 	
+    
+    private boolean sim_mode;
+    
+    
+    public QtyBuyPointSelector(boolean sm)
+    {
+        sim_mode = sm;
+    }
+    
 	private double BASE_TRADE_THRESH = 0.03;
 
 	@Override
@@ -171,6 +180,11 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         }
 		return buyMnt;
 	}
+
+    public boolean isSimMode() {
+        // TODO Auto-generated method stub
+        return sim_mode;
+    }
     
 
 }

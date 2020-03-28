@@ -16,6 +16,14 @@ public class DefaultSellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(DefaultSellPointSelector.class);
 
+    private boolean sim_mode;
+    
+    
+    public DefaultSellPointSelector(boolean sm)
+    {
+        sim_mode = sm;
+    }
+    
 	/**
 	 * @param args
 	 */
@@ -52,4 +60,9 @@ public class DefaultSellPointSelector implements ISellPointSelector {
 		// TODO Auto-generated method stub
 		return 100;
 	}
+
+    public boolean isSimMode() {
+        // TODO Auto-generated method stub
+        return sim_mode;
+    }
 }

@@ -18,6 +18,13 @@ public class PriceTurnBuyPointSelector implements IBuyPointSelector {
 
 	static Logger log = Logger.getLogger(PriceTurnBuyPointSelector.class);
 
+    private boolean sim_mode;
+    
+    
+    PriceTurnBuyPointSelector(boolean sm)
+    {
+        sim_mode = sm;
+    }
 
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
@@ -77,5 +84,10 @@ public class PriceTurnBuyPointSelector implements IBuyPointSelector {
             log.info("getBuyQty, cur_pri:" + s.getCur_pri() + " buyMnt:" + buyMnt);
         }
         return buyMnt;
+    }
+
+    public boolean isSimMode() {
+        // TODO Auto-generated method stub
+        return sim_mode;
     }
 }

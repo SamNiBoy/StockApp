@@ -17,6 +17,14 @@ public class MacdSellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(MacdSellPointSelector.class);
 
+    private boolean sim_mode;
+    
+    
+    public MacdSellPointSelector(boolean sm)
+    {
+        sim_mode = sm;
+    }
+    
 	/**
 	 * @param args
 	 */
@@ -67,5 +75,10 @@ public class MacdSellPointSelector implements ISellPointSelector {
             log.info("getSellQty, cur_pri:" + s.getCur_pri() + " sellMnt:" + sellMnt);
         }
         return sellMnt;
+    }
+
+    public boolean isSimMode() {
+        // TODO Auto-generated method stub
+        return sim_mode;
     }
 }

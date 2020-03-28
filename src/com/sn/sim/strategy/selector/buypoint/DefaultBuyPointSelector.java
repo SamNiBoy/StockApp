@@ -16,6 +16,13 @@ import com.sn.stock.StockMarket;
 public class DefaultBuyPointSelector implements IBuyPointSelector {
 
 	static Logger log = Logger.getLogger(DefaultBuyPointSelector.class);
+    private boolean sim_mode;
+    
+    
+    DefaultBuyPointSelector(boolean sm)
+    {
+        sim_mode = sm;
+    }
 
 	/**
 	 * @param args
@@ -58,4 +65,9 @@ public class DefaultBuyPointSelector implements IBuyPointSelector {
 		// TODO Auto-generated method stub
 		return 100;
 	}
+
+    public boolean isSimMode() {
+        // TODO Auto-generated method stub
+        return sim_mode;
+    }
 }

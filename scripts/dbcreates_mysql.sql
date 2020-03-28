@@ -381,7 +381,7 @@ dl_dt datetime not null
 
 create index stkdat2_id_dldt_idx on stkDat2 (id, ft_id, dl_dt);
 create index stkdat2_idx3 on stkDat2 (id, ft_id, cur_pri, yt_cls_pri,dl_stk_num);
-create index stkdat2_idx4 on stkDat2 (dl_dt, id, ft_id, td_opn_pri, cur_pri, dl_mny_num, dl_stk_num, yt_cls_pri, td_hst_pri, td_lst_pri, b1_num, b1_pri, s1_num, s1_pri);
+//create index stkdat2_idx4 on stkDat2 (dl_dt, id, ft_id, td_opn_pri, cur_pri, dl_mny_num, dl_stk_num, yt_cls_pri, td_hst_pri, td_lst_pri, b1_num, b1_pri, s1_num, s1_pri);
 create index stkdff_id_dldt_idx on stkDDF (id, dl_dt);
 /* Need below index to improve performance of curpri_df2_vw*/
 create index ft_idd_idx on stkDat (id, ft_id, cur_pri);
