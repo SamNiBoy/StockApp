@@ -4,21 +4,27 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.stock.Stock2;
+import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 import com.sn.stock.indicator.MACD;
+import com.sn.trader.StockTrader;
+import com.sn.work.task.SellModeWatchDog;
 
 public class QtyBuyPointSelector implements IBuyPointSelector {
 
 	static Logger log = Logger.getLogger(QtyBuyPointSelector.class);
 	
+    private StockBuySellEntry sbs = null;
     
     private boolean sim_mode;
     
@@ -32,6 +38,43 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
+        
+        Map<String, StockBuySellEntry> lstTrades = StockTrader.getLstTradeForStocks();
+        sbs = lstTrades.get(stk.getID());
+
+        Timestamp t1 = stk.getDl_dt();
+        
+        long hour = t1.getHours();
+        long minutes = t1.getMinutes();
+        
+        log.info("Hour:" + hour + ", Minute:" + minutes);
+        if ((hour * 100 + minutes) >= (STConstants.HOUR_TO_KEEP_BALANCE * 100 + STConstants.MINUTE_TO_KEEP_BALANCE))
+        {
+            if (sbs == null || (sbs != null && sbs.is_buy_point))
+            {
+                log.info("Close to market shutdown time, no need to break balance");
+                return false;
+            }
+        }
+        
+        double pct = (stk.getCur_pri() - stk.getYtClsPri()) / stk.getYtClsPri();
+        
+        if (Math.abs(pct) >= STConstants.STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT)
+        {
+           log.info("Stock:" + stk.getID() + " cur_pri:" + stk.getCur_pri() + " ytClsPri:" + stk.getYtClsPri() +", increase pct:" + pct
+                   + " is exceeding " + STConstants.STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT + " stop trading");
+            return false;
+        }
+        
+        
+        boolean csd = SellModeWatchDog.isStockInSellMode(stk);
+        
+        if (csd == true && sbs == null)
+        {
+            log.info("Stock:" + stk.getID() + " is in sell mode and in balance, no need to break balance.");
+            return false;
+        }
+    
 
 		double tradeThresh = BASE_TRADE_THRESH;
 		if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {

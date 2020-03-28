@@ -11,19 +11,19 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 import com.sn.stock.indicator.MACD;
 import com.sn.trader.StockTrader;
+import com.sn.work.task.SellModeWatchDog;
 
 public class BalanceBuyPointSelector implements IBuyPointSelector {
 
 	static Logger log = Logger.getLogger(BalanceBuyPointSelector.class);
 	
-	private double MAX_MINUTES_ALLOWED= 30;
-    
     private StockBuySellEntry sbs = null;
     
 	private boolean sim_mode = false;
@@ -44,18 +44,39 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
             return false;
 	    }
 	    else {
-	        Timestamp t0 = sbs.dl_dt;
-	        Timestamp t1 = stk.getDl_dt();
             
-            long millisec = t1.getTime() - t0.getTime();
-            long mins = millisec / (1000*60);
+	        boolean cleanup_stock_inhand = SellModeWatchDog.isStockInSellMode(stk);
             
-            log.info("Stock:" + stk.getID() + " sold " + mins + " minutes before");
-            
-	        if (mins > MAX_MINUTES_ALLOWED)
+	        if (cleanup_stock_inhand)
 	        {
-                log.info("Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
+     	        log.info("Stock:" + stk.getID() + " switched to sell_mode(not good for trade), buy back stock in hand, return true");
                 return true;
+	        }
+	        else {
+	            Timestamp t0 = sbs.dl_dt;
+	            Timestamp t1 = stk.getDl_dt();
+                
+                long millisec = t1.getTime() - t0.getTime();
+                long mins = millisec / (1000*60);
+                
+                log.info("Stock:" + stk.getID() + " sold " + mins + " minutes before");
+                
+	            if (mins > STConstants.MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE)
+	            {
+                    log.info("Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
+                    return true;
+	            }
+                
+                long hour = t1.getHours();
+                long minutes = t1.getMinutes();
+                
+                log.info("Hour:" + hour + ", Minute:" + minutes);
+                if (hour == STConstants.HOUR_TO_KEEP_BALANCE && minutes >= STConstants.MINUTE_TO_KEEP_BALANCE)
+                {
+                    log.info("Reaching " + STConstants.HOUR_TO_KEEP_BALANCE + ":" + STConstants.MINUTE_TO_KEEP_BALANCE
+                             + ", Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
+                    return true;
+                }
 	        }
 	    }
         return false;

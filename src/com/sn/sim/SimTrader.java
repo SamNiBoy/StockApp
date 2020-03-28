@@ -112,7 +112,7 @@ public class SimTrader implements IWork{
 	
 	public static void start() {
         log.info("Starting task SimTrader...");
-        SimTrader st = new SimTrader(5, 1 * 60 * 60 * 1000, false, true);
+        SimTrader st = new SimTrader(5, 3 * 60 * 60 * 1000, false, true);
 	    WorkManager.submitWork(st);
 	}
 	
@@ -126,7 +126,7 @@ public class SimTrader implements IWork{
         log.info("SimWork, time:" + time);
         DayOfWeek week = lt.getDayOfWeek();
         
-        if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
+        /*if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
         {
             log.info("SimTrader skipped because of weekend, goto sleep 8 hours.");
             try {
@@ -139,12 +139,12 @@ public class SimTrader implements IWork{
         }
         
         //Only run at every night 8 clock.
-        if (hr != 20)
+        if (hr = 20)
         {
             int hr_to_sleep = 0;
             log.info("SimTrader skipped because of hour:" + hr + " not 20:00.");
             return;
-        }
+        }*/
         
         resetTest();
         // SimStockDriver.addStkToSim("000727");

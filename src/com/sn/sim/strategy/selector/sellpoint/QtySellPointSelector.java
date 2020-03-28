@@ -12,10 +12,13 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.stock.Stock2;
+import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 import com.sn.stock.indicator.MACD;
+import com.sn.trader.StockTrader;
 import com.sn.work.task.SellModeWatchDog;
 
 public class QtySellPointSelector implements ISellPointSelector {
@@ -23,7 +26,8 @@ public class QtySellPointSelector implements ISellPointSelector {
 	static Logger log = Logger.getLogger(QtySellPointSelector.class);
 
 	private double BASE_TRADE_THRESH = 0.03;
-	Map<String, Boolean> preSellMode = new HashMap<String, Boolean>();
+	//Map<String, Boolean> preSellMode = new HashMap<String, Boolean>();
+    private StockBuySellEntry sbs = null;
     
     private boolean sim_mode;
     
@@ -43,6 +47,42 @@ public class QtySellPointSelector implements ISellPointSelector {
 		Double yt_cls_pri = stk.getYtClsPri();
 		Double cur_pri = stk.getCur_pri();
 		double tradeThresh = BASE_TRADE_THRESH;
+        
+		
+        Map<String, StockBuySellEntry> lstTrades = StockTrader.getLstTradeForStocks();
+        sbs = lstTrades.get(stk.getID());
+
+        Timestamp t1 = stk.getDl_dt();
+        
+        long hour = t1.getHours();
+        long minutes = t1.getMinutes();
+        
+        log.info("Hour:" + hour + ", Minute:" + minutes);
+        if ((hour * 100 + minutes) >= (STConstants.HOUR_TO_KEEP_BALANCE * 100 + STConstants.MINUTE_TO_KEEP_BALANCE))
+        {
+            if (sbs == null || (sbs != null && !sbs.is_buy_point))
+            {
+                log.info("Close to market shutdown time, no need to break balance");
+                return false;
+            }
+        }
+        
+        double pct = (stk.getCur_pri() - stk.getYtClsPri()) / stk.getYtClsPri();
+        
+        if (Math.abs(pct) >= STConstants.STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT)
+        {
+           log.info("Stock:" + stk.getID() + " cur_pri:" + stk.getCur_pri() + " ytClsPri:" + stk.getYtClsPri() +", increase pct:" + pct
+                   + " is exceeding " + (-STConstants.STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT) + " stop trading");
+            return false;
+        }
+        
+        boolean csd = SellModeWatchDog.isStockInSellMode(stk);
+        
+        if (csd == true && sbs == null)
+        {
+            log.info("Stock:" + stk.getID() + " is in sell mode and in balance, no need to break balance.");
+            return false;
+        }
 		
 
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
@@ -59,21 +99,21 @@ public class QtySellPointSelector implements ISellPointSelector {
 			
 			log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + "yt_cls_pri:" + yt_cls_pri + " maxPri:" + maxPri + " minPri:"
 					+ minPri + " maxPct:" + maxPct + " curPct:" + curPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
-			log.info("con1 is:" + con1 + " con2 is:" + con2);
+			log.info("price is reaching top margin:" + con1 + " isLstQtyPlused is:" + con2);
 			if (con1 && con2) {
 				return true;
 			}
 			
-			Boolean psd = preSellMode.get(stk.getID());
+			/*Boolean psd = preSellMode.get(stk.getID());
 			Boolean csd = SellModeWatchDog.isStockInSellMode(stk);
 			
-			preSellMode.put(stk.getID(), csd);
+			preSellMode.put(stk.getID(), csd);*/
 
-			//If we switched to sell mode, make sure sell once.
-			if (csd == true && (psd == null || psd != csd)) {
+			//sell mode means not good for trade, BalanceSelector should do reverse trade clean up stock in hand.
+			/*if (csd == true && (psd == null || psd != csd)) {
 				log.info("Stock " + stk.getID() + " is in sell mode, at sell point, return true.");
 				return true;
-			}
+			}*/
 		} else {
 			log.info("isGoodSellPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
 		}

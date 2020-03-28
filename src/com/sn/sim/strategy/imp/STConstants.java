@@ -18,8 +18,14 @@ public class STConstants {
     public static final int MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK = 20;
 	public static final int MAX_TRADE_TIMES_PER_STOCK = 50;
 	public static final int MAX_TRADE_TIMES_PER_DAY = 1000;
-	public static final int BUY_MORE_THEN_SELL_CNT = 2;
+	public static final int BUY_SELL_MAX_DIFF_CNT = 2;
 	public static final String openID = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
+    
+	public static final int MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE = 30;
+	public static final int HOUR_TO_KEEP_BALANCE = 14;
+	public static final int MINUTE_TO_KEEP_BALANCE = 55;
+	public static final double STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT = 0.8;
+	public static final int STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES = 2;
 	
 	public static final String SUGGESTED_BY_FOR_USER = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
 	public static final String SUGGESTED_BY_FOR_SYSTEMGRANTED = "SYSTEMGRANTED";

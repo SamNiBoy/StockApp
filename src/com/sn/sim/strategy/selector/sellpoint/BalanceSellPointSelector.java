@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
@@ -48,18 +49,38 @@ public class BalanceSellPointSelector implements ISellPointSelector {
             return false;
         }
         else {
-            Timestamp t0 = sbs.dl_dt;
-            Timestamp t1 = stk.getDl_dt();
             
-            long millisec = t1.getTime() - t0.getTime();
-            long mins = millisec / (1000*60);
-            
-            log.info("Stock:" + stk.getID() + " bought " + mins + " minutes before");
-            
-            if (mins > MAX_MINUTES_ALLOWED)
+            boolean cleanup_stock_inhand = SellModeWatchDog.isStockInSellMode(stk);
+            if (cleanup_stock_inhand)
             {
-                log.info("Stock:" + stk.getID() + " bought " + mins + " minutes agao, sold it out");
+                log.info("Stock:" + stk.getID() + " switched to sell_mode(not good for trade), sell up stock in hand, return true");
                 return true;
+            }
+            else {
+                Timestamp t0 = sbs.dl_dt;
+                Timestamp t1 = stk.getDl_dt();
+                
+                long millisec = t1.getTime() - t0.getTime();
+                long mins = millisec / (1000*60);
+                
+                log.info("Stock:" + stk.getID() + " bought " + mins + " minutes before");
+                
+                if (mins > MAX_MINUTES_ALLOWED)
+                {
+                    log.info("Stock:" + stk.getID() + " bought " + mins + " minutes agao, sold it out");
+                    return true;
+                }
+                
+                long hour = t1.getHours();
+                long minutes = t1.getMinutes();
+                
+                log.info("Hour:" + hour + ", Minute:" + minutes);
+                if (hour == STConstants.HOUR_TO_KEEP_BALANCE && minutes >= STConstants.MINUTE_TO_KEEP_BALANCE)
+                {
+                    log.info("Reaching " + STConstants.HOUR_TO_KEEP_BALANCE + ":" + STConstants.MINUTE_TO_KEEP_BALANCE
+                             + ", Stock:" + stk.getID() + " bought " + mins + " minutes agao, sell it out");
+                    return true;
+                }
             }
         }
         return false;

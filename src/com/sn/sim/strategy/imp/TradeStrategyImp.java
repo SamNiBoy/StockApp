@@ -337,37 +337,26 @@ public class TradeStrategyImp implements ITradeStrategy {
 			return false;
 		}
 		
-		if (isInSellMode(s) && is_buy_flg) {
+		/*if (isInSellMode(s) && is_buy_flg) {
 			log.info("Stock:" + s.getID() + " is in sell mode, can not buy it!");
 			return false;
-		}
+		}*/
 
-		if (!skipRiskCheck(is_buy_flg, s)) {
+		//if (!skipRiskCheck(is_buy_flg, s)) {
 
-			boolean overall_risk = false;
+			//boolean overall_risk = false;
 			// If recently we lost continuously overall, stop trading.
-			if (stopTradeForPeriod(5)) {
+			/*if (stopTradeForPeriod(5)) {
 				log.info("Now trade unsuccess for 3 days, stop trade.");
 				overall_risk = true;
-			}
+			}*/
 
 			// If recently we lost continuously for the stock, stop trading.
-			if (stopTradeForStock(s, 5)) {
-				log.info("Now trade unsuccess for 3 days for stock:" + s.getName()
-						+ ", stop trade.");
-				if (overall_risk && !is_buy_flg) {
-					log.info("Now both overall risk or risk for stock:" + s.getName()
-							+ " reached, howeve it's sell trade, allow it!");
-				} else {
-					log.info("Skip trade for stock:" + s.getName() + " after eached it's risk.");
-					return false;
-				}
-			} else if (overall_risk && is_buy_flg) {
-				log.info("No buy allowed, as overall risk reached, even single stock:" + s.getName()
-						+ "'s risk is not reached yet.");
+			if (stopTradeForStock(s)) {
+				log.info("Skip trade for stock:" + s.getName() + " after eached it's risk.");
 				return false;
 			}
-		}
+		//}
 
 		int totalCnt = 0;
 		LinkedList<StockBuySellEntry> tmp;
@@ -405,11 +394,15 @@ public class TradeStrategyImp implements ITradeStrategy {
 				}
 				log.info("For stock " + s.getID() + " total sellCnt:" + sellCnt + ", total buyCnt:" + buyCnt);
 
-				// We only allow buy BUY_MORE_THEN_SELL_CNT more than sell.
-				if (buyCnt >= sellCnt + STConstants.BUY_MORE_THEN_SELL_CNT && is_buy_flg) {
-					log.info("Bought more than sold, can won't buy again.");
+				// We only allow buy BUY_SELL_MAX_DIFF_CNT more than sell.
+				if (buyCnt >= sellCnt + STConstants.BUY_SELL_MAX_DIFF_CNT && is_buy_flg) {
+                    log.info("Bought more than " + STConstants.BUY_SELL_MAX_DIFF_CNT + " times as sell can won't buy again.");
 					return false;
 				}
+				else if (sellCnt >= buyCnt + STConstants.BUY_SELL_MAX_DIFF_CNT && !is_buy_flg) {
+                    log.info("Sold more than " + STConstants.BUY_SELL_MAX_DIFF_CNT + " times as buy, can won't sell again.");
+                    return false;
+                }
 				// else if (stk.is_buy_point) {
 				// StockBuySellEntry lst = rcds.getLast();
 				// if (!lst.is_buy_point && lst.price <= stk.price) {
@@ -522,7 +515,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return shouldStopTrade;
 	}
 	
-	private boolean stopTradeForStock(Stock2 s, int days) {
+	private boolean stopTradeForStock(Stock2 s) {
 		String sql;
 		boolean shouldStopTrade = false;
         
@@ -535,8 +528,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "select * from tradedtl " + " where acntId ='" + acntId + "'" + "   and stkid ='" + s.getID() + "'  and dl_dt >= sysdate() - interval " + days
-					+ " day order by stkid, seqnum";
+			sql = "select * from tradedtl " + " where acntId ='" + acntId + "' and stkid ='" + s.getID() + "'  and left(dl_dt, 10) = left(str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s.%f'), 10) order by stkid, seqnum";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
@@ -550,27 +542,36 @@ public class TradeStrategyImp implements ITradeStrategy {
 
 			int pre_buy_flg = 1;
 			int buy_flg = 1;
+			int seqnum = -1;
+			int pre_seqnum = -1;
 
 			while (rs.next()) {
 
 				stkID = rs.getString("stkid");
 				price = rs.getDouble("price");
 				buy_flg = rs.getInt("buy_flg");
+				seqnum = rs.getInt("seqnum");
 
+                log.info("stkID:" + stkID + ", price:" + price + ", buy_flg:" + buy_flg + ", seqnum:" + seqnum);
+                log.info("pre_stkID:" + pre_stkID + ", pre_price:" + pre_price + ", pre_buy_flg:" + pre_buy_flg + ", pre_seqnum:" + pre_seqnum);
 				if (pre_stkID.length() > 0) {
 					log.info("stock:" + s.getName() + " buy_flg:" + buy_flg + " with price:" + price + " and pre_buy_flg:"
-							+ pre_buy_flg + " with price:" + pre_price);
+							+ pre_buy_flg + " with price:" + pre_price + " on seqnum:" + seqnum + ", pre_seqnum:" + pre_seqnum);
 					if (buy_flg == 1 && pre_buy_flg == 0) {
 						if (price < pre_price) {
 							incCnt++;
+							pre_stkID = "";
 						} else {
 							descCnt++;
+							pre_stkID = "";
 						}
 					} else if (buy_flg == 0 && pre_buy_flg == 1) {
 						if (price > pre_price) {
 							incCnt++;
+							pre_stkID = "";
 						} else {
 							descCnt++;
+							pre_stkID = "";
 						}
 					} else {
 						log.info("continue buy or sell does not means success or fail trade, continue.");
@@ -581,24 +582,16 @@ public class TradeStrategyImp implements ITradeStrategy {
 					pre_stkID = stkID;
 					pre_price = price;
 					pre_buy_flg = buy_flg;
-					continue;
+                    pre_seqnum = seqnum;
 				}
 			}
 			
 			log.info("stopTradeForStock, incCnt:" + incCnt + " descCnt:" + descCnt);
 
 			// For specific stock, if there are 50% lost, stop trading.
-			if ((incCnt + descCnt) > 5 && descCnt * 1.0 / (incCnt + descCnt) > 0.5) {
-				log.info("For passed " + days + " days, for stock:" + s.getName() + " trade descCnt:" + descCnt
-						+ " 50 % more than incCnt:" + incCnt + " stop trade!");
+			if ((descCnt - incCnt) >= STConstants.STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES) {
+				log.info("Stock:" + stkID + "lost time is more than " + STConstants.STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES + " times, stop trade!");
 				shouldStopTrade = true;
-			} else {
-				log.info("For passed " + days + " days, for stock:" + s.getName() + " trade descCnt:" + descCnt
-						+ " less than 50% incCnt:" + incCnt + " continue trade!");
-				if ((incCnt + descCnt) <= 5) {
-					log.info("because total trade times is less or equal than 5!");
-				}
-				shouldStopTrade = false;
 			}
 			rs.close();
 			stm.close();
