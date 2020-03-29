@@ -198,7 +198,7 @@ public class SimStockDriver {
         }
         
         log.info("got idClause: " + idClause);
-        String sql = "select * from stkdat2 where left(dl_dt, 10) >= '" + start_dt + 
+        String sql = "select * from stkdat2 where left(dl_dt, 10) > '" + start_dt + 
         "'"+ " and left(dl_dt, 10) <= '" + end_dt + "'" + idClause + " order by id, ft_id";
         log.info(sql);
         try {
@@ -231,7 +231,7 @@ public class SimStockDriver {
         
         String idClause = " and id = '" + stkId + "'";
         
-        String sql = "select * from stkdat2 where left(dl_dt, 10) >= '" + start_dt + 
+        String sql = "select * from stkdat2 where left(dl_dt, 10) > '" + start_dt + 
         "'"+ " and left(dl_dt, 10) <= '" + end_dt + "'" + idClause + " order by id, ft_id";
         log.info(sql);
         try {

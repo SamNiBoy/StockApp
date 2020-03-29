@@ -58,7 +58,7 @@ public class StockDataFetcher implements IWork {
 
     static public boolean start() {
         //self = new StockDataFetcher(0, Stock2.StockData.SECONDS_PER_FETCH * 1000);
-        self = new StockDataFetcher(0,  60 * 5 * 1000);
+        self = new StockDataFetcher(0,  30 * 1 * 1000);
         if (WorkManager.submitWork(self)) {
             log.info("开始收集股票数据!");
             cnsmr = new StockDataConsumer(0, 0);

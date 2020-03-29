@@ -929,7 +929,7 @@ public class Stock2 implements Comparable<Stock2>{
             }*/
         }
         
-        boolean LoadData() {
+        public boolean LoadData() {
             int lst_ft_id = 0;
             if (!ft_id_lst.isEmpty()) {
                 lst_ft_id = ft_id_lst.get(ft_id_lst.size() - 1);
@@ -939,7 +939,7 @@ public class Stock2 implements Comparable<Stock2>{
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDat2 where ft_id > " + lst_ft_id +
                 " and id = '" + stkid +
-                "' and left(dl_dt,10) = left(sysdate(), 10) order by dl_dt";
+                "' and left(dl_dt,10) = (select left(max(dl_dt), 10) from stkDat2 d2 where d2.id = '" + stkid + "') order by dl_dt";
                 
                 log.info(sql);
                 ResultSet rs = stm.executeQuery(sql);

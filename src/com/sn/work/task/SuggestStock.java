@@ -22,6 +22,7 @@ import com.sn.sim.strategy.selector.stock.DealMountStockSelector;
 import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
 import com.sn.sim.strategy.selector.stock.IStockSelector;
 import com.sn.sim.strategy.selector.stock.KeepGainStockSelector;
+import com.sn.sim.strategy.selector.stock.PriceShakingStockSelector;
 import com.sn.sim.strategy.selector.stock.PriceStockSelector;
 import com.sn.sim.strategy.selector.stock.StddevStockSelector;
 import com.sn.stock.Stock2;
@@ -111,10 +112,11 @@ public class SuggestStock implements IWork {
 	public SuggestStock(long id, long dbn) {
 		initDelay = id;
 		delayBeforNxtStart = dbn;
-		selectors.add(new DefaultStockSelector());
-		selectors.add(new PriceStockSelector());
-		selectors.add(new StddevStockSelector());
-		selectors.add(new DealMountStockSelector());
+		//selectors.add(new DefaultStockSelector());
+		//selectors.add(new PriceStockSelector());
+		//selectors.add(new StddevStockSelector());
+		//selectors.add(new DealMountStockSelector());
+		selectors.add(new PriceShakingStockSelector());
 		//selectors.add(new AvgClsPriStockSelector());
 //		selectors.add(new ClosePriceTrendStockSelector());
 		//selectors.add(new KeepGainStockSelector());
@@ -126,7 +128,7 @@ public class SuggestStock implements IWork {
 		boolean suggest_flg = false;
 		boolean loop_nxt_stock = false;
 
-        StockDataFetcher.lock.lock();
+        /*StockDataFetcher.lock.lock();
         try {
             log.info("Waiting finishedOneRoundFetch before start SuggestStock stocks...");
             StockDataFetcher.finishedOneRoundFetch.await();
@@ -137,17 +139,22 @@ public class SuggestStock implements IWork {
         }
         finally {
             StockDataFetcher.lock.unlock();
-        }
+        }*/
 
 		resetSuggestion();
 		
 		try {
 			Map<String, Stock2> stks = StockMarket.getStocks();
-			int tryCnt = 10;
+			int tryCnt = 5;
 			boolean tryHarderCriteria = false;
 			while(tryCnt-- > 0) {
 			    for (String stk : stks.keySet()) {
 			    	Stock2 s = stks.get(stk);
+                    
+			    	/*if (!s.getID().equals("002349") && !s.getID().equals("603200") && !s.getID().equals("600882"))
+			    	{
+			    	    continue;
+			    	}*/
 			    	for (IStockSelector slt : selectors) {
 			    		if (slt.isMandatoryCriteria() && !slt.isTargetStock(s, null)) {
 			    			loop_nxt_stock = true;

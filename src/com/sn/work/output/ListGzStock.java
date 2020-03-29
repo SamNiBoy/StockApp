@@ -51,8 +51,14 @@ public class ListGzStock implements IWork {
         String msg = "";
         try {
             msg = getGzStockInfo();
+            
+            log.info("got message length:" + msg.length());
             if (msg.length() <= 0) {
                 msg = "目前没有关注股票，请发送股票代码进行关注.";
+            }
+            else if (msg.length() > 2048) //here is even not support because of UTF-8 coding 6bytes for each char.
+            {
+                msg = msg.substring(msg.length() - 2048 + 10) + "...";
             }
             log.info("list gzed stocks:" + msg);
 
@@ -92,6 +98,8 @@ public class ListGzStock implements IWork {
             for (String stock : Stocks.keySet()) {
                 double dev = 0;
                 double cur_pri = 0;
+                
+                int stkcnt = Stocks.keySet().size();
 
                 
                 String sellMode = (sellmodes.get(stock) == 1) ? "是" : "否";
@@ -109,7 +117,7 @@ public class ListGzStock implements IWork {
                     if (rs.next()) {
                     	dev = rs.getDouble("dev");
                     }
-                    Stock2 stk = StockMarket.getStocks().get(stock);
+                    Stock2 stk = (Stock2)StockMarket.getStocks().get(stock);
                     Double cur_pri1 = stk.getCur_pri();
                     if (cur_pri1 != null) {
                         cur_pri = cur_pri1;
@@ -117,6 +125,7 @@ public class ListGzStock implements IWork {
                     else {
                     	log.info("cur_pri for stock:" + stock + " is null, use -1.");
                     	cur_pri = -1;
+                        stk.getSd().LoadData();
                     }
                     
                     Integer dl_stk_num = stk.getDl_stk_num();
@@ -154,20 +163,28 @@ public class ListGzStock implements IWork {
                     content += "涨跌:" + df2.format(dlt_pri) + "    涨幅:" + df2.format(pct) + "%\n";
                     content += "最高:" + df2.format(hst_pri) + "    最低:" + df2.format(lst_pri) + "\n";
                     content += "成交:" + df2.format(dl_stk_num / 1000000.0) + "万手" + "  金额:" + df2.format(dl_mny_num / 10000000) + "千万\n";
-                    content += "买五:" + df2.format(b5_pri) + "   手:" + b5_num / 100 + "\n";
-                    content += "买四:" + df2.format(b4_pri) + "   手:" + b4_num / 100 + "\n";
-                    content += "买三:" + df2.format(b3_pri) + "   手:" + b3_num / 100 + "\n";
-                    content += "买二:" + df2.format(b2_pri) + "   手:" + b2_num / 100 + "\n";
-                    content += "买一:" + df2.format(b1_pri) + "   手:" + b1_num / 100 + "\n";
-                    content += "--------------------\n";
-                    content += "卖一:" + df2.format(s1_pri) + "   手:" + s1_num / 100 + "\n";
-                    content += "卖二:" + df2.format(s2_pri) + "   手:" + s2_num / 100 + "\n";
-                    content += "卖三:" + df2.format(s3_pri) + "   手:" + s3_num / 100 + "\n";
-                    content += "卖四:" + df2.format(s4_pri) + "   手:" + s4_num / 100 + "\n";
-                    content += "卖五:" + df2.format(s5_pri) + "   手:" + s5_num / 100 + "\n";
-                    content += "统计:" + " 七天dev:" + df3.format(dev) + " sellMode: " + sellMode + "\n\n";
+                    
+                    //max support 4 stock with detail infor.
+                    if (stkcnt < 5)
+                    {
+                        content += "买五:" + df2.format(b5_pri) + "   手:" + b5_num / 100 + "\n";
+                        content += "买四:" + df2.format(b4_pri) + "   手:" + b4_num / 100 + "\n";
+                        content += "买三:" + df2.format(b3_pri) + "   手:" + b3_num / 100 + "\n";
+                        content += "买二:" + df2.format(b2_pri) + "   手:" + b2_num / 100 + "\n";
+                        content += "买一:" + df2.format(b1_pri) + "   手:" + b1_num / 100 + "\n";
+                        content += "--------------------\n";
+                        content += "卖一:" + df2.format(s1_pri) + "   手:" + s1_num / 100 + "\n";
+                        content += "卖二:" + df2.format(s2_pri) + "   手:" + s2_num / 100 + "\n";
+                        content += "卖三:" + df2.format(s3_pri) + "   手:" + s3_num / 100 + "\n";
+                        content += "卖四:" + df2.format(s4_pri) + "   手:" + s4_num / 100 + "\n";
+                        content += "卖五:" + df2.format(s5_pri) + "   手:" + s5_num / 100 + "\n";
+                        content += "统计:" + " 七天dev:" + df3.format(dev) + " sellMode: " + sellMode + "\n\n";
+                    }
+                    else {
+                        content += "\n";
+                    }
                     rs.close();
-                } catch(SQLException e0) {
+                } catch(Exception e0) {
                     log.info("No price infor for stock:" + stock + " continue...");
                     continue;
                 }

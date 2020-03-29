@@ -228,6 +228,8 @@ public class SimTrader implements IWork{
             //Send mail to user for top10 best and worst.
             sto.update();
             
+            archiveStockData();
+            
 	   } catch (InterruptedException e) {
 		    // TODO Auto-generated catch block
 		    e.printStackTrace();
@@ -272,5 +274,49 @@ public class SimTrader implements IWork{
         // TODO Auto-generated method stub
         return true;
     }
-
+    
+    private void archiveStockData() {
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        ResultSet rs = null;
+        
+        try {
+            String sql = "select count(*) cnt, max(left(dl_dt, 10)) lst, min(left(dl_dt, 10)) fst from stkdat2 where dl_dt < sysdate() - interval " + STConstants.ARCHIVE_DAYS_OLD + " day";
+            stm = con.createStatement();
+            
+            rs = stm.executeQuery(sql);
+            
+            rs.next();
+            
+            long rowcnt = rs.getLong("cnt");
+            String fstDay = rs.getString("fst");
+            String lstDay = rs.getString("lst");
+            
+            log.info("Archiving " + rowcnt + " rows from day:" + fstDay + " to day:" + lstDay);
+            
+            rs.close();
+            stm.close();;
+            
+            sql = "delete from stkdat2 where dl_dt < sysdate() - interval " + STConstants.ARCHIVE_DAYS_OLD + " day";
+            stm = con.createStatement();
+            
+            stm.execute(sql);
+            
+            log.info("Archived " + rowcnt + " rows.");
+        }
+        catch (Exception e)
+        {
+            
+        }
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.info("archiving data exception:" + e.getMessage());
+            }
+        }
+    }
 }

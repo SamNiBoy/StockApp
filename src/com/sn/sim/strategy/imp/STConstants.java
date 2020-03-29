@@ -15,6 +15,7 @@ public class STConstants {
     public static final String ACNT_SIM_PREFIX = "SIM";
     public static final double COMMISSION_RATE = 0.0014;
     public static final int SIM_DAYS = 1;
+    public static final int ARCHIVE_DAYS_OLD = 5;
     
     //class vars.
     public static final int MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK = 20;

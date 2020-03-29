@@ -103,7 +103,7 @@ public class WeChatReporter extends BaseWCReporter{
         	if (!is_admin_flg) {
         	}
             if (content.equals("1")) {
-                ListGzStock ttb = new ListGzStock(0, 3, this.getFromUserName());
+                ListGzStock ttb = new ListGzStock(0, 0, this.getFromUserName());
                 if (!WorkManager.submitWork(ttb)) {
                     resContent = "正在获取关注的股票详细信息,请稍后再试.";
                 }
@@ -112,7 +112,7 @@ public class WeChatReporter extends BaseWCReporter{
                 }
             }
             else if (content.equals("2")) {
-            	ListSuggestStock ttb = new ListSuggestStock(0, 3, this.getFromUserName());
+            	ListSuggestStock ttb = new ListSuggestStock(0, 0, this.getFromUserName());
                 if (!WorkManager.submitWork(ttb)) {
                     resContent = "ListSuggestStock already scheduled, can not do it again!";
                 }
@@ -139,7 +139,7 @@ public class WeChatReporter extends BaseWCReporter{
                 }
             }
             else if (content.equals("5")) {
-                CalFetchStat cfs = new CalFetchStat(0, 3);
+                CalFetchStat cfs = new CalFetchStat(0, 0);
                 if (!WorkManager.submitWork(cfs)) {
                     resContent = "CalFetchStat already scheduled, can not do it again!";
                 }
