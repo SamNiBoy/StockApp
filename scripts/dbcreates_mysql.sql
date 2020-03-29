@@ -297,55 +297,50 @@ create table if not exists CashAcnt(
 acntId varchar(20 ) not null,
 init_mny decimal(8, 2) not null,
 used_mny decimal(8, 2) not null,
+used_mny_hrs decimal(8, 2) not null,
 pft_mny decimal(8, 2),
-split_num int not null,
+max_mny_per_trade decimal(8, 2) not null,
 max_useable_pct decimal(8, 2) not null,
-dft_acnt_flg int not null,
 add_dt datetime not null,
-CONSTRAINT CashAcnt_PK PRIMARY KEY (acntId, dft_acnt_flg)
+CONSTRAINT CashAcnt_PK PRIMARY KEY (acntId)
 );
 
 create table if not exists arc_CashAcnt(
 acntId varchar(20 ) not null,
 init_mny decimal(8, 2) not null,
 used_mny decimal(8, 2) not null,
+used_mny_hrs decimal(8, 2) not null,
 pft_mny decimal(8, 2),
-split_num int not null,
-max_useable_pct int not null,
-dft_acnt_flg int not null,
-add_dt date not null
+max_mny_per_trade decimal(8, 2) not null,
+max_useable_pct decimal(8, 2) not null,
+add_dt datetime not null,
+CONSTRAINT arc_CashAcnt_PK PRIMARY KEY (acntId)
 );
 
-insert into cashacnt values('testCashAct001',20000,0,0,4,0.5,1,sysdate());
+insert into cashacnt values('testCashAct001',20000,0,0,0,5000,0.5,sysdate());
   
 create table if not exists TradeHdr(
 acntId varchar(20 ) not null,
 stkId varchar(6 ) not null,
-in_hand_stk_mny decimal(8, 2) not null, /* the money of your stock */
+in_hand_stk_mny decimal(8, 2) not null,
 in_hand_qty int not null,
 in_hand_stk_price decimal(8, 2) not null,
+total_amount decimal(20, 2),
+com_rate decimal(8, 4),
+commission_mny decimal(8, 2),
 add_dt datetime not null,
 CONSTRAINT TradeHdr_PK PRIMARY KEY (acntId, stkId)
-);
-
-create table if not exists arc_TradeHdr(
-acntId varchar(20 ) not null,
-stkId varchar(6 ) not null,
-in_hand_stk_mny decimal(8, 2) not null, /* the money of your stock */
-in_hand_qty int not null,
-pft_price decimal(8, 2) not null,
-add_dt datetime not null
 );
 
 create table if not exists TradeDtl(
 acntId varchar(20 ) not null,
 stkId varchar(6 ) not null,
 seqnum int not null,
-order_id int,
 price decimal(8, 2) not null,
 amount int not null,
 dl_dt datetime not null,
 buy_flg int not null,
+order_id int,
 CONSTRAINT TradeDtl_PK PRIMARY KEY (acntId, stkId, seqnum)
 );
 

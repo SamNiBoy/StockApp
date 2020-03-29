@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,10 +24,10 @@ public class CashAcnt implements ICashAccount {
 	private String actId;
 	private double initMny;
 	private double usedMny;
+	private double usedMny_Hrs;
 	private double pftMny;
-	private int splitNum;
+	private double maxMnyPerTrade;
 	private double maxUsePct;
-	private boolean dftAcnt;
 
 	/**
 	 * @param args
@@ -43,14 +44,8 @@ public class CashAcnt implements ICashAccount {
 		loadAcnt(id);
 	}
 
-	public double getMaxAvaMny() {
-
-		double useableMny = initMny * maxUsePct;
-		if ((useableMny - usedMny) > initMny / splitNum) {
-			return initMny / splitNum;
-		} else {
-			return useableMny - usedMny;
-		}
+	public double getMaxMnyForTrade() {
+		return maxMnyPerTrade;
 	}
 
 	public boolean loadAcnt(String id) {
@@ -67,12 +62,12 @@ public class CashAcnt implements ICashAccount {
 				actId = id;
 				initMny = rs.getDouble("init_mny");
 				usedMny = rs.getDouble("used_mny");
+				usedMny_Hrs = rs.getDouble("used_mny_hrs");
 				pftMny = rs.getDouble("pft_mny");
-				splitNum = rs.getInt("split_num");
-				dftAcnt = rs.getInt("dft_acnt_flg") > 0;
+				maxMnyPerTrade = rs.getDouble("max_mny_per_trade");
 				maxUsePct = rs.getDouble("max_useable_pct");
-				log.info("actId:" + actId + " initMny:" + initMny + " usedMny:" + usedMny + " calMny:" + pftMny
-						+ " splitNum:" + splitNum + " max_useable_pct:" + maxUsePct + " dftAcnt:" + dftAcnt);
+				log.info("actId:" + actId + " initMny:" + initMny + " usedMny:" + usedMny + " usedMny_Hrs:" + usedMny_Hrs + " calMny:" + pftMny
+						+ " maxMnyPerTrade:" + maxMnyPerTrade + " max_useable_pct:" + maxUsePct);
 			}
 			rs.close();
 			con.close();
@@ -116,20 +111,12 @@ public class CashAcnt implements ICashAccount {
 		this.pftMny = calMny;
 	}
 
-	public int getSplitNum() {
-		return splitNum;
+	public double getMaxMnyPerTrade() {
+		return maxMnyPerTrade;
 	}
 
-	public void setSplitNum(int splitNum) {
-		this.splitNum = splitNum;
-	}
-
-	public boolean isDftAcnt() {
-		return dftAcnt;
-	}
-
-	public void setDftAcnt(boolean dftAcnt) {
-		this.dftAcnt = dftAcnt;
+	public void setMaxMnyPerTrade(int maxMnyPerTrade) {
+		this.maxMnyPerTrade = maxMnyPerTrade;
 	}
 
 	public int getSellableAmt(String stkId, String sellDt) {
@@ -203,58 +190,99 @@ public class CashAcnt implements ICashAccount {
 		return unSellableAmt;
 	}
 
-	public boolean calProfit(String ForDt, Map stockSet) {
+	public boolean calProfit() {
+        
+	    double my_releasedMny = 0;
+	    double my_occupiedMny = 0; //This money means used amount during trading, you need to keep this amount in accourt to assure trade success.
+	    double my_usedMny_Hrs = 0;
+	    double my_delta_mny = 0;
+        Timestamp pre_dl_dt = null;
+    	Timestamp dl_dt = null;
+	    
 		Connection con = DBManager.getConnection();
-
-		String sql = "select stkId from TradeHdr h where h.acntId = '" + actId + "'";
-
 		ResultSet rs = null;
-		pftMny = 0;
-		double in_hand_stk_mny = 0;
 		try {
 			Statement stm = con.createStatement();
+            
+     		String sql = "select * from Tradedtl d where d.acntId = '" + actId + "' order by stkId, seqnum";
+             
+            log.info(sql); 
+            
 			rs = stm.executeQuery(sql);
-			Map<String, Stock2> stks = stockSet;
+    		double occupiedMny = 0.0;
+            
 			while (rs.next()) {
-				String stkId = rs.getString("stkId");
-				Stock2 s = stks.get(stkId);
-
-				int inHandMnt = getSellableAmt(stkId, ForDt) + getUnSellableAmt(stkId, ForDt);
-
-				log.info("in hand amt:" + inHandMnt + " price:" + s.getCur_pri() + " with cost:" + usedMny);
-				in_hand_stk_mny = inHandMnt * s.getCur_pri();
-
-				sql = "update TradeHdr set in_hand_stk_mny = " + in_hand_stk_mny + ", in_hand_stk_price =" + s.getCur_pri()
-						+ ", in_hand_qty = " + inHandMnt + " where acntId ='" + actId + "' and stkId ='" + stkId + "'";
-				Statement stm2 = con.createStatement();
-				log.info(sql);
-				stm2.execute(sql);
-				stm2.close();
+				boolean buy_flg = rs.getBoolean("buy_flg");
+				double amount = rs.getDouble("amount");
+				double price = rs.getDouble("price");
+            	dl_dt = rs.getTimestamp("dl_dt");
+                
+				double dealMny = 0.0;
+                
+    		    dealMny = amount * price;
+                
+                log.info("calculate this time occupied mny with param:");
+                log.info("buy_flg:" + buy_flg);
+                log.info("amount:" + amount);
+                log.info("price:" + price);
+                log.info("dealMny:" + dealMny);
+                
+    		    occupiedMny = 0.0;
+                
+				if (buy_flg) {
+				    if (dealMny > my_releasedMny) {
+         			     occupiedMny = dealMny - my_releasedMny;
+       				     my_releasedMny = 0;
+				    }
+				    else {
+         			     occupiedMny = 0;
+         			     my_releasedMny = my_releasedMny - dealMny;
+				    }
+				    my_delta_mny -= dealMny;
+				}
+				else {
+				    my_releasedMny += amount * price;
+				    my_delta_mny += dealMny;
+				}
+                
+                
+				my_occupiedMny += occupiedMny;
+                
+                log.info("calculated this time occupiedMny:" + occupiedMny + ", total occupiedMny:" + my_occupiedMny);
+                
+                if (pre_dl_dt == null)
+                {
+                    pre_dl_dt = dl_dt; 
+                    log.info("first deail time:" + pre_dl_dt.toString());
+                }
 			}
-
-			rs.close();
-			stm.close();
-
-			sql = "select sum(in_hand_stk_mny) in_hand_stk_mny from TradeHdr h where acntId = '" + actId + "'";
-
-			stm = con.createStatement();
-			rs = stm.executeQuery(sql);
-
-			double in_hand_stk_mny2 = 0.0;
-			if (rs.next()) {
-			    in_hand_stk_mny2 = rs.getDouble("in_hand_stk_mny");
-				sql = "update CashAcnt set pft_mny = " + in_hand_stk_mny2 + " - used_mny where acntId = '" + actId + "'";
-				Statement stm2 = con.createStatement();
-
-				pftMny = in_hand_stk_mny2 - usedMny;
-
-				log.info(sql);
-
-				stm2.execute(sql);
-				stm2.close();
+            
+			
+			if (pre_dl_dt != null && my_occupiedMny > 0) {
+			    my_usedMny_Hrs = (dl_dt.getTime() - pre_dl_dt.getTime()) / 3600000.0;
 			}
-			rs.close();
-			stm.close();
+            
+		    //pftMny = my_releasedMny;
+            usedMny = my_occupiedMny;
+            usedMny_Hrs = my_usedMny_Hrs;
+            
+            log.info("calculated pftMny:" + pftMny + ", useMny:" + usedMny + ", usedMny_Hrs:" + usedMny_Hrs);
+
+            rs.close();
+            stm.close();
+            
+		    sql = "update CashAcnt set pft_mny = " + my_delta_mny + " + (select sum(in_hand_qty * in_hand_stk_price) from TradeHdr where acntId = '" + actId + "')" +
+		          ", used_mny = " + usedMny +
+		          ", used_mny_hrs = " + usedMny_Hrs +
+		          " where acntId = '" + actId + "'";
+            
+		    stm = con.createStatement();
+            
+		    log.info(sql);
+            
+		    stm.execute(sql);
+            
+		    stm.close();
 			con.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -267,16 +295,16 @@ public class CashAcnt implements ICashAccount {
 	public String reportAcntProfitWeb() {
 		String msg = "<b>Account: " + this.actId + " profit report</b><br/>";
 		msg += "<table border = 1>" + "<tr>" + "<th> Cash Account</th> " + "<th> Init Money </th> "
-				+ "<th> Used Money </th> " + "<th> Split Number </th> " + "<th> MaxUse Pct</th> "
-				+ "<th> Default Account</th> " + "<th> Account Profit</th> " + "<th> Report Date</th> </tr> ";
+				+ "<th> Used Money </th> " + "<th> Used Money Hrs</th> "+ "<th> Max Money per Trade</th> " + "<th> MaxUse Pct</th> "
+				+ "<th> Account Profit</th> " + "<th> Report Date</th> </tr> ";
 
 		String dt = "";
 		SimpleDateFormat f = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
 		Date date = new Date();
 		dt = f.format(date);
 
-		msg += "<tr> <td>" + actId + "</td>" + "<td> " + initMny + "</td>" + "<td> " + usedMny + "</td>" + "<td> "
-				+ splitNum + "</td>" + "<td> " + maxUsePct + "</td>" + "<td> " + (dftAcnt ? "yes" : "No") + "</td>"
+		msg += "<tr> <td>" + actId + "</td>" + "<td> " + initMny + "</td>" + "<td> " + usedMny + "</td>"+ "<td> " + usedMny_Hrs + "</td>" + "<td> "
+				+ maxMnyPerTrade + "</td>" + "<td> " + maxUsePct + "</td>" + "<td> " + "</td>"
 				+ "<td> " + pftMny + "</td>" + "<td> " + dt + "</td> </tr> </table>";
         
 		
@@ -345,9 +373,9 @@ public class CashAcnt implements ICashAccount {
 		String pftPct = df.format(pftMny / initMny * 100);
 		String profit = df.format(pftMny);
 		log.info("##################################################################################################");
-		log.info("|AccountId\t|InitMny\t|UsedMny\t|PftMny\t|SplitNum\t|MaxUsePct\t|DftAcnt\t|ProfictPct|Profit|");
-		log.info("|" + actId + "\t|" + df.format(initMny) + "\t\t|" + df.format(usedMny) + "\t\t|" + df.format(pftMny)
-				+ "\t|" + splitNum + "\t\t|" + df.format(maxUsePct) + "\t\t|" + dftAcnt + "\t\t|" + pftPct + "%\t|"
+		log.info("|AccountId\t|InitMny\t|UsedMny\t|UsedMny_Hrs\\t|PftMny\t|maxMnyPerTrade\t|MaxUsePct\t|ProfictPct|Profit|");
+		log.info("|" + actId + "\t|" + df.format(initMny) + "\t\t|" + df.format(usedMny) + "\t\t|" + df.format(usedMny_Hrs) + "\t\t|" + df.format(pftMny)
+				+ "\t|" + maxMnyPerTrade + "\t\t|" + df.format(maxUsePct) + "\t\t|" + pftPct + "%\t|"
 				+ profit + "\t|");
 		log.info("##################################################################################################");
 	}
@@ -404,13 +432,13 @@ public class CashAcnt implements ICashAccount {
 		// TODO Auto-generated method stub
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
-		String sql = "delete from cashacnt where dft_acnt_flg = 1";
+		String sql = "delete from cashacnt where acntid = 'testCashAct001'";
 		try {
 			stm = con.createStatement();
 			stm.execute(sql);
 			stm.close();
 			stm = con.createStatement();
-			sql = "insert into cashacnt values('testCashAct001',50000,0,0,8,0.5,1,sysdate())";
+			sql = "insert into cashacnt values('testCashAct001',50000,0,0,0,10000,0.8,sysdate())";
 			stm.execute(sql);
 			stm.close();
 			con.close();
@@ -566,4 +594,9 @@ public class CashAcnt implements ICashAccount {
 		}
 		return null;
 	}
+
+    public double getUsedMnyHrs() {
+        // TODO Auto-generated method stub
+        return usedMny_Hrs;
+    }
 }

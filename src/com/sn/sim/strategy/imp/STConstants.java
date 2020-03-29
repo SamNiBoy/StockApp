@@ -7,11 +7,13 @@ public class STConstants {
     static Logger log = Logger.getLogger(STConstants.class);
     
     //Default cash account attributes.
-    public static final double DFT_INIT_MNY = 20000.0;
+    public static final double DFT_INIT_MNY = 50000.0;
     public static final int DFT_SPLIT = 4;
     public static final double DFT_MAX_USE_PCT = 0.8;
+    public static final double DFT_MAX_MNY_PER_TRADE = 10000;
     public static final String ACNT_TRADE_PREFIX = "ACNT";
     public static final String ACNT_SIM_PREFIX = "SIM";
+    public static final double COMMISSION_RATE = 0.0014;
     public static final int SIM_DAYS = 1;
     
     //class vars.

@@ -90,7 +90,7 @@ public class SimTraderObserverable extends Observable {
         SimpleDateFormat f = new SimpleDateFormat(" HH:mm:ss");  
         Date date = new Date();  
         returnStr = f.format(date);
-        String subject = "Stock Sim Result " + returnStr;
+        String subject = "回测结果:";
         StringBuffer body;
         boolean usr_need_mail = false;
         boolean generated_mail = false;
@@ -104,11 +104,17 @@ public class SimTraderObserverable extends Observable {
         	
             body.append("<table bordre = 1>" +
                     "<tr>" +
-                    "<th> Sim Account</th> " +
+                    "<th> Account Count</th> " +
+                    "<th> Catagory </th> " +
+                    "<th> Total Used Money</th> " +
+                    "<th> Avg Used Money Hours</th> " +
                     "<th> Avg Profit</th> " +
-                    "<th> Avg Profit Pct</th> " +
-                    "<th> Avg Buy Cnt</th> " +
-                    "<th> Avg Sell Cnt</th></tr>");
+                    "<th> Total Profit</th> " +
+                    "<th> Avg Profit Percent(Used Money)</th> " +
+                    "<th> Total Commission</th> " +
+                    "<th> Net profit</th> " +
+                    "<th> Tot Buy Count</th> " +
+                    "<th> Tot Sell Count</th></tr>");
             
             DecimalFormat df = new DecimalFormat("##.##");
             int ACNTCNT = 0;
@@ -116,16 +122,60 @@ public class SimTraderObserverable extends Observable {
             double avgPP = 0.0;
             double avgBuyCnt = 0;
             double avgSellCnt = 0;
+            String cat = "";
+            double totUsedMny = 0.0;
+            double avgUsedMny_Hrs = 0.0;
+            double totPft = 0.0;
+            double total_commission_mny = 0.0;
+            double netPft = 0.0;
+       		Connection con = DBManager.getConnection();
             
             try {
-        		Connection con = DBManager.getConnection();
         		Statement stm = con.createStatement();
-        		String sql = "select count(distinct(ac.acntid)) ACNTCNT, "
+                
+        		
+                String sql = "select count(distinct(ac.acntid)) ACNTCNT, "
+                        + "       sum(ac.pft_mny) totPft, "
+                        + "       sum(h.commission_mny) total_commission_mny"
+                        + " from cashacnt ac, "
+                        + "      (select sum(case when td.buy_flg = 1 then 1 else 0 end) buyCnt, "
+                        + "              sum(case when td.buy_flg  = 1 then 0 else 1 end) sellCnt, "
+                        + "              th.acntid "
+                        + "         from tradehdr th, tradedtl td"
+                        + "        where th.acntid = td.acntid "
+                        + "          and th.stkid = td.stkid "
+                        + "         group by th.acntid ) tmp, "
+                        + "      TradeHdr h"
+                        + " where ac.acntid = tmp.acntid"
+                        + "   and ac.acntid = h.acntid "
+                        + "   and ac.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+             
+             log.info(sql);
+             
+             ResultSet rs = stm.executeQuery(sql);
+             
+             if (rs.next()) {
+                 int cnt = rs.getInt("ACNTCNT");
+                 double allPft = rs.getDouble("totPft");
+                 double allComm = rs.getDouble("total_commission_mny");
+                 
+                 subject += "股票数:" + cnt + ", 毛利:" + allPft + ", 佣金:" + allComm;
+             }
+             
+             rs.close();
+             stm.close();
+             
+        		       sql = "select count(distinct(ac.acntid)) ACNTCNT, "
+                           + "       sum(ac.used_mny) totUsedMny,"
+                           + "       sum(ac.used_mny * ac.used_mny_hrs) / sum(ac.used_mny) avgUsedMny_Hrs,"
         				   + "       avg(ac.pft_mny) avgPft, "
-        				   + "       avg((ac.pft_mny) / ac.init_mny) avgPP,"
-        				   + "       avg(tmp.buyCnt) buyCnt,"
-        				   + "       avg(tmp.sellCnt) sellCnt, "
-        				   + "       case when ac.pft_mny > ac.used_mny then 1 when ac.pft_mny = ac.used_mny then 0 else -1 end cat"
+        				   + "       sum(ac.pft_mny) totPft, "
+        				   + "       avg((ac.pft_mny) / ac.used_mny) avgPP,"
+                           + "       sum(h.commission_mny) total_commission_mny,"
+                           + "       sum(ac.pft_mny)  - sum(h.commission_mny) netPft,"
+        				   + "       sum(tmp.buyCnt) buyCnt,"
+        				   + "       sum(tmp.sellCnt) sellCnt, "
+        				   + "       case when ac.pft_mny > 0 then 1 when ac.pft_mny = 0 then 0 else -1 end cat"
         				   + " from cashacnt ac, "
         				   + "      (select sum(case when td.buy_flg = 1 then 1 else 0 end) buyCnt, "
         				   + "              sum(case when td.buy_flg  = 1 then 0 else 1 end) sellCnt, "
@@ -133,30 +183,57 @@ public class SimTraderObserverable extends Observable {
         				   + "         from tradehdr th, tradedtl td"
         			       + "        where th.acntid = td.acntid "
         			       + "          and th.stkid = td.stkid "
-        			       + "         group by th.acntid ) tmp"
+        			       + "         group by th.acntid ) tmp, "
+                           + "      TradeHdr h"
         			       + " where ac.acntid = tmp.acntid"
+                           + "   and ac.acntid = h.acntid "
         			       + "   and ac.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'"
         			       + "   group by case when ac.pft_mny > 0 then 1 when ac.pft_mny = 0 then 0 else -1 end "
         			       + "   order by cat";
         		
         		log.info(sql);
         		
-        		ResultSet rs = stm.executeQuery(sql);
+        		stm = con.createStatement();
+        		rs = stm.executeQuery(sql);
         		
         		while (rs.next()) {
-        			
+                    /*
+                    "<th> Account Count</th> " +
+                    "<th> Catagory </th> " +
+                    "<th> Total Used Money</th> " +
+                    "<th> Total Used Money Hours</th> " +
+                    "<th> Avg Profit</th> " +
+                    "<th> Total Profit</th> " +
+                    "<th> Avg Profit Percent(Used Money)</th> " +
+                    "<th> Total Commission</th> " +
+                    "<th> Net profit</th> " +
+                    "<th> Tot Buy Count</th> " +
+                    "<th> Tot Sell Count</th></tr>");*/
         			ACNTCNT = rs.getInt("ACNTCNT");
+        			cat = (rs.getInt("cat") == 1 ? "涨":(rs.getInt("cat") == 0 ? "平" : "跌"));
+        			totUsedMny = rs.getDouble("totUsedMny");
+        			avgUsedMny_Hrs = rs.getDouble("avgUsedMny_Hrs");
         			avgPft = rs.getDouble("avgPft");
+        			totPft = rs.getDouble("totPft");
         			avgPP = rs.getDouble("avgPP");
+        			total_commission_mny = rs.getDouble("total_commission_mny");
+        			netPft = rs.getDouble("netPft");
         			avgBuyCnt = rs.getDouble("buyCnt");
         			avgSellCnt = rs.getDouble("sellCnt");
         			
+                    log.info("ACNTCNT:" + ACNTCNT);
         		    if (ACNTCNT > 0) {
         		    	usr_need_mail = true;
                         if (usr_need_mail) {
                             body.append("<tr> <td>" + ACNTCNT + "</td>" +
+                            "<td> " + cat + "</td>" +
+                            "<td> " + df.format(totUsedMny) + "</td>" +
+                            "<td> " + df.format(avgUsedMny_Hrs) + "</td>" +
                             "<td> " + df.format(avgPft) + "</td>" +
+                            "<td> " + df.format(totPft) + "</td>" +
                             "<td> " + df.format(avgPP) + "</td>" +
+                            "<td> " + df.format(total_commission_mny) + "</td>" +
+                            "<td> " + df.format(netPft) + "</td>" +
                             "<td> " + df.format(avgBuyCnt) + "</td>" +
                             "<td> " + df.format(avgSellCnt) + "</td></tr>");
                             generated_mail = true;
@@ -164,20 +241,22 @@ public class SimTraderObserverable extends Observable {
         		    }
         		}
                 
+                log.info("usr_need_mail:" + usr_need_mail);
         		if (usr_need_mail) {
         			rs.close();
         			stm.close();
         			
-                    body.append("<table bordre = 1>" +
+                    body.append("<br><table bordre = 1>" +
                             "<tr>" +
                             "<th> ID </th> " +
                             "<th> Acnt ID </th> " +
+                            "<th> Name </th> " +
                             "<th> Init Mny </th> " +
                             "<th> Used Mny </th> " +
+                            "<th> Used Mny Hours</th> " +
                             "<th> Profit Mny </th> " +
-                            "<th> Split Num </th> " +
+                            "<th> Max Mny Per Trade</th> " +
                             "<th> Max Useable Pct </th> " +
-                            "<th> Default Acount flg </th> " +
                             "<th> Profit</th>" +
                             "<th> Profit Pct</th>" +
                             "<th> Add Date </th></tr>");
@@ -187,11 +266,14 @@ public class SimTraderObserverable extends Observable {
         			stm = con.createStatement();
         			
         			sql = "select ca.pft_mny profit, "
-        			    + "       ca.pft_mny / ca.init_mny PP, "
+        			    + "       ca.pft_mny / ca.used_mny PP, "
         			    + "       left(sysdate(), 10) add_dte, "
+                        + "       s.name, "
         			    + "       ca.* "
-        			    + "  from cashacnt ca "
-        			    + "   where ac.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'"
+        			    + "  from cashacnt ca, "
+                        + "       stk s"
+        			    + "   where ca.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'"
+                        + "     and right(ca.acntid, 6) = s.id "
         			    + " order by ca.pft_mny desc ";
         			
         			log.info(sql);
@@ -200,12 +282,13 @@ public class SimTraderObserverable extends Observable {
         			while (rs.next() && TopN > 0) {
                         body.append("<tr> <td>" + ID + "</td>" +
                                 "<td> " + rs.getString("acntid") + "</td>" +
+                                "<td> " + rs.getString("name") + "</td>" +
                                 "<td> " + df.format(rs.getDouble("init_mny")) + "</td>" +
                                 "<td> " + df.format(rs.getDouble("used_mny")) + "</td>" +
+                                "<td> " + df.format(rs.getDouble("used_mny_hrs")) + "</td>" +
                                 "<td> " + df.format(rs.getDouble("pft_mny")) + "</td>" +
-                                "<td> " + rs.getInt("split_num") + "</td>" +
+                                "<td> " + rs.getInt("max_mny_per_trade") + "</td>" +
                                 "<td> " + df.format(rs.getDouble("max_useable_pct")) + "</td>" +
-                                "<td> " + rs.getInt("dft_acnt_flg") + "</td>" +
                                 "<td> " + df.format(rs.getDouble("profit")) + "</td>" +
                                 "<td> " + df.format(rs.getDouble("PP")) + "</td>" +
                                 "<td> " + rs.getString("add_dte") + "</td></tr>");
@@ -219,13 +302,14 @@ public class SimTraderObserverable extends Observable {
                     body.append("<table bordre = 1>" +
                             "<tr>" +
                             "<th> ID </th> " +
+                            "<th> Name </th> " +
                             "<th> Acnt ID </th> " +
                             "<th> Init Mny </th> " +
                             "<th> Used Mny </th> " +
+                            "<th> Used Mny Hours</th> " +
                             "<th> Profit Mny </th> " +
                             "<th> Split Num </th> " +
                             "<th> Max Useable Pct </th> " +
-                            "<th> Dft Acnt flg </th> " +
                             "<th> Profit</th>" +
                             "<th> Profit Pct</th>" +
                             "<th> Add Date </th></tr>");
@@ -235,13 +319,16 @@ public class SimTraderObserverable extends Observable {
         			
         			stm = con.createStatement();
         			
-        			sql = "select ca.pft_mny - ca.used_mny profit, "
-        			    + "       (ca.pft_mny - ca.used_mny) / ca.init_mny PP, "
-        			    + "       left(sysdate(), 10) add_dte, "
-        			    + "       ca.* "
-        			    + "  from cashacnt ca "
-        			    + " where ac.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'"
-        			    + " order by (ca.pft_mny - ca.used_mny) asc ";
+                    sql = "select ca.pft_mny profit, "
+                            + "       ca.pft_mny / ca.used_mny PP, "
+                            + "       left(sysdate(), 10) add_dte, "
+                            + "       s.name, "
+                            + "       ca.* "
+                            + "  from cashacnt ca, "
+                            + "       stk s"
+                            + "   where ca.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'"
+                            + "     and right(ca.acntid, 6) = s.id "
+        			        + " order by ca.pft_mny asc ";
         			
         			log.info(sql);
         			rs = stm.executeQuery(sql);
@@ -249,12 +336,13 @@ public class SimTraderObserverable extends Observable {
         			while (rs.next() && TopN > 0) {
                         body.append("<tr> <td>" + ID + "</td>" +
                                 "<td> " + rs.getString("acntid") + "</td>" +
+                                "<td> " + rs.getString("name") + "</td>" +
                                 "<td> " + df.format(rs.getDouble("init_mny")) + "</td>" +
                                 "<td> " + df.format(rs.getDouble("used_mny")) + "</td>" +
+                                "<td> " + df.format(rs.getDouble("used_mny_hrs")) + "</td>" +
                                 "<td> " + df.format(rs.getDouble("pft_mny")) + "</td>" +
-                                "<td> " + rs.getInt("split_num") + "</td>" +
+                                "<td> " + rs.getInt("max_mny_per_trade") + "</td>" +
                                 "<td> " + df.format(rs.getDouble("max_useable_pct")) + "</td>" +
-                                "<td> " + rs.getInt("dft_acnt_flg") + "</td>" +
                                 "<td> " + df.format(rs.getDouble("profit")) + "</td>" +
                                 "<td> " + df.format(rs.getDouble("PP")) + "</td>" +
                                 "<td> " + rs.getString("add_dte") + "</td></tr>");
@@ -264,10 +352,18 @@ public class SimTraderObserverable extends Observable {
         		}
         		rs.close();
         		stm.close();
-        		con.close();
             }
             catch (Exception e) {
             	e.printStackTrace();
+            }
+            finally {
+                try {
+                    con.close();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    log.info("close db connection error:" + e.getMessage());
+                }
             }
             
             log.info("Need mail?" + generated_mail);

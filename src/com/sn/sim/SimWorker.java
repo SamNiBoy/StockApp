@@ -167,19 +167,24 @@ public class SimWorker implements IWork {
 
     public void run() {
         try {
+            log.info("SimWorker about to run...");
            //Reset some set/map entries before/after Simulation. 
             for (ITradeStrategy cs : strategies) {
+               log.info("SimWorker reset strategy status for " + cs.getTradeStrategyName());
                cs.resetStrategyStatus(); 
             }
             
             startSim();
             
             for (ITradeStrategy cs : strategies) {
+               log.info("SimWorker finished, reset strategy status for " + cs.getTradeStrategyName());
                cs.resetStrategyStatus(); 
             }
+            log.info("SimWorker about to end...");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            log.info("SimWorker run exception:" + e.getMessage());
         }
     }
 

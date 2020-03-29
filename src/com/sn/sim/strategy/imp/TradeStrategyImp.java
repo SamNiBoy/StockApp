@@ -73,9 +73,9 @@ public class TradeStrategyImp implements ITradeStrategy {
     }
 
     // non interface vars.
-	static List<String> tradeStocks = new ArrayList<String>();
-	static public Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
-    static Map<String, ICashAccount> cash_account_map = new HashMap<String, ICashAccount>();
+	private static List<String> tradeStocks = new ArrayList<String>();
+	private static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
+    private static Map<String, ICashAccount> cash_account_map = new HashMap<String, ICashAccount>();
     
 	public StockBuySellEntry getLstTradeRecord(Stock2 s) {
 		return tradeRecord.get(s.getID()).getLast();
@@ -101,7 +101,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         sim_mode = sm;
     }
 
-	public static void printTradeInfor() {
+	public void printTradeInfor() {
 		log.info("Print real trade record as:");
 
 		LinkedList<StockBuySellEntry> tmp;
@@ -161,7 +161,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	                    Map<String, Stock2> sm = new HashMap<String, Stock2>();
 	                    sm.put(s.getID(), s);
 	                    log.info("TradeStock date string:" + s.getDl_dt().toString().substring(0, 10));
-	                    ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
+	                    ac.calProfit();
 			    	}
 			        break;
 			    }
@@ -229,9 +229,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			            //createBuySellRecord(s, STConstants.openID, false, qtyToTrade);
 			    	}
 			    	else {
-	                    Map<String, Stock2> sm = new HashMap<String, Stock2>();
-	                    sm.put(s.getID(), s);
-	                    ac.calProfit(s.getDl_dt().toString().substring(0, 10), sm);
+	                    ac.calProfit();
 			    	}
 			        break;
 			    }
@@ -255,9 +253,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 	}
 
     @Override
-    public boolean calProfit(String ForDt, Map<String, Stock2>stockSet) {
+    public boolean calProfit() {
         // TODO Auto-generated method stub
-        return cash_account.calProfit(ForDt, stockSet);
+        return cash_account.calProfit();
     }
 
     @Override
@@ -305,7 +303,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         return false;
 	}
 	
-	public static boolean loadStocksForTrade() {
+	public boolean loadStocksForTrade() {
 		String sql;
 		tradeStocks.clear();
 		try {
@@ -730,11 +728,26 @@ public class TradeStrategyImp implements ITradeStrategy {
             ResultSet rs = stm.executeQuery(sql);
             if (rs.next()) {
                 if (rs.getInt("maxseq") < 0) {
+                    /*
+                     * create table if not exists TradeHdr(
+                       acntId varchar(20 ) not null,
+                       stkId varchar(6 ) not null,
+                       in_hand_stk_mny decimal(8, 2) not null,
+                       in_hand_qty int not null,
+                       in_hand_stk_price decimal(8, 2) not null,
+                       total_amount decimal(20, 2),
+                       com_rate decimal(8, 2),
+                       commission_mny decimal(8, 2),
+                       add_dt datetime not null,
+                       CONSTRAINT TradeHdr_PK PRIMARY KEY (acntId, stkId)
+                       );
+                     */
                     sql = "insert into TradeHdr values('" + ac.getActId() + "','"
                     + s.getID() + "',"
                     + soldPrice*sellableAmt + ","
-                    + sellableAmt + ","
-                    + soldPrice + ",str_to_date('" + s.getDl_dt().toString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s.%f'))";
+                    + (-sellableAmt) + ","
+                    + soldPrice + "," + soldPrice*sellableAmt + "," + STConstants.COMMISSION_RATE +  ","
+                    + sellableAmt * soldPrice * STConstants.COMMISSION_RATE + ", str_to_date('" + s.getDl_dt().toString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s.%f'))";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -743,7 +756,8 @@ public class TradeStrategyImp implements ITradeStrategy {
                 }
                 else {
                     sql = "update TradeHdr set in_hand_qty = in_hand_qty - " + sellableAmt + ", in_hand_stk_price = " + soldPrice + ", in_hand_stk_mny = in_hand_qty * " + soldPrice
-                         + " where acntId = '" + ac.getActId() + "' and stkId = '" + s.getID() + "'";
+                          + ", total_amount = total_amount + " + sellableAmt * soldPrice + ", commission_mny = commission_mny + " + sellableAmt * soldPrice + " * com_rate"
+                          + " where acntId = '" + ac.getActId() + "' and stkId = '" + s.getID() + "'";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -770,7 +784,7 @@ public class TradeStrategyImp implements ITradeStrategy {
             if (sim_mode)
             {
                 //now sync used money
-                double relasedMny = sellableAmt * s.getCur_pri();
+                /*double relasedMny = sellableAmt * s.getCur_pri();
                 double usedMny = ac.getUsedMny();
                 usedMny -= relasedMny;
                 ac.setUsedMny(usedMny);
@@ -778,9 +792,9 @@ public class TradeStrategyImp implements ITradeStrategy {
                 stm = con.createStatement();
                 sql = "update CashAcnt set used_mny = used_mny - " + relasedMny + " where acntId = '" + ac.getActId() + "'";
                 log.info(sql);
-                stm.execute(sql);
-                con.close();
+                stm.execute(sql);*/
             }
+                con.close();
             
             LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
             if (rcds != null) {
@@ -831,7 +845,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         
         log.info("now start to bug stock " + s.getName()
                 + " price:" + buyPrice
-                + " with money: " + ac.getMaxAvaMny()
+                + " with money: " + ac.getMaxMnyForTrade()
                 + " buy mount:" + buyMnt);
 
         Connection con = DBManager.getConnection();
@@ -845,13 +859,15 @@ public class TradeStrategyImp implements ITradeStrategy {
         try {
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery(sql);
+            
             if (rs.next()) {
                 if (rs.getInt("maxseq") < 0) {
                     sql = "insert into TradeHdr values('" + ac.getActId() + "','"
                     + s.getID() + "',"
                     + buyPrice * buyMnt + ","
                     + buyMnt + ","
-                    + buyPrice + ",str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'))";
+                    + buyPrice + "," + buyPrice*buyMnt + "," + STConstants.COMMISSION_RATE +  ","
+                    + buyMnt * buyPrice * STConstants.COMMISSION_RATE + ",str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'))";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -860,6 +876,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                 }
                 else {
                     sql = "update TradeHdr set in_hand_qty = in_hand_qty + " + buyMnt + ", in_hand_stk_price = " + buyPrice + ", in_hand_stk_mny = in_hand_qty * " + buyPrice 
+                         + ", total_amount = total_amount + " + buyMnt * buyPrice + ", commission_mny = commission_mny + " + buyMnt * buyPrice + " * com_rate"
                          + " where acntId = '" + ac.getActId() + "' and stkId = '" + s.getID() + "'";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
@@ -884,7 +901,7 @@ public class TradeStrategyImp implements ITradeStrategy {
             
             if(sim_mode)
             {
-                //now sync used money
+             /*   //now sync used money
                 double usedMny = ac.getUsedMny();
                 usedMny += occupiedMny;
                 ac.setUsedMny(usedMny);
@@ -892,9 +909,9 @@ public class TradeStrategyImp implements ITradeStrategy {
                 stm = con.createStatement();
                 sql = "update CashAcnt set used_mny = " + usedMny + " where acntId = '" + ac.getActId() + "'";
                 log.info(sql);
-                stm.execute(sql);
-                con.close();
+                stm.execute(sql);*/
             }
+            con.close();
             
             LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
             if (rcds != null) {
@@ -1000,7 +1017,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                 if (acnt == null) {
                 	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
                     CashAcntManger
-                    .crtAcnt(AcntForStk, STConstants.DFT_INIT_MNY, 0.0, 0.0, STConstants.DFT_SPLIT, STConstants.DFT_MAX_USE_PCT, true);
+                    .crtAcnt(AcntForStk, STConstants.DFT_INIT_MNY, 0.0, 0.0,0.0,STConstants.DFT_MAX_MNY_PER_TRADE, STConstants.DFT_MAX_USE_PCT);
                     acnt = CashAcntManger.loadAcnt(AcntForStk);
                 }
                 

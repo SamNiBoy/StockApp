@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -14,6 +15,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.StockObserverable;
 import com.sn.sim.SimStockDriver;
+import com.sn.sim.strategy.imp.STConstants;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.trader.TradexAccount;
@@ -26,8 +28,14 @@ public class TradexAcnt implements ICashAccount {
     private TradexCpp tc = new TradexCpp();
     private TradexAccount ta = null;
     private TradexStockInHand tsih = null;
-    private double max_mny_per_trade = 10000;
-    private double max_pct_for_stock = 0.8;
+    
+    private String actId;
+    private double initMny;
+    private double usedMny;
+    private double usedMny_Hrs;
+    private double maxMnyPerTrade = STConstants.DFT_MAX_MNY_PER_TRADE;
+    private double pftMny;
+    private double maxUsePct=STConstants.DFT_MAX_USE_PCT;
 
 	/**
 	 * @param args
@@ -44,11 +52,11 @@ public class TradexAcnt implements ICashAccount {
 		loadAcnt();
 	}
 
-	public double getMaxAvaMny() {
+	public double getMaxMnyForTrade() {
 
 		double useableMny = ta.getUsable_mny();
-		if (useableMny > max_mny_per_trade) {
-			return max_mny_per_trade;
+		if (useableMny > maxMnyPerTrade) {
+			return maxMnyPerTrade;
 		} else {
 			return useableMny;
 		}
@@ -59,6 +67,9 @@ public class TradexAcnt implements ICashAccount {
 		log.info("load TradexAcnt info from Tradex system");
 		try {
             ta = tc.processLoadAcnt();
+            
+            actId = ta.getAcntID();
+            initMny = ta.getInit_mny();
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -80,69 +91,107 @@ public class TradexAcnt implements ICashAccount {
 		return 0;
 	}
 
-	public int getSplitNum() {
-		return ta.getSplitNum();
-	}
-
-	public boolean isDftAcnt() {
-		return false;
-	}
-
-	public boolean calProfit(String ForDt, Map stockSet) {
-		Connection con = DBManager.getConnection();
-        Statement stm = null;
+	public boolean calProfit() {
         
-		String sql = "select stkId from TradeHdr h where h.acntId = '" + ta.getAcntID() + "'";
-
-		ResultSet rs = null;
-		double in_hand_stk_mny = 0;
-		try {
-            stm = con.createStatement();
-			rs = stm.executeQuery(sql);
-			Map<String, Stock2> stks = stockSet;
-			while (rs.next()) {
-				String stkId = rs.getString("stkId");
-				Stock2 s = stks.get(stkId);
-
-                TradexStockInHand tsih;
-                try {
-                    tsih = tc.processQueryStockInHand(stkId);
-                } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-	     			log.info("CalProfit processQueryStockInHand error:" + e.getMessage());
-                     return false;
+        double my_releasedMny = 0;
+        double my_occupiedMny = 0; //This money means used amount during trading, you need to keep this amount in accourt to assure trade success.
+        double my_usedMny_Hrs = 0;
+        double my_delta_mny = 0;
+        Timestamp pre_dl_dt = null;
+        Timestamp dl_dt = null;
+        
+        Connection con = DBManager.getConnection();
+        ResultSet rs = null;
+        try {
+            Statement stm = con.createStatement();
+            
+            String sql = "select * from Tradedtl d where d.acntId = '" + actId + "' order by stkId, seqnum";
+             
+            log.info(sql); 
+            
+            rs = stm.executeQuery(sql);
+            double occupiedMny = 0.0;
+            
+            while (rs.next()) {
+                boolean buy_flg = rs.getBoolean("buy_flg");
+                double amount = rs.getDouble("amount");
+                double price = rs.getDouble("price");
+                dl_dt = rs.getTimestamp("dl_dt");
+                
+                double dealMny = 0.0;
+                
+                dealMny = amount * price;
+                
+                log.info("calculate this time occupied mny with param:");
+                log.info("buy_flg:" + buy_flg);
+                log.info("amount:" + amount);
+                log.info("price:" + price);
+                log.info("dealMny:" + dealMny);
+                
+                occupiedMny = 0.0;
+                
+                if (buy_flg) {
+                    if (dealMny > my_releasedMny) {
+                         occupiedMny = dealMny - my_releasedMny;
+                         my_releasedMny = 0;
+                    }
+                    else {
+                         occupiedMny = 0;
+                         my_releasedMny = my_releasedMny - dealMny;
+                    }
+                    my_delta_mny -= dealMny;
                 }
-				int inHandMnt = tsih.getAvailable_qty();
-
-				log.info("in hand amt:" + inHandMnt + " price:" + s.getCur_pri());
-				in_hand_stk_mny = inHandMnt * s.getCur_pri();
-
-				sql = "update TradeHdr set in_hand_stk_mny = " + in_hand_stk_mny + ", in_hand_stk_price =" + s.getCur_pri()
-						+ ", in_hand_qty = " + inHandMnt + " where acntId ='" + ta.getAcntID() + "' and stkId ='" + stkId + "'";
-				Statement stm2 = con.createStatement();
-				log.info(sql);
-				stm2.execute(sql);
-				stm2.close();
-			}
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-			log.info("calProfit returned with exception:" + e.getMessage());
-			return false;
-		}
-		finally {
-			try {
-                rs.close();
-                stm.close();
-                con.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                else {
+                    my_releasedMny += amount * price;
+                    my_delta_mny += dealMny;
+                }
+                
+                
+                my_occupiedMny += occupiedMny;
+                
+                log.info("calculated this time occupiedMny:" + occupiedMny + ", total occupiedMny:" + my_occupiedMny);
+                
+                if (pre_dl_dt == null)
+                {
+                    pre_dl_dt = dl_dt; 
+                    log.info("first deail time:" + pre_dl_dt.toString());
+                }
             }
-		}
-		return true;
-	}
+            
+            
+            if (pre_dl_dt != null && my_occupiedMny > 0) {
+                my_usedMny_Hrs = (dl_dt.getTime() - pre_dl_dt.getTime()) / 3600000.0;
+            }
+            
+            //pftMny = my_releasedMny;
+            usedMny = my_occupiedMny;
+            usedMny_Hrs = my_usedMny_Hrs;
+            
+            log.info("calculated pftMny:" + pftMny + ", useMny:" + usedMny + ", usedMny_Hrs:" + usedMny_Hrs);
+
+            rs.close();
+            stm.close();
+            
+            sql = "update CashAcnt set pft_mny = " + my_delta_mny + " + (select sum(in_hand_qty * in_hand_stk_price) from TradeHdr where acntId = '" + actId + "')" +
+                  ", used_mny = " + usedMny +
+                  ", used_mny_hrs = " + usedMny_Hrs +
+                  " where acntId = '" + actId + "'";
+            
+            stm = con.createStatement();
+            
+            log.info(sql);
+            
+            stm.execute(sql);
+            
+            stm.close();
+            con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            log.info("calProfit returned with exception:" + e.getMessage());
+            return false;
+        }
+        return true;
+    }
 
     /*
     private double init_mny;
@@ -163,7 +212,7 @@ public class TradexAcnt implements ICashAccount {
 
 		msg += "<tr> <td>" + ta.getAcntID() + "</td>" + "<td> " + ta.getInit_mny() + "</td>" + "<td> " + ta.getUsable_mny() + "</td>" + "<td> "
 				+ ta.getFetchable_mny() + "</td>" + "<td> " + ta.getStock_value() + "</td>" + "<td> " + ta.getTotal_value() + "</td>"
-				+ "<td> " + this.max_mny_per_trade + "<td> " + this.max_pct_for_stock + "</td>" + "<td> " + dt + "</td> </tr> </table>";
+				+ "<td> " + this.maxMnyPerTrade + "<td> " + this.maxUsePct + "</td>" + "<td> " + dt + "</td> </tr> </table>";
         
 		
 	      String headTran = "<b>Transactions header information:</b><br/>";
@@ -235,7 +284,7 @@ public class TradexAcnt implements ICashAccount {
 		log.info("|AccountId|InitMny\t|UseableMny\t|WithdrawableMny|Total Mny\t|Stock Mny\t|MaxMnyPerTrade\t|MaxUsePct\t|");
 		log.info("|" + ta.getAcntID() + "\t|" + df.format(ta.getInit_mny()) + "\t|" + df.format(ta.getUsable_mny()) + "\t|" + df.format(ta.getFetchable_mny()) +"\t|" + df.format(ta.getTotal_value()) + "\t|"
 		        + df.format(ta.getStock_value())
-				+ "\t\t|" + this.max_mny_per_trade + "\t|" + df.format(this.max_pct_for_stock) + "\t|");
+				+ "\t\t|" + this.maxMnyPerTrade + "\t|" + df.format(this.maxUsePct) + "\t|");
 		log.info("##################################################################################################");
 	}
 
@@ -460,5 +509,10 @@ public class TradexAcnt implements ICashAccount {
         }
         log.info("in getUnSellableAmt get unsellable qty:" + tsih.getFrozen_qty());
         return tsih.getFrozen_qty();
+    }
+
+    public double getUsedMnyHrs() {
+        // TODO Auto-generated method stub
+        return usedMny_Hrs;
     }
 }

@@ -196,7 +196,7 @@ public class QtySellPointSelector implements ISellPointSelector {
         int sellMnt = 0;
         
         if (ac != null) {
-            int sellableAmt = (int) (ac.getMaxAvaMny() / s.getCur_pri());
+            int sellableAmt = (int) (ac.getMaxMnyForTrade() / s.getCur_pri());
             sellMnt =  sellableAmt - sellableAmt % 100;
             log.info("getSellQty, sellableAmt:" + sellableAmt + " sellMnt:" + sellMnt);
         }

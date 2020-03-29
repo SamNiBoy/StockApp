@@ -62,7 +62,7 @@ public class PriceTurnBuyPointSelector implements IBuyPointSelector {
         int maxMnt = 0;
         
         if (ac != null) {
-            useableMny = ac.getMaxAvaMny();
+            useableMny = ac.getMaxMnyForTrade();
             maxMnt = (int)(useableMny/s.getCur_pri()) / 100 * 100;
             
             if (maxMnt >= 400) {

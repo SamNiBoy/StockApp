@@ -29,72 +29,22 @@ public class CashAcntManger {
         return acnts;
     }
     
-    static public CashAcnt getDftAcnt() {
-        CashAcnt rs = null;
-        if (acnts.isEmpty()) {
-            loadAllAcnts();
-        }
-        for (CashAcnt s : acnts) {
-            if (s.isDftAcnt()) {
-                rs = s;
-                break;
-            }
-        }
-        if (rs == null) {
-            acnts.clear();
-            crtDftAcnt();
-            return getDftAcnt();
-        }
-        return rs;
-    }
-    static public boolean crtDftAcnt() {
-
-        Connection con = DBManager.getConnection();
-        String sql = "select * from CashAcnt where dft_acnt_flg = 1";
-        String id = "";
-
-        log.info("start creating default account, check if we already have default account...");
-        try {
-        Statement stm = con.createStatement();
-        ResultSet rs = stm.executeQuery(sql);
-        
-        if (rs.next()) {
-            rs.close();
-            stm.close();
-            con.close();
-            return false;
-        }
-        sql = "insert into cashacnt values('testCashAct001',20000,0,0,4,0.5,1,sysdate())";
-        stm.execute(sql);
-        con.commit();
-        rs.close();
-        con.close();
-        con = null;
-        log.info("successfully created defalt account testCaseAct001...");
-        return true;
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-        log.info("end creating default account.");
-        return false;
-    }
     /*
            private String actId;
            private double initMny;
            private double usedMny;
+           private double usedMny_Hrs;
            private double pftMny;
-           private int splitNum;
+           private double maxMnyPerTrade;
            private double maxUsePct;
-           private boolean dftAcnt;
      */
     static public boolean crtAcnt(String actId,
                                   double initMny,
                                   double usedMny,
+                                  double usedMny_hrs,
                                   double pftMny,
-                                  int splitNum,
-                                  double maxUsePct,
-                                  boolean dftAcnt) {
+                                  double maxMnyPerTrade,
+                                  double maxUsePct) {
 
         Connection con = DBManager.getConnection();
         String sql = "delete from CashAcnt where acntId = '" + actId + "'";
@@ -111,11 +61,11 @@ public class CashAcntManger {
         		"'" + actId + "',"
         		+ initMny + ","
         		+ usedMny + ","
+        		+ usedMny_hrs + ","
         		+ pftMny + ","
-        		+ splitNum + ","
+        		+ maxMnyPerTrade + ","
         		+ maxUsePct + ","
-        		+ (dftAcnt ? 1 : 0) +
-        		",sysdate())";
+        		+ " sysdate())";
         log.info(sql);
         stm.execute(sql);
         con.close();

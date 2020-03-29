@@ -10,8 +10,6 @@ public class TradexAccount {
     private double stock_value;
     private double total_value;
     
-    private int splitNum = 1000;
-    
     private int error_code;
     private String error_msg;
     
@@ -87,14 +85,6 @@ public class TradexAccount {
         this.total_value = total_value;
     }
 
-    public int getSplitNum() {
-        return splitNum;
-    }
-
-    public void setSplitNum(int splitNum) {
-        this.splitNum = splitNum;
-    }
-    
     public boolean isTranSuccess() {
         return error_code == 0;
     }
@@ -126,15 +116,13 @@ public class TradexAccount {
             log.info("fetchable_mny:" + fetchable_mny);
             log.info("stock_value:" + stock_value);
             log.info("total_value:" + total_value);
-            log.info("splitNum:" + splitNum);
             
             rts = "acntID:" + acntID + "\n"
             + "init_mny:" + init_mny + "\n"
             + "usable_mny:" + usable_mny + "\n"
             + "fetchable_mny:" + fetchable_mny + "\n"
             + "stock_value:" + stock_value + "\n"
-            + "total_value:" + total_value + "\n"
-            + "splitNum:" + splitNum;
+            + "total_value:" + total_value + "\n";
         }
         else {
             log.info("Trade errored with error code:" + error_code + ", error_message:" + error_msg);

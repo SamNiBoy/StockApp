@@ -21,19 +21,18 @@ public interface ICashAccount {
     /**
      * @param args
      */
-    public double getMaxAvaMny();
+    public double getMaxMnyForTrade();
     public String getActId();
     public double getInitMny();
     public double getUsedMny();
+    public double getUsedMnyHrs();
     public void setUsedMny(double usedMny);
     public double getPftMny();
-    public int getSplitNum();
-    public boolean isDftAcnt();
     public void printAcntInfo();
     public void printTradeInfo();
     public int getSellableAmt(String stkId, String sellDt);
     public int getUnSellableAmt(String stkId, String sellDt);
-    public boolean calProfit(String ForDt, Map stockSet);
+    public boolean calProfit();
     public boolean initAccount();
     public boolean hasStockInHand(Stock2 s);
     public double getInHandStockCostPrice(Stock2 s);
