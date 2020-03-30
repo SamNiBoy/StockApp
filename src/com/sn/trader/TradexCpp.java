@@ -92,7 +92,7 @@ public class TradexCpp
                     + "        on u.trade_unit = t.acntId "
                     + "    where s.gz_flg = 1"
                     + "      and u.buy_sell_enabled = 1"
-                    + "      and s.stkId = '" + ID + "'"
+                    + "      and s.id = '" + ID + "'"
                     + "    order by in_hand_qty desc";
             log.info(sql);
             rs = stm.executeQuery(sql);

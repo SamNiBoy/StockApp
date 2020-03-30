@@ -208,7 +208,7 @@ public class GzStockDataFetcher implements IWork {
                 BufferedReader br = new BufferedReader(isr);
                 int j = 0;
                 while ((str = br.readLine()) != null) {
-                    if (str.equals(lstStkDat) || lstStkDat.length() == 0)
+                    if (str.equals(lstStkDat))
                     {
                         failCnt++;
                         break;
@@ -221,7 +221,14 @@ public class GzStockDataFetcher implements IWork {
                         /* Make sure lstStkDat store the last value of first stock*/
                         lstStkDat = str;
                     }
+                    
                     j++;
+                    
+                    if (i==0 && j==1)
+                    {
+                        //skip very first record to avoid alwasy fetching when start program during non-business time.
+                        continue;
+                    }
                 
                     //log.info(str);
                     srd = RawStockData.createStockData(str);
