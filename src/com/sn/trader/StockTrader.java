@@ -185,15 +185,44 @@ public class StockTrader {
                 log.info("Stock " + rc.id + " did new trade, add to lstTradeForStocks.");
                 lstTradeForStocks.put(rc.id, rc);
             }
-            else if (rc.is_buy_point == pre.is_buy_point){
-                log.info("Stock " + rc.id + " did same direction trade, refresh lstTradeForStocks.");
-                pre.price = (pre.price * pre.quantity + rc.price * rc.quantity) / (pre.quantity + rc.quantity);
-                pre.quantity = (pre.quantity + rc.quantity);
-                lstTradeForStocks.put(pre.id, pre);
-            }
             else {
-                log.info("Stock " + rc.id + " did revserse trade, clean up lstTradeForStocks.");
-                lstTradeForStocks.remove(rc.id);
+                log.info("had a new trade, refresh balance information:");
+                log.info("pre id:" + pre.id);
+                log.info("pre name:" + pre.name);
+                log.info("pre price:" + pre.price);
+                log.info("pre quantity:" + pre.quantity);
+                log.info("pre buy_flg:" + pre.is_buy_point);
+                
+                log.info("cur id:" + rc.id);
+                log.info("cur name:" + rc.name);
+                log.info("cur price:" + rc.price);
+                log.info("cur quantity:" + rc.quantity);
+                log.info("cur buy_flg:" + rc.is_buy_point);
+                
+                if (rc.is_buy_point == pre.is_buy_point){
+                    log.info("Same direction trade, refresh lstTradeForStocks.");
+                    pre.price = (pre.price * pre.quantity + rc.price * rc.quantity) / (pre.quantity + rc.quantity);
+                    pre.quantity = (pre.quantity + rc.quantity);
+                    lstTradeForStocks.put(pre.id, pre);
+                }
+                else {
+                    if (pre.quantity == rc.quantity)
+                    {
+                        log.info("Revserse trade with same qty, clean up lstTradeForStocks.");
+                        lstTradeForStocks.remove(rc.id);
+                    }
+                    else if (pre.quantity > rc.quantity)
+                    {
+                        log.info("pre quantity is  > cur quanaity, subtract cur quantity and refresh the map");
+                        pre.quantity -= rc.quantity;
+                        lstTradeForStocks.put(pre.id, pre);
+                    }
+                    else {
+                        log.info("pre quantity is  < cur quanaity, update cur quantity and refresh the map");
+                        rc.quantity -= pre.quantity;
+                        lstTradeForStocks.put(pre.id, rc);
+                    }
+                }
             }
         }
         

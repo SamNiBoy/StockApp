@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -64,46 +65,69 @@ public class SimTrader implements IWork{
     private TimeUnit tu = TimeUnit.MILLISECONDS;
     
     private boolean simOnGzStk = true;
-    private boolean run_on_night = false;
+    private LocalDateTime pre_sim_time = null;
     
     public String resMsg = "Initial msg for work SimTrader.";
     
     static Connection con = null;
     SimStockDriver ssd = new SimStockDriver();
 
-    public SimTrader(long id, long dbn, boolean onlyGzStk, boolean ron) {
+    public SimTrader(long id, long dbn) {
         initDelay = id;
         delayBeforNxtStart = dbn;
-        simOnGzStk = onlyGzStk;
-        run_on_night = ron;
     }
 
     static public void main(String[] args) throws Exception {
-        SimTrader st = new SimTrader(0, 0, false, false);
+        SimTrader st = new SimTrader(0, 0);
         st.run();
     }
 
-	private static void resetTest() {
+	private static void resetTest(boolean simgzstk) {
 		String sql;
 		try {
 			Connection con = DBManager.getConnection();
-			Statement stm = con.createStatement();
-			sql = "delete from tradedtl where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
-			log.info(sql);
-			stm.execute(sql);
-			stm.close();
-			
-			stm = con.createStatement();
-			sql = "delete from tradehdr where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
-			log.info(sql);
-			stm.execute(sql);
-			stm.close();
-			
-			stm = con.createStatement();
-			sql = "delete from CashAcnt where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
-			log.info(sql);
-			stm.execute(sql);
-			stm.close();
+            if (simgzstk)
+            {
+			    Statement stm = con.createStatement();
+			    sql = "delete from tradedtl where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    log.info(sql);
+			    stm.execute(sql);
+			    stm.close();
+			    
+			    stm = con.createStatement();
+			    sql = "delete from tradehdr where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    log.info(sql);
+			    stm.execute(sql);
+			    stm.close();
+			    
+			    stm = con.createStatement();
+			    sql = "delete from CashAcnt where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    log.info(sql);
+			    stm.execute(sql);
+			    stm.close();
+                
+            }
+            else 
+            {
+			    Statement stm = con.createStatement();
+			    sql = "update tradedtl set acntid = concat(acntid, '_GZ') where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    log.info(sql);
+			    stm.execute(sql);
+			    stm.close();
+			    
+			    stm = con.createStatement();
+			    sql = "update tradehdr set acntid = concat(acntid, '_GZ')  where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    log.info(sql);
+			    stm.execute(sql);
+			    stm.close();
+			    
+			    stm = con.createStatement();
+			    sql = "update CashAcnt set acntid = concat(acntid, '_GZ') where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    log.info(sql);
+			    stm.execute(sql);
+			    stm.close();
+                
+            }
 			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -112,7 +136,7 @@ public class SimTrader implements IWork{
 	
 	public static void start() {
         log.info("Starting task SimTrader...");
-        SimTrader st = new SimTrader(5, 30 * 60 * 1000, false, true);
+        SimTrader st = new SimTrader(5, 30 * 60 * 1000);
 	    WorkManager.submitWork(st);
 	}
 	
@@ -138,105 +162,139 @@ public class SimTrader implements IWork{
             return;
         }
         
-        //Only run at every night 18 clock.
-        if (hr != 18)
+        //Only run at every night after 18 clock.
+        if (hr <= 18)
         {
             log.info("SimTrader skipped because of hour:" + hr + " not 18:00.");
             return;
         }
         
-        resetTest();
+        LocalDateTime n = LocalDateTime.now();
+        
+        if (pre_sim_time != null && n.getHour() - pre_sim_time.getHour() < 12)
+        {
+            log.info("SimTrader previous ran at:" + pre_sim_time.toString() + " which is within 12 hours, skip run it again.");
+            return;
+        }
+        
+        
         // SimStockDriver.addStkToSim("000727");
         Connection con = DBManager.getConnection();
         Statement stm = null;
         ResultSet rs = null;
         String sql = "";
-        if (simOnGzStk) {
-            sql = "select distinct id from usrStk where gz_flg = 1 and openID ='" + STConstants.openID + "' and openID = suggested_by ";
-        }
-        else {
-                sql = "select * from stk where id in "
-                                   + "(select s.id from stkdat2 s "
-                                   + "  where s.yt_cls_pri <= 100 and s.yt_cls_pri >= 5 "
-                                   + "    and not exists (select 'x' from stkdat2 s2 where s2.id = s.id and s2.dl_dt > s.dl_dt)) ";
-        }
-
-        ArrayList<String> stks = new ArrayList<String>();
         
-        ArrayList<SimWorker> workers = new ArrayList<SimWorker>();
+        simOnGzStk = true;
+        
+        /*
+         * we simulate twice:
+         * 1. Simuate gz_flg stocks which should be finished quickly.
+         * 2. Simulate all stocks to find best options.
+         */
+        
         try {
-            stm = con.createStatement();
-            int batch = 0;
-            int batcnt = 0;
-            log.info(sql);
-            rs = stm.executeQuery(sql);
-            while (rs.next()) {
-                stks.add(rs.getString("id"));
-                batch++;
-                if (batch == 250) {
-                    batcnt++;
-                    log.info("Now have 250 stocks to sim, start a worker for batcnt:" + batcnt);
-                    SimWorker sw;
-                    try {
-                        sw = new SimWorker(0, 0, "SimWorker" + batcnt);
-                        workers.add(sw);
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                        return;
+                for (int i = 0; i < 2; i++) {
+                    
+                    resetTest(simOnGzStk);
+                    
+                    if (simOnGzStk) {
+                        sql = "select distinct id from usrStk where gz_flg = 1 order by id";
                     }
-                    sw.addStksToWorker(stks);
-                    stks.clear();
-                    WorkManager.submitWork(sw);
-                    batch = 0;
+                    else {
+                            sql = "select distinct s.id" + 
+                                  "  from stkdat2 s" + 
+                                  " where cur_pri < 80" + 
+                                  "   and cur_pri > 5" + 
+                                  "   and left(dl_dt, 10) = (select left(max(s2.dl_dt), 10) from stkdat2 s2)" +
+                                  " order by id ";
+                    }
+                    
+                    ArrayList<String> stks = new ArrayList<String>();
+                    
+                    ArrayList<SimWorker> workers = new ArrayList<SimWorker>();
+                    
+                    
+                    int batch = 0;
+                    int batcnt = 0;
+                    
+                    log.info(sql);
+                    
+                    stm = con.createStatement();
+                    
+                    rs = stm.executeQuery(sql);
+                    
+                    while (rs.next()) {
+                        stks.add(rs.getString("id"));
+                        batch++;
+                        if (batch == 250) {
+                            batcnt++;
+                            log.info("Now have 250 stocks to sim, start a worker for batcnt:" + batcnt);
+                            SimWorker sw;
+                            try {
+                                sw = new SimWorker(0, 0, "SimWorker" + batcnt);
+                                workers.add(sw);
+                            } catch (Exception e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                                return;
+                            }
+                            sw.addStksToWorker(stks);
+                            stks.clear();
+                            WorkManager.submitWork(sw);
+                            batch = 0;
+                        }
+                    }
+                    
+                    rs.close();
+                    stm.close();
+                    
+                    if (batch > 0) {
+                        batcnt++;
+                        log.info("Last have " + batch + " stocks to sim, start a worker for batcnt:" + batcnt);
+                        SimWorker sw;
+                        try {
+                            sw = new SimWorker(0, 0, "SimWorker" + batcnt);
+                            workers.add(sw);
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                            return;
+                        }
+                        sw.addStksToWorker(stks);
+                        WorkManager.submitWork(sw);
+                        batch = 0;
+                    }
+                    log.info("Now end simulate trading.");
+                
+                    try {
+                         for (SimWorker sw : workers) {
+        	 	            WorkManager.waitUntilWorkIsDone(sw.getWorkName());
+                         }
+                         //Send mail to user for top10 best and worst.
+                         sto.update();
+                         
+                         archiveStockData();
+                         
+                         pre_sim_time = LocalDateTime.now();
+                         
+                         simOnGzStk = false;
+                         
+        	         } catch (InterruptedException e) {
+        	 	         // TODO Auto-generated catch block
+        	 	         e.printStackTrace();
+        	         }
                 }
-            }
-
-            if (batch > 0) {
-                batcnt++;
-                log.info("Last have " + batch + " stocks to sim, start a worker for batcnt:" + batcnt);
-                SimWorker sw;
-                try {
-                    sw = new SimWorker(0, 0, "SimWorker" + batcnt);
-                    workers.add(sw);
-                } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                    return;
-                }
-                sw.addStksToWorker(stks);
-                WorkManager.submitWork(sw);
-                batch = 0;
-            }
-            log.info("Now end simulate trading.");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        finally {
-        	try {
-                rs.close();
-                stm.close();
-                con.close();
-        	}
-        	catch(Exception e2) {
-        		log.info(e2.getMessage());
-        	}
-        }
-        
-       try {
-            for (SimWorker sw : workers) {
-		        WorkManager.waitUntilWorkIsDone(sw.getWorkName());
-            }
-            //Send mail to user for top10 best and worst.
-            sto.update();
-            
-            archiveStockData();
-            
-	   } catch (InterruptedException e) {
-		    // TODO Auto-generated catch block
-		    e.printStackTrace();
-	   }
-       
+          } catch (SQLException e) {
+              e.printStackTrace();
+          }
+          finally {
+          	try {
+                  con.close();
+          	}
+          	catch(Exception e2) {
+          		log.info(e2.getMessage());
+          	}
+          }
        //WorkManager.shutdownWorks();
 
     }

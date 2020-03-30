@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -140,6 +142,33 @@ public class SuggestStock implements IWork {
         finally {
             StockDataFetcher.lock.unlock();
         }*/
+        
+        LocalDateTime lt = LocalDateTime.now();
+        int hr = lt.getHour();
+        int mnt = lt.getMinute();
+        
+        int time = hr*100 + mnt;
+        log.info("SuggestStock, starts now at time:" + time);
+        DayOfWeek week = lt.getDayOfWeek();
+        
+        if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
+        {
+            log.info("SuggestStock skipped because of weekend, goto sleep 8 hours.");
+            try {
+                Thread.currentThread().sleep(8 * 60 * 60 * 1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return;
+        }
+        
+        //Only run at every night after 22 clock.
+        if (hr <= 22)
+        {
+            log.info("SuggestStock skipped because of hour:" + hr + " not 22:00.");
+            return;
+        }
 
 		resetSuggestion();
 		
