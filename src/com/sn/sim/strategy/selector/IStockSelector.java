@@ -1,4 +1,4 @@
-package com.sn.sim.strategy.selector.stock;
+package com.sn.sim.strategy.selector;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

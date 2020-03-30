@@ -198,10 +198,12 @@ public class TradexCpp
             int errcod = Integer.valueOf(res[1]);
             String errmsg = res[2];
             System.out.println("processCancelOrder error:" + errcod + ", msg:" + errmsg);
+            log.info("processCancelOrder error:" + errcod + ", msg:" + errmsg);
             return false;
         }
         else {
             System.out.println("processCancelOrder cancelled order:" + order_id + " success.");
+            log.info("processCancelOrder cancelled order:" + order_id + " success.");
             return true;
         }
     }

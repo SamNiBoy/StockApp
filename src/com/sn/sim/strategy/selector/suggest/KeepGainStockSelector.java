@@ -1,7 +1,8 @@
-package com.sn.sim.strategy.selector.stock;
+package com.sn.sim.strategy.selector.suggest;
 
 import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
+import com.sn.sim.strategy.selector.IStockSelector;
 import com.sn.stock.Stock2;
 
 public class KeepGainStockSelector implements IStockSelector {

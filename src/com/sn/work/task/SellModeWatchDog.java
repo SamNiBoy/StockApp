@@ -14,10 +14,10 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.SellModeStockObserverable;
 import com.sn.sim.strategy.imp.STConstants;
-import com.sn.sim.strategy.selector.stock.AvgClsPriSellModeSelector;
-import com.sn.sim.strategy.selector.stock.BadTradeSellModeSelector;
-import com.sn.sim.strategy.selector.stock.CurPriLostSellModeSelector;
-import com.sn.sim.strategy.selector.stock.IStockSelector;
+import com.sn.sim.strategy.selector.suggest.AvgClsPriSellModeSelector;
+import com.sn.sim.strategy.selector.sellmode.BadTradeSellModeSelector;
+import com.sn.sim.strategy.selector.suggest.CurPriLostSellModeSelector;
+import com.sn.sim.strategy.selector.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
@@ -88,7 +88,7 @@ public class SellModeWatchDog implements IWork {
 		initDelay = id;
 		delayBeforNxtStart = dbn;
 		//selectors.add(new DefaultSellModeSelector());
-		selectors.add(new AvgClsPriSellModeSelector());
+		//selectors.add(new AvgClsPriSellModeSelector());
 		//selectors.add(new CurPriLostSellModeSelector());
 		selectors.add(new BadTradeSellModeSelector());
 	}

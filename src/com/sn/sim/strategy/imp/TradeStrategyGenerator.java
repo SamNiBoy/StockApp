@@ -14,18 +14,18 @@ import com.sn.db.DBManager;
 import com.sn.sim.strategy.ITradeStrategy;
 import com.sn.sim.strategy.selector.buypoint.BalanceBuyPointSelector;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
-import com.sn.sim.strategy.selector.buypoint.IBuyPointSelector;
+import com.sn.sim.strategy.selector.IBuyPointSelector;
 import com.sn.sim.strategy.selector.buypoint.MacdBuyPointSelector;
 import com.sn.sim.strategy.selector.buypoint.PriceTurnBuyPointSelector;
 import com.sn.sim.strategy.selector.buypoint.QtyBuyPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.BalanceSellPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.DefaultSellPointSelector;
-import com.sn.sim.strategy.selector.sellpoint.ISellPointSelector;
+import com.sn.sim.strategy.selector.ISellPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.MacdSellPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.PriceTurnSellPointSelector;
 import com.sn.sim.strategy.selector.sellpoint.QtySellPointSelector;
-import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
-import com.sn.sim.strategy.selector.stock.IStockSelector;
+import com.sn.sim.strategy.selector.suggest.DefaultStockSelector;
+import com.sn.sim.strategy.selector.IStockSelector;
 
 public class TradeStrategyGenerator {
 

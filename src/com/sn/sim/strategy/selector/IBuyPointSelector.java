@@ -1,4 +1,4 @@
-package com.sn.sim.strategy.selector.sellpoint;
+package com.sn.sim.strategy.selector;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -9,12 +9,12 @@ import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.stock.Stock2;
 
-public interface ISellPointSelector {
+public interface IBuyPointSelector {
 
     /**
      * @param args
      */
-    public boolean isGoodSellPoint(Stock2 s, ICashAccount ac);
-    public int getSellQty(Stock2 s, ICashAccount ac);
+    public boolean isGoodBuyPoint(Stock2 s, ICashAccount ac);
+    public int getBuyQty(Stock2 s, ICashAccount ac);
     public boolean isSimMode();
 }

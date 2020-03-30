@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
+import com.sn.sim.strategy.selector.ISellPointSelector;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;

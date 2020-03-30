@@ -1,4 +1,4 @@
-package com.sn.sim.strategy.selector.stock;
+package com.sn.sim.strategy.selector.suggest;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.sim.strategy.imp.TradeStrategyImp;
+import com.sn.sim.strategy.selector.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 
@@ -64,7 +65,7 @@ public class PriceShakingStockSelector implements IStockSelector {
                        + " min(cur_pri) + 2 / 3.0 * (max(cur_pri) - min(cur_pri)) line2_pri "
                        + "  from stkdat2 "
                        + " where id ='" + s.getID() + "'"
-                       + "   and left(dl_dt, 10) >= left(str_to_date('2020-03-27 00:00:00', '%Y-%m-%d %T')" + "- interval 1 day , 10)";
+                       + "   and left(dl_dt, 10) >= left(sysdate()" + " - interval 1 day , 10)";
             log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
             if (rs.next() && rs.getDouble("line1_pri") > 0) {
@@ -98,7 +99,7 @@ public class PriceShakingStockSelector implements IStockSelector {
             sql = "select cur_pri, ft_id, dl_dt"
                    + "  from stkdat2 "
                    + " where id ='" + s.getID() + "'"
-                   + "   and left(dl_dt, 10) >= left(str_to_date('2020-03-27 00:00:00', '%Y-%m-%d %T')" + "- interval 1 day , 10)"
+                   + "   and left(dl_dt, 10) >= left(sysdate() " + "- interval 1 day , 10)"
                    + " order by ft_id";
             
             stm = con.createStatement();

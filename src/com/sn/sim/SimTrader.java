@@ -112,7 +112,7 @@ public class SimTrader implements IWork{
 	
 	public static void start() {
         log.info("Starting task SimTrader...");
-        SimTrader st = new SimTrader(5, 3 * 60 * 60 * 1000, false, true);
+        SimTrader st = new SimTrader(5, 30 * 60 * 1000, false, true);
 	    WorkManager.submitWork(st);
 	}
 	
@@ -155,7 +155,10 @@ public class SimTrader implements IWork{
             sql = "select distinct id from usrStk where gz_flg = 1 and openID ='" + STConstants.openID + "' and openID = suggested_by ";
         }
         else {
-            sql = "select distinct id from usrStk";
+                sql = "select * from stk where id in "
+                                   + "(select s.id from stkdat2 s "
+                                   + "  where s.yt_cls_pri <= 100 and s.yt_cls_pri >= 5 "
+                                   + "    and not exists (select 'x' from stkdat2 s2 where s2.id = s.id and s2.dl_dt > s.dl_dt)) ";
         }
 
         ArrayList<String> stks = new ArrayList<String>();

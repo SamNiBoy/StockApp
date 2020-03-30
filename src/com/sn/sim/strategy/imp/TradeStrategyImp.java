@@ -26,9 +26,9 @@ import com.sn.cashAcnt.ICashAccount;
 import com.sn.cashAcnt.TradexAcnt;
 import com.sn.db.DBManager;
 import com.sn.sim.strategy.ITradeStrategy;
-import com.sn.sim.strategy.selector.buypoint.IBuyPointSelector;
-import com.sn.sim.strategy.selector.sellpoint.ISellPointSelector;
-import com.sn.sim.strategy.selector.stock.IStockSelector;
+import com.sn.sim.strategy.selector.IBuyPointSelector;
+import com.sn.sim.strategy.selector.ISellPointSelector;
+import com.sn.sim.strategy.selector.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.trader.TradexBuySellResult;
@@ -954,6 +954,14 @@ public class TradeStrategyImp implements ITradeStrategy {
                 log.error("Sell: placeSellTradeToTradex failed with error:" + tbsr.getError_code() + ", message:" + tbsr.getError_msg());
                 return null;
             }
+            
+            if (tbsr.getTrade_quantity() < qtyToTrade) {
+                log.info("Tradex placeSellTradeToTradex cancel order with param:");
+                log.info("qtyToTrade:" + qtyToTrade);
+                log.info("trade_quantity:" + tbsr.getTrade_quantity());
+                log.info("order_id:" + tbsr.getOrder_id());
+                TradexCpp.processCancelOrder(tbsr.getOrder_id());
+            }
             return tbsr;
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -971,6 +979,14 @@ public class TradeStrategyImp implements ITradeStrategy {
             if (!tbsr.isTranSuccess()) {
                 log.error("Buy: placeSellTradeToTradex failed with error:" + tbsr.getError_code() + ", message:" + tbsr.getError_msg());
                 return null;
+            }
+            
+            if (tbsr.getTrade_quantity() < qtyToTrade) {
+                log.info("Tradex placeBuyTradeToTradex cancel order with param:");
+                log.info("qtyToTrade:" + qtyToTrade);
+                log.info("trade_quantity:" + tbsr.getTrade_quantity());
+                log.info("order_id:" + tbsr.getOrder_id());
+                TradexCpp.processCancelOrder(tbsr.getOrder_id());
             }
             return tbsr;
         } catch (Exception e) {

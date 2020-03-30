@@ -1,4 +1,4 @@
-package com.sn.sim.strategy.selector.stock;
+package com.sn.sim.strategy.selector.suggest;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.sim.strategy.imp.TradeStrategyImp;
+import com.sn.sim.strategy.selector.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 

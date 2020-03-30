@@ -17,7 +17,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.sim.strategy.selector.stock.ClosePriceTrendStockSelector;
+import com.sn.sim.strategy.selector.suggest.ClosePriceTrendStockSelector;
 
 public class Stock2 implements Comparable<Stock2>{
 

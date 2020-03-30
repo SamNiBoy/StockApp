@@ -17,14 +17,14 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.mail.reporter.RecommandStockObserverable;
 import com.sn.sim.strategy.imp.STConstants;
-import com.sn.sim.strategy.selector.stock.AvgClsPriStockSelector;
-import com.sn.sim.strategy.selector.stock.DealMountStockSelector;
-import com.sn.sim.strategy.selector.stock.DefaultStockSelector;
-import com.sn.sim.strategy.selector.stock.IStockSelector;
-import com.sn.sim.strategy.selector.stock.KeepGainStockSelector;
-import com.sn.sim.strategy.selector.stock.PriceShakingStockSelector;
-import com.sn.sim.strategy.selector.stock.PriceStockSelector;
-import com.sn.sim.strategy.selector.stock.StddevStockSelector;
+import com.sn.sim.strategy.selector.suggest.AvgClsPriStockSelector;
+import com.sn.sim.strategy.selector.suggest.DealMountStockSelector;
+import com.sn.sim.strategy.selector.suggest.DefaultStockSelector;
+import com.sn.sim.strategy.selector.IStockSelector;
+import com.sn.sim.strategy.selector.suggest.KeepGainStockSelector;
+import com.sn.sim.strategy.selector.suggest.PriceShakingStockSelector;
+import com.sn.sim.strategy.selector.suggest.PriceStockSelector;
+import com.sn.sim.strategy.selector.suggest.StddevStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.work.WorkManager;
@@ -411,7 +411,7 @@ public class SuggestStock implements IWork {
 		int lost_cnt = 0;
 		int gain_cnt = 0;
 		try {
-			sql = "select * from tradedtl where stkid = '" + stkid + "' and acntid like 'ACNT%' order by seqnum";
+			sql = "select * from tradedtl where stkid = '" + stkid + "' and acntid not like 'SIM%' order by seqnum";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
@@ -447,7 +447,7 @@ public class SuggestStock implements IWork {
 				return true;
 			}
 			
-			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "' and acntid like 'ACNT%' "
+			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "' and acntid not like 'SIM%' "
 				+ "   and dl_dt >= sysdate() - interval " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + " day)"
 				+ " or exists (select 'y' from usrStk where gz_flg = 1 and id = '" + stkid +  "' and add_dt > sysdate() - interval " + STConstants.MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE + " day)";
 			log.info(sql);

@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.sim.strategy.imp.STConstants;
+import com.sn.sim.strategy.selector.ISellPointSelector;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
@@ -25,7 +26,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(QtySellPointSelector.class);
 
-	private double BASE_TRADE_THRESH = 0.03;
+	private double BASE_TRADE_THRESH = 0.02;
 	//Map<String, Boolean> preSellMode = new HashMap<String, Boolean>();
     private StockBuySellEntry sbs = null;
     
@@ -78,9 +79,9 @@ public class QtySellPointSelector implements ISellPointSelector {
         
         boolean csd = SellModeWatchDog.isStockInSellMode(stk);
         
-        if (csd == true && sbs == null)
+        if (csd == true && (sbs == null || !sbs.is_buy_point))
         {
-            log.info("Stock:" + stk.getID() + " is in sell mode and in balance, no need to break balance.");
+            log.info("Stock:" + stk.getID() + " is in sell mode and in balance/sold, no need to break balance.");
             return false;
         }
 		

@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.sim.strategy.imp.STConstants;
+import com.sn.sim.strategy.selector.IBuyPointSelector;
 import com.sn.sim.strategy.selector.buypoint.DefaultBuyPointSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
@@ -34,7 +35,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         sim_mode = sm;
     }
     
-	private double BASE_TRADE_THRESH = 0.03;
+	private double BASE_TRADE_THRESH = 0.02;
 
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
@@ -69,9 +70,9 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         
         boolean csd = SellModeWatchDog.isStockInSellMode(stk);
         
-        if (csd == true && sbs == null)
+        if (csd == true && (sbs == null || sbs.is_buy_point))
         {
-            log.info("Stock:" + stk.getID() + " is in sell mode and in balance, no need to break balance.");
+            log.info("Stock:" + stk.getID() + " is in sell mode and in balance/bought, no need to break balance.");
             return false;
         }
     
