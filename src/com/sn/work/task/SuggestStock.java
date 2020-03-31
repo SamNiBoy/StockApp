@@ -164,9 +164,9 @@ public class SuggestStock implements IWork {
         }
         
         //Only run at every night after 22 clock.
-        if (hr <= 22)
+        if (hr < 22)
         {
-            log.info("SuggestStock skipped because of hour:" + hr + " not 22:00.");
+            log.info("SuggestStock skipped because of hour:" + hr + " less than 22:00.");
             return;
         }
 
