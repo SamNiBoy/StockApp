@@ -1045,14 +1045,31 @@ public class TradeStrategyImp implements ITradeStrategy {
             return acnt;
         }
         else {
-            TradexCpp.findBestClientForTrade(stk);
             
-            tradex_acnt = new TradexAcnt();
+            //findBestClientForTrade return true means we switch to a new account.
+            String Tradexacnt = TradexCpp.findBestAccountForTrade(stk);
             
-            if (cash_account_map.get(tradex_acnt.getActId()) == null)
+            if(tradex_acnt == null || !tradex_acnt.getActId().equals(Tradexacnt))
             {
-                cash_account_map.put(tradex_acnt.getActId(), tradex_acnt);
+                tradex_acnt = new TradexAcnt();
+                
+                ICashAccount acnt = CashAcntManger.loadAcnt(Tradexacnt);
+                
+                if (acnt == null) {
+                    
+                    log.info("No Tradex Account, create a new one.");
+                    
+                    //create a local cashacnt record to map Tradex account, columns may not be exact same, but for profit calculation purpose.
+                    CashAcntManger
+                    .crtAcnt(Tradexacnt, STConstants.DFT_INIT_MNY, 0.0, 0.0,0.0,STConstants.DFT_MAX_MNY_PER_TRADE, STConstants.DFT_MAX_USE_PCT);
+                }
+                
+                if (cash_account_map.get(tradex_acnt.getActId()) == null)
+                {
+                    cash_account_map.put(tradex_acnt.getActId(), tradex_acnt);
+                }
             }
+            
             return tradex_acnt;
         }
         

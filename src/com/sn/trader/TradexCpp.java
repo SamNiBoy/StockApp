@@ -77,11 +77,12 @@ public class TradexCpp
         t.doLogout();
     }
     
-    public static void findBestClientForTrade(String ID)
+    public static String findBestAccountForTrade(String ID)
     {
         Connection con = DBManager.getConnection();
         Statement stm = null;
         ResultSet rs = null;
+        
         try {
             stm = con.createStatement();
             String sql = "select u.client_id, u.client_pwd, u.trade_unit, case when t.in_hand_qty is null then 0 else t.in_hand_qty end in_hand_qty"
@@ -100,11 +101,11 @@ public class TradexCpp
                 String nxt_client_id = rs.getString("client_id");
                 String nxt_client_pwd = rs.getString("client_pwd");
                 String nxt_trade_unit = rs.getString("trade_unit");
-                log.info("findBestClientForTrade, client_id:" + client_id + ", client_pwd:" + client_pwd + ", trade_unit:" + trade_unit);
-                log.info("findBestClientForTrade, nxt_client_id:" + nxt_client_id + ", nxt_client_pwd:" + nxt_client_pwd + ", nxt_trade_unit:" + nxt_trade_unit);
+                log.info("findBestAccountForTrade, client_id:" + client_id + ", client_pwd:" + client_pwd + ", trade_unit:" + trade_unit);
+                log.info("findBestAccountForTrade, nxt_client_id:" + nxt_client_id + ", nxt_client_pwd:" + nxt_client_pwd + ", nxt_trade_unit:" + nxt_trade_unit);
                 if (!client_id.equals(nxt_client_id))
                 {
-                    log.info("findBestClientForTrade, client_id:" + client_id + " is different with nxt_client_id:" + nxt_client_id + ", login with next client to trade.");
+                    log.info("findBestAccountForTrade, client_id:" + client_id + " is different with nxt_client_id:" + nxt_client_id + ", login with next client to trade.");
                     if (client_id.length() > 0 && checkLoginAlready())
                     {
                         doLogout();
@@ -129,6 +130,8 @@ public class TradexCpp
                 e.printStackTrace();
             }
         }
+        
+        return trade_unit;
     }
     
     private static void doLoginCheck() throws Exception 
