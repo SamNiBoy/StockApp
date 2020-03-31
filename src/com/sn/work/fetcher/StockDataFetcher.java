@@ -9,6 +9,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -142,6 +143,48 @@ public class StockDataFetcher implements IWork {
         String str;
 
         log.info("Now StockDataFetcher start!!!");
+        
+        LocalDateTime lt = LocalDateTime.now();
+        DayOfWeek week = lt.getDayOfWeek();
+        
+        if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
+        {
+            log.info("StockDataFetcher skipped because of weekend, goto sleep 8 hours.");
+            try {
+                Thread.currentThread().sleep(8 * 60 * 60 * 1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return;
+        }
+        
+        int hr = lt.getHour();
+        int mnt = lt.getMinute();
+        
+        if (hr >= 16 || hr <= 8)
+        {
+            int hr_to_sleep = 0;
+            log.info("StockDataFetcher skipped because of hour:" + hr + " not in business time.");
+            if (hr <= 8) {
+                hr_to_sleep = 8 - hr;
+            }
+            else {
+                hr_to_sleep = 32 - hr;
+            }
+            if (hr_to_sleep > 0)
+            {
+                log.info("StockDataFetcher goto sleep:" + hr_to_sleep + " hours.");
+                try {
+                    Thread.currentThread().sleep(hr_to_sleep * 60 * 60 * 1000);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            return;
+        }
+        
         failCnt = 0;
         try {
             String fs [] = getFetchLst().split("#"), cs;
@@ -177,14 +220,6 @@ public class StockDataFetcher implements IWork {
                         continue;
                     }
                 
-                    LocalDateTime lt = LocalDateTime.now();
-                    int hr = lt.getHour();
-                    
-                    //if (hr <= 8 || hr >= 15) {
-                    //    log.info(" hour is not in market time: " + hr + ", will not save the data!");
-                    //    continue;
-                    //}
-                    
                     log.info(str);
                     srd = RawStockData.createStockData(str);
                     

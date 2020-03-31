@@ -308,7 +308,7 @@ public class SimTraderObserverable extends Observable {
                             "<th> Used Mny </th> " +
                             "<th> Used Mny Hours</th> " +
                             "<th> Profit Mny </th> " +
-                            "<th> Split Num </th> " +
+                            "<th> Max Mny Per Trade </th> " +
                             "<th> Max Useable Pct </th> " +
                             "<th> Profit</th>" +
                             "<th> Profit Pct</th>" +

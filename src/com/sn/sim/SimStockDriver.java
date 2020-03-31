@@ -310,10 +310,10 @@ public class SimStockDriver {
                 if (s != null) {
                     log.info("Now, loading DtRs for stock:" + s.getID());
                     s.getSd().loadDataFromRs(DtRs);
-                    if (need_cal_index) {
+                    /*if (need_cal_index) {
                         StockMarket.calIndex(s.getDl_dt());
                         need_cal_index = false;
-                    }
+                    }*/
                     has_data_loaded = true;
                 }
 

@@ -105,6 +105,10 @@ public class SimWorker implements IWork {
     		rs.next();
     		start_dt = rs.getString("sd");
     		end_dt = rs.getString("ed");
+            
+    		/*start_dt = "2020-03-29";
+    		end_dt = "2020-03-30";*/
+            
     		log.info("got start_dt:" + start_dt + " end_dt:" + end_dt);
     	}
     	finally {
@@ -139,6 +143,9 @@ public class SimWorker implements IWork {
 
                 lststp = lst_stmp.get(s.getID());
                 curstp = s.getDl_dt();
+                
+                log.info("Simulate step:" + StepCnt + " for stock:" + s.getID() + " at time:" + curstp.toString());
+                
                 for (ITradeStrategy cs : strategies) {
                     log.info("Simulate trading with Strategy:" + cs.getTradeStrategyName());
                     st.setStrategy(cs);

@@ -163,7 +163,7 @@ public class SimTrader implements IWork{
         }
         
         //Only run at every night after 18 clock.
-        if (hr <= 18)
+        if (hr <= 17)
         {
             log.info("SimTrader skipped because of hour:" + hr + " not 18:00.");
             return;
