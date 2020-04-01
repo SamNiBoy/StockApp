@@ -329,18 +329,18 @@ public class SimTrader implements IWork{
                     }
                     log.info("Now end simulate trading, sending mail and start purging data...");
                 
-                    /*for (SimWorker sw : workers) {
-        	 	       WorkManager.waitUntilWorkIsDone(sw.getWorkName());
-                    }*/
                     //Send mail to user for top10 best and worst.
                     sto.update();
-                    
-                    archiveStockData();
                     
                     pre_sim_time = LocalDateTime.now();
                     
                     simOnGzStk = false;
                 }
+                
+                log.info("now to run archive and purge...");
+                
+                archiveStockData();
+                
                 log.info("SimTrader end...");
                 
           } catch (SQLException e) {
