@@ -30,6 +30,7 @@ import com.sn.sim.strategy.imp.STConstants;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 import com.sn.trader.StockTrader;
+import com.sn.trader.TradexCpp;
 
 public class GzStockBuySellPointObserverable extends Observable {
 
@@ -151,7 +152,7 @@ public class GzStockBuySellPointObserverable extends Observable {
                     "<td> " + (e.is_buy_point ? "B" : "S") + "</td>" +
                     "<td> " + e.dl_dt + "</td></tr></table>");
                     
-                    CashAcnt ac = new CashAcnt(STConstants.ACNT_TRADE_PREFIX + e.id);
+                    CashAcnt ac = new CashAcnt(TradexCpp.getTrade_unit());
                     body.append(ac.reportAcntProfitWeb());
                     usr_need_mail = true;
                     generated_mail = true;

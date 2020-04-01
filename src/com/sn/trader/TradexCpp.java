@@ -49,6 +49,24 @@ public class TradexCpp
     private static String client_pwd = "Admin@12345";
     private static String trade_unit = "6001045";
     
+    public static String getClient_id() {
+        return client_id;
+    }
+    public static void setClient_id(String client_id) {
+        TradexCpp.client_id = client_id;
+    }
+    public static String getClient_pwd() {
+        return client_pwd;
+    }
+    public static void setClient_pwd(String client_pwd) {
+        TradexCpp.client_pwd = client_pwd;
+    }
+    public static String getTrade_unit() {
+        return trade_unit;
+    }
+    public static void setTrade_unit(String trade_unit) {
+        TradexCpp.trade_unit = trade_unit;
+    }
     
     public static void main(String[] args) throws Exception {
         

@@ -154,15 +154,8 @@ public class TradeStrategyImp implements ITradeStrategy {
 			        
 			        createBuyTradeRecord(s, qtyToTrade, ac, tbsr);
 			        
-			    	if (!sim_mode) {
-			            //createBuySellRecord(s, STConstants.openID, true, qtyToTrade);
-			    	}
-			    	else {
-	                    Map<String, Stock2> sm = new HashMap<String, Stock2>();
-	                    sm.put(s.getID(), s);
-	                    log.info("TradeStock date string:" + s.getDl_dt().toString().substring(0, 10));
-	                    ac.calProfit();
-			    	}
+                    ac.calProfit();
+                    
 			        break;
 			    }
 			    catch (Exception e) {
@@ -225,12 +218,8 @@ public class TradeStrategyImp implements ITradeStrategy {
                     
 			        createSellTradeRecord(s, qtyToTrade, ac, tbsr);
 			        
-			    	if (!sim_mode) {
-			            //createBuySellRecord(s, STConstants.openID, false, qtyToTrade);
-			    	}
-			    	else {
-	                    ac.calProfit();
-			    	}
+                    ac.calProfit();
+                    
 			        break;
 			    }
 			    catch (Exception e) {
