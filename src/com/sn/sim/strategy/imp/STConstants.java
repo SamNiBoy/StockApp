@@ -12,7 +12,6 @@ public class STConstants {
     public static final double DFT_MAX_MNY_PER_TRADE = 10000;
     public static final String ACNT_SIM_PREFIX = "SIM";
     public static final double COMMISSION_RATE = 0.0014;
-    public static final int ARCHIVE_DAYS_OLD = 5;
     
     //class vars.
     public static final int MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK = 20;
@@ -44,4 +43,7 @@ public class STConstants {
     public static final int SIM_THREADS_COUNT = 1;
     public static final int SIM_STOCK_COUNT_FOR_EACH_THREAD = 250;
     
+    //Archive & Purge.
+    public static final int ARCHIVE_DAYS_OLD = 1;
+    public static final int PURGE_DAYS_OLD = 5;
 }

@@ -411,17 +411,75 @@ public class SimTrader implements IWork{
             String fstDay = rs.getString("fst");
             String lstDay = rs.getString("lst");
             
-            log.info("Archiving " + rowcnt + " rows from day:" + fstDay + " to day:" + lstDay);
+            log.info("Archiving stkDat2 table with " + rowcnt + " rows from day:" + fstDay + " to day:" + lstDay);
             
             rs.close();
             stm.close();;
             
-            sql = "delete from stkdat2 where dl_dt < sysdate() - interval " + STConstants.ARCHIVE_DAYS_OLD + " day";
+            sql = "insert into arc_stkdat2 select * from stkdat2 where dl_dt < sysdate() - interval " + STConstants.ARCHIVE_DAYS_OLD + " day";
+            log.info(sql);
             stm = con.createStatement();
-            
             stm.execute(sql);
+            stm.close();
             
-            log.info("Archived " + rowcnt + " rows.");
+            sql = "delete from stkdat2 where dl_dt < sysdate() - interval " + STConstants.ARCHIVE_DAYS_OLD + " day";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();
+            
+            log.info("Archived " + rowcnt + " rows from stkDat2 table.");
+            
+            log.info("Archiving non simulation cashacnt table...");
+            
+            //For trading data: cashacnt, tradehdr, tradedtl, we only archive, but not purge.
+            sql = "insert into arc_cashacnt select * from cashacnt where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();;
+            sql = "delete from cashacnt where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();;
+            
+            log.info("Archiving non simulation tradehdr table...");
+            
+            sql = "insert into arc_tradehdr select * from tradehdr where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();;
+            sql = "delete from tradehdr where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();;
+            
+            log.info("Archiving non simulation tradedtl table...");
+            
+            sql = "insert into arc_tradedtl select * from tradedtl where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();
+            sql = "delete from tradedtl where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();
+            
+            
+            log.info("Purge arc_stkdat2 table which is older than " + STConstants.PURGE_DAYS_OLD + " days");
+            sql = "delete from arc_stkdat2 where dl_dt < sysdate() - interval " + STConstants.PURGE_DAYS_OLD + " day";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();;
+            
+            log.info("Archive and Purge process completed!");
+            
         }
         catch (Exception e)
         {
@@ -429,7 +487,6 @@ public class SimTrader implements IWork{
         }
         finally {
             try {
-                stm.close();
                 con.close();
             } catch (SQLException e) {
                 // TODO Auto-generated catch block

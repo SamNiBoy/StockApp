@@ -238,42 +238,42 @@ s5_pri decimal(8, 2) not null,
 dl_dt datetime not null
 );
 
-
-create table if not exists arc_stkDat2
-(
+/* stkDat2 stores data converted from stkdat by removing duplicates*/
+create table if not exists arc_stkDat2(
 ft_id int not null primary key,
 id varchar(6 ) not null,
-td_opn_pri int not null,
-yt_cls_pri int not null,
-cur_pri int not null,
-td_hst_pri int not null,
-td_lst_pri int not null,
-b1_bst_pri int not null,
-s1_bst_pri int not null,
-dl_stk_num int not null,
-dl_mny_num int not null,
+td_opn_pri decimal(8, 2) not null,
+yt_cls_pri decimal(8, 2) not null,
+cur_pri decimal(8, 2) not null,
+td_hst_pri decimal(8, 2) not null,
+td_lst_pri decimal(8, 2) not null,
+b1_bst_pri decimal(8, 2) not null,
+s1_bst_pri decimal(8, 2) not null,
+dl_stk_num bigint not null,
+dl_mny_num decimal(20, 2) not null,
 b1_num int not null,
-b1_pri int not null,
+b1_pri decimal(8, 2) not null,
 b2_num int not null,
-b2_pri int not null,
+b2_pri decimal(8, 2) not null,
 b3_num int not null,
-b3_pri int not null,
+b3_pri decimal(8, 2) not null,
 b4_num int not null,
-b4_pri int not null,
+b4_pri decimal(8, 2) not null,
 b5_num int not null,
-b5_pri int not null,
+b5_pri decimal(8, 2) not null,
 s1_num int not null,
-s1_pri int not null,
+s1_pri decimal(8, 2) not null,
 s2_num int not null,
-s2_pri int not null,
+s2_pri decimal(8, 2) not null,
 s3_num int not null,
-s3_pri int not null,
+s3_pri decimal(8, 2) not null,
 s4_num int not null,
-s4_pri int not null,
+s4_pri decimal(8, 2) not null,
 s5_num int not null,
-s5_pri int not null,
+s5_pri decimal(8, 2) not null,
 dl_dt datetime not null
-) TABLESPACE HISDAT;
+);
+
 
 create table if not exists stkDlyInfo(
 id varchar(6 ) not null,
@@ -349,20 +349,6 @@ add_dt datetime not null,
 CONSTRAINT CashAcnt_PK PRIMARY KEY (acntId)
 );
 
-create table if not exists arc_CashAcnt(
-acntId varchar(20 ) not null,
-init_mny decimal(8, 2) not null,
-used_mny decimal(8, 2) not null,
-used_mny_hrs decimal(8, 2) not null,
-pft_mny decimal(8, 2),
-max_mny_per_trade decimal(8, 2) not null,
-max_useable_pct decimal(8, 2) not null,
-add_dt datetime not null,
-CONSTRAINT arc_CashAcnt_PK PRIMARY KEY (acntId)
-);
-
-insert into cashacnt values('testCashAct001',20000,0,0,0,5000,0.5,sysdate());
-  
 create table if not exists TradeHdr(
 acntId varchar(20 ) not null,
 stkId varchar(6 ) not null,
@@ -388,6 +374,32 @@ order_id int,
 CONSTRAINT TradeDtl_PK PRIMARY KEY (acntId, stkId, seqnum)
 );
 
+
+create table if not exists arc_CashAcnt(
+acntId varchar(20 ) not null,
+init_mny decimal(8, 2) not null,
+used_mny decimal(8, 2) not null,
+used_mny_hrs decimal(8, 2) not null,
+pft_mny decimal(8, 2),
+max_mny_per_trade decimal(8, 2) not null,
+max_useable_pct decimal(8, 2) not null,
+add_dt datetime not null,
+CONSTRAINT arc_CashAcnt_PK PRIMARY KEY (acntId)
+);
+
+create table if not exists arc_TradeHdr(
+acntId varchar(20 ) not null,
+stkId varchar(6 ) not null,
+in_hand_stk_mny decimal(8, 2) not null,
+in_hand_qty int not null,
+in_hand_stk_price decimal(8, 2) not null,
+total_amount decimal(20, 2),
+com_rate decimal(8, 4),
+commission_mny decimal(8, 2),
+add_dt datetime not null,
+CONSTRAINT arc_TradeHdr_PK PRIMARY KEY (acntId, stkId)
+);
+
 create table if not exists arc_TradeDtl(
 acntId varchar(20 ) not null,
 stkId varchar(6 ) not null,
@@ -395,7 +407,9 @@ seqnum int not null,
 price decimal(8, 2) not null,
 amount int not null,
 dl_dt datetime not null,
-buy_flg int not null
+buy_flg int not null,
+order_id int,
+CONSTRAINT arc_TradeDtl_PK PRIMARY KEY (acntId, stkId, seqnum)
 );
 
 create table if not exists SellBuyRecord(
@@ -420,6 +434,8 @@ dl_dt datetime not null
 
 create index stkdat2_id_dldt_idx on stkDat2 (id, ft_id, dl_dt);
 create index stkdat2_idx3 on stkDat2 (id, ft_id, cur_pri, yt_cls_pri,dl_stk_num);
+create index arc_stkdat2_id_dldt_idx on arc_stkDat2 (id, ft_id, dl_dt);
+create index arc_stkdat2_idx3 on arc_stkDat2 (id, ft_id, cur_pri, yt_cls_pri,dl_stk_num);
 //create index stkdat2_idx4 on stkDat2 (dl_dt, id, ft_id, td_opn_pri, cur_pri, dl_mny_num, dl_stk_num, yt_cls_pri, td_hst_pri, td_lst_pri, b1_num, b1_pri, s1_num, s1_pri);
 create index stkdff_id_dldt_idx on stkDDF (id, dl_dt);
 /* Need below index to improve performance of curpri_df2_vw*/
