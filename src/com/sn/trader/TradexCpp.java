@@ -10,7 +10,7 @@ import com.sn.trader.TradexAccount;
 import com.sn.trader.TradexBuySellResult;
 import com.sn.trader.TradexStockInHand;
 import com.sn.db.DBManager;
-import com.sn.mail.reporter.GzStockBuySellPointObserverable.BuySellInfoSubscriber;
+import com.sn.mail.GzStockBuySellPointObserverable.BuySellInfoSubscriber;
 import com.sn.trader.StockTrader;
 
 /*

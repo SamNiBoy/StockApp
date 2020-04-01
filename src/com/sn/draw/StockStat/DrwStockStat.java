@@ -10,9 +10,9 @@ import java.util.Comparator;
 
 import org.apache.log4j.Logger;
 
-import com.sn.draw.itf.Draw;
-import com.sn.work.WorkManager;
-import com.sn.work.task.EvaStocks;
+import com.sn.draw.Draw;
+import com.sn.task.EvaStocks;
+import com.sn.task.WorkManager;
 
 public class DrwStockStat implements Draw{
 

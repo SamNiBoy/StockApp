@@ -5,8 +5,8 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 
-import com.sn.work.WorkManager;
-import com.sn.work.task.TaskManager;
+import com.sn.task.TaskManager;
+import com.sn.task.WorkManager;
 
 public class AutoRunTask implements ServletContextListener{
 

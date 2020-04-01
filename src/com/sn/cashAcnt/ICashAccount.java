@@ -11,7 +11,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
-import com.sn.mail.reporter.StockObserverable;
+import com.sn.mail.StockObserverable;
 import com.sn.stock.Stock2;
 
 public interface ICashAccount {

@@ -10,7 +10,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
-import com.sn.work.WorkManager;
+import com.sn.task.WorkManager;
 
 public class TestDriver {
 
