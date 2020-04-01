@@ -85,13 +85,7 @@ public class WeChatReporter extends BaseWCReporter{
         }
         
         log.info("got input:[" + content + "], firstly let's check tasks");
-        if (!TaskManager.isTasksStarted())
-        {
-            log.info("starting tasks");
-            TaskManager.startTasks();
-        }
 
-            log.info("after starting tasks, content:" + content + ", length:" + content.length());
         if (msgType.equals("event")) {
         	if (content.equals("subscribe")) {
         		resContent = "欢迎关注微信:\n"

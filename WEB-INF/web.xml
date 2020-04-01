@@ -23,6 +23,10 @@
   version="3.0"
   metadata-complete="true">
 
+<listener>  
+    <listener-class>com.sn.tomcat.AutoRunTask</listener-class>
+</listener>
+
   <display-name>WeChat</display-name>
   <description>
      Welcome to WeChat
