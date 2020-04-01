@@ -12,7 +12,6 @@ public class STConstants {
     public static final double DFT_MAX_MNY_PER_TRADE = 10000;
     public static final String ACNT_SIM_PREFIX = "SIM";
     public static final double COMMISSION_RATE = 0.0014;
-    public static final int SIM_DAYS = 1;
     public static final int ARCHIVE_DAYS_OLD = 5;
     
     //class vars.
@@ -39,5 +38,10 @@ public class STConstants {
 	
 	public static final double MAX_LOST_PCT_FOR_SELL_MODE = -0.06;
 	public static final double MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE = 0.06;
+    
+	//Simulation parameters:
+    public static final int SIM_DAYS = 1;
+    public static final int SIM_THREADS_COUNT = 1;
+    public static final int SIM_STOCK_COUNT_FOR_EACH_THREAD = 250;
     
 }

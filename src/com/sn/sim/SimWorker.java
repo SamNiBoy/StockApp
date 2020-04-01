@@ -60,10 +60,16 @@ public class SimWorker implements IWork {
     
     private String workName = "SimWorker";
     
+    private CountDownLatch threadsCountDown = null;
+    
     static volatile boolean marketDegree_refreshed = false;
     
     static Logger log = Logger.getLogger(SimWorker.class);
 
+    
+    public void setThreadsCountDown(CountDownLatch tc) {
+        threadsCountDown = tc;
+    }
     public boolean addStksToWorker(List<String> stkLst) {
         stkToSim.addAll(stkLst);
         return true;
@@ -187,7 +193,12 @@ public class SimWorker implements IWork {
                log.info("SimWorker finished, reset strategy status for " + cs.getTradeStrategyName());
                cs.resetStrategyStatus(); 
             }
-            log.info("SimWorker about to end...");
+            
+            log.info("threadsCountDown about to countdown:" + threadsCountDown.getCount());
+            
+            threadsCountDown.countDown();
+            
+            log.info(workName + " about to finish, there are " + threadsCountDown.getCount() + " colleagues workers running.");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

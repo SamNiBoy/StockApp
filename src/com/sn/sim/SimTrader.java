@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -68,6 +69,8 @@ public class SimTrader implements IWork{
     private LocalDateTime pre_sim_time = null;
     
     public String resMsg = "Initial msg for work SimTrader.";
+    
+    private CountDownLatch threadsCountDown = null;
     
     static Connection con = null;
     SimStockDriver ssd = new SimStockDriver();
@@ -214,7 +217,7 @@ public class SimTrader implements IWork{
                     ArrayList<SimWorker> workers = new ArrayList<SimWorker>();
                     
                     
-                    int batch = 0;
+                    int rowid = 0;
                     int batcnt = 0;
                     
                     log.info(sql);
@@ -224,66 +227,122 @@ public class SimTrader implements IWork{
                     rs = stm.executeQuery(sql);
                     
                     while (rs.next()) {
+                        
                         stks.add(rs.getString("id"));
-                        batch++;
-                        if (batch == 250) {
+                        
+                        rowid++;
+                        
+                        if (rowid == STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD) {
+                            
                             batcnt++;
+                            
                             log.info("Now have 250 stocks to sim, start a worker for batcnt:" + batcnt);
+                            
                             SimWorker sw;
+                            
                             try {
                                 sw = new SimWorker(0, 0, "SimWorker" + batcnt);
+                                
+                                sw.addStksToWorker(stks);
+                                
+                                stks.clear();
+                                
                                 workers.add(sw);
+                                
                             } catch (Exception e) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();
                                 return;
                             }
-                            sw.addStksToWorker(stks);
-                            stks.clear();
-                            WorkManager.submitWork(sw);
-                            batch = 0;
+                            
+                            rowid = 0;
+                            
+                            if (batcnt == STConstants.SIM_THREADS_COUNT)
+                            {
+                                threadsCountDown = new CountDownLatch(workers.size());
+                                
+                                for (SimWorker w : workers)
+                                {
+                                    w.setThreadsCountDown(threadsCountDown);
+                                    WorkManager.submitWork(sw);
+                                }
+                                
+                                try {
+                                    log.info("SimTrader waiting for SimWorkers finish before next round of batch");
+                                    
+                                    threadsCountDown.await();
+                                    
+                                    workers.clear();
+                                    
+                                } catch (InterruptedException e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                    log.info("threads_to_run.await exception:" + e.getMessage());
+                                }
+                                batcnt = 0;
+                            }
                         }
                     }
                     
                     rs.close();
                     stm.close();
                     
-                    if (batch > 0) {
+                    if (rowid > 0) {
                         batcnt++;
-                        log.info("Last have " + batch + " stocks to sim, start a worker for batcnt:" + batcnt);
+                        log.info("Last have " + rowid + " stocks to sim, start a worker for batcnt:" + batcnt);
                         SimWorker sw;
                         try {
                             sw = new SimWorker(0, 0, "SimWorker" + batcnt);
+                            
+                            sw.addStksToWorker(stks);
+                            
                             workers.add(sw);
+                            
                         } catch (Exception e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                             return;
                         }
-                        sw.addStksToWorker(stks);
-                        WorkManager.submitWork(sw);
-                        batch = 0;
+                        
+                        threadsCountDown = new CountDownLatch(workers.size());
+                        
+                        for (SimWorker w : workers)
+                        {
+                            w.setThreadsCountDown(threadsCountDown);
+                            WorkManager.submitWork(sw);
+                        }
+                        
+                        try {
+                            
+                            log.info("last part SimTrader waiting for SimWorkers finish before next round of batch");
+                            
+                            threadsCountDown.await();
+                            
+                            workers.clear();
+                            
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                            log.info("last part threads_to_run.await exception:" + e.getMessage());
+                        }
+                        batcnt = 0;
                     }
-                    log.info("Now end simulate trading.");
+                    log.info("Now end simulate trading, sending mail and start purging data...");
                 
-                    try {
-                         for (SimWorker sw : workers) {
-        	 	            WorkManager.waitUntilWorkIsDone(sw.getWorkName());
-                         }
-                         //Send mail to user for top10 best and worst.
-                         sto.update();
-                         
-                         archiveStockData();
-                         
-                         pre_sim_time = LocalDateTime.now();
-                         
-                         simOnGzStk = false;
-                         
-        	         } catch (InterruptedException e) {
-        	 	         // TODO Auto-generated catch block
-        	 	         e.printStackTrace();
-        	         }
+                    /*for (SimWorker sw : workers) {
+        	 	       WorkManager.waitUntilWorkIsDone(sw.getWorkName());
+                    }*/
+                    //Send mail to user for top10 best and worst.
+                    sto.update();
+                    
+                    archiveStockData();
+                    
+                    pre_sim_time = LocalDateTime.now();
+                    
+                    simOnGzStk = false;
                 }
+                log.info("SimTrader end...");
+                
           } catch (SQLException e) {
               e.printStackTrace();
           }
