@@ -36,7 +36,7 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
     
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
-	    Map<String, StockBuySellEntry> lstTrades = StockTrader.getLstTradeForStocks();
+	    Map<String, StockBuySellEntry> lstTrades = (sim_mode ? StockTrader.getSimTrader().getLstTradeForStocks() : StockTrader.getTradexTrader().getLstTradeForStocks());
 	    sbs = lstTrades.get(stk.getID());
         
 	    if (sbs == null || sbs.is_buy_point)

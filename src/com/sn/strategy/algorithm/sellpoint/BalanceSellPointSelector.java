@@ -41,7 +41,7 @@ public class BalanceSellPointSelector implements ISellPointSelector {
 	 * @param args
 	 */
 	public boolean isGoodSellPoint(Stock2 stk, ICashAccount ac) {
-        Map<String, StockBuySellEntry> lstTrades = StockTrader.getLstTradeForStocks();
+        Map<String, StockBuySellEntry> lstTrades = (sim_mode ? StockTrader.getSimTrader().getLstTradeForStocks() : StockTrader.getTradexTrader().getLstTradeForStocks());
         sbs = lstTrades.get(stk.getID());
         
         if (sbs == null || !sbs.is_buy_point)

@@ -83,11 +83,17 @@ public class TradeStrategyImp implements ITradeStrategy {
 	}
 
     public boolean isGoodPointtoBuy(Stock2 s) {
-        return buypoint_selector.isGoodBuyPoint(s, cash_account);
+        log.info("********************* BUY POINT CHECK START **********************");
+        boolean good_flg = buypoint_selector.isGoodBuyPoint(s, cash_account);
+        log.info("********************* BUY POINT CHECK FOR " + s.getID() + (good_flg? " PASS ":" FAIL ") + "END*************\n");
+        return good_flg;
     }
 
     public boolean isGoodPointtoSell(Stock2 s) {
-        return sellpoint_selector.isGoodSellPoint(s, cash_account);
+        log.info("**************** SELL POINT CHECK START ******************");
+        boolean good_flg = sellpoint_selector.isGoodSellPoint(s, cash_account);
+        log.info("**************** SELL POINT CHECK FOR " + s.getID() + (good_flg? " PASS ":" FAIL ") + "END**************");
+        return good_flg;
     }
     
     public TradeStrategyImp(IBuyPointSelector bs,
@@ -280,17 +286,21 @@ public class TradeStrategyImp implements ITradeStrategy {
 	@Override
 	public boolean performTrade(Stock2 s) {
         
+        boolean result = false;
+        
+        log.info("####################### PERFORM TRADE FOR " + s.getID() + ":" + s.getName() + " BEGIN #######################");
 		if (isGoodPointtoBuy(s) && buyStock(s)) {
         	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
         	rc.printStockInfo();
-        	return true;
+        	result = true;
         }
         else if(isGoodPointtoSell(s) && sellStock(s)) {
         	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
         	rc.printStockInfo();
-        	return true;
+        	result = true;
         }
-        return false;
+        log.info("##################### PERFORM TRADE FOR " + s.getID() + ":" + s.getName() + " END ############################\n\n");
+        return result;
 	}
 	
 	public boolean loadStocksForTrade() {
@@ -303,10 +313,10 @@ public class TradeStrategyImp implements ITradeStrategy {
 					+ "and s.gz_flg = 1 " + "and u.openID = '" + STConstants.openID + "' and length(u.mail) > 1 "
 					+ "and s.suggested_by in ('" + STConstants.openID +"','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "') and u.buy_sell_enabled = 1";
 
-			log.info(sql);
+			//log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 			while (rs.next()) {
-				log.info("Loading stock:" + rs.getString("id") + " for user openID:" + rs.getString("openID"));
+				//log.info("Loading stock:" + rs.getString("id") + " for user openID:" + rs.getString("openID"));
 				tradeStocks.add(rs.getString("id"));
 			}
 			rs.close();
@@ -353,7 +363,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			totalCnt += tmp.size();
 		}
 
-		log.info("Total traded " + totalCnt + " times.");
+		log.info("TradeStrategy " + name + " collected total traded " + totalCnt + " times.");
 
 		if (totalCnt >= STConstants.MAX_TRADE_TIMES_PER_DAY) {
 			log.info("Trade limit for a day is: " + STConstants.MAX_TRADE_TIMES_PER_DAY + " can not trade today!");
@@ -402,7 +412,14 @@ public class TradeStrategyImp implements ITradeStrategy {
 					// If we just sold/buy it, and now the price has no
 					// significant change, we will not do the same trade.
 					StockBuySellEntry lst = rcds.getLast();
-					if (is_buy_flg == lst.is_buy_point && Math.abs((s.getCur_pri() - lst.price)) / lst.price <= 0.01) {
+                    
+		            Timestamp t0 = lst.dl_dt;
+		            Timestamp t1 = s.getDl_dt();
+		            
+		            long millisec = t1.getTime() - t0.getTime();
+		            long mins = millisec / (1000*60);
+		            
+					if (is_buy_flg == lst.is_buy_point && Math.abs((s.getCur_pri() - lst.price)) / lst.price <= 0.01 && !(mins > STConstants.MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE)) {
 						log.info("Just " + (is_buy_flg ? "buy" : "sell") + " this stock with similar prices "
 								+ s.getCur_pri() + "/" + lst.price + ", skip same trade.");
 						return false;

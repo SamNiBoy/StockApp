@@ -52,7 +52,7 @@ public class SimWorker implements IWork {
 
     private List<String> stkToSim = new ArrayList<String>();
 
-    private StockTrader st = new StockTrader(true);
+    private StockTrader st = StockTrader.getSimTrader();
     
     SimStockDriver ssd = new SimStockDriver();
 
@@ -150,10 +150,10 @@ public class SimWorker implements IWork {
                 lststp = lst_stmp.get(s.getID());
                 curstp = s.getDl_dt();
                 
-                log.info("Simulate step:" + StepCnt + " for stock:" + s.getID() + " at time:" + curstp.toString());
+                log.info(workName + ": simulate step:" + StepCnt + " for stock:" + s.getID() + " at time:" + curstp.toString());
                 
                 for (ITradeStrategy cs : strategies) {
-                    log.info("Simulate trading with Strategy:" + cs.getTradeStrategyName());
+                    log.info("Simulate trading with Strategy:" + cs.getTradeStrategyName() + "\n\n");
                     st.setStrategy(cs);
                     if (((lststp != null && curstp.after(lststp)) || lststp == null) && st.performTrade(s)) {
                         cs.reportTradeStat();

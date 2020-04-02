@@ -43,11 +43,24 @@ public class StockTrader {
 
 	//interface vars.
     ITradeStrategy strategy = TradeStrategyGenerator.generatorDefaultStrategy(false);
-    static private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
-    static private Map<String, StockBuySellEntry> lstTradeForStocks= new HashMap<String, StockBuySellEntry>();
-    static private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
+    private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
+    private Map<String, StockBuySellEntry> lstTradeForStocks= new HashMap<String, StockBuySellEntry>();
+    private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
 	private boolean sim_mode = false;
 	
+    private static StockTrader tradexTrader = new StockTrader(false);
+    private static StockTrader simTrader = new StockTrader(true);
+    
+    public static StockTrader getTradexTrader()
+    {
+        return tradexTrader;
+    }
+    
+    public static StockTrader getSimTrader()
+    {
+        return simTrader;
+    }
+    
 	static Logger log = Logger.getLogger(StockTrader.class);
 
 	static {
@@ -241,7 +254,7 @@ public class StockTrader {
         return false;
 	}
     
-    public static Map<String, StockBuySellEntry> getLstTradeForStocks() {
+    public Map<String, StockBuySellEntry> getLstTradeForStocks() {
         return lstTradeForStocks;
     }
 }

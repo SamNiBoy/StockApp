@@ -40,7 +40,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
         
-        Map<String, StockBuySellEntry> lstTrades = StockTrader.getLstTradeForStocks();
+        Map<String, StockBuySellEntry> lstTrades = (sim_mode ? StockTrader.getSimTrader().getLstTradeForStocks() : StockTrader.getTradexTrader().getLstTradeForStocks());
         sbs = lstTrades.get(stk.getID());
 
         Timestamp t1 = stk.getDl_dt();
@@ -143,7 +143,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         	deadline = "sysdate()";
         }
         else {
-     		log.info("getBuyThreshValueByDegree: stk.getDl_dt().toString():" +  stk.getDl_dt().toString());
+     		//log.info("getBuyThreshValueByDegree: stk.getDl_dt().toString():" +  stk.getDl_dt().toString());
         	deadline = "str_to_date('" + stk.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s')";
         }
         

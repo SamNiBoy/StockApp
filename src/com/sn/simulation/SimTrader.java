@@ -165,10 +165,10 @@ public class SimTrader implements IWork{
             return;
         }
         
-        //Only run at every night after 22 clock.
-        if (hr < 22)
+        //Only run at every night after 18 clock.
+        if (hr < 18)
         {
-            log.info("SimTrader skipped because of hour:" + hr + " less than 22:00.");
+            log.info("SimTrader skipped because of hour:" + hr + " less than 18:00.");
             return;
         }
         
@@ -204,12 +204,15 @@ public class SimTrader implements IWork{
                         sql = "select distinct id from usrStk where gz_flg = 1 order by id";
                     }
                     else {
-                            sql = "select distinct s.id" + 
-                                  "  from stkdat2 s" + 
-                                  " where cur_pri < 80" + 
-                                  "   and cur_pri > 5" + 
-                                  "   and left(dl_dt, 10) = (select left(max(s2.dl_dt), 10) from stkdat2 s2)" +
-                                  " order by id ";
+                        //We randomly select 50% data for simulation.
+                            sql = "select * from (select distinct s.id" + 
+                                  "                 from stkdat2 s" + 
+                                  "                where cur_pri < 80" + 
+                                  "                  and cur_pri > 5" + 
+                                  "                  and left(dl_dt, 10) = (select left(max(s2.dl_dt), 10) from stkdat2 s2)" +
+                                  "               ) tmp" +
+                                  " where floor(1+rand()*100) <= 50" +
+                                  "                order by id";
                     }
                     
                     ArrayList<String> stks = new ArrayList<String>();
@@ -226,22 +229,38 @@ public class SimTrader implements IWork{
                     
                     rs = stm.executeQuery(sql);
                     
+                    int total_stock_cnt = 0;
+                    
+                    if (rs.last())
+                    {
+                         total_stock_cnt = rs.getRow();
+                         rs.first();
+                    }
+                    
+                    int total_batch = total_stock_cnt / STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD;
+                    
+                    if (total_stock_cnt % STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD != 0)
+                    {
+                        total_batch++;
+                    }
+                    
+                    
                     while (rs.next()) {
                         
                         stks.add(rs.getString("id"));
                         
                         rowid++;
                         
-                        if (rowid == STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD) {
+                        if (rowid % STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD == 0) {
                             
                             batcnt++;
                             
-                            log.info("Now have 250 stocks to sim, start a worker for batcnt:" + batcnt);
+                            log.info("Now have " + STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD + " stocks to sim, start a worker for batcnt:" + batcnt + " of total batch:" + total_batch);
                             
                             SimWorker sw;
                             
                             try {
-                                sw = new SimWorker(0, 0, "SimWorker" + batcnt);
+                                sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch);
                                 
                                 sw.addStksToWorker(stks);
                                 
@@ -255,9 +274,7 @@ public class SimTrader implements IWork{
                                 return;
                             }
                             
-                            rowid = 0;
-                            
-                            if (batcnt == STConstants.SIM_THREADS_COUNT)
+                            if (batcnt % STConstants.SIM_THREADS_COUNT == 0)
                             {
                                 threadsCountDown = new CountDownLatch(workers.size());
                                 
@@ -279,7 +296,6 @@ public class SimTrader implements IWork{
                                     e.printStackTrace();
                                     log.info("threads_to_run.await exception:" + e.getMessage());
                                 }
-                                batcnt = 0;
                             }
                         }
                     }
@@ -287,12 +303,12 @@ public class SimTrader implements IWork{
                     rs.close();
                     stm.close();
                     
-                    if (rowid > 0) {
+                    if (rowid % STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD != 0) {
                         batcnt++;
                         log.info("Last have " + rowid + " stocks to sim, start a worker for batcnt:" + batcnt);
                         SimWorker sw;
                         try {
-                            sw = new SimWorker(0, 0, "SimWorker" + batcnt);
+                            sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch);
                             
                             sw.addStksToWorker(stks);
                             
@@ -325,9 +341,8 @@ public class SimTrader implements IWork{
                             e.printStackTrace();
                             log.info("last part threads_to_run.await exception:" + e.getMessage());
                         }
-                        batcnt = 0;
                     }
-                    log.info("Now end simulate trading, sending mail and start purging data...");
+                    log.info("Now end simulate trading, sending mail...");
                 
                     //Send mail to user for top10 best and worst.
                     sto.update();
@@ -414,7 +429,7 @@ public class SimTrader implements IWork{
             log.info("Archiving stkDat2 table with " + rowcnt + " rows from day:" + fstDay + " to day:" + lstDay);
             
             rs.close();
-            stm.close();;
+            stm.close();
             
             sql = "insert into arc_stkdat2 select * from stkdat2 where dl_dt < sysdate() - interval " + STConstants.ARCHIVE_DAYS_OLD + " day";
             log.info(sql);
@@ -433,38 +448,38 @@ public class SimTrader implements IWork{
             log.info("Archiving non simulation cashacnt table...");
             
             //For trading data: cashacnt, tradehdr, tradedtl, we only archive, but not purge.
-            sql = "insert into arc_cashacnt select * from cashacnt where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
-            log.info(sql);
-            stm = con.createStatement();
-            stm.execute(sql);
-            stm.close();;
-            sql = "delete from cashacnt where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
-            log.info(sql);
-            stm = con.createStatement();
-            stm.execute(sql);
-            stm.close();;
-            
-            log.info("Archiving non simulation tradehdr table...");
-            
-            sql = "insert into arc_tradehdr select * from tradehdr where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
-            log.info(sql);
-            stm = con.createStatement();
-            stm.execute(sql);
-            stm.close();;
-            sql = "delete from tradehdr where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
-            log.info(sql);
-            stm = con.createStatement();
-            stm.execute(sql);
-            stm.close();;
-            
-            log.info("Archiving non simulation tradedtl table...");
-            
-            sql = "insert into arc_tradedtl select * from tradedtl where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
+            sql = "insert into arc_cashacnt select * from cashacnt where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
             stm.close();
-            sql = "delete from tradedtl where acntid not like " + STConstants.ACNT_SIM_PREFIX + "%s";
+            sql = "delete from cashacnt where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();
+            
+            log.info("Archiving non simulation tradehdr table...");
+            
+            sql = "insert into arc_tradehdr select * from tradehdr where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();;
+            sql = "delete from tradehdr where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();
+            
+            log.info("Archiving non simulation tradedtl table...");
+            
+            sql = "insert into arc_tradedtl select * from tradedtl where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();
+            sql = "delete from tradedtl where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
@@ -476,7 +491,7 @@ public class SimTrader implements IWork{
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
-            stm.close();;
+            stm.close();
             
             log.info("Archive and Purge process completed!");
             

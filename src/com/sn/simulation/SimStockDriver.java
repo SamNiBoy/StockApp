@@ -308,7 +308,7 @@ public class SimStockDriver {
                 
                 Stock2 s = simstocks.get(stkId);
                 if (s != null) {
-                    log.info("Now, loading DtRs for stock:" + s.getID());
+                    //log.info("Now, loading DtRs for stock:" + s.getID());
                     s.getSd().loadDataFromRs(DtRs);
                     /*if (need_cal_index) {
                         StockMarket.calIndex(s.getDl_dt());
