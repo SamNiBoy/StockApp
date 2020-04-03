@@ -26,6 +26,7 @@ import com.sn.STConstants;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 
 public class SellModeStockObserverable extends Observable {
 
@@ -66,7 +67,7 @@ public class SellModeStockObserverable extends Observable {
    		    Statement stm = null;
     	    try {
     	    	stm = con.createStatement();
-    	    	String sql = "select 'check gzed stock before sending mail to user' from usrStk where gz_flg = 1 and suggested_by <> '" + STConstants.SUGGESTED_BY_FOR_SYSTEM +"' and openID = '" + openID + "' and id = '" + s.getID() + "'";
+    	    	String sql = "select 'check gzed stock before sending mail to user' from usrStk where gz_flg = 1 and suggested_by <> '" + ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING") +"' and openID = '" + openID + "' and id = '" + s.getID() + "'";
     	    	log.info(sql);
     	    	ResultSet rs = stm.executeQuery(sql);
     	    	if (rs.next()) {

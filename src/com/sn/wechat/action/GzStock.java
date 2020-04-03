@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.STConstants;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.trader.StockTrader;
 import com.sn.task.IWork;
 import com.sn.task.WorkManager;
@@ -58,6 +59,8 @@ public class GzStock implements IWork {
         Statement stm = null;
         String sql = "select gz_flg, suggested_by from usrStk where id = '" + stockID + "' and openID = '" + frmUsr + "'";
         try {
+            
+            String system_suggest_role = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
             stm = con.createStatement();
             ResultSet rs = null;
             rs = stm.executeQuery(sql);
@@ -67,7 +70,7 @@ public class GzStock implements IWork {
             	String suggested_by = rs.getString("suggested_by");
             	rs.close();
             	stm.close();
-                if (gz_flg == 1 && suggested_by.equals(STConstants.SUGGESTED_BY_FOR_SYSTEM))
+                if (gz_flg == 1 && suggested_by.equals(system_suggest_role))
                 {
             	    sql = "update usrStk set suggested_by = '" + frmUsr + "' where id = '" + stockID + "' and openID = '" + frmUsr + "'";
                 }
@@ -77,7 +80,7 @@ public class GzStock implements IWork {
             	stm = con.createStatement();
             	log.info(sql);
             	stm.execute(sql);
-            	if (gz_flg == 1 && !suggested_by.equals(STConstants.SUGGESTED_BY_FOR_SYSTEM)) {
+            	if (gz_flg == 1 && !suggested_by.equals(system_suggest_role)) {
             	    msg = "成功取消关注:" + stockID;
             	    StockMarket.removeGzStocks(stockID);
             	}

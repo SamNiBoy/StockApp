@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.STConstants;
 import com.sn.stock.Stock2;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.IStockSelector;
 
 public class CurPriLostSellModeSelector implements IStockSelector {
@@ -22,8 +23,10 @@ public class CurPriLostSellModeSelector implements IStockSelector {
     		lostPct = (curPri - opnPri)/ ytclspri;
     		log.info("got lost:" + lostPct);
     	}
-        if (lostPct < STConstants.MAX_LOST_PCT_FOR_SELL_MODE) {
-            log.info("cur price is lost:" + lostPct + " which is over " + STConstants.MAX_LOST_PCT_FOR_SELL_MODE + " yt_cls_pri, set to sell mode.");
+        
+    	double max_pct_to_sell_mode = ParamManager.getIntParam("MAX_LOST_PCT_FOR_SELL_MODE", "TRADING");
+        if (lostPct < max_pct_to_sell_mode) {
+            log.info("cur price is lost:" + lostPct + " which is over " + max_pct_to_sell_mode + " yt_cls_pri, set to sell mode.");
             return true;
         }
         

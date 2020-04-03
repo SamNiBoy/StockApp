@@ -28,6 +28,7 @@ import com.sn.db.DBManager;
 import com.sn.STConstants;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.trader.StockTrader;
 
 public class SimTraderObserverable extends Observable {
@@ -148,7 +149,7 @@ public class SimTraderObserverable extends Observable {
                         + "      TradeHdr h"
                         + " where ac.acntid = tmp.acntid"
                         + "   and ac.acntid = h.acntid "
-                        + "   and ac.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+                        + "   and ac.acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
              
              log.info(sql);
              
@@ -187,7 +188,7 @@ public class SimTraderObserverable extends Observable {
                            + "      TradeHdr h"
         			       + " where ac.acntid = tmp.acntid"
                            + "   and ac.acntid = h.acntid "
-        			       + "   and ac.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'"
+        			       + "   and ac.acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'"
         			       + "   group by case when ac.pft_mny > 0 then 1 when ac.pft_mny = 0 then 0 else -1 end "
         			       + "   order by cat";
         		
@@ -272,7 +273,7 @@ public class SimTraderObserverable extends Observable {
         			    + "       ca.* "
         			    + "  from cashacnt ca, "
                         + "       stk s"
-        			    + "   where ca.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'"
+        			    + "   where ca.acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'"
                         + "     and right(ca.acntid, 6) = s.id "
         			    + " order by ca.pft_mny desc ";
         			
@@ -326,7 +327,7 @@ public class SimTraderObserverable extends Observable {
                             + "       ca.* "
                             + "  from cashacnt ca, "
                             + "       stk s"
-                            + "   where ca.acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'"
+                            + "   where ca.acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'"
                             + "     and right(ca.acntid, 6) = s.id "
         			        + " order by ca.pft_mny asc ";
         			

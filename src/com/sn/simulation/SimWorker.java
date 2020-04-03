@@ -27,6 +27,7 @@ import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.strategy.ITradeStrategy;
 import com.sn.strategy.TradeStrategyGenerator;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.stock.RawStockData;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
@@ -102,10 +103,13 @@ public class SimWorker implements IWork {
     	Statement stm = null;
     	ResultSet rs = null;
     	String sql = "";
+        
+    	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION");
+    	
     	try {
     		con = DBManager.getConnection();
     		stm = con.createStatement();
-    		sql = "select left(max(dl_dt) - interval " + STConstants.SIM_DAYS + " day, 10) sd, left(max(dl_dt), 10) ed from stkdat2";
+    		sql = "select left(max(dl_dt) - interval " + sim_days + " day, 10) sd, left(max(dl_dt), 10) ed from stkdat2";
     		log.info(sql);
     		rs = stm.executeQuery(sql);
     		rs.next();

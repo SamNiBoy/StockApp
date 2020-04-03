@@ -40,6 +40,7 @@ import com.sn.strategy.ITradeStrategy;
 import com.sn.STConstants;
 import com.sn.strategy.TradeStrategyGenerator;
 import com.sn.strategy.TradeStrategyImp;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.suggest.SuggestStock;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
@@ -92,19 +93,19 @@ public class SimTrader implements IWork{
             if (simgzstk)
             {
 			    Statement stm = con.createStatement();
-			    sql = "delete from tradedtl where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    sql = "delete from tradedtl where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
 			    
 			    stm = con.createStatement();
-			    sql = "delete from tradehdr where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    sql = "delete from tradehdr where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
 			    
 			    stm = con.createStatement();
-			    sql = "delete from CashAcnt where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    sql = "delete from CashAcnt where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
@@ -113,19 +114,19 @@ public class SimTrader implements IWork{
             else 
             {
 			    Statement stm = con.createStatement();
-			    sql = "update tradedtl set acntid = concat(acntid, '_GZ') where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    sql = "update tradedtl set acntid = concat(acntid, '_GZ') where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
 			    
 			    stm = con.createStatement();
-			    sql = "update tradehdr set acntid = concat(acntid, '_GZ')  where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    sql = "update tradehdr set acntid = concat(acntid, '_GZ')  where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
 			    
 			    stm = con.createStatement();
-			    sql = "update CashAcnt set acntid = concat(acntid, '_GZ') where acntid like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+			    sql = "update CashAcnt set acntid = concat(acntid, '_GZ') where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
@@ -153,7 +154,7 @@ public class SimTrader implements IWork{
         log.info("SimWork, time:" + time);
         DayOfWeek week = lt.getDayOfWeek();
         
-        if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
+        /*if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
         {
             log.info("SimTrader skipped because of weekend, goto sleep 8 hours.");
             try {
@@ -170,7 +171,7 @@ public class SimTrader implements IWork{
         {
             log.info("SimTrader skipped because of hour:" + hr + " less than 18:00.");
             return;
-        }
+        }*/
         
         LocalDateTime n = LocalDateTime.now();
         
@@ -237,9 +238,12 @@ public class SimTrader implements IWork{
                          rs.first();
                     }
                     
-                    int total_batch = total_stock_cnt / STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD;
+                    int stock_cnt_per_thread = ParamManager.getIntParam("SIM_STOCK_COUNT_FOR_EACH_THREAD", "SIMULATION");
+                    int thread_cnt = ParamManager.getIntParam("SIM_THREADS_COUNT", "SIMULATION");
                     
-                    if (total_stock_cnt % STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD != 0)
+                    int total_batch = total_stock_cnt / stock_cnt_per_thread;
+                    
+                    if (total_stock_cnt % stock_cnt_per_thread != 0)
                     {
                         total_batch++;
                     }
@@ -251,11 +255,11 @@ public class SimTrader implements IWork{
                         
                         rowid++;
                         
-                        if (rowid % STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD == 0) {
+                        if (rowid % stock_cnt_per_thread == 0) {
                             
                             batcnt++;
                             
-                            log.info("Now have " + STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD + " stocks to sim, start a worker for batcnt:" + batcnt + " of total batch:" + total_batch);
+                            log.info("Now have " + stock_cnt_per_thread + " stocks to sim, start a worker for batcnt:" + batcnt + " of total batch:" + total_batch);
                             
                             SimWorker sw;
                             
@@ -274,7 +278,7 @@ public class SimTrader implements IWork{
                                 return;
                             }
                             
-                            if (batcnt % STConstants.SIM_THREADS_COUNT == 0)
+                            if (batcnt % thread_cnt == 0)
                             {
                                 threadsCountDown = new CountDownLatch(workers.size());
                                 
@@ -303,7 +307,7 @@ public class SimTrader implements IWork{
                     rs.close();
                     stm.close();
                     
-                    if (rowid % STConstants.SIM_STOCK_COUNT_FOR_EACH_THREAD != 0) {
+                    if (rowid % stock_cnt_per_thread != 0) {
                         batcnt++;
                         log.info("Last have " + rowid + " stocks to sim, start a worker for batcnt:" + batcnt);
                         SimWorker sw;
@@ -414,8 +418,13 @@ public class SimTrader implements IWork{
         Statement stm = null;
         ResultSet rs = null;
         
+        int arc_days_old = ParamManager.getIntParam("ARCHIVE_DAYS_OLD", "ARCHIVE");
+        int purge_days_old = ParamManager.getIntParam("PURGE_DAYS_OLD", "ARCHIVE");
+        
+        String sim_acnt = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT");
+        
         try {
-            String sql = "select count(*) cnt, max(left(dl_dt, 10)) lst, min(left(dl_dt, 10)) fst from stkdat2 where dl_dt < sysdate() - interval " + STConstants.ARCHIVE_DAYS_OLD + " day";
+            String sql = "select count(*) cnt, max(left(dl_dt, 10)) lst, min(left(dl_dt, 10)) fst from stkdat2 where dl_dt < sysdate() - interval " + arc_days_old + " day";
             stm = con.createStatement();
             
             rs = stm.executeQuery(sql);
@@ -431,13 +440,13 @@ public class SimTrader implements IWork{
             rs.close();
             stm.close();
             
-            sql = "insert into arc_stkdat2 select * from stkdat2 where dl_dt < sysdate() - interval " + STConstants.ARCHIVE_DAYS_OLD + " day";
+            sql = "insert into arc_stkdat2 select * from stkdat2 where dl_dt < sysdate() - interval " +arc_days_old + " day";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
             stm.close();
             
-            sql = "delete from stkdat2 where dl_dt < sysdate() - interval " + STConstants.ARCHIVE_DAYS_OLD + " day";
+            sql = "delete from stkdat2 where dl_dt < sysdate() - interval " + arc_days_old + " day";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
@@ -448,12 +457,12 @@ public class SimTrader implements IWork{
             log.info("Archiving non simulation cashacnt table...");
             
             //For trading data: cashacnt, tradehdr, tradedtl, we only archive, but not purge.
-            sql = "insert into arc_cashacnt select * from cashacnt where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+            sql = "insert into arc_cashacnt select * from cashacnt where acntid not like '" + sim_acnt + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
             stm.close();
-            sql = "delete from cashacnt where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+            sql = "delete from cashacnt where acntid not like '" + sim_acnt + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
@@ -461,12 +470,12 @@ public class SimTrader implements IWork{
             
             log.info("Archiving non simulation tradehdr table...");
             
-            sql = "insert into arc_tradehdr select * from tradehdr where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+            sql = "insert into arc_tradehdr select * from tradehdr where acntid not like '" + sim_acnt + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
             stm.close();;
-            sql = "delete from tradehdr where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+            sql = "delete from tradehdr where acntid not like '" + sim_acnt + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
@@ -474,20 +483,20 @@ public class SimTrader implements IWork{
             
             log.info("Archiving non simulation tradedtl table...");
             
-            sql = "insert into arc_tradedtl select * from tradedtl where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+            sql = "insert into arc_tradedtl select * from tradedtl where acntid not like '" + sim_acnt + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
             stm.close();
-            sql = "delete from tradedtl where acntid not like '" + STConstants.ACNT_SIM_PREFIX + "%'";
+            sql = "delete from tradedtl where acntid not like '" + sim_acnt + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
             stm.close();
             
             
-            log.info("Purge arc_stkdat2 table which is older than " + STConstants.PURGE_DAYS_OLD + " days");
-            sql = "delete from arc_stkdat2 where dl_dt < sysdate() - interval " + STConstants.PURGE_DAYS_OLD + " day";
+            log.info("Purge arc_stkdat2 table which is older than " + purge_days_old + " days");
+            sql = "delete from arc_stkdat2 where dl_dt < sysdate() - interval " + purge_days_old + " day";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);

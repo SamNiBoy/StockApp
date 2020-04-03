@@ -19,28 +19,31 @@ insert into param values('ACNT_SIM_PREFIX', 'ACCOUNT',null,null , 'SIM', '', 'Ac
 insert into param values('COMMISSION_RATE', 'VENDOR',null, 0.0014, '', '', 'Commissioin rate, as part of cost.', sysdate(),sysdate());
 
 insert into param values('SIM_DAYS', 'SIMULATION', 1,null, '', '', 'How many days data for simulation.', sysdate(),sysdate());
+insert into param values('SIM_THREADS_COUNT', 'SIMULATION', 1,null, '', '', 'How many thread in parallel to run the simulation.', sysdate(),sysdate());
+insert into param values('SIM_STOCK_COUNT_FOR_EACH_THREAD', 'SIMULATION', 250,null, '', '', 'How many stocks to be run simulation per thread at one time.', sysdate(),sysdate());
 
-insert into param values('ARCHIVE_DAYS_OLD', 'MAINTAIN', 5,null, '', '', 'How many days stock data to keep.', sysdate(),sysdate());
+insert into param values('ARCHIVE_DAYS_OLD', 'ARCHIVE', 1,null, '', '', 'How many days stock data to keep in prod db.', sysdate(),sysdate());
+insert into param values('PURGE_DAYS_OLD', 'ARCHIVE', 5,null, '', '', 'How many days stock data to keep in archive db.', sysdate(),sysdate());
 
 insert into param values('MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK', 'TRADING', 20,null, '', '', 'Max number of buy/sell per stock each day.', sysdate(),sysdate());
 insert into param values('MAX_TRADE_TIMES_PER_STOCK', 'TRADING', 50,null, '', '', 'Max number of trading per stock each day.', sysdate(),sysdate());
 insert into param values('MAX_TRADE_TIMES_PER_DAY', 'TRADING', 1000,null, '', '', 'Max number of times total trade a day allowed.', sysdate(),sysdate());
-insert into param values('BUY_SELL_MAX_DIFF_CNT', 'TRADING', 2,null, '', '', 'Max extra times between buy and sell for same stock.', sysdate(),sysdate());
+insert into param values('BUY_SELL_MAX_DIFF_CNT', 'TRADING', 3,null, '', '', 'Max extra times between buy and sell for same stock.', sysdate(),sysdate());
 insert into param values('MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE', 'TRADING', 30,null, '', '', 'How many minutes in maximum we need to buy/sell stock back for keep balance.', sysdate(),sysdate());
 insert into param values('HOUR_TO_KEEP_BALANCE', 'TRADING', 14,null, '', '', 'At which hour the market is going to close, so keep balance.', sysdate(),sysdate());
-insert into param values('MINUTE_TO_KEEP_BALANCE', 'TRADING', 14,null, '', '', 'At which minute the market is going to close, so keep balance.', sysdate(),sysdate());
+insert into param values('MINUTE_TO_KEEP_BALANCE', 'TRADING', 57,null, '', '', 'At which minute the market is going to close, so keep balance.', sysdate(),sysdate());
 insert into param values('STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT', 'TRADING',null, 0.8, '', '', 'If delta price go above this percentage, stop trading for breaking balance.', sysdate(),sysdate());
-insert into param values('STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES', 'TRADING', 2,null, '', '', 'Stop trade if same stock lost than gain this times', sysdate(),sysdate());
+insert into param values('STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES', 'TRADING', 3,null, '', '', 'Stop trade if same stock lost than gain this times', sysdate(),sysdate());
 insert into param values('SUGGESTED_BY_FOR_USER', 'TRADING',null,null , 'osCWfs-ZVQZfrjRK0ml-eEpzeop0', '', 'This is Same Ni WeChat account.', sysdate(),sysdate());
-insert into param values('SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT', 'TRADING',null,null , 'SYSTEM', 'SYSTEMGRANTED', 'SYSTEM means system recommand the stock but not enabled for trading, SYSTEMGRANTED means enabled trading', sysdate(),sysdate());
-insert into param values('MAX_LOST_TIME_BEFORE_EXIT_TRADE', 'TRADING', 2,null, '', '', 'The threshold value for stoping trading the stock if it lost this number of times.', sysdate(),sysdate());
+insert into param values('SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT', 'TRADING',null,null , 'SYSTEM_SUGGESTER', 'SYSTEM_GRANTED_TRADER', 'SYSTEM means system recommand the stock but not enabled for trading, SYSTEMGRANTED means enabled trading', sysdate(),sysdate());
+insert into param values('MAX_LOST_TIME_BEFORE_EXIT_TRADE', 'TRADING', 3,null, '', '', 'The threshold value for stoping trading the stock if it lost this number of times.', sysdate(),sysdate());
 insert into param values('MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE', 'TRADING', 7,null, '', '', 'Exit trade if no trading happened this number of days.', sysdate(),sysdate());
 insert into param values('MAX_LOST_PCT_FOR_SELL_MODE', 'TRADING',null, -0.06, '', '', 'When lost this percentage, put to sell mode.', sysdate(),sysdate());
-insert into param values('MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE', 'TRADING', 7,null, '', '', 'Put back stock for trade if stock price goes this high percentage.', sysdate(),sysdate());
+insert into param values('MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE', 'TRADING', null,0.06, '', '', 'Put back stock for trade if stock price goes this high percentage.', sysdate(),sysdate());
 
-insert into param values('BUY_BASE_TRADE_THRESH', 'TRADEPOINT',null, 0.02, '', '', 'QtyBuyPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
-insert into param values('SELL_BASE_TRADE_THRESH', 'TRADEPOINT',null, 0.02, '', '', 'QtySellPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
-insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADEPOINT',null, 0.02, '', '', 'How close to the margin of BASE_TRADE_THRESHOLD value.', sysdate(),sysdate());
+insert into param values('BUY_BASE_TRADE_THRESH', 'TRADING',null, 0.03, '', '', 'QtyBuyPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
+insert into param values('SELL_BASE_TRADE_THRESH', 'TRADING',null, 0.03, '', '', 'QtySellPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
+insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.01, '', '', 'How close to the margin of BASE_TRADE_THRESHOLD value.', sysdate(),sysdate());
 
 create table if not exists usr(
 openID varchar(100 ) not null,

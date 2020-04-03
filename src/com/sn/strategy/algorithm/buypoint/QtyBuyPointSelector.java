@@ -14,6 +14,7 @@ import com.sn.db.DBManager;
 import com.sn.STConstants;
 import com.sn.strategy.algorithm.IBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.DefaultBuyPointSelector;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.sellmode.SellModeWatchDog;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
@@ -35,8 +36,6 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         sim_mode = sm;
     }
     
-	private double BASE_TRADE_THRESH = 0.02;
-
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
         
@@ -49,7 +48,11 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         long minutes = t1.getMinutes();
         
         log.info("Hour:" + hour + ", Minute:" + minutes);
-        if ((hour * 100 + minutes) >= (STConstants.HOUR_TO_KEEP_BALANCE * 100 + STConstants.MINUTE_TO_KEEP_BALANCE))
+        
+        int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING");
+        int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING");
+        
+        if ((hour * 100 + minutes) >= (hour_for_balance * 100 + mins_for_balance))
         {
             if (sbs == null || (sbs != null && sbs.is_buy_point))
             {
@@ -60,10 +63,11 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         
         double pct = (stk.getCur_pri() - stk.getYtClsPri()) / stk.getYtClsPri();
         
-        if (Math.abs(pct) >= STConstants.STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT)
+        double stop_trade_for_max_pct = ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING");
+        if (Math.abs(pct) >= stop_trade_for_max_pct)
         {
            log.info("Stock:" + stk.getID() + " cur_pri:" + stk.getCur_pri() + " ytClsPri:" + stk.getYtClsPri() +", increase pct:" + pct
-                   + " is exceeding " + STConstants.STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT + " stop trading");
+                   + " is exceeding " + stop_trade_for_max_pct + " stop trading");
             return false;
         }
         
@@ -77,7 +81,8 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         }
     
 
-		double tradeThresh = BASE_TRADE_THRESH;
+		double tradeThresh = 0;
+		double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING");
 		if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {
 			Double maxPri = stk.getMaxCurPri();
 			Double minPri = stk.getMinCurPri();
@@ -97,9 +102,9 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 				
 				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", isQtyPlused:" + qtyPlused);
 				
-				if (maxPct >= tradeThresh && curPct < maxPct * 1.0 / 10.0 && qtyPlused) {
+				if (maxPct >= tradeThresh && curPct < maxPct * margin_pct && qtyPlused) {
 					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
-							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri);
+							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " margin_pct:" + margin_pct);
 					return true;
 				} else if (stk.isStoppingJumpWater() && !StockMarket.isGzStocksJumpWater(5, 0.01, 0.5)) {
 					log.info("Stock cur price is stopping dumping, isGoodBuyPoint return true.");
@@ -135,7 +140,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 	
     public double getBuyThreshValueByDegree(double Degree, Stock2 stk) {
     	
-    	double baseThresh = BASE_TRADE_THRESH;
+    	double baseThresh = ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING");
     	
     	Timestamp tm = stk.getDl_dt();
         String deadline = null;
@@ -160,11 +165,8 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     			double dev = rs.getDouble("dev");
     			log.info("dev calculated for stock:" + stk.getID() + " is:" + dev);
     			if (dev >= 0.01 && dev <= 0.04) {
-    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + BASE_TRADE_THRESH;
+    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + baseThresh;
     			}
-    		}
-    		else {
-    			baseThresh = BASE_TRADE_THRESH;
     		}
     		rs.close();
     		stm.close();

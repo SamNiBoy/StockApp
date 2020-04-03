@@ -17,6 +17,7 @@ import com.sn.db.DBManager;
 import com.sn.STConstants;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.WorkManager;
 import com.sn.task.IWork;
 
@@ -72,12 +73,13 @@ public class ListGzStock implements IWork {
     private String getGzStockInfo()
     {
         Statement stm = null;
+        
         String sql = "select s.id, s.name, u.sell_mode_flg "
         		+ "     from stk s, usrStk u "
         		+ "    where s.id = u.id "
         		+ "      and u.gz_flg = 1 "
         		+ "      and u.openID ='" + frmUsr + "' "
-        	    + "      and u.suggested_by in ('" + frmUsr + "','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "')";
+        	    + "      and u.suggested_by in ('" + frmUsr + "','" + ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING") + "')";
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
         Map<String, Integer> sellmodes = new HashMap<String, Integer> ();

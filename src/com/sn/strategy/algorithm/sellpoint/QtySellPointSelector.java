@@ -15,6 +15,7 @@ import com.sn.db.DBManager;
 import com.sn.STConstants;
 import com.sn.strategy.algorithm.ISellPointSelector;
 import com.sn.strategy.algorithm.buypoint.DefaultBuyPointSelector;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.sellmode.SellModeWatchDog;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
@@ -47,7 +48,6 @@ public class QtySellPointSelector implements ISellPointSelector {
 		Double minPri = stk.getMinCurPri();
 		Double yt_cls_pri = stk.getYtClsPri();
 		Double cur_pri = stk.getCur_pri();
-		double tradeThresh = BASE_TRADE_THRESH;
         
 		
         Map<String, StockBuySellEntry> lstTrades = (sim_mode ? StockTrader.getSimTrader().getLstTradeForStocks() : StockTrader.getTradexTrader().getLstTradeForStocks());
@@ -59,7 +59,9 @@ public class QtySellPointSelector implements ISellPointSelector {
         long minutes = t1.getMinutes();
         
         log.info("Hour:" + hour + ", Minute:" + minutes);
-        if ((hour * 100 + minutes) >= (STConstants.HOUR_TO_KEEP_BALANCE * 100 + STConstants.MINUTE_TO_KEEP_BALANCE))
+        int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING");
+        int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING");
+        if ((hour * 100 + minutes) >= (hour_for_balance * 100 + mins_for_balance))
         {
             if (sbs == null || (sbs != null && !sbs.is_buy_point))
             {
@@ -70,10 +72,11 @@ public class QtySellPointSelector implements ISellPointSelector {
         
         double pct = (stk.getCur_pri() - stk.getYtClsPri()) / stk.getYtClsPri();
         
-        if (Math.abs(pct) >= STConstants.STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT)
+        double stop_trade_for_max_pct = ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING");
+        if (Math.abs(pct) >= stop_trade_for_max_pct)
         {
            log.info("Stock:" + stk.getID() + " cur_pri:" + stk.getCur_pri() + " ytClsPri:" + stk.getYtClsPri() +", increase pct:" + pct
-                   + " is exceeding " + (-STConstants.STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT) + " stop trading");
+                   + " is exceeding " + (-stop_trade_for_max_pct) + " stop trading");
             return false;
         }
         
@@ -85,7 +88,8 @@ public class QtySellPointSelector implements ISellPointSelector {
             return false;
         }
 		
-
+		double tradeThresh = 0;
+        double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING");
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
 			double marketDegree = StockMarket.getDegree();
@@ -95,11 +99,11 @@ public class QtySellPointSelector implements ISellPointSelector {
 			double maxPct = (maxPri - minPri) / yt_cls_pri;
 			double curPct = (cur_pri - minPri) / yt_cls_pri;
 			
-			boolean con1 = maxPct > tradeThresh && curPct > maxPct * 9.0 / 10.0;
+			boolean con1 = maxPct > tradeThresh && curPct > maxPct * (1 - margin_pct);
 			boolean con2 = stk.isLstQtyPlused();
 			
 			log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + "yt_cls_pri:" + yt_cls_pri + " maxPri:" + maxPri + " minPri:"
-					+ minPri + " maxPct:" + maxPct + " curPct:" + curPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
+					+ minPri + " maxPct:" + maxPct + " curPct:" + curPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh + " marginPct:" + (1-margin_pct));
 			log.info("price is reaching top margin:" + con1 + " isLstQtyPlused is:" + con2);
 			if (con1 && con2) {
 				return true;
@@ -123,7 +127,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 	
     public double getSellThreshValueByDegree(double Degree, Stock2 stk) {
     	
-    	double baseThresh = BASE_TRADE_THRESH;
+    	double baseThresh = ParamManager.getFloatParam("SELL_BASE_TRADE_THRESH", "TRADING");
     	
     	Timestamp tm = stk.getDl_dt();
         String deadline = null;

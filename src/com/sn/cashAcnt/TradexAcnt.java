@@ -18,6 +18,7 @@ import com.sn.simulation.SimStockDriver;
 import com.sn.STConstants;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.trader.TradexAccount;
 import com.sn.trader.TradexCpp;
 import com.sn.trader.TradexStockInHand;
@@ -33,9 +34,9 @@ public class TradexAcnt implements ICashAccount {
     private double initMny;
     private double usedMny;
     private double usedMny_Hrs;
-    private double maxMnyPerTrade = STConstants.DFT_MAX_MNY_PER_TRADE;
+    private double maxMnyPerTrade = ParamManager.getFloatParam("DFT_MAX_MNY_PER_TRADE", "ACCOUNT");
     private double pftMny;
-    private double maxUsePct=STConstants.DFT_MAX_USE_PCT;
+    private double maxUsePct=ParamManager.getFloatParam("DFT_MAX_USE_PCT", "ACCOUNT");
 
 	/**
 	 * @param args

@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.STConstants;
 import com.sn.stock.Stock2.StockData;
+import com.sn.strategy.algorithm.param.ParamManager;
 
 public class StockMarket{
 
@@ -44,13 +45,13 @@ public class StockMarket{
     		                             + "from stk s, usrStk u "
     		                             + "where s.id = u.id "
     		                             + "  and u.gz_flg = 1 "
-                                         + "  and u.suggested_by <> '" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "'"
+                                         + "  and u.suggested_by <> '" + ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING") + "'"
     		                             + "order by s.id";
     public static String GZ_STOCK_CNT_SELECT = "select count(distinct s.id) TotalCnt "
     		                             + "from stk s, usrStk u "
     		                             + "where s.id = u.id "
     		                             + "  and u.gz_flg = 1 "
-                                         + "  and u.suggested_by <> '" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "'";
+                                         + "  and u.suggested_by <> '" + ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING") + "'";
     /**
      * @param args
      */

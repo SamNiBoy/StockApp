@@ -14,6 +14,7 @@ import com.sn.db.DBManager;
 import com.sn.STConstants;
 import com.sn.strategy.algorithm.IBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.DefaultBuyPointSelector;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.sellmode.SellModeWatchDog;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
@@ -62,7 +63,8 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                 
                 log.info("Stock:" + stk.getID() + " sold " + mins + " minutes before");
                 
-	            if (mins > STConstants.MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE)
+                int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING");
+	            if (mins > mins_max)
 	            {
                     log.info("Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
                     return true;
@@ -71,10 +73,13 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                 long hour = t1.getHours();
                 long minutes = t1.getMinutes();
                 
+                int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING");
+                int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING");
+                
                 log.info("Hour:" + hour + ", Minute:" + minutes);
-                if (hour == STConstants.HOUR_TO_KEEP_BALANCE && minutes >= STConstants.MINUTE_TO_KEEP_BALANCE)
+                if (hour >= hour_for_balance && minutes >= mins_for_balance)
                 {
-                    log.info("Reaching " + STConstants.HOUR_TO_KEEP_BALANCE + ":" + STConstants.MINUTE_TO_KEEP_BALANCE
+                    log.info("Reaching " + hour_for_balance + ":" + mins_for_balance
                              + ", Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
                     return true;
                 }

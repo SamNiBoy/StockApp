@@ -29,6 +29,7 @@ import com.sn.db.DBManager;
 import com.sn.strategy.ITradeStrategy;
 import com.sn.strategy.algorithm.IBuyPointSelector;
 import com.sn.strategy.algorithm.ISellPointSelector;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
@@ -307,11 +308,12 @@ public class TradeStrategyImp implements ITradeStrategy {
 		String sql;
 		tradeStocks.clear();
 		try {
+		    String system_trader = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 			sql = "select s.*, u.* " + "from usrStk s," + "     usr u " + "where s.openID = u.openID "
 					+ "and s.gz_flg = 1 " + "and u.openID = '" + STConstants.openID + "' and length(u.mail) > 1 "
-					+ "and s.suggested_by in ('" + STConstants.openID +"','" + STConstants.SUGGESTED_BY_FOR_SYSTEMGRANTED + "') and u.buy_sell_enabled = 1";
+					+ "and s.suggested_by in ('" + STConstants.openID +"','" + system_trader + "') and u.buy_sell_enabled = 1";
 
 			//log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
@@ -365,14 +367,19 @@ public class TradeStrategyImp implements ITradeStrategy {
 
 		log.info("TradeStrategy " + name + " collected total traded " + totalCnt + " times.");
 
-		if (totalCnt >= STConstants.MAX_TRADE_TIMES_PER_DAY) {
-			log.info("Trade limit for a day is: " + STConstants.MAX_TRADE_TIMES_PER_DAY + " can not trade today!");
+		int max_trades_per_days = ParamManager.getIntParam("MAX_TRADE_TIMES_PER_DAY", "TRADING");
+		
+		if (totalCnt >= max_trades_per_days) {
+			log.info("Trade limit for a day is: " + max_trades_per_days + " can not trade today!");
 			return false;
 		}
 
 		LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
 		if (rcds != null) {
-			if (rcds.size() >= STConstants.MAX_TRADE_TIMES_PER_STOCK) {
+            
+		    int max_trades_per_stock = ParamManager.getIntParam("MAX_TRADE_TIMES_PER_STOCK", "TRADING");
+		    
+			if (rcds.size() >= max_trades_per_stock) {
 				log.info("stock " + s.getID() + " alread trade " + rcds.size() + " times, can not trade today.");
 				return false;
 			} else {
@@ -386,19 +393,21 @@ public class TradeStrategyImp implements ITradeStrategy {
 					}
 				}
 				
-				if (buyCnt >= STConstants.MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK || sellCnt >= STConstants.MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK) {
-					log.info("Stock:" + s.getID() + " buy/sell reached limit:" + STConstants.MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK);
+				int max_trades_buy_or_sell_per_stock = ParamManager.getIntParam("MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK", "TRADING");
+				if (buyCnt >= max_trades_buy_or_sell_per_stock || sellCnt >= max_trades_buy_or_sell_per_stock) {
+					log.info("Stock:" + s.getID() + " buy/sell reached limit:" + max_trades_buy_or_sell_per_stock);
 					return false;
 				}
 				log.info("For stock " + s.getID() + " total sellCnt:" + sellCnt + ", total buyCnt:" + buyCnt);
 
 				// We only allow buy BUY_SELL_MAX_DIFF_CNT more than sell.
-				if (buyCnt >= sellCnt + STConstants.BUY_SELL_MAX_DIFF_CNT && is_buy_flg) {
-                    log.info("Bought more than " + STConstants.BUY_SELL_MAX_DIFF_CNT + " times as sell can won't buy again.");
+				int buy_sell_max_diff_cnt = ParamManager.getIntParam("BUY_SELL_MAX_DIFF_CNT", "TRADING");
+				if (buyCnt >= sellCnt + buy_sell_max_diff_cnt && is_buy_flg) {
+                    log.info("Bought more than " + buy_sell_max_diff_cnt + " times as sell can won't buy again.");
 					return false;
 				}
-				else if (sellCnt >= buyCnt + STConstants.BUY_SELL_MAX_DIFF_CNT && !is_buy_flg) {
-                    log.info("Sold more than " + STConstants.BUY_SELL_MAX_DIFF_CNT + " times as buy, can won't sell again.");
+				else if (sellCnt >= buyCnt +buy_sell_max_diff_cnt && !is_buy_flg) {
+                    log.info("Sold more than " + buy_sell_max_diff_cnt + " times as buy, can won't sell again.");
                     return false;
                 }
 				// else if (stk.is_buy_point) {
@@ -419,7 +428,8 @@ public class TradeStrategyImp implements ITradeStrategy {
 		            long millisec = t1.getTime() - t0.getTime();
 		            long mins = millisec / (1000*60);
 		            
-					if (is_buy_flg == lst.is_buy_point && Math.abs((s.getCur_pri() - lst.price)) / lst.price <= 0.01 && !(mins > STConstants.MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE)) {
+		            int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING");
+					if (is_buy_flg == lst.is_buy_point && Math.abs((s.getCur_pri() - lst.price)) / lst.price <= 0.01 && !(mins > mins_max)) {
 						log.info("Just " + (is_buy_flg ? "buy" : "sell") + " this stock with similar prices "
 								+ s.getCur_pri() + "/" + lst.price + ", skip same trade.");
 						return false;
@@ -438,7 +448,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
             
-	         String acntId = STConstants.ACNT_SIM_PREFIX;
+	         String acntId = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT");
 	            
 	         if (!sim_mode) {
 	             acntId = tradex_acnt.getActId();
@@ -524,7 +534,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		String sql;
 		boolean shouldStopTrade = false;
         
-        String acntId = STConstants.ACNT_SIM_PREFIX + s.getID();
+        String acntId = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + s.getID();
         
         if (!sim_mode) {
             acntId = tradex_acnt.getActId();
@@ -594,8 +604,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 			log.info("stopTradeForStock, incCnt:" + incCnt + " descCnt:" + descCnt);
 
 			// For specific stock, if there are 50% lost, stop trading.
-			if ((descCnt - incCnt) >= STConstants.STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES) {
-				log.info("Stock:" + stkID + "lost time is more than " + STConstants.STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES + " times, stop trade!");
+			int max_trade_lost_times = ParamManager.getIntParam("STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES", "TRADING");
+			if ((descCnt - incCnt) >= max_trade_lost_times) {
+				log.info("Stock:" + stkID + "lost time is more than " + max_trade_lost_times + " times, stop trade!");
 				shouldStopTrade = true;
 			}
 			rs.close();
@@ -617,7 +628,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			Statement stm = con.createStatement();
 
             
-			String acntId = STConstants.ACNT_SIM_PREFIX + s.getID();
+			String acntId = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + s.getID();
 			
 			if (!sim_mode) {
 			    acntId = tradex_acnt.getActId();
@@ -722,6 +733,8 @@ public class TradeStrategyImp implements ITradeStrategy {
         
         Connection con = DBManager.getConnection();
         int seqnum = 0;
+        
+        double commi_rate  = ParamManager.getFloatParam("COMMISSION_RATE", "VENDOR");
         try {
             String sql = "select case when max(d.seqnum) is null then -1 else max(d.seqnum) end maxseq from TradeHdr h " +
                     "       join TradeDtl d " +
@@ -753,8 +766,8 @@ public class TradeStrategyImp implements ITradeStrategy {
                     + s.getID() + "',"
                     + soldPrice*sellableAmt + ","
                     + (-sellableAmt) + ","
-                    + soldPrice + "," + soldPrice*sellableAmt + "," + STConstants.COMMISSION_RATE +  ","
-                    + sellableAmt * soldPrice * STConstants.COMMISSION_RATE + ", str_to_date('" + s.getDl_dt().toString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s.%f'))";
+                    + soldPrice + "," + soldPrice*sellableAmt + "," + commi_rate +  ","
+                    + sellableAmt * soldPrice * commi_rate + ", str_to_date('" + s.getDl_dt().toString().substring(0, 19) + "','%Y-%m-%d %H:%i:%s.%f'))";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -863,6 +876,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                 "      where h.stkId = '" + s.getID()+ "'" +
                 "        and h.acntId = '" + ac.getActId() + "'";
         int seqnum = 0;
+        double commi_rate  = ParamManager.getFloatParam("COMMISSION_RATE", "VENDOR");
         try {
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery(sql);
@@ -873,8 +887,8 @@ public class TradeStrategyImp implements ITradeStrategy {
                     + s.getID() + "',"
                     + buyPrice * buyMnt + ","
                     + buyMnt + ","
-                    + buyPrice + "," + buyPrice*buyMnt + "," + STConstants.COMMISSION_RATE +  ","
-                    + buyMnt * buyPrice * STConstants.COMMISSION_RATE + ",str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'))";
+                    + buyPrice + "," + buyPrice*buyMnt + "," + commi_rate +  ","
+                    + buyMnt * buyPrice * commi_rate + ",str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'))";
                     log.info(sql);
                     Statement stm2 = con.createStatement();
                     stm2.execute(sql);
@@ -1032,15 +1046,20 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public ICashAccount getCashAcntForStock(String stk) {
         
         if (sim_mode) {
-        	String AcntForStk = STConstants.ACNT_SIM_PREFIX + stk;
+        	String AcntForStk = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + stk;
             ICashAccount acnt = cash_account_map.get(AcntForStk);
             if (acnt == null) {
             	log.info("No cashAccount for stock:" + stk + " in memory, load from db.");
                 acnt = CashAcntManger.loadAcnt(AcntForStk);
+                
+                double def_init_mnt = ParamManager.getFloatParam("DFT_INIT_MNY", "ACCOUNT");
+                double def_max_mny_per_trade = ParamManager.getFloatParam("DFT_MAX_MNY_PER_TRADE", "ACCOUNT");
+                double def_max_use_pct = ParamManager.getFloatParam("DFT_MAX_USE_PCT", "ACCOUNT");
+                
                 if (acnt == null) {
                 	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
                     CashAcntManger
-                    .crtAcnt(AcntForStk, STConstants.DFT_INIT_MNY, 0.0, 0.0,0.0,STConstants.DFT_MAX_MNY_PER_TRADE, STConstants.DFT_MAX_USE_PCT);
+                    .crtAcnt(AcntForStk, def_init_mnt, 0.0, 0.0,0.0,def_max_mny_per_trade, def_max_use_pct);
                     acnt = CashAcntManger.loadAcnt(AcntForStk);
                 }
                 
@@ -1065,10 +1084,12 @@ public class TradeStrategyImp implements ITradeStrategy {
                 if (acnt == null) {
                     
                     log.info("No Tradex Account, create a new one.");
-                    
+                    double def_init_mnt = ParamManager.getFloatParam("DFT_INIT_MNY", "ACCOUNT");
+                    double def_max_mny_per_trade = ParamManager.getFloatParam("DFT_MAX_MNY_PER_TRADE", "ACCOUNT");
+                    double def_max_use_pct = ParamManager.getFloatParam("DFT_MAX_USE_PCT", "ACCOUNT");
                     //create a local cashacnt record to map Tradex account, columns may not be exact same, but for profit calculation purpose.
                     CashAcntManger
-                    .crtAcnt(Tradexacnt, STConstants.DFT_INIT_MNY, 0.0, 0.0,0.0,STConstants.DFT_MAX_MNY_PER_TRADE, STConstants.DFT_MAX_USE_PCT);
+                    .crtAcnt(Tradexacnt, def_init_mnt, 0.0, 0.0,0.0,def_max_mny_per_trade, def_max_use_pct);
                 }
                 
                 if (cash_account_map.get(tradex_acnt.getActId()) == null)

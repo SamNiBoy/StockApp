@@ -6,6 +6,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -119,18 +121,36 @@ public class DBManager {
     
     static public ResultSet executeSelect(String sql) {
         Connection con = getConnection();
+        Statement stm = null;
         ResultSet rs = null;
         log.info("Try executing:" + sql);
+        Timestamp start = Timestamp.valueOf(LocalDateTime.now());
         try {
-            Statement stm = con.createStatement();
+            stm = con.createStatement();
             rs = stm.executeQuery(sql);
-            stm.close();
-            con.close();
-            stm = null;
-            con = null;
+            
+            int rowcnt = 0;
+            
+            if (rs.last()) {
+                rowcnt = rs.getRow();
+            }
+            rs.first();
+            
+            Timestamp end = Timestamp.valueOf(LocalDateTime.now());
+            log.info("Query returned:" + rowcnt + " rows, in " + (end.getTime() - start.getTime())/1000.0 + " seconds.");
         }
         catch (SQLException e) {
             e.printStackTrace();
+        }
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.info("Excepton:" + e.getErrorCode());
+            }
         }
         return rs;
     }

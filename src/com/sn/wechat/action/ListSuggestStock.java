@@ -15,7 +15,9 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.STConstants;
+import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.WorkManager;
 import com.sn.task.IWork;
 
@@ -65,7 +67,10 @@ public class ListSuggestStock implements IWork {
     private String getGzStockInfo()
     {
         Statement stm = null;
-        String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "' and u.suggested_by = '" + STConstants.SUGGESTED_BY_FOR_SYSTEM + "'";
+        String system_suggester = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+        String system_trader = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+        
+        String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "' and u.suggested_by in ('" + system_suggester + "','" + system_trader + "')";
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
         DecimalFormat df = new DecimalFormat("##.###");
@@ -99,7 +104,8 @@ public class ListSuggestStock implements IWork {
                     if (rs.next()) {
                     	dev = rs.getDouble("dev");
                     }
-                    cur_pri = StockMarket.getStocks().get(stock).getCur_pri();
+                    Stock2 s =  (Stock2)StockMarket.getStocks().get(stock);
+                    cur_pri =  s.getCur_pri();
                     content += "价:" + df.format(cur_pri) + " stddev:" + df.format(dev) + "\n";
                     rs.close();
                 } catch(SQLException e0) {

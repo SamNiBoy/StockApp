@@ -15,6 +15,7 @@ import com.sn.db.DBManager;
 import com.sn.STConstants;
 import com.sn.strategy.algorithm.ISellPointSelector;
 import com.sn.strategy.algorithm.buypoint.DefaultBuyPointSelector;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.sellmode.SellModeWatchDog;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
@@ -26,7 +27,6 @@ public class BalanceSellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(BalanceSellPointSelector.class);
 
-	private double MAX_MINUTES_ALLOWED= 30;
 	private StockBuySellEntry sbs = null;
     
     private boolean sim_mode;
@@ -66,7 +66,8 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                 
                 log.info("Stock:" + stk.getID() + " bought " + mins + " minutes before");
                 
-                if (mins > MAX_MINUTES_ALLOWED)
+                int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING");
+                if (mins > mins_max)
                 {
                     log.info("Stock:" + stk.getID() + " bought " + mins + " minutes agao, sold it out");
                     return true;
@@ -76,9 +77,13 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                 long minutes = t1.getMinutes();
                 
                 log.info("Hour:" + hour + ", Minute:" + minutes);
-                if (hour == STConstants.HOUR_TO_KEEP_BALANCE && minutes >= STConstants.MINUTE_TO_KEEP_BALANCE)
+                
+                int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING");
+                int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING");
+                
+                if (hour >= hour_for_balance && minutes >= mins_for_balance)
                 {
-                    log.info("Reaching " + STConstants.HOUR_TO_KEEP_BALANCE + ":" + STConstants.MINUTE_TO_KEEP_BALANCE
+                    log.info("Reaching " + hour_for_balance + ":" + mins_for_balance
                              + ", Stock:" + stk.getID() + " bought " + mins + " minutes agao, sell it out");
                     return true;
                 }

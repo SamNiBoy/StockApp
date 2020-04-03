@@ -20,6 +20,7 @@ import com.sn.task.suggest.selector.AvgClsPriSellModeSelector;
 import com.sn.task.suggest.selector.CurPriLostSellModeSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.IStockSelector;
 import com.sn.task.WorkManager;
 import com.sn.task.IWork;
@@ -203,7 +204,10 @@ public class SellModeWatchDog implements IWork {
                incPct = (curPri - opnPri)/ ytclspri;
                log.info("got incPct:" + incPct);
            }
-           if (incPct < STConstants.MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE) {
+           
+           double max_pct_to_disable_sell_mode = ParamManager.getIntParam("MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE", "TRADING");
+           
+           if (incPct < max_pct_to_disable_sell_mode) {
                log.info("cur price is incPct:" + incPct + " which is less 5% yt_cls_pri, not suggest disable sell mode.");
                suggest_flg = false;
            }

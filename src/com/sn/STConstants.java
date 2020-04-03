@@ -27,7 +27,7 @@ public class STConstants {
 	public static final int STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES = 2;
 	
 	public static final String SUGGESTED_BY_FOR_USER = "osCWfs-ZVQZfrjRK0ml-eEpzeop0";
-	public static final String SUGGESTED_BY_FOR_SYSTEMGRANTED = "SYSTEMGRANTED";
+	public static final String SUGGESTED_BY_FOR_SYSTEMGRANTED = "SYSTEM_GRANTED_TRADE";
 	public static final String SUGGESTED_BY_FOR_SYSTEM = "SYSTEM";
 	public static final String SUGGESTED_BY_FOR_SYSTEMUPDATE = "SYSTEMUPDATE";
 	
