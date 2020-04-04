@@ -81,6 +81,8 @@ public class StockMarket{
             log.info("Now load total:" + Total + " stocks.");
             rs = stm.executeQuery(sql);
             String id, name, area;
+            
+            int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
 
             rs.close();
             stm.close();
@@ -91,7 +93,7 @@ public class StockMarket{
                 id = rs.getString("id");
                 name = rs.getString("name");
                 area = rs.getString("area");
-                s = new Stock2(id, name, area, StockData.SMALL_SZ);
+                s = new Stock2(id, name, area, stock2_queue_sz);
                 stocks.put(id, s);
                 cnt++;
                 log.info("Load All Stocks completed:" + cnt * 1.0 / Total);
@@ -136,6 +138,8 @@ public class StockMarket{
             rs.close();
             stm.close();
             
+            int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
+            
             String id, name, area;
             stm = con.createStatement();
             log.info(GZ_STOCK_SELECT);
@@ -145,7 +149,7 @@ public class StockMarket{
                 id = rs.getString("id");
                 name = rs.getString("name");
                 area = rs.getString("area");
-                s = new Stock2(id, name, area, StockData.BIG_SZ);
+                s = new Stock2(id, name, area, stock2_queue_sz);
                 gzstocks.put(id, s);
                 cnt++;
                 log.info("Load GZStocks completed:" + cnt * 1.0 / Total);
@@ -191,11 +195,13 @@ public class StockMarket{
             
             String id, name, area;
             
+            int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
+            
             if (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
                 area = rs.getString("area");
-                s = new Stock2(id, name, area, StockData.BIG_SZ);
+                s = new Stock2(id, name, area, stock2_queue_sz);
                 gzstocks.put(id, s);
                 log.info("addGzStocks completed for: " + stkId);
             }

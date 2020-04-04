@@ -18,6 +18,7 @@ import com.sn.db.DBManager;
 import com.sn.stock.RawStockData;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.WorkManager;
 import com.sn.task.IWork;
 
@@ -53,7 +54,10 @@ public class GzStockDataFetcher implements IWork {
 
     static public boolean start() {
         //Fetch every 30 seconds
-        self = new GzStockDataFetcher(0,  30 * 1 * 1000);
+        
+        int fetch_per_seconds = ParamManager.getIntParam("FETCH_EVERY_SECONDS", "TRADING");
+        
+        self = new GzStockDataFetcher(0,  fetch_per_seconds * 1 * 1000);
         try {
             cnsmr = new GzStockDataConsumer(0, 0);
         } catch (Exception e) {

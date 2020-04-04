@@ -45,6 +45,13 @@ insert into param values('BUY_BASE_TRADE_THRESH', 'TRADING',null, 0.03, '', '', 
 insert into param values('SELL_BASE_TRADE_THRESH', 'TRADING',null, 0.03, '', '', 'QtySellPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
 insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.01, '', '', 'How close to the margin of BASE_TRADE_THRESHOLD value.', sysdate(),sysdate());
 
+insert into param values('STOCK2_QUEUE_SIZE', 'TRADING',60,null , '', '', 'Defined how big the queue size for Stock2 object to calculate statistics, this is critial param, if you fetch every one second, then it stores one minute data.', sysdate(),sysdate());
+insert into param values('FETCH_EVERY_SECONDS', 'TRADING',10,null , '', '', 'Define how often we fetch stock data for all stocks as well as for gzed stocks.', sysdate(),sysdate());
+
+
+insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',10,null , '', '', 'Stock suggester param to define at min how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());
+insert into param values('MIN_SHAKING_PCT', 'SUGGESTER',null,0.06, '', '', 'Stock suggester param to define min percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
+
 create table if not exists usr(
 openID varchar(100 ) not null,
 host_flg int not null,
@@ -64,9 +71,12 @@ create table if not exists usrStk(
 openID varchar(100 ) not null,
 id varchar(6 ) not null,
 gz_flg int not null,
-sell_mode_flg int not null,
+stop_trade_mode_flg int not null,
 suggested_by varchar(100 ) not null,
+suggested_by_selector varchar(100 ) not null,
+suggested_comment varchar(500 ) not null,
 add_dt datetime not null,
+mod_dt datetime not null,
 CONSTRAINT usrStk_PK PRIMARY KEY (OpenID, id)
 );
 
@@ -374,6 +384,8 @@ amount int not null,
 dl_dt datetime not null,
 buy_flg int not null,
 order_id int,
+trade_selector_name varchar(50) not null,
+trade_selector_comment varchar(500) not null,
 CONSTRAINT TradeDtl_PK PRIMARY KEY (acntId, stkId, seqnum)
 );
 

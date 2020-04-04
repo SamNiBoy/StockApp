@@ -27,7 +27,9 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
 	static Logger log = Logger.getLogger(BalanceBuyPointSelector.class);
 	
     private StockBuySellEntry sbs = null;
-    
+    private String selector_name = "BalanceBuyPointSelector";
+    private String selector_comment = "";
+
 	private boolean sim_mode = false;
     
 	public BalanceBuyPointSelector(boolean sm)
@@ -47,11 +49,13 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
 	    }
 	    else {
             
-	        boolean cleanup_stock_inhand = SellModeWatchDog.isStockInSellMode(stk);
+	        boolean cleanup_stock_inhand = SellModeWatchDog.isStockInStopTradeMode(stk);
             
 	        if (cleanup_stock_inhand)
 	        {
      	        log.info("Stock:" + stk.getID() + " switched to sell_mode(not good for trade), buy back stock in hand, return true");
+                stk.setTradedBySelector(this.selector_name);
+                stk.setTradedBySelectorComment("Stock:" + stk.getID() + " is in stop trade mode");
                 return true;
 	        }
 	        else {
@@ -67,6 +71,8 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
 	            if (mins > mins_max)
 	            {
                     log.info("Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
+                    stk.setTradedBySelector(this.selector_name);
+                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " sold:" + mins + " ago.");
                     return true;
 	            }
                 
@@ -81,6 +87,8 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                 {
                     log.info("Reaching " + hour_for_balance + ":" + mins_for_balance
                              + ", Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
+                    stk.setTradedBySelector(this.selector_name);
+                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " keep balance time:" + hour_for_balance + ":" + mins_for_balance);
                     return true;
                 }
 	        }

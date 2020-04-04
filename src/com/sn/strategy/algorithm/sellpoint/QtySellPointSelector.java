@@ -27,9 +27,11 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(QtySellPointSelector.class);
 
-	private double BASE_TRADE_THRESH = 0.02;
 	//Map<String, Boolean> preSellMode = new HashMap<String, Boolean>();
     private StockBuySellEntry sbs = null;
+    
+    private String selector_name = "QtySellPointSelector";
+    private String selector_comment = "";
     
     private boolean sim_mode;
     
@@ -80,11 +82,11 @@ public class QtySellPointSelector implements ISellPointSelector {
             return false;
         }
         
-        boolean csd = SellModeWatchDog.isStockInSellMode(stk);
+        boolean csd = SellModeWatchDog.isStockInStopTradeMode(stk);
         
         if (csd == true && (sbs == null || !sbs.is_buy_point))
         {
-            log.info("Stock:" + stk.getID() + " is in sell mode and in balance/sold, no need to break balance.");
+            log.info("Stock:" + stk.getID() + " is in stop trade mode and in balance/sold, no need to break balance.");
             return false;
         }
 		
@@ -106,6 +108,8 @@ public class QtySellPointSelector implements ISellPointSelector {
 					+ minPri + " maxPct:" + maxPct + " curPct:" + curPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh + " marginPct:" + (1-margin_pct));
 			log.info("price is reaching top margin:" + con1 + " isLstQtyPlused is:" + con2);
 			if (con1 && con2) {
+                stk.setTradedBySelector(this.selector_name);
+                stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + (1 - margin_pct) + " also qtyPlused:" + con2);
 				return true;
 			}
 			
@@ -152,11 +156,8 @@ public class QtySellPointSelector implements ISellPointSelector {
     			double dev = rs.getDouble("dev");
     			log.info("dev calculated for stock:" + stk.getID() + " is:" + dev);
     			if (dev >= 0.01 && dev <= 0.04) {
-    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + BASE_TRADE_THRESH;
+    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + baseThresh;
     			}
-    		}
-    		else {
-    			baseThresh = BASE_TRADE_THRESH;
     		}
     		rs.close();
     		stm.close();

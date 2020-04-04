@@ -152,7 +152,7 @@ public class SuggestStock implements IWork {
         log.info("SuggestStock, starts now at time:" + time);
         DayOfWeek week = lt.getDayOfWeek();
         
-        if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
+        /*if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
         {
             log.info("SuggestStock skipped because of weekend, goto sleep 8 hours.");
             try {
@@ -169,7 +169,7 @@ public class SuggestStock implements IWork {
         {
             log.info("SuggestStock skipped because of hour:" + hr + " less than 22:00.");
             return;
-        }
+        }*/
 
 		resetSuggestion();
 		
@@ -275,11 +275,12 @@ public class SuggestStock implements IWork {
 				sql = "";
 				if (rs2.next()) {
 					if (rs2.getLong("gz_flg") == 0) {
-						sql = "update usrStk set gz_flg = 1, suggested_by = '" + system_role_for_suggest + "' where openID = '" + openID
+						sql = "update usrStk set gz_flg = 1, suggested_by = '" + system_role_for_suggest + "', mod_dt = sysdate() " + ", suggested_by_selector = '" + s.getSuggestedBy() + "', suggested_comment = '" +
+					s.getSuggestedComment() + "' where openID = '" + openID
 								+ "' and id = '" + s.getID() + "'";
 					}
 				} else {
-					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'" + system_role_for_suggest + "',sysdate())";
+					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'" + system_role_for_suggest + "','" + s.getSuggestedBy() + "','" + s.getSuggestedComment() + "', sysdate(), sysdate())";
 				}
 				rs2.close();
 				stm2.close();
@@ -321,7 +322,7 @@ public class SuggestStock implements IWork {
 			rs = stm.executeQuery(sql);
 			while (rs.next()) {
 				String openID = rs.getString("openID");
-				sql = "select id from usrStk where openID = '" + openID + "' and sell_mode_flg = 0 and suggested_by in ('" + system_role_for_trade + "') and gz_flg = 1 order by id";
+				sql = "select id from usrStk where openID = '" + openID + "' and stop_trade_mode = 0 and suggested_by in ('" + system_role_for_trade + "') and gz_flg = 1 order by id";
 				Statement stm2 = con.createStatement();
 				ResultSet rs2 = stm2.executeQuery(sql);
 				sql = "";
@@ -329,7 +330,7 @@ public class SuggestStock implements IWork {
 					String stkid = rs2.getString("id");
 					if (shouldStockExitTrade(stkid)) {
 						exiter++;
-						putStockToSellMode(stkid);
+						putStockToStopTradeMode(stkid);
 					}
 				}
 				rs2.close();
@@ -379,7 +380,7 @@ public class SuggestStock implements IWork {
 			rs = stm.executeQuery(sql);
 			while (rs.next() && maxCnt-- > 0) {
 				String id = rs.getString("id");
-				sql = "update usrStk set suggested_by = '" + system_role_for_trade + "',  gz_flg = 1, sell_mode_flg = 0, add_dt = sysdate() where id ='" + id + "'";
+				sql = "update usrStk set suggested_by = '" + system_role_for_trade + "',  gz_flg = 1, stop_trade_mode = 0, add_dt = sysdate(), mod_dt = sysdate() where id ='" + id + "'";
 				Statement stm2 = con.createStatement();
 				stm2.execute(sql);
 				con.commit();
@@ -414,12 +415,12 @@ public class SuggestStock implements IWork {
 		log.info("Total granted:" + grantCnt + " stocks for trading.");
 	}
 	
-	private void putStockToSellMode(String stkid) {
+	private void putStockToStopTradeMode(String stkid) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		try {
-			sql = "update usrStk set sell_mode_flg = 1 where id = '" + stkid + "'";
+			sql = "update usrStk set stop_trade_mode = 1, mod_dt = sysdate() where id = '" + stkid + "'";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);
@@ -521,7 +522,7 @@ public class SuggestStock implements IWork {
 	    String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
 	      
 		try {
-			sql = "update usrStk set gz_flg = 0 where gz_flg = 1 and suggested_by in ('" + system_role_for_suggest + "')";
+			sql = "update usrStk set gz_flg = 0, mod_dt = sysdate() where gz_flg = 1 and suggested_by in ('" + system_role_for_suggest + "')";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

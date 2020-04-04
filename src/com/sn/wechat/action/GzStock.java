@@ -72,10 +72,10 @@ public class GzStock implements IWork {
             	stm.close();
                 if (gz_flg == 1 && suggested_by.equals(system_suggest_role))
                 {
-            	    sql = "update usrStk set suggested_by = '" + frmUsr + "' where id = '" + stockID + "' and openID = '" + frmUsr + "'";
+            	    sql = "update usrStk set suggested_by = '" + frmUsr + "', mod_dt = sysdate() where id = '" + stockID + "' and openID = '" + frmUsr + "'";
                 }
                 else {
-            	    sql = "update usrStk set gz_flg = 1 - gz_flg, suggested_by = '" + frmUsr + "' where id = '" + stockID + "' and openID = '" + frmUsr + "'";
+            	    sql = "update usrStk set gz_flg = 1 - gz_flg, suggested_by = '" + frmUsr + "', mod_dt = sysdate() where id = '" + stockID + "' and openID = '" + frmUsr + "'";
                 }
             	stm = con.createStatement();
             	log.info(sql);

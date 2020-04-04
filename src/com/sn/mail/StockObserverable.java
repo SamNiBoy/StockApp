@@ -29,6 +29,7 @@ import com.sn.mail.MailSenderFactory;
 import com.sn.mail.SimpleMailSender;
 import com.sn.stock.Stock2;
 import com.sn.stock.Stock2.StockData;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.wechat.WCMsgSender;
 import com.sn.stock.StockMarket;
 
@@ -104,7 +105,7 @@ public class StockObserverable extends Observable {
 				id = rs.getString("id");
 				avgSpeed = rs.getDouble("avgSpeed");
 				avgHand = rs.getLong("avgHand");
-				Stock2 s = StockMarket.getStocks().get(id);
+				Stock2 s = (Stock2)StockMarket.getStocks().get(id);
 				if (s != null) {
 					body += "<tr> <td>" + s.getID() + "</td>" + "<td> " + s.getName() + "</td>" + "<td> "
 							+ df.format(s.getCur_pri()) + "</td>" + "<td> " + df.format(avgSpeed) + "</td>" + "<td> "
@@ -140,7 +141,7 @@ public class StockObserverable extends Observable {
 				id = rs.getString("id");
 				avgSpeed = rs.getDouble("avgSpeed");
 				avgHand = rs.getLong("avgHand");
-				Stock2 s = StockMarket.getStocks().get(id);
+				Stock2 s = (Stock2)StockMarket.getStocks().get(id);
 				if (s != null) {
 					body2 += "<tr> <td>" + s.getID() + "</td>" + "<td> " + s.getName() + "</td>" + "<td> "
 							+ df.format(s.getCur_pri()) + "</td>" + "<td> " + df.format(avgSpeed) + "</td>" + "<td> "
@@ -193,7 +194,7 @@ public class StockObserverable extends Observable {
 				hst = rs.getDouble("hst_pri");
 				id = rs.getString("id");
 				top3Pct = rs.getDouble("Top3Pct");
-				Stock2 s = StockMarket.getStocks().get(id);
+				Stock2 s = (Stock2)StockMarket.getStocks().get(id);
 				if (s != null) {
 					if (s.getCur_pri() < lst + (hst - lst) * 3.0 / 10.0 && s.getCur_pri() >= lst && top3Pct > 0.6) {
 						BucketNo = ((s.getCur_pri() - lst) / (hst - lst) * 10) + 1;
@@ -648,6 +649,8 @@ public class StockObserverable extends Observable {
 
 			String id, name, area;
 
+			int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
+			
             rs.close();
             stm.close();
 			stm = con.createStatement();
@@ -657,7 +660,7 @@ public class StockObserverable extends Observable {
 				id = rs.getString("id");
 				name = rs.getString("name");
 				area = rs.getString("area");
-				s = new Stock2(id, name, area, StockData.BIG_SZ);
+				s = new Stock2(id, name, area, stock2_queue_sz);
 				// s.setCur_pri(7.8);
 				// s.constructFollowers();
 				// stocks.put(id, s);

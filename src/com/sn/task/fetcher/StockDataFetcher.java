@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 import com.sn.stock.RawStockData;
 import com.sn.stock.Stock2;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.WorkManager;
 import com.sn.task.IWork;
 
@@ -59,7 +60,10 @@ public class StockDataFetcher implements IWork {
 
     static public boolean start() {
         //self = new StockDataFetcher(0, Stock2.StockData.SECONDS_PER_FETCH * 1000);
-        self = new StockDataFetcher(0,  30 * 1 * 1000);
+        
+        int fetch_per_seconds = ParamManager.getIntParam("FETCH_EVERY_SECONDS", "TRADING");
+        
+        self = new StockDataFetcher(0,  fetch_per_seconds * 1 * 1000);
         if (WorkManager.submitWork(self)) {
             log.info("开始收集股票数据!");
             cnsmr = new StockDataConsumer(0, 0);

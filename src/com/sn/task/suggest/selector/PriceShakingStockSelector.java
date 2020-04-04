@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.strategy.TradeStrategyImp;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
@@ -32,8 +33,12 @@ public class PriceShakingStockSelector implements IStockSelector {
     int to_lvl2_cnt = 0;
     int to_lvl3_cnt = 0;
     
-    int MIN_JUMP_TIMES_FOR_GOOD_STOCK = 10;
-    double MIN_SHAKING_PCT = 0.06;
+    int MIN_JUMP_TIMES_FOR_GOOD_STOCK = ParamManager.getIntParam("MIN_JUMP_TIMES_FOR_GOOD_STOCK", "SUGGESTER");
+    double MIN_SHAKING_PCT = ParamManager.getFloatParam("MIN_SHAKING_PCT", "SUGGESTER");
+    
+    private String suggest_by = "PriceShakingStockSelector";
+    private String suggest_comment = "";
+
     
     /**
      * @param args
@@ -191,6 +196,8 @@ public class PriceShakingStockSelector implements IStockSelector {
         if (jump_area_cnt >= MIN_JUMP_TIMES_FOR_GOOD_STOCK)
         {
             log.info("PriceShakingStockSelector found stock:" + s.getID() + ", name:" + s.getName() + " jumped ares " + jump_area_cnt + " times, good for trade.");
+            s.setSuggestedBy(this.suggest_by);
+            s.setSuggestedComment("Jump area count:" + jump_area_cnt + " >= MIN_JUMP_TIMES_FOR_GOOD_STOCK: " + MIN_JUMP_TIMES_FOR_GOOD_STOCK);
             isgood = true;
         }
         return isgood;

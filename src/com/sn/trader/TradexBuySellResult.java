@@ -115,10 +115,4 @@ public class TradexBuySellResult
        }
        return rts;
    }
-   
-   public String getInsertSQL(String acntID) {
-       String sql = "insert into tradedtl (seqnum, acntId, stkId, order_id, price, amount, dl_dt, buy_flg) values(select "
-               + " max(seqnum) + 1,"+ acntID + "," + id + "," + order_id + "," + trade_price + "," + trade_amount + ",sysdate(), " + is_buy_flg+ " from tradedtl where acntId = '" + acntID + "')";
-       return sql;
-   }
 }

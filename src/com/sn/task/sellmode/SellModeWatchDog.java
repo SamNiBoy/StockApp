@@ -115,14 +115,14 @@ public class SellModeWatchDog implements IWork {
 	        for (String stk : stks.keySet()) {
 	        	Stock2 s = stks.get(stk);
 	        	
-	        	if (!isStockInSellMode(s) && stockMatchSellMode(s)) {
+	        	if (!isStockInStopTradeMode(s) && stockMatchSellMode(s)) {
             		log.info("put stock:" + s.getID() + ", name:" + s.getName() + " into sell mode.");
-	        		setStockSellMode(s, true);
+            		setStockStopTradeMode(s, true);
 	        		stocksSellModeWaitForMail.add(s);
 	        	}
-	        	else if (isStockInSellMode(s) && stockMatchUnSellMode(s)) {
+	        	else if (isStockInStopTradeMode(s) && stockMatchUnSellMode(s)) {
             		log.info("put stock:" + s.getID() + ", name:" + s.getName() + " back to non-sell mode.");
-	        		setStockSellMode(s, false);
+            		setStockStopTradeMode(s, false);
 	        		stocksUnSellModeWaitForMail.add(s);
 	        	}
                 else {
@@ -184,7 +184,7 @@ public class SellModeWatchDog implements IWork {
 	private boolean stockMatchUnSellMode(Stock2 s) {
         boolean suggest_flg = true;
 
-        boolean pre_sell_mode = isStockInSellMode(s);
+        boolean pre_trade_mode = isStockInStopTradeMode(s);
        for (IStockSelector slt : selectors) {
        	   if (slt.isTargetStock(s, null)) {
        	   	   log.info("unset sell mode return false for non mandatory criteria.");
@@ -194,7 +194,7 @@ public class SellModeWatchDog implements IWork {
        }
        
        //If we are going to disable sell mode, make more safe check.
-       if (pre_sell_mode && suggest_flg) {
+       if (pre_trade_mode && suggest_flg) {
            Double ytclspri = s.getYtClsPri();
            Double curPri = s.getCur_pri();
            Double opnPri = s.getOpen_pri();
@@ -215,18 +215,18 @@ public class SellModeWatchDog implements IWork {
         return suggest_flg;
 	}
 	
-	public static boolean isStockInSellMode(Stock2 s) {
+	public static boolean isStockInStopTradeMode(Stock2 s) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		boolean is_in_sell_mode = false;
 		try {
-			sql = "select sell_mode_flg from usrStk where id = '" + s.getID() + "'";
+			sql = "select stop_trade_mode from usrStk where id = '" + s.getID() + "'";
 			log.info(sql);
 			stm = con.createStatement();
 			ResultSet rs = stm.executeQuery(sql);
 			if (rs.next()) {
-			    is_in_sell_mode = rs.getInt("sell_mode_flg") == 1;
+			    is_in_sell_mode = rs.getInt("stop_trade_mode") == 1;
 			}
 			rs.close();
 		} catch (Exception e) {
@@ -248,12 +248,12 @@ public class SellModeWatchDog implements IWork {
 		return is_in_sell_mode;
 	}
 
-	private void setStockSellMode(Stock2 s, boolean to_sell_mode) {
+	private void setStockStopTradeMode(Stock2 s, boolean to_stop_trade_mode) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		try {
-			sql = "update usrStk set sell_mode_flg = " + (to_sell_mode ?  "1": "0") + " where id = '" + s.getID() + "'";
+			sql = "update usrStk set stop_trade_mode = " + (to_stop_trade_mode ?  "1": "0") + " where id = '" + s.getID() + "'";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

@@ -689,24 +689,24 @@ public class TradeStrategyImp implements ITradeStrategy {
 	private static boolean isInSellMode(Stock2 s) {
 
 		String sql;
-		int sell_mode_flg = 0;
+		int stop_trade_mode = 0;
 		
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 
 			// get last trade record.
-			sql = "select sell_mode_flg from usrStk " + " where id ='" + s.getID()
+			sql = "select stop_trade_mode from usrStk " + " where id ='" + s.getID()
 					+ "'";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
 			if (rs.next()) {
-				sell_mode_flg = rs.getInt("sell_mode_flg");
-			    log.info("stock:" + s.getID() + "'s sell mode:" + sell_mode_flg);
+				stop_trade_mode = rs.getInt("stop_trade_mode");
+			    log.info("stock:" + s.getID() + "'s sell mode:" + stop_trade_mode);
 			} else {
 				log.info("Looks stock:" + s.getID() + " is not in usrStk, can not judge sell mode.");
-				sell_mode_flg = 0;
+				stop_trade_mode = 0;
 			}
 			rs.close();
 			stm.close();
@@ -714,7 +714,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return sell_mode_flg == 1;
+		return stop_trade_mode == 1;
 	}
 	
 	private boolean createSellTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac, TradexBuySellResult tbsr) {
@@ -790,13 +790,13 @@ public class TradeStrategyImp implements ITradeStrategy {
             rs.close();
             stm.close();
             stm = con.createStatement();
-            sql = "insert into TradeDtl (acntId, stkId, seqnum, price, amount, dl_dt, buy_flg, order_id) values( '"
+            sql = "insert into TradeDtl (acntId, stkId, seqnum, price, amount, dl_dt, buy_flg, order_id, trade_selector_name, trade_selector_comment) values( '"
                 + ac.getActId() + "','"
                 + s.getID() + "',"
                 + seqnum + ","
                 + soldPrice + ", "
                 + sellableAmt
-                + ", str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s.%f'), 0," + (sim_mode? "null" : tbsr.getOrder_id()) + ")";
+                + ", str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s.%f'), 0," + (sim_mode? "null" : tbsr.getOrder_id()) + ",'" + s.getTradedBySelector() + "','" + s.getTradedBySelectorComment() + "')";
             log.info(sql);
             stm.execute(sql);
             stm.close();
@@ -909,13 +909,13 @@ public class TradeStrategyImp implements ITradeStrategy {
             }
             stm.close();
             stm = con.createStatement();
-            sql = "insert into TradeDtl (acntId, stkId, seqnum, price, amount, dl_dt, buy_flg, order_id) values('"
+            sql = "insert into TradeDtl (acntId, stkId, seqnum, price, amount, dl_dt, buy_flg, order_id, trade_selector_name, trade_selector_comment) values('"
                 + ac.getActId() + "','"
                 + s.getID() + "',"
                 + seqnum + ","
                 + buyPrice + ", "
                 + buyMnt
-                + ", str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'), 1," + (sim_mode? "null":tbsr.getOrder_id()) + ")";
+                + ", str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'), 1," + (sim_mode? "null":tbsr.getOrder_id()) + ",'" + s.getTradedBySelector() + "','" + s.getTradedBySelectorComment() + "')";
             log.info(sql);
             stm.execute(sql);
             stm.close();

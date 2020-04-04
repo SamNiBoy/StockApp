@@ -248,6 +248,8 @@ public class SimTrader implements IWork{
                         total_batch++;
                     }
                     
+                    log.info("Total " + total_stock_cnt + " stocks to simulate with each batch size:" + stock_cnt_per_thread + " and total:" + total_batch + " batches.");
+                    
                     
                     while (rs.next()) {
                         
@@ -457,7 +459,7 @@ public class SimTrader implements IWork{
             log.info("Archiving non simulation cashacnt table...");
             
             //For trading data: cashacnt, tradehdr, tradedtl, we only archive, but not purge.
-            sql = "insert into arc_cashacnt select * from cashacnt where acntid not like '" + sim_acnt + "%'";
+            sql = "insert into arc_cashacnt select concat(acntid, '_', left(add_dt, 10)), init_mny, used_mny, used_mny_hrs, pft_mny, max_mny_per_trade, max_useable_pct,add_dt from cashacnt where acntid not like '" + sim_acnt + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);

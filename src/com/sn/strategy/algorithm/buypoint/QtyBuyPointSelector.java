@@ -29,6 +29,8 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     private StockBuySellEntry sbs = null;
     
     private boolean sim_mode;
+    private String selector_name = "QtyBuyPointSelector";
+    private String selector_comment = "";
     
     
     public QtyBuyPointSelector(boolean sm)
@@ -72,7 +74,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         }
         
         
-        boolean csd = SellModeWatchDog.isStockInSellMode(stk);
+        boolean csd = SellModeWatchDog.isStockInStopTradeMode(stk);
         
         if (csd == true && (sbs == null || sbs.is_buy_point))
         {
@@ -105,10 +107,15 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 				if (maxPct >= tradeThresh && curPct < maxPct * margin_pct && qtyPlused) {
 					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
 							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " margin_pct:" + margin_pct);
+                    
+					stk.setTradedBySelector(this.selector_name);
+					stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + margin_pct + " also qtyPlused:" + qtyPlused);
 					return true;
 				} else if (stk.isStoppingJumpWater() && !StockMarket.isGzStocksJumpWater(5, 0.01, 0.5)) {
 					log.info("Stock cur price is stopping dumping, isGoodBuyPoint return true.");
 					//for testing purpose, still return false;
+                    stk.setTradedBySelector(this.selector_name);
+                    stk.setTradedBySelectorComment("Stock price is stop jummping water");
 					return true;
 				}
 				else {
@@ -127,6 +134,8 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 				if ((lstBuy - cur_pri) / yt_cls_pri > tradeThresh && stk.isLstQtyPlused()) {
 					log.info("isGoodBuyPoint Buy true:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:"
 							+ lstBuy + " curPri:" + cur_pri + " yt_cls_pri:" + yt_cls_pri);
+                    stk.setTradedBySelector(this.selector_name);
+					stk.setTradedBySelectorComment("cur_pri:" + cur_pri + " is tradeThresh:" + tradeThresh + " comparing to last buy price:" + lstBuy);
 					return true;
 				}
 				log.info("isGoodBuyPoint Buy false:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:" + lstBuy

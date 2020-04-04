@@ -36,6 +36,7 @@ import com.sn.mail.StockObserverable;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.stock.Stock2.StockData;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.wechat.WCMsgSender;
 
 public class SimStockDriver {
@@ -119,6 +120,7 @@ public class SimStockDriver {
         simstocks = new ConcurrentHashMap<String, Stock2>();
         Stock2 s = null;
         int cnt = 0;
+        int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
         
         try {
             if (stk_list.isEmpty()) {
@@ -128,11 +130,13 @@ public class SimStockDriver {
                 
                 String id, name, area;
                 
+                
+                
                 while (rs.next()) {
                     id = rs.getString("id");
                     name = rs.getString("name");
                     area = rs.getString("area");
-                    s = new Stock2(id, name, area, start_dt, end_dt, StockData.BIG_SZ);
+                    s = new Stock2(id, name, area, start_dt, end_dt, stock2_queue_sz);
                     simstocks.put(id, s);
                     cnt++;
                     log.info("LoadStocks completed:" + cnt * 1.0 / 2811);
@@ -152,7 +156,7 @@ public class SimStockDriver {
                         id = rs.getString("id");
                         name = rs.getString("name");
                         area = rs.getString("area");
-                        s = new Stock2(id, name, area, start_dt, end_dt, StockData.BIG_SZ);
+                        s = new Stock2(id, name, area, start_dt, end_dt, stock2_queue_sz);
                         simstocks.put(id, s);
                         cnt++;
                         log.info("LoadStocks completed:" + cnt * 1.0 / stk_list.size());

@@ -30,6 +30,8 @@ public class BalanceSellPointSelector implements ISellPointSelector {
 	private StockBuySellEntry sbs = null;
     
     private boolean sim_mode;
+    private String selector_name = "BalanceSellPointSelector";
+    private String selector_comment = "";
     
     
     public BalanceSellPointSelector(boolean sm)
@@ -51,10 +53,12 @@ public class BalanceSellPointSelector implements ISellPointSelector {
         }
         else {
             
-            boolean cleanup_stock_inhand = SellModeWatchDog.isStockInSellMode(stk);
+            boolean cleanup_stock_inhand = SellModeWatchDog.isStockInStopTradeMode(stk);
             if (cleanup_stock_inhand)
             {
-                log.info("Stock:" + stk.getID() + " switched to sell_mode(not good for trade), sell up stock in hand, return true");
+                log.info("Stock:" + stk.getID() + " switched to stop trade mode(not good for trade), sell up stock in hand, return true");
+                stk.setTradedBySelector(this.selector_name);
+                stk.setTradedBySelectorComment("Stock:" + stk.getID() + " is in stop trade mode");
                 return true;
             }
             else {
@@ -70,6 +74,8 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                 if (mins > mins_max)
                 {
                     log.info("Stock:" + stk.getID() + " bought " + mins + " minutes agao, sold it out");
+                    stk.setTradedBySelector(this.selector_name);
+                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " bought:" + mins + " ago.");
                     return true;
                 }
                 
@@ -85,6 +91,8 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                 {
                     log.info("Reaching " + hour_for_balance + ":" + mins_for_balance
                              + ", Stock:" + stk.getID() + " bought " + mins + " minutes agao, sell it out");
+                    stk.setTradedBySelector(this.selector_name);
+                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " keep balance time:" + hour_for_balance + ":" + mins_for_balance);
                     return true;
                 }
             }

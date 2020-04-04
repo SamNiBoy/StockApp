@@ -74,7 +74,7 @@ public class ListGzStock implements IWork {
     {
         Statement stm = null;
         
-        String sql = "select s.id, s.name, u.sell_mode_flg "
+        String sql = "select s.id, s.name, u.stop_trade_mode "
         		+ "     from stk s, usrStk u "
         		+ "    where s.id = u.id "
         		+ "      and u.gz_flg = 1 "
@@ -93,7 +93,7 @@ public class ListGzStock implements IWork {
             
             while (rs.next()) {
                 Stocks.put(rs.getString("id"), rs.getString("name"));
-                sellmodes.put(rs.getString("id"), rs.getInt("sell_mode_flg"));
+                sellmodes.put(rs.getString("id"), rs.getInt("stop_trade_mode"));
             }
             rs.close();
             

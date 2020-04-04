@@ -17,15 +17,13 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.suggest.selector.ClosePriceTrendStockSelector;
 
 public class Stock2 implements Comparable<Stock2>{
 
     public class StockData{
 
-    	static public final int BIG_SZ = 270;  // store 4.5 hours data.
-    	static public final int SMALL_SZ = 60; // store 1 hour data.
-    	static public final int SECONDS_PER_FETCH = 60 * 5;
         int MAX_SZ = 800;
         //Save all history data
         String stkid;
@@ -1371,8 +1369,44 @@ public class Stock2 implements Comparable<Stock2>{
     String name;
     String area;
     StockData sd;
+    String suggested_by;
+    String suggested_comment;
+    String traded_by_selector;
+    String traded_by_selector_comment;
     
     
+    public String getSuggestedComment() {
+        return suggested_comment;
+    }
+
+    public void setSuggestedComment(String suggested_comment) {
+        this.suggested_comment = suggested_comment;
+    }
+
+    public String getTradedBySelectorComment() {
+        return traded_by_selector_comment;
+    }
+
+    public void setTradedBySelectorComment(String traded_by_selector_comment) {
+        this.traded_by_selector_comment = traded_by_selector_comment;
+    }
+    
+    public String getSuggestedBy() {
+        return suggested_by;
+    }
+
+    public void setSuggestedBy(String suggested_by) {
+        this.suggested_by = suggested_by;
+    }
+
+    public String getTradedBySelector() {
+        return traded_by_selector;
+    }
+
+    public void setTradedBySelector(String traded_by_selector) {
+        this.traded_by_selector = traded_by_selector;
+    }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -1411,7 +1445,7 @@ public class Stock2 implements Comparable<Stock2>{
             ResultSet rs = stm.executeQuery(sql);
             List<Stock2> sl = new LinkedList<Stock2>();
             while(rs.next()) {
-                Stock2 s = new Stock2(rs.getString("id"), rs.getString("name"), rs.getString("area"), StockData.SMALL_SZ);
+                Stock2 s = new Stock2(rs.getString("id"), rs.getString("name"), rs.getString("area"), 60);
                 sl.add(s);
             }
             for (int i = 0; i < sl.size(); i++) {

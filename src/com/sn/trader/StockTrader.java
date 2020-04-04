@@ -30,6 +30,7 @@ import com.sn.mail.GzStockBuySellPointObserverable;
 import com.sn.strategy.ITradeStrategy;
 import com.sn.strategy.TradeStrategyGenerator;
 import com.sn.strategy.algorithm.buypoint.QtyBuyPointSelector;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.strategy.algorithm.sellpoint.QtySellPointSelector;
 import com.sn.task.suggest.selector.DefaultStockSelector;
 import com.sn.stock.Stock2;
@@ -96,10 +97,13 @@ public class StockTrader {
         
         resetTest();
         
-        Stock2 s1 = new Stock2("600503", "abcdef", "sh", StockData.SMALL_SZ);
-        Stock2 s2 = new Stock2("000975", "hijklmn", "sz", StockData.SMALL_SZ);
-        Stock2 s3 = new Stock2("600871", "abcdef", "sh", StockData.SMALL_SZ);
-        Stock2 s4 = new Stock2("002269", "lllll", "sh", StockData.SMALL_SZ);
+        
+        int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
+        
+        Stock2 s1 = new Stock2("600503", "abcdef", "sh", stock2_queue_sz);
+        Stock2 s2 = new Stock2("000975", "hijklmn", "sz", stock2_queue_sz);
+        Stock2 s3 = new Stock2("600871", "abcdef", "sh", stock2_queue_sz);
+        Stock2 s4 = new Stock2("002269", "lllll", "sh", stock2_queue_sz);
         
         StockMarket.addGzStocks(s1);
         StockMarket.addGzStocks(s2);
