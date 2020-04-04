@@ -322,7 +322,7 @@ public class SuggestStock implements IWork {
 			rs = stm.executeQuery(sql);
 			while (rs.next()) {
 				String openID = rs.getString("openID");
-				sql = "select id from usrStk where openID = '" + openID + "' and stop_trade_mode = 0 and suggested_by in ('" + system_role_for_trade + "') and gz_flg = 1 order by id";
+				sql = "select id from usrStk where openID = '" + openID + "' and stop_trade_mode_flg = 0 and suggested_by in ('" + system_role_for_trade + "') and gz_flg = 1 order by id";
 				Statement stm2 = con.createStatement();
 				ResultSet rs2 = stm2.executeQuery(sql);
 				sql = "";
@@ -380,7 +380,7 @@ public class SuggestStock implements IWork {
 			rs = stm.executeQuery(sql);
 			while (rs.next() && maxCnt-- > 0) {
 				String id = rs.getString("id");
-				sql = "update usrStk set suggested_by = '" + system_role_for_trade + "',  gz_flg = 1, stop_trade_mode = 0, add_dt = sysdate(), mod_dt = sysdate() where id ='" + id + "'";
+				sql = "update usrStk set suggested_by = '" + system_role_for_trade + "',  gz_flg = 1, stop_trade_mode_flg = 0, add_dt = sysdate(), mod_dt = sysdate() where id ='" + id + "'";
 				Statement stm2 = con.createStatement();
 				stm2.execute(sql);
 				con.commit();
@@ -420,7 +420,7 @@ public class SuggestStock implements IWork {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		try {
-			sql = "update usrStk set stop_trade_mode = 1, mod_dt = sysdate() where id = '" + stkid + "'";
+			sql = "update usrStk set stop_trade_mode_flg = 1, mod_dt = sysdate() where id = '" + stkid + "'";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

@@ -35,7 +35,6 @@ public abstract class BaseWCReporter implements IWCMsg {
     String msgType;
     long crtTime;
     boolean is_admin_flg = false;
-    static Connection con = DBManager.getConnection();
 
     String resContent;
     private String wcMsg;
@@ -131,6 +130,7 @@ public abstract class BaseWCReporter implements IWCMsg {
     private boolean chkAndCrtUsr(String usr, boolean hst_flg) {
         Statement stm = null;
         ResultSet rs = null;
+        Connection con = DBManager.getConnection();
         //This user samni
         if (usr.equals("osCWfs-ZVQZfrjRK0ml-eEpzeop0")) {
         	is_admin_flg = true;
@@ -142,16 +142,12 @@ public abstract class BaseWCReporter implements IWCMsg {
             rs = stm.executeQuery(sql);
             if (rs.next()) {
                 log.info("User:" + frmUsr + " already being added!");
-                rs.close();
-                stm.close();
             } else {
                 sql = "insert into usr values ('" + usr + "',"
                         + (hst_flg == true ? 1 : 0) + "," + "sysdate(), '', 0, 0,'','','')";
                 stm.executeUpdate(sql);
                 log.info("User:" + frmUsr + " added as "
                         + (hst_flg == true ? 1 : 0));
-                rs.close();
-                stm.close();
                 return true;
             }
         } catch (SQLException e) {
@@ -159,11 +155,23 @@ public abstract class BaseWCReporter implements IWCMsg {
             e.printStackTrace();
             log.error("chkAndCrtUsr errored:" + e.getMessage());
         }
+        finally {
+            try {
+                rs.close();
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.error("DB Exception:" + e.getMessage());
+            }
+        }
         return false;
     }
 
     private void crtRcvMsg() {
         Statement stm = null;
+        Connection con = DBManager.getConnection();
         try {
             stm = con.createStatement();
             String sql;
@@ -190,6 +198,15 @@ public abstract class BaseWCReporter implements IWCMsg {
             // TODO Auto-generated catch block
             e.printStackTrace();
             log.error("crtRcvMsg errored:" + e.getMessage());
+        }
+        finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.error("DB Exception:" + e.getMessage());
+            }
         }
     }
 

@@ -221,12 +221,12 @@ public class SellModeWatchDog implements IWork {
 		Statement stm = null;
 		boolean is_in_sell_mode = false;
 		try {
-			sql = "select stop_trade_mode from usrStk where id = '" + s.getID() + "'";
+			sql = "select stop_trade_mode_flg from usrStk where id = '" + s.getID() + "'";
 			log.info(sql);
 			stm = con.createStatement();
 			ResultSet rs = stm.executeQuery(sql);
 			if (rs.next()) {
-			    is_in_sell_mode = rs.getInt("stop_trade_mode") == 1;
+			    is_in_sell_mode = rs.getInt("stop_trade_mode_flg") == 1;
 			}
 			rs.close();
 		} catch (Exception e) {
@@ -248,12 +248,12 @@ public class SellModeWatchDog implements IWork {
 		return is_in_sell_mode;
 	}
 
-	private void setStockStopTradeMode(Stock2 s, boolean to_stop_trade_mode) {
+	private void setStockStopTradeMode(Stock2 s, boolean to_stop_trade_mode_flg) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		try {
-			sql = "update usrStk set stop_trade_mode = " + (to_stop_trade_mode ?  "1": "0") + " where id = '" + s.getID() + "'";
+			sql = "update usrStk set stop_trade_mode_flg = " + (to_stop_trade_mode_flg ?  "1": "0") + " where id = '" + s.getID() + "'";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

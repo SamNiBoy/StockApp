@@ -76,7 +76,7 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                 {
                     log.info("Stock:" + stk.getID() + " bought " + mins + " minutes agao, sold it out");
                     stk.setTradedBySelector(this.selector_name);
-                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " bought:" + mins + " ago.");
+                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " bought:" + mins + " minutes ago.");
                     return true;
                 }
                 

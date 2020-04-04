@@ -73,7 +73,7 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
 	            {
                     log.info("Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
                     stk.setTradedBySelector(this.selector_name);
-                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " sold:" + mins + " ago.");
+                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " sold:" + mins + " minutes ago.");
                     return true;
 	            }
                 

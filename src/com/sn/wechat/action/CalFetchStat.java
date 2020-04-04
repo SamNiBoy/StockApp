@@ -43,8 +43,7 @@ public class CalFetchStat implements IWork {
     }
 
     public void run()
-    {        // //////////////////Menu
-        // 5///////////////////////////////////////////////////
+    {
         String msg = "";
         Connection con = DBManager.getConnection();
         String sql = "select count(*) totCnt, count(*)/case when count(distinct id) = 0 then 1 else count(distinct id) end cntPerStk "

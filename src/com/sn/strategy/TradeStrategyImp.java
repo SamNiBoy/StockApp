@@ -65,6 +65,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	private static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
     private static Map<String, StockBuySellEntry> lstTradeForStocks = null;
     private static Map<String, ICashAccount> cash_account_map = new HashMap<String, ICashAccount>();
+    private static boolean unbalanced_db_lstTradeForStocks_loaded = false;
     
     public static Map<String, StockBuySellEntry> getLstTradeForStocks() {
         return lstTradeForStocks;
@@ -707,24 +708,24 @@ public class TradeStrategyImp implements ITradeStrategy {
 	private static boolean isInSellMode(Stock2 s) {
 
 		String sql;
-		int stop_trade_mode = 0;
+		int stop_trade_mode_flg = 0;
 		
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 
 			// get last trade record.
-			sql = "select stop_trade_mode from usrStk " + " where id ='" + s.getID()
+			sql = "select stop_trade_mode_flg from usrStk " + " where id ='" + s.getID()
 					+ "'";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
 			if (rs.next()) {
-				stop_trade_mode = rs.getInt("stop_trade_mode");
-			    log.info("stock:" + s.getID() + "'s sell mode:" + stop_trade_mode);
+				stop_trade_mode_flg = rs.getInt("stop_trade_mode_flg");
+			    log.info("stock:" + s.getID() + "'s sell mode:" + stop_trade_mode_flg);
 			} else {
 				log.info("Looks stock:" + s.getID() + " is not in usrStk, can not judge sell mode.");
-				stop_trade_mode = 0;
+				stop_trade_mode_flg = 0;
 			}
 			rs.close();
 			stm.close();
@@ -732,7 +733,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return stop_trade_mode == 1;
+		return stop_trade_mode_flg == 1;
 	}
 	
 	private boolean createSellTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac, TradexBuySellResult tbsr) {
@@ -1172,62 +1173,73 @@ public class TradeStrategyImp implements ITradeStrategy {
 	}
     
 	   public static void loadBuySellRecord() {
-	        String sql;
-            
-	        lstTradeForStocks = new HashMap<String, StockBuySellEntry>();
-            int i = 0;
-            Connection con = DBManager.getConnection();
-            Statement stm = null;
-	        
-	        try {
-                stm = con.createStatement();
-                ResultSet rs = null;
-	            sql = "select t1.*, t2.name from SellBuyRecord t1 join stk t2 on t1.stkId = t2.id order by stkId";
-	            log.info(sql);
-	            rs = stm.executeQuery(sql);
-                
-	            while (rs.next())
-	            {
-                    i++;
-	                String id = rs.getString("stkId");
-	                String name = rs.getString("name");
-	                double pri = rs.getDouble("price");
-	                int qty = rs.getInt("qty");
-                    Timestamp dt = rs.getTimestamp("dl_dt");
-                    boolean buy_flg = rs.getBoolean("buy_flg");
+           
+	       synchronized (TradeStrategyImp.class)
+           {
+	           if (unbalanced_db_lstTradeForStocks_loaded)
+	           {
+	               log.info("unbalanced SellBuyRecord already loaded, skip load again.");
+                   return;
+	           }
+	           String sql;
+               
+	           lstTradeForStocks = new HashMap<String, StockBuySellEntry>();
+               int i = 0;
+               Connection con = DBManager.getConnection();
+               Statement stm = null;
+	           
+	           try {
+                    stm = con.createStatement();
+                    ResultSet rs = null;
+	                sql = "select t1.*, t2.name from SellBuyRecord t1 join stk t2 on t1.stkId = t2.id order by stkId";
+	                log.info(sql);
+	                rs = stm.executeQuery(sql);
                     
-                    log.info("Loading SellBuyRecord " + i + " with data:");
-                    log.info("ID " + id);
-                    log.info("Name " + name);
-                    log.info("price " + pri);
-                    log.info("quantity " + qty);
-                    log.info("dl_dt " + dt.toString());
-                    log.info("buy_flg " + buy_flg);
-                    
-	                StockBuySellEntry stk = new StockBuySellEntry(id,
-	                        name,
-	                        pri,
-	                        qty,
-	                        buy_flg,
-	                        dt);
-                    
-                    lstTradeForStocks.put(rs.getString("stkId"), stk);
+	                while (rs.next())
+	                {
+                        i++;
+	                    String id = rs.getString("stkId");
+	                    String name = rs.getString("name");
+	                    double pri = rs.getDouble("price");
+	                    int qty = rs.getInt("qty");
+                        Timestamp dt = rs.getTimestamp("dl_dt");
+                        boolean buy_flg = rs.getBoolean("buy_flg");
+                        
+                        log.info("Loading SellBuyRecord " + i + " with data:");
+                        log.info("ID " + id);
+                        log.info("Name " + name);
+                        log.info("price " + pri);
+                        log.info("quantity " + qty);
+                        log.info("dl_dt " + dt.toString());
+                        log.info("buy_flg " + buy_flg);
+                        
+	                    StockBuySellEntry stk = new StockBuySellEntry(id,
+	                            name,
+	                            pri,
+	                            qty,
+	                            buy_flg,
+	                            dt);
+                        
+                        lstTradeForStocks.put(rs.getString("stkId"), stk);
+	                }
+	                
+	                unbalanced_db_lstTradeForStocks_loaded = true;
+	            } catch (Exception e) {
+	                e.printStackTrace();
+                    log.info("exception:" + e.getMessage());
 	            }
-	        } catch (Exception e) {
-	            e.printStackTrace();
-                log.info("exception:" + e.getMessage());
-	        }
-            finally {
-                try {
-                    stm.close();
-                    con.close();
-                } catch (SQLException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                    log.info("Unexpected exception:" + e.getErrorCode());
+                finally {
+                    try {
+                        stm.close();
+                        con.close();
+                    } catch (SQLException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        log.info("Unexpected exception:" + e.getErrorCode());
+                    }
                 }
+                log.info("return SellBuyRecord with " + lstTradeForStocks.size() + " records");
             }
-            log.info("return SellBuyRecord with " + lstTradeForStocks.size() + " records");
 	    }
 	
 	public ICashAccount getCashAcntForStock(String stk) {

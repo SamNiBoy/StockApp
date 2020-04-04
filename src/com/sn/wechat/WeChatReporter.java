@@ -1,9 +1,21 @@
 package com.sn.wechat;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 
 import com.sn.task.addmail.AddMail;
 import com.sn.task.enasuggeststock.EnaSuggestStock;
+import com.sn.db.DBManager;
+import com.sn.stock.Stock2;
+import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.EnaUsrBuySell;
 import com.sn.task.TaskManager;
 import com.sn.task.usrStock;
@@ -62,7 +74,8 @@ public class WeChatReporter extends BaseWCReporter{
         resContent = "你可以发送以下代码:\n"
                 + "1.获取我关注的股票.\n" + "2.获取系统推荐股票.\n"
                 + "3.启用/停止买卖.\n" + "4.启用/停止推荐.\n"
-                + "5.报告数据情况.\n"
+                + "5.启用/取消一键平仓\n"
+                + "6.报告数据情况.\n"
                 + "xxxxxx 关注/取消关注股票.\n"
                 + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
     	}
@@ -72,7 +85,8 @@ public class WeChatReporter extends BaseWCReporter{
                     + "2.获取系统推荐股票数据.\n"
                     + "3.启用/停止股票买卖.\n"
                     + "4.启用/停止推荐.\n"
-                    + "5.报告数据情况.\n"
+                    + "5.启用/取消一键平仓\n"
+                    + "6.报告数据情况.\n"
                     + "xxxxxx 关注/取消关注股票.\n"
                     + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
     	}
@@ -97,49 +111,391 @@ public class WeChatReporter extends BaseWCReporter{
         	if (!is_admin_flg) {
         	}
             if (content.equals("1")) {
-                ListGzStock ttb = new ListGzStock(0, 0, this.getFromUserName());
-                if (!WorkManager.submitWork(ttb)) {
-                    resContent = "正在获取关注的股票详细信息,请稍后再试.";
+                String msg = "";
+                Map<String, String> Stocks = new HashMap<String, String> ();
+                Map<String, Integer> sellmodes = new HashMap<String, Integer> ();
+                DecimalFormat df2 = new DecimalFormat("##.##");
+                DecimalFormat df3 = new DecimalFormat("##.###");
+                Connection mycon = DBManager.getConnection();
+                Statement stm = null;
+
+                try {
+                    String sql = "select s.id, s.name, u.stop_trade_mode_flg "
+                            + "     from stk s, usrStk u "
+                            + "    where s.id = u.id "
+                            + "      and u.gz_flg = 1 "
+                            + "      and u.openID ='" + frmUsr + "' "
+                            + "      and u.suggested_by in ('" + frmUsr + "','" + ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING") + "')";
+                    log.info(sql);
+                    stm = mycon.createStatement();
+                    ResultSet rs = stm.executeQuery(sql);
+                    
+                    while (rs.next()) {
+                        Stocks.put(rs.getString("id"), rs.getString("name"));
+                        sellmodes.put(rs.getString("id"), rs.getInt("stop_trade_mode_flg"));
+                    }
+                    rs.close();
+                    stm.close();
+                    
+                    if (Stocks.size() > 0)
+                    {
+                    for (String stock : Stocks.keySet()) {
+                        double dev = 0;
+                        double cur_pri = 0;
+                        
+                        int stkcnt = Stocks.keySet().size();
+
+                        
+                        String sellMode = (sellmodes.get(stock) == 1) ? "是" : "否";
+
+                        try {
+                            sql = "select avg(dev) dev from ("
+                                   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, left(dl_dt, 10) atDay "
+                                   + "  from stkdat2 "
+                                   + " where id ='" + stock + "'"
+                                   + "   and yt_cls_pri > 0 "
+                                   + "   and left(dl_dt, 10) >= left(sysdate() - interval 7 day, 10)"
+                                   + " group by left(dl_dt, 10)) t";
+                            log.info(sql);
+                            stm = mycon.createStatement();
+                            rs = stm.executeQuery(sql);
+                            if (rs.next()) {
+                                dev = rs.getDouble("dev");
+                            }
+                            Stock2 stk = (Stock2)StockMarket.getStocks().get(stock);
+                            Double cur_pri1 = stk.getCur_pri();
+                            if (cur_pri1 != null) {
+                                cur_pri = cur_pri1;
+                            }
+                            else {
+                                log.info("cur_pri for stock:" + stock + " is null, use -1.");
+                                cur_pri = -1;
+                                stk.getSd().LoadData();
+                            }
+                            
+                            Integer dl_stk_num = stk.getDl_stk_num();
+                            Double dl_mny_num = stk.getDl_mny_num();
+                            
+                            Double hst_pri = stk.getMaxTd_hst_pri();
+                            Double lst_pri = stk.getMinTd_lst_pri();
+                            Double b1_pri = stk.getB1_pri();
+                            Double b2_pri = stk.getB2_pri();
+                            Double b3_pri = stk.getB3_pri();
+                            Double b4_pri = stk.getB4_pri();
+                            Double b5_pri = stk.getB5_pri();
+                            Integer b1_num = stk.getB1_num();
+                            Integer b2_num = stk.getB2_num();
+                            Integer b3_num = stk.getB3_num();
+                            Integer b4_num = stk.getB4_num();
+                            Integer b5_num = stk.getB5_num();
+                            Double s1_pri = stk.getS1_pri();
+                            Double s2_pri = stk.getS2_pri();
+                            Double s3_pri = stk.getS3_pri();
+                            Double s4_pri = stk.getS4_pri();
+                            Double s5_pri = stk.getS5_pri();
+                            Integer s1_num = stk.getS1_num();
+                            Integer s2_num = stk.getS2_num();
+                            Integer s3_num = stk.getS3_num();
+                            Integer s4_num = stk.getS4_num();
+                            Integer s5_num = stk.getS5_num();
+                            Double opn_pri = stk.getOpen_pri();
+                            Double yt_cls_pri = stk.getYtClsPri();
+                            Double dlt_pri = cur_pri - yt_cls_pri;
+                            Double pct = dlt_pri / yt_cls_pri * 100;
+                            
+                            msg += "[" + stock + "]:" + Stocks.get(stock) + " 昨收" + df2.format(yt_cls_pri) + "\n";
+                            msg += "现价:" + df2.format(cur_pri) + "    今开:" + df2.format(opn_pri) + "\n";
+                            msg += "涨跌:" + df2.format(dlt_pri) + "    涨幅:" + df2.format(pct) + "%\n";
+                            msg += "最高:" + df2.format(hst_pri) + "    最低:" + df2.format(lst_pri) + "\n";
+                            msg += "成交:" + df2.format(dl_stk_num / 1000000.0) + "万手" + "  金额:" + df2.format(dl_mny_num / 10000000) + "千万\n";
+                            
+                            //max support 4 stock with detail infor.
+                            if (stkcnt < 5)
+                            {
+                                msg += "买五:" + df2.format(b5_pri) + "   手:" + b5_num / 100 + "\n";
+                                msg += "买四:" + df2.format(b4_pri) + "   手:" + b4_num / 100 + "\n";
+                                msg += "买三:" + df2.format(b3_pri) + "   手:" + b3_num / 100 + "\n";
+                                msg += "买二:" + df2.format(b2_pri) + "   手:" + b2_num / 100 + "\n";
+                                msg += "买一:" + df2.format(b1_pri) + "   手:" + b1_num / 100 + "\n";
+                                msg += "--------------------\n";
+                                msg += "卖一:" + df2.format(s1_pri) + "   手:" + s1_num / 100 + "\n";
+                                msg += "卖二:" + df2.format(s2_pri) + "   手:" + s2_num / 100 + "\n";
+                                msg += "卖三:" + df2.format(s3_pri) + "   手:" + s3_num / 100 + "\n";
+                                msg += "卖四:" + df2.format(s4_pri) + "   手:" + s4_num / 100 + "\n";
+                                msg += "卖五:" + df2.format(s5_pri) + "   手:" + s5_num / 100 + "\n";
+                                msg += "统计:" + " 七天dev:" + df3.format(dev) + " sellMode: " + sellMode + "\n\n";
+                            }
+                            else {
+                                msg += "\n";
+                            }
+                            rs.close();
+                        } catch(Exception e0) {
+                            log.info("No price infor for stock:" + stock + " continue...");
+                            continue;
+                        }
+                    }
+                    }
+                    else {
+                        msg = "你没有主动或者系统推荐可买卖关注的股票.";
+                    }
+                } catch (SQLException e) {
+                    log.error("DB Exception:" + e.getMessage());
+                    resContent = "DB Exception:" + e.getMessage();
                 }
-                else {
-                    resContent = ttb.getWorkResult();
+                finally {
+                    try {
+                        stm.close();
+                        mycon.close();
+                    } catch (SQLException e) {
+                        // TODO Auto-generated catch block
+                        log.error("DB Exception:" + e.getMessage());
+                        resContent = "DB Exception:" + e.getMessage();
+                    }
                 }
+                resContent = msg;
             }
             else if (content.equals("2")) {
-            	ListSuggestStock ttb = new ListSuggestStock(0, 0, this.getFromUserName());
-                if (!WorkManager.submitWork(ttb)) {
-                    resContent = "ListSuggestStock already scheduled, can not do it again!";
+                Statement stm = null;
+                String system_suggester = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+                String system_trader = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+                
+                String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "' and u.suggested_by in ('" + system_suggester + "','" + system_trader + "')";
+                String content = "";
+                Map<String, String> Stocks = new HashMap<String, String> ();
+                DecimalFormat df = new DecimalFormat("##.###");
+                Connection con = DBManager.getConnection();
+
+                try {
+                    stm = con.createStatement();
+                    ResultSet rs = stm.executeQuery(sql);
+                    
+                    while (rs.next()) {
+                        Stocks.put(rs.getString("id"), rs.getString("name"));
+                    }
+                    rs.close();
+                    
+                    for (String stock : Stocks.keySet()) {
+                        double dev = 0;
+                        double cur_pri = 0;
+
+                        content += stock + ":" + Stocks.get(stock) + "\n";
+
+                        try {
+                            sql = "select avg(dev) dev from ("
+                                   + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, left(dl_dt, 10) atDay "
+                                   + "  from stkdat2 "
+                                   + " where id ='" + stock + "'"
+                                   + "   and yt_cls_pri > 0 "
+                                   + "   and left(dl_dt, 10) >= left(sysdate() - interval 7 day, 10)"
+                                   + " group by left(dl_dt, 10))";
+                            log.info(sql);
+                            rs = stm.executeQuery(sql);
+                            if (rs.next()) {
+                                dev = rs.getDouble("dev");
+                            }
+                            Stock2 s =  (Stock2)StockMarket.getStocks().get(stock);
+                            cur_pri =  s.getCur_pri();
+                            content += "价:" + df.format(cur_pri) + " stddev:" + df.format(dev) + "\n";
+                            rs.close();
+                        } catch(SQLException e0) {
+                            log.info("No price infor for stock:" + stock + " continue...");
+                            continue;
+                        }
+                    }
+                    resContent = content;
+                } catch (SQLException e) {
+                    log.error("DB Exception:" + e.getMessage());
+                    resContent = "DB Exception:" + e.getMessage();
                 }
-                else {
-                    resContent = ttb.getWorkResult();
+                finally {
+                    try {
+                        stm.close();
+                        con.close();
+                    } catch (SQLException e) {
+                        // TODO Auto-generated catch block
+                        log.error("DB Exception:" + e.getMessage());
+                        resContent = "DB Exception:" + e.getMessage();
+                    }
                 }
             }
             else if (content.equals("3")) {
-            	EnaUsrBuySell us = new EnaUsrBuySell(0, 0, this.getFromUserName());
-                if (!WorkManager.submitWork(us)) {
-                    resContent = "EnaUsrBuySell already scheduled, can not do it again!";
+                Connection con = DBManager.getConnection();
+                Statement stm = null;
+                log.info("Now start EnaUsrBuySell work...");
+                try {
+                    String sql = "update usr set buy_sell_enabled = 1 - buy_sell_enabled where openID = '" + frmUsr + "'";
+                    
+                    stm = con.createStatement();
+                    log.info("EnaUsrBuySell:" + sql);
+                    stm.executeUpdate(sql);
+                    stm.close();
+                    
+                    sql = "select buy_sell_enabled, mail from usr where openID = '" + frmUsr + "'";
+                    stm = con.createStatement();
+                    ResultSet rs = stm.executeQuery(sql);
+                    
+                    rs.next();
+                    
+                    long buy_sell_enabled = rs.getLong("buy_sell_enabled");
+                    String mail = rs.getString("mail");
+                    
+                    if (buy_sell_enabled == 1 && (mail == null || mail.length() <= 0)) {
+                            resContent = "已经开启买卖信息提示，请发送邮箱地址进行订阅。";
+                    }
+                    else if (buy_sell_enabled == 1){
+                        resContent = "已经开启买卖信息提示，您的邮箱:" + mail + "将收到买卖提示信息。";
+                    }
+                    else {
+                        resContent = "已停止买卖信息提示。";
+                    }
+                    
+                    rs.close();
                 }
-                else {
-                    resContent = us.getWorkResult();
+                catch (Exception e)
+                {
+                    
                 }
+                finally {
+                    try {
+                        stm.close();
+                        con.close();
+                    } catch (SQLException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        log.error("DB Exception:" + e.getMessage());
+                        resContent = "DB Exception:" + e.getMessage();
+                    }
+                }
+                
             }
             else if (content.equals("4")) {
-            	EnaSuggestStock us = new EnaSuggestStock(0, 0, this.getFromUserName());
-                if (!WorkManager.submitWork(us)) {
-                    resContent = "EnaSuggestStock already scheduled, can not do it again!";
+                Connection con = DBManager.getConnection();
+                log.info("Now start EnaUsrBuySell work...");
+                Statement mainStm = null;
+                
+                try {
+                String sql = "update usr set suggest_stock_enabled = 1 - suggest_stock_enabled where openID = '" + frmUsr + "'";
+                log.info("EnaUsrBuySell:" + sql);
+                mainStm = con.createStatement();
+                mainStm.executeUpdate(sql);
+                mainStm.close();
+                
+                sql = "select mail, suggest_stock_enabled from usr where openID = '" + frmUsr + "' and mail is not null";
+                mainStm = con.createStatement();
+                ResultSet rs = mainStm.executeQuery(sql);
+                
+                rs.next();
+                
+                long suggest_stock_enabled = rs.getLong("suggest_stock_enabled");
+                String mail = rs.getString("mail");
+                
+                rs.close();
+                
+                if (suggest_stock_enabled == 1 && (mail == null || mail.length() <= 0)) {
+                        resContent = "已经开启推荐股票，请发送邮箱地址进行买卖信息订阅。或输入1进行查询.";
+                    }
+                else if (suggest_stock_enabled == 1){
+                    resContent = "已经开启推荐股票，您的邮箱:" + mail + "将收到被推荐股票买卖提示信息。";
                 }
                 else {
-                    resContent = us.getWorkResult();
+                    resContent = "已停止推荐股票。";
+                }
+                }
+                catch (Exception e)
+                {
+                    log.error("DB Exception:" + e.getMessage());
+                    resContent = "DB Exception:" + e.getMessage();
+                }
+                finally {
+                    try {
+                        mainStm.close();
+                        con.close();
+                    } catch (SQLException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        log.error("DB Exception:" + e.getMessage());
+                        resContent = "DB Exception:" + e.getMessage();
+                    }
                 }
             }
             else if (content.equals("5")) {
-                CalFetchStat cfs = new CalFetchStat(0, 0);
-                if (!WorkManager.submitWork(cfs)) {
-                    resContent = "CalFetchStat already scheduled, can not do it again!";
+                
+                Connection con = DBManager.getConnection(); 
+                Statement stm = null;
+                try {
+                    stm = con.createStatement();
+                    String sql = "update usrstk set stop_trade_mode_flg = 1 - stop_trade_mode_flg where openID = '" + frmUsr + "' and gz_flg = 1";
+                    stm.execute(sql);
+                    stm.close();
+                    
+                    sql = "select case when max(stop_trade_mode_flg) is null then -1 else max(stop_trade_mode_flg) end max_flg from usrstk where openID = '" + frmUsr + "' and gz_flg = 1";
+                    stm = con.createStatement();
+                    ResultSet rs = stm.executeQuery(sql);
+                    
+                    if (rs.next())
+                    {
+                        if (rs.getInt("max_flg") == 1)
+                        {
+                            resContent = "平仓模式已启用, 系统平仓中,稍后查看结果.";
+                        }
+                        else if(rs.getInt("max_flg") == 0){
+                            resContent = "平仓模式已取消, 系统进入自动交易.";
+                        }
+                        else {
+                            resContent = "没有关注的股票, 未能设置平仓模式.";
+                        }
+                    }
+                    rs.close();
                 }
-                else {
-                    resContent = cfs.getWorkResult();
+                catch (Exception e)
+                {
+                    log.info("set stop_trade_mode_flg to 1 failed:" + e.getMessage());
+                    resContent = "设置平仓交易失败:" + e.getMessage();
                 }
+                finally {
+                    try {
+                    stm.close();
+                    con.close();
+                    }
+                    catch (Exception e)
+                    {
+                        log.error("DB exception:" + e.getMessage());
+                        resContent = "数据库异常:" + e.getMessage();
+                    }
+                }
+            }
+            else if(content.equals("6"))
+            {
+                String msg = "";
+                Connection con = DBManager.getConnection();
+                Statement stm = null;
+                String sql = "select count(*) totCnt, count(*)/case when count(distinct id) = 0 then 1 else count(distinct id) end cntPerStk "
+                        + "  from stkDat2 where left(dl_dt, 10) = left(sysdate(), 10) ";
+                try {
+                    stm = con.createStatement();
+                    ResultSet rs = stm.executeQuery(sql);
+                    if (rs.next()){
+                        msg += "总共收集:" + rs.getLong("totCnt") + "条记录.\n"
+                              +"平均每股收集:" + rs.getLong("cntPerStk") + "次.\n";
+                    }
+                    rs.close();
+                    log.info("calculate fetch stat msg:" + msg + " for opt 5");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    msg = "无数据.\n";
+                }
+                finally {
+                    try {
+                    stm.close();
+                    con.close();
+                    }
+                    catch (Exception e)
+                    {
+                        log.error("DB exception:" + e.getMessage());
+                        resContent = "数据库异常:" + e.getMessage();
+                    }
+                }
+                resContent = msg + StockMarket.getShortDesc();
             }
             /*else if (content.equals("6")) {
                 ShutDownPC sdp = new ShutDownPC(0, 3);
