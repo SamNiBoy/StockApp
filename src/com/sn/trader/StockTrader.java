@@ -29,6 +29,7 @@ import com.sn.db.DBManager;
 import com.sn.mail.GzStockBuySellPointObserverable;
 import com.sn.strategy.ITradeStrategy;
 import com.sn.strategy.TradeStrategyGenerator;
+import com.sn.strategy.TradeStrategyImp;
 import com.sn.strategy.algorithm.buypoint.QtyBuyPointSelector;
 import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.strategy.algorithm.sellpoint.QtySellPointSelector;
@@ -43,9 +44,8 @@ import oracle.sql.DATE;
 public class StockTrader {
 
 	//interface vars.
-    ITradeStrategy strategy = TradeStrategyGenerator.generatorDefaultStrategy(false);
+    ITradeStrategy strategy = TradeStrategyGenerator.generatorStrategy(false);
     private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
-    private Map<String, StockBuySellEntry> lstTradeForStocks= new HashMap<String, StockBuySellEntry>();
     private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
 	private boolean sim_mode = false;
 	
@@ -82,9 +82,9 @@ public class StockTrader {
     
 	public static void doTest() throws Exception {
 
-	    List<ITradeStrategy> strategies = new ArrayList<ITradeStrategy>();
+	    ITradeStrategy mystrategy = null;
         
-	    strategies.addAll(TradeStrategyGenerator.generatorStrategies(false));
+	    mystrategy = TradeStrategyGenerator.generatorStrategy(false);
 	    
         int seconds_to_delay = 5000;
         
@@ -112,9 +112,8 @@ public class StockTrader {
     
         try {
             
-            for (ITradeStrategy cs : strategies) {
                 
-                st.setStrategy(cs);
+                st.setStrategy(mystrategy);
                 
                 s2.getSd().getCur_pri_lst().add(19.0);
                 s2.getSd().getDl_dt_lst().add(Timestamp.valueOf(LocalDateTime.of(2016, 04, 1, 10, 30)));
@@ -135,7 +134,6 @@ public class StockTrader {
                 //st.strategy.sellStock(s2);
                 
                 st.strategy.reportTradeStat();
-            }
             
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
@@ -175,7 +173,7 @@ public class StockTrader {
 			stm.close();
 			
 			stm = con.createStatement();
-			sql = "delete from sellbuyrecord where  openID = '" + openID + "'";
+			sql = "delete from sellbuyrecord";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
@@ -194,53 +192,6 @@ public class StockTrader {
         	StockBuySellEntry rc = strategy.getLstTradeRecord(s);
         	rc.printStockInfo();
             stockTomail.add(rc);
-            
-            StockBuySellEntry pre = lstTradeForStocks.get(rc.id);
-            
-            if (pre == null)
-            {
-                log.info("Stock " + rc.id + " did new trade, add to lstTradeForStocks.");
-                lstTradeForStocks.put(rc.id, rc);
-            }
-            else {
-                log.info("had a new trade, refresh balance information:");
-                log.info("pre id:" + pre.id);
-                log.info("pre name:" + pre.name);
-                log.info("pre price:" + pre.price);
-                log.info("pre quantity:" + pre.quantity);
-                log.info("pre buy_flg:" + pre.is_buy_point);
-                
-                log.info("cur id:" + rc.id);
-                log.info("cur name:" + rc.name);
-                log.info("cur price:" + rc.price);
-                log.info("cur quantity:" + rc.quantity);
-                log.info("cur buy_flg:" + rc.is_buy_point);
-                
-                if (rc.is_buy_point == pre.is_buy_point){
-                    log.info("Same direction trade, refresh lstTradeForStocks.");
-                    pre.price = (pre.price * pre.quantity + rc.price * rc.quantity) / (pre.quantity + rc.quantity);
-                    pre.quantity = (pre.quantity + rc.quantity);
-                    lstTradeForStocks.put(pre.id, pre);
-                }
-                else {
-                    if (pre.quantity == rc.quantity)
-                    {
-                        log.info("Revserse trade with same qty, clean up lstTradeForStocks.");
-                        lstTradeForStocks.remove(rc.id);
-                    }
-                    else if (pre.quantity > rc.quantity)
-                    {
-                        log.info("pre quantity is  > cur quanaity, subtract cur quantity and refresh the map");
-                        pre.quantity -= rc.quantity;
-                        lstTradeForStocks.put(pre.id, pre);
-                    }
-                    else {
-                        log.info("pre quantity is  < cur quanaity, update cur quantity and refresh the map");
-                        rc.quantity -= pre.quantity;
-                        lstTradeForStocks.put(pre.id, rc);
-                    }
-                }
-            }
         }
         
         if (!stockTomail.isEmpty() && !sim_mode) {
@@ -258,7 +209,4 @@ public class StockTrader {
         return false;
 	}
     
-    public Map<String, StockBuySellEntry> getLstTradeForStocks() {
-        return lstTradeForStocks;
-    }
 }

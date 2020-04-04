@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -29,8 +30,10 @@ import com.sn.task.suggest.selector.DefaultStockSelector;
 
 public class TradeStrategyGenerator {
 
-    static public List<ITradeStrategy> generatorStrategies(boolean sim_mode) throws Exception {
-        List<ITradeStrategy> res = new ArrayList<ITradeStrategy>();
+    static public ITradeStrategy generatorStrategy(boolean sim_mode) {
+        
+        List<IBuyPointSelector> buyPoints = new LinkedList<IBuyPointSelector>();
+        List<ISellPointSelector> sellPoints = new LinkedList<ISellPointSelector>();
         
         IBuyPointSelector bs = new QtyBuyPointSelector(sim_mode);
         ISellPointSelector ses = new QtySellPointSelector(sim_mode);
@@ -43,27 +46,18 @@ public class TradeStrategyGenerator {
         //ICashAccount ca = null;
         //CashAcntManger.getDftAcnt();
         //ca.initAccount();
-        ITradeStrategy its = new TradeStrategyImp(bs, ses, null, "QtyBuySellTradeStrategy", sim_mode);
-        
-        res.add(its);
-        
         IBuyPointSelector bbs = new BalanceBuyPointSelector(sim_mode);
         ISellPointSelector bes = new BalanceSellPointSelector(sim_mode);
         
-        ITradeStrategy bts = new TradeStrategyImp(bbs, bes, null, "BalanceBuySellTradeStrategy", sim_mode);
         
-        res.add(bts);
+        buyPoints.add(bs);
+        buyPoints.add(bbs);
         
-        return res;
-    }
-    
-    static public ITradeStrategy generatorDefaultStrategy(boolean sim_mode) {
+        sellPoints.add(ses);
+        sellPoints.add(bes);
         
-        IBuyPointSelector bs = new QtyBuyPointSelector(sim_mode);
-        ISellPointSelector ses = new QtySellPointSelector(sim_mode);
-        ICashAccount ca = null;
-        ITradeStrategy its = new TradeStrategyImp(bs, ses, ca, "QtyBuySellTradeStrategy", sim_mode);
+        ITradeStrategy bts = new TradeStrategyImp(buyPoints, sellPoints , null, "MyDefaultTradeStrategy", sim_mode);
         
-        return its;
+        return bts;
     }
 }

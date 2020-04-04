@@ -41,8 +41,10 @@ public class TradeStrategyImp implements ITradeStrategy {
     static Logger log = Logger.getLogger(TradeStrategyImp.class);
     
     //interface vars.
-    IBuyPointSelector buypoint_selector = null;
-    ISellPointSelector sellpoint_selector = null;
+    List<IBuyPointSelector> buypoint_selectors = new LinkedList<IBuyPointSelector>();
+    IBuyPointSelector cur_buypoint_selector = null;
+    List<ISellPointSelector> sellpoint_selectors = new LinkedList<ISellPointSelector>();
+    ISellPointSelector cur_sellpoint_selector = null;
     ICashAccount cash_account = null;
     String name = "Default Trade Strategy";
     
@@ -50,22 +52,6 @@ public class TradeStrategyImp implements ITradeStrategy {
     
     private static TradexAcnt tradex_acnt = null;
     
-    public IBuyPointSelector getBuypoint_selector() {
-        return buypoint_selector;
-    }
-
-    public void setBuypoint_selector(IBuyPointSelector buypointSelector) {
-        buypoint_selector = buypointSelector;
-    }
-
-    public ISellPointSelector getSellpoint_selector() {
-        return sellpoint_selector;
-    }
-
-    public void setSellpoint_selector(ISellPointSelector sellpointSelector) {
-        sellpoint_selector = sellpointSelector;
-    }
-
     public ICashAccount getCash_account() {
         return cash_account;
     }
@@ -77,36 +63,68 @@ public class TradeStrategyImp implements ITradeStrategy {
     // non interface vars.
 	private static List<String> tradeStocks = new ArrayList<String>();
 	private static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
+    private static Map<String, StockBuySellEntry> lstTradeForStocks = null;
     private static Map<String, ICashAccount> cash_account_map = new HashMap<String, ICashAccount>();
     
+    public static Map<String, StockBuySellEntry> getLstTradeForStocks() {
+        return lstTradeForStocks;
+    }
+
 	public StockBuySellEntry getLstTradeRecord(Stock2 s) {
 		return tradeRecord.get(s.getID()).getLast();
 	}
 
     public boolean isGoodPointtoBuy(Stock2 s) {
-        log.info("********************* BUY POINT CHECK START **********************");
-        boolean good_flg = buypoint_selector.isGoodBuyPoint(s, cash_account);
-        log.info("********************* BUY POINT CHECK FOR " + s.getID() + (good_flg? " PASS ":" FAIL ") + "END*************\n");
+        
+        boolean good_flg = false;
+        for (IBuyPointSelector bp : buypoint_selectors)
+        {
+            log.info("********** BUY POINT " + bp.getClass().getSimpleName() + " CHECK START ***************");
+            if (bp.isGoodBuyPoint(s, cash_account))
+            {
+                good_flg = true;
+                cur_buypoint_selector = bp;
+            }
+            log.info("************ BUY POINT CHECK FOR " + s.getID() + (good_flg? " PASS ":" FAIL ") + "END**********\n");
+            
+            if (good_flg)
+            {
+                break;
+            }
+        }
         return good_flg;
     }
 
     public boolean isGoodPointtoSell(Stock2 s) {
-        log.info("**************** SELL POINT CHECK START ******************");
-        boolean good_flg = sellpoint_selector.isGoodSellPoint(s, cash_account);
-        log.info("**************** SELL POINT CHECK FOR " + s.getID() + (good_flg? " PASS ":" FAIL ") + "END**************");
+        boolean good_flg = false;
+        for (ISellPointSelector sp : sellpoint_selectors)
+        {
+           log.info("**************** SELL POINT " + sp.getClass().getSimpleName() + " CHECK START ******************");
+            if (sp.isGoodSellPoint(s, cash_account))
+            {
+                good_flg = true;
+                cur_sellpoint_selector = sp;
+            }
+            log.info("**************** SELL POINT CHECK FOR " + s.getID() + (good_flg? " PASS ":" FAIL ") + "END**************");
+            if (good_flg)
+            {
+                break;
+            }
+        }
         return good_flg;
     }
     
-    public TradeStrategyImp(IBuyPointSelector bs,
-                            ISellPointSelector ses,
+    public TradeStrategyImp(List<IBuyPointSelector> bs,
+                            List<ISellPointSelector> ses,
                             ICashAccount ca,
                             String sn,
                             boolean sm) {
-        buypoint_selector = bs;
-        sellpoint_selector = ses;
+        buypoint_selectors = bs;
+        sellpoint_selectors = ses;
         cash_account = ca;
         name = sn;
         sim_mode = sm;
+        loadBuySellRecord();
     }
 
 	public void printTradeInfor() {
@@ -129,7 +147,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		ICashAccount ac = getCashAcntForStock(s.getID());
 		int qtb = 0;
 		
-		qtb = buypoint_selector.getBuyQty(s, ac);
+		qtb = cur_buypoint_selector.getBuyQty(s, ac);
 		
 		if (qtb <= 0) {
 			log.info("qty to buy is zero, can not buyStock.");
@@ -192,7 +210,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		ICashAccount ac = getCashAcntForStock(s.getID());
 		int qtb = 0;
 		
-		qtb = sellpoint_selector.getSellQty(s, ac);
+		qtb = cur_sellpoint_selector.getSellQty(s, ac);
 		
 		if (qtb <= 0) {
 			log.info("qtb is <=0, can not sell!");
@@ -817,19 +835,20 @@ public class TradeStrategyImp implements ITradeStrategy {
                 con.close();
             
             LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
+            StockBuySellEntry stk = null;
             if (rcds != null) {
                 log.info("Adding trade record for stock as: " + s.getID());
-                StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
-                                                              s.getName(),
-                                                              soldPrice,
-                                                              sellableAmt,
-                                                              false,
-                                                              (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+                stk = new StockBuySellEntry(s.getID(),
+                                            s.getName(),
+                                            soldPrice,
+                                            sellableAmt,
+                                            false,
+                                            (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
                 stk.printStockInfo();
                 rcds.add(stk);
             } else {
                 log.info("Adding today first trade record for stock as: " + s.getID());
-                StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
+                stk = new StockBuySellEntry(s.getID(),
                         s.getName(),
                         soldPrice,
                         sellableAmt,
@@ -840,6 +859,9 @@ public class TradeStrategyImp implements ITradeStrategy {
                 rcds.add(stk);
                 tradeRecord.put(stk.id, rcds);
             }
+            
+            updateLstTradeRecordForStock(stk);
+            
             return true;
         }
         catch(SQLException e) {
@@ -935,19 +957,20 @@ public class TradeStrategyImp implements ITradeStrategy {
             con.close();
             
             LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
+            StockBuySellEntry stk = null;
             if (rcds != null) {
                 log.info("Adding trade record for stock as: " + s.getID());
-                StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
-                                                              s.getName(),
-                                                              buyPrice,
-                                                              buyMnt,
-                                                              true,
-                                                              (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
+                stk = new StockBuySellEntry(s.getID(),
+                                            s.getName(),
+                                            buyPrice,
+                                            buyMnt,
+                                            true,
+                                            (Timestamp)s.getSd().getDl_dt_lst().get(s.getSd().getDl_dt_lst().size() -1));
                 stk.printStockInfo();
                 rcds.add(stk);
             } else {
                 log.info("Adding today first trade record for stock as: " + s.getID());
-                StockBuySellEntry stk = new StockBuySellEntry(s.getID(),
+                stk = new StockBuySellEntry(s.getID(),
                         s.getName(),
                         buyPrice,
                         buyMnt,
@@ -959,6 +982,8 @@ public class TradeStrategyImp implements ITradeStrategy {
                 tradeRecord.put(stk.id, rcds);
             }
             
+            updateLstTradeRecordForStock(stk);
+            
             return true;
         }
         catch(SQLException e) {
@@ -966,6 +991,62 @@ public class TradeStrategyImp implements ITradeStrategy {
         }
         return false;
     }
+    
+	private void updateLstTradeRecordForStock(StockBuySellEntry rc)
+	{
+        StockBuySellEntry pre = lstTradeForStocks.get(rc.id);
+        
+        if (pre == null)
+        {
+            log.info("Stock " + rc.id + " did new trade, add to lstTradeForStocks.");
+            lstTradeForStocks.put(rc.id, rc);
+            TradeStrategyImp.createBuySellRecord(rc);
+        }
+        else {
+            log.info("had a new trade, refresh balance information:");
+            log.info("pre id:" + pre.id);
+            log.info("pre name:" + pre.name);
+            log.info("pre price:" + pre.price);
+            log.info("pre quantity:" + pre.quantity);
+            log.info("pre buy_flg:" + pre.is_buy_point);
+            
+            log.info("cur id:" + rc.id);
+            log.info("cur name:" + rc.name);
+            log.info("cur price:" + rc.price);
+            log.info("cur quantity:" + rc.quantity);
+            log.info("cur buy_flg:" + rc.is_buy_point);
+            
+            if (rc.is_buy_point == pre.is_buy_point){
+                log.info("Same direction trade, refresh lstTradeForStocks.");
+                pre.price = (pre.price * pre.quantity + rc.price * rc.quantity) / (pre.quantity + rc.quantity);
+                pre.quantity = (pre.quantity + rc.quantity);
+                pre.dl_dt = rc.dl_dt;
+                lstTradeForStocks.put(pre.id, pre);
+                TradeStrategyImp.updateBuySellRecord(pre);
+            }
+            else {
+                if (pre.quantity == rc.quantity)
+                {
+                    log.info("Revserse trade with same qty, clean up lstTradeForStocks.");
+                    lstTradeForStocks.remove(rc.id);
+                    TradeStrategyImp.removeBuySellRecord(rc);
+                }
+                else if (pre.quantity > rc.quantity)
+                {
+                    log.info("pre quantity is  > cur quanaity, subtract cur quantity and refresh the map");
+                    pre.quantity -= rc.quantity;
+                    lstTradeForStocks.put(pre.id, pre);
+                    TradeStrategyImp.updateBuySellRecord(pre);
+                }
+                else {
+                    log.info("pre quantity is  < cur quanaity, update cur quantity and refresh the map");
+                    rc.quantity -= pre.quantity;
+                    lstTradeForStocks.put(rc.id, rc);
+                    TradeStrategyImp.updateBuySellRecord(rc);
+                }
+            }
+        }
+	}
     /* Now do acutal trade to Tradex system*/
     private static TradexBuySellResult placeSellTradeToTradex(Stock2 s, int qtyToTrade, double price) {
         try {
@@ -1018,30 +1099,136 @@ public class TradeStrategyImp implements ITradeStrategy {
         } 
     }
 	
-	private static boolean createBuySellRecord(Stock2 s, String openID, boolean is_buy_flg, String qtyToTrade) {
+	public static boolean createBuySellRecord(StockBuySellEntry rc) {
 		String sql;
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "insert into SellBuyRecord select case when max(sb_id) is null then 1 else max(sb_id) + 1 end,'" + openID + "','" + s.getID() + "'," + s.getCur_pri()
-					+ "," + qtyToTrade + ","
-					+ (is_buy_flg ? 1 : 0)
-					+ ",str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s.%f') from SellBuyRecord";
+			sql = "insert into SellBuyRecord values ('" + rc.id + "'," + rc.price
+					+ "," + rc.quantity + ","
+					+ rc.is_buy_point
+					+ ",str_to_date('" + rc.dl_dt.toString() + "', '%Y-%m-%d %H:%i:%s.%f'))";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
 			con.close();
 			// Here once after we trade a stock, clear it's historic memory
 			// data.
-			if (s != null) {
+			/*if (s != null) {
 				log.info("After trade " + s.getName() + " clear InjectedRaw Data...");
 				s.getSd().clearInjectRawData();
-			}
+			}*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return true;
 	}
+	public static boolean updateBuySellRecord(StockBuySellEntry rc) {
+		String sql;
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+			sql = "update SellBuyRecord set price = " + rc.price
+					+ ", quantity = " + rc.quantity
+					+ ", buy_flg = " + rc.is_buy_point
+					+ ", dl_dt = str_to_date('" + rc.dl_dt.toString() + "', '%Y-%m-%d %H:%i:%s.%f')"
+					+ " where stkId = '" + rc.id + "'";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			con.close();
+			// Here once after we trade a stock, clear it's historic memory
+			// data.
+			/*if (s != null) {
+				log.info("After trade " + s.getName() + " clear InjectedRaw Data...");
+				s.getSd().clearInjectRawData();
+			}*/
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+	public static boolean removeBuySellRecord(StockBuySellEntry rc) {
+		String sql;
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+			sql = "delete from SellBuyRecord"
+					+ " where stkId = '" + rc.id + "'";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			con.close();
+			// Here once after we trade a stock, clear it's historic memory
+			// data.
+			/*if (s != null) {
+				log.info("After trade " + s.getName() + " clear InjectedRaw Data...");
+				s.getSd().clearInjectRawData();
+			}*/
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+    
+	   public static void loadBuySellRecord() {
+	        String sql;
+            
+	        lstTradeForStocks = new HashMap<String, StockBuySellEntry>();
+            int i = 0;
+            Connection con = DBManager.getConnection();
+            Statement stm = null;
+	        
+	        try {
+                stm = con.createStatement();
+                ResultSet rs = null;
+	            sql = "select t1.*, t2.name from SellBuyRecord t1 join stk t2 on t1.stkId = t2.id order by stkId";
+	            log.info(sql);
+	            rs = stm.executeQuery(sql);
+                
+	            while (rs.next())
+	            {
+                    i++;
+	                String id = rs.getString("stkId");
+	                String name = rs.getString("name");
+	                double pri = rs.getDouble("price");
+	                int qty = rs.getInt("qty");
+                    Timestamp dt = rs.getTimestamp("dl_dt");
+                    boolean buy_flg = rs.getBoolean("buy_flg");
+                    
+                    log.info("Loading SellBuyRecord " + i + " with data:");
+                    log.info("ID " + id);
+                    log.info("Name " + name);
+                    log.info("price " + pri);
+                    log.info("quantity " + qty);
+                    log.info("dl_dt " + dt.toString());
+                    log.info("buy_flg " + buy_flg);
+                    
+	                StockBuySellEntry stk = new StockBuySellEntry(id,
+	                        name,
+	                        pri,
+	                        qty,
+	                        buy_flg,
+	                        dt);
+                    
+                    lstTradeForStocks.put(rs.getString("stkId"), stk);
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+                log.info("exception:" + e.getMessage());
+	        }
+            finally {
+                try {
+                    stm.close();
+                    con.close();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    log.info("Unexpected exception:" + e.getErrorCode());
+                }
+            }
+            log.info("return SellBuyRecord with " + lstTradeForStocks.size() + " records");
+	    }
 	
 	public ICashAccount getCashAcntForStock(String stk) {
         

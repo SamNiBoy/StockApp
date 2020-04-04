@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.STConstants;
+import com.sn.strategy.TradeStrategyImp;
 import com.sn.strategy.algorithm.ISellPointSelector;
 import com.sn.strategy.algorithm.buypoint.DefaultBuyPointSelector;
 import com.sn.strategy.algorithm.param.ParamManager;
@@ -52,7 +53,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 		Double cur_pri = stk.getCur_pri();
         
 		
-        Map<String, StockBuySellEntry> lstTrades = (sim_mode ? StockTrader.getSimTrader().getLstTradeForStocks() : StockTrader.getTradexTrader().getLstTradeForStocks());
+        Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
         sbs = lstTrades.get(stk.getID());
 
         Timestamp t1 = stk.getDl_dt();

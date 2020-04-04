@@ -23,7 +23,7 @@ public class GzStockDataConsumer implements IWork {
 	static private int MAX_QUEUE_SIZE = 1;
 	static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
     static private StockTrader st = StockTrader.getTradexTrader();
-    private List<ITradeStrategy> strategies = new ArrayList<ITradeStrategy>();
+    private ITradeStrategy strategy = null;
     
     /*
      * Initial delay before executing work.
@@ -54,7 +54,7 @@ public class GzStockDataConsumer implements IWork {
     public GzStockDataConsumer(long id, long dbn) throws Exception {
         initDelay = id;
         delayBeforNxtStart = dbn;
-        strategies.addAll(TradeStrategyGenerator.generatorStrategies(false));
+        strategy = TradeStrategyGenerator.generatorStrategy(false);
     }
 
     public ArrayBlockingQueue<RawStockData> getDq() {
@@ -88,11 +88,9 @@ public class GzStockDataConsumer implements IWork {
                 
                 log.info("check stock " + s.getID() + " for buy/sell point");
                 
-                for (ITradeStrategy cs : strategies) {
-                    log.info("Now start trading with stragtegy:" + cs.getTradeStrategyName() + " on stock:" + s.getID() + ", name:" + s.getName() + "\n\n");
-                    st.setStrategy(cs);
-                    st.performTrade(s);
-                }
+                log.info("Now start trading with stragtegy:" + strategy.getTradeStrategyName() + " on stock:" + s.getID() + ", name:" + s.getName() + "\n\n");
+                st.setStrategy(strategy);
+                st.performTrade(s);
                 
             }
             else {

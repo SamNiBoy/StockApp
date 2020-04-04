@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.STConstants;
+import com.sn.strategy.TradeStrategyImp;
 import com.sn.strategy.algorithm.IBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.DefaultBuyPointSelector;
 import com.sn.strategy.algorithm.param.ParamManager;
@@ -41,7 +42,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
         
-        Map<String, StockBuySellEntry> lstTrades = (sim_mode ? StockTrader.getSimTrader().getLstTradeForStocks() : StockTrader.getTradexTrader().getLstTradeForStocks());
+        Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
         sbs = lstTrades.get(stk.getID());
 
         Timestamp t1 = stk.getDl_dt();

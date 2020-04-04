@@ -428,19 +428,15 @@ CONSTRAINT arc_TradeDtl_PK PRIMARY KEY (acntId, stkId, seqnum)
 );
 
 create table if not exists SellBuyRecord(
-sb_id int not null primary key,
-openId varchar(30 ) not null,
-stkId varchar(6 ) not null,
-price int not null,
+stkId varchar(6 ) not null primary key,
+price decimal(8, 2) not null,
 qty int not null,
 buy_flg int not null,
 dl_dt datetime not null
 );
 
 create table if not exists arc_SellBuyRecord(
-sb_id int not null primary key,
-openId varchar(30 ) not null,
-stkId varchar(6 ) not null,
+stkId varchar(6 ) not null primary key,
 price int not null,
 qty int not null,
 buy_flg int not null,

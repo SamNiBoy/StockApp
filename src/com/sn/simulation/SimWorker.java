@@ -49,7 +49,7 @@ public class SimWorker implements IWork {
 
     static private TimeUnit tu = TimeUnit.MILLISECONDS;
 
-    private List<ITradeStrategy> strategies = new ArrayList<ITradeStrategy>();
+    private ITradeStrategy strategy = null;
 
     private List<String> stkToSim = new ArrayList<String>();
 
@@ -146,6 +146,9 @@ public class SimWorker implements IWork {
         Timestamp curstp = null;
         int StepCnt = 0;
         log.info("Now start simulate trading...");
+        
+        st.setStrategy(strategy);
+        log.info("Simulate trading with Strategy:" + strategy.getTradeStrategyName() + "\n\n");
         while (ssd.step()) {
             log.info("Simulate step:" + (++StepCnt));
             for (Object stock : ssd.simstocks.keySet()) {
@@ -156,15 +159,11 @@ public class SimWorker implements IWork {
                 
                 log.info(workName + ": simulate step:" + StepCnt + " for stock:" + s.getID() + " at time:" + curstp.toString());
                 
-                for (ITradeStrategy cs : strategies) {
-                    log.info("Simulate trading with Strategy:" + cs.getTradeStrategyName() + "\n\n");
-                    st.setStrategy(cs);
-                    if (((lststp != null && curstp.after(lststp)) || lststp == null) && st.performTrade(s)) {
-                        cs.reportTradeStat();
-                    }
-                    else if (lststp != null && !curstp.after(lststp)) {
-                    	log.info("skip trading same record for:" + s.getID() + " at:" + lststp.toString());
-                    }
+                if (((lststp != null && curstp.after(lststp)) || lststp == null) && st.performTrade(s)) {
+                    strategy.reportTradeStat();
+                }
+                else if (lststp != null && !curstp.after(lststp)) {
+                	log.info("skip trading same record for:" + s.getID() + " at:" + lststp.toString());
                 }
                 
                 lst_stmp.put(s.getID(), curstp);
@@ -179,24 +178,20 @@ public class SimWorker implements IWork {
         initDelay = id;
         delayBeforNxtStart = dbn;
         workName = wn;
-        strategies.addAll(TradeStrategyGenerator.generatorStrategies(true));
+        strategy = TradeStrategyGenerator.generatorStrategy(true);
     }
 
     public void run() {
         try {
             log.info("SimWorker about to run...");
            //Reset some set/map entries before/after Simulation. 
-            for (ITradeStrategy cs : strategies) {
-               log.info("SimWorker reset strategy status for " + cs.getTradeStrategyName());
-               cs.resetStrategyStatus(); 
-            }
+            log.info("SimWorker reset strategy status for " + strategy.getTradeStrategyName());
+            strategy.resetStrategyStatus(); 
             
             startSim();
             
-            for (ITradeStrategy cs : strategies) {
-               log.info("SimWorker finished, reset strategy status for " + cs.getTradeStrategyName());
-               cs.resetStrategyStatus(); 
-            }
+            log.info("SimWorker finished, reset strategy status for " + strategy.getTradeStrategyName());
+            strategy.resetStrategyStatus(); 
             
             log.info("threadsCountDown about to countdown:" + threadsCountDown.getCount());
             
