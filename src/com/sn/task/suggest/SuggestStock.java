@@ -152,7 +152,7 @@ public class SuggestStock implements IWork {
         log.info("SuggestStock, starts now at time:" + time);
         DayOfWeek week = lt.getDayOfWeek();
         
-        /*if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
+        if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
         {
             log.info("SuggestStock skipped because of weekend, goto sleep 8 hours.");
             try {
@@ -169,7 +169,7 @@ public class SuggestStock implements IWork {
         {
             log.info("SuggestStock skipped because of hour:" + hr + " less than 22:00.");
             return;
-        }*/
+        }
 
 		resetSuggestion();
 		

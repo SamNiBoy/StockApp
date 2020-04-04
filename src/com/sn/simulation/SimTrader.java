@@ -212,7 +212,7 @@ public class SimTrader implements IWork{
                                   "                  and cur_pri > 5" + 
                                   "                  and left(dl_dt, 10) = (select left(max(s2.dl_dt), 10) from stkdat2 s2)" +
                                   "               ) tmp" +
-                                  " where floor(1+rand()*100) <= 50" +
+                                  " where floor(1+rand()*100) <= 25" +
                                   "                order by id";
                     }
                     
@@ -251,7 +251,7 @@ public class SimTrader implements IWork{
                     log.info("Total " + total_stock_cnt + " stocks to simulate with each batch size:" + stock_cnt_per_thread + " and total:" + total_batch + " batches.");
                     
                     
-                    while (rs.next()) {
+                    do {
                         
                         stks.add(rs.getString("id"));
                         
@@ -304,7 +304,7 @@ public class SimTrader implements IWork{
                                 }
                             }
                         }
-                    }
+                    } while (rs.next());
                     
                     rs.close();
                     stm.close();
