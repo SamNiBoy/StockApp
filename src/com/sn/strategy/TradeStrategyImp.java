@@ -1129,7 +1129,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 			sql = "update SellBuyRecord set price = " + rc.price
-					+ ", quantity = " + rc.quantity
+					+ ", qty = " + rc.quantity
 					+ ", buy_flg = " + rc.is_buy_point
 					+ ", dl_dt = str_to_date('" + rc.dl_dt.toString() + "', '%Y-%m-%d %H:%i:%s.%f')"
 					+ " where stkId = '" + rc.id + "'";
