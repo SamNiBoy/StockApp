@@ -27,7 +27,6 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
 
 	static Logger log = Logger.getLogger(BalanceBuyPointSelector.class);
 	
-    private StockBuySellEntry sbs = null;
     private String selector_name = "BalanceBuyPointSelector";
     private String selector_comment = "";
 
@@ -41,7 +40,11 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
 	    Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
-	    sbs = lstTrades.get(stk.getID());
+        StockBuySellEntry sbs = null;
+	    if (lstTrades != null)
+	    {
+	        sbs = lstTrades.get(stk.getID());
+	    }
         
 	    if (sbs == null || sbs.is_buy_point)
 	    {
@@ -49,7 +52,6 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
             return false;
 	    }
 	    else {
-            
 	        boolean cleanup_stock_inhand = SellModeWatchDog.isStockInStopTradeMode(stk);
             
 	        if (cleanup_stock_inhand)
@@ -60,7 +62,6 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                 return true;
 	        }
 	        else {
-                
 	            Timestamp t0 = sbs.dl_dt;
 	            Timestamp t1 = stk.getDl_dt();
                 
@@ -108,6 +109,8 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
 	
 	@Override
 	public int getBuyQty(Stock2 s, ICashAccount ac) {
+        Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
+        StockBuySellEntry sbs = lstTrades.get(s.getID());
 	    return (sbs == null ? 0 : sbs.quantity);
 	}
 

@@ -28,7 +28,6 @@ public class BalanceSellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(BalanceSellPointSelector.class);
 
-	private StockBuySellEntry sbs = null;
     
     private boolean sim_mode;
     private String selector_name = "BalanceSellPointSelector";
@@ -45,6 +44,7 @@ public class BalanceSellPointSelector implements ISellPointSelector {
 	 */
 	public boolean isGoodSellPoint(Stock2 stk, ICashAccount ac) {
         Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
+     	StockBuySellEntry sbs = null;
         sbs = lstTrades.get(stk.getID());
         
         if (sbs == null || !sbs.is_buy_point)
@@ -53,7 +53,6 @@ public class BalanceSellPointSelector implements ISellPointSelector {
             return false;
         }
         else {
-            
             boolean cleanup_stock_inhand = SellModeWatchDog.isStockInStopTradeMode(stk);
             if (cleanup_stock_inhand)
             {
@@ -111,6 +110,8 @@ public class BalanceSellPointSelector implements ISellPointSelector {
 	
 	@Override
 	public int getSellQty(Stock2 s, ICashAccount ac) {
+        Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
+        StockBuySellEntry sbs = lstTrades.get(s.getID());
 	    return (sbs == null ? 0 : sbs.quantity);
 	}
 

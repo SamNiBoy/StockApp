@@ -209,7 +209,7 @@ public class SimTrader implements IWork{
                             sql = "select * from (select distinct s.id" + 
                                   "                 from stkdat2 s" + 
                                   "                where cur_pri < 80" + 
-                                  "                  and cur_pri > 5" + 
+                                  "                  and cur_pri > 5" +
                                   "                  and left(dl_dt, 10) = (select left(max(s2.dl_dt), 10) from stkdat2 s2)" +
                                   "               ) tmp" +
                                   " where floor(1+rand()*100) <= 100" +
@@ -287,7 +287,7 @@ public class SimTrader implements IWork{
                                 for (SimWorker w : workers)
                                 {
                                     w.setThreadsCountDown(threadsCountDown);
-                                    WorkManager.submitWork(sw);
+                                    WorkManager.submitWork(w);
                                 }
                                 
                                 try {
@@ -331,7 +331,7 @@ public class SimTrader implements IWork{
                         for (SimWorker w : workers)
                         {
                             w.setThreadsCountDown(threadsCountDown);
-                            WorkManager.submitWork(sw);
+                            WorkManager.submitWork(w);
                         }
                         
                         try {
