@@ -43,6 +43,11 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
         
         Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
+        Double maxPri = stk.getMaxCurPri();
+        Double minPri = stk.getMinCurPri();
+        Double td_opn_pri = stk.getOpen_pri();
+        Double cur_pri = stk.getCur_pri();
+        
         sbs = lstTrades.get(stk.getID());
 
         Timestamp t1 = stk.getDl_dt();
@@ -64,13 +69,14 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
             }
         }
         
-        double pct = (stk.getCur_pri() - stk.getYtClsPri()) / stk.getYtClsPri();
+        double pct = (cur_pri - td_opn_pri) / td_opn_pri;
         
         double stop_trade_for_max_pct = ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING");
-        if (Math.abs(pct) >= stop_trade_for_max_pct)
+        
+        if (Math.abs(pct) >= stop_trade_for_max_pct && (sbs != null && sbs.is_buy_point))
         {
            log.info("Stock:" + stk.getID() + " cur_pri:" + stk.getCur_pri() + " ytClsPri:" + stk.getYtClsPri() +", increase pct:" + pct
-                   + " is exceeding " + stop_trade_for_max_pct + " stop trading");
+                   + " is exceeding " + stop_trade_for_max_pct + " stop trading to increase unbalance.");
             return false;
         }
         
@@ -87,19 +93,16 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 		double tradeThresh = 0;
 		double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING");
 		if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {
-			Double maxPri = stk.getMaxCurPri();
-			Double minPri = stk.getMinCurPri();
-			Double yt_cls_pri = stk.getYtClsPri();
-			Double cur_pri = stk.getCur_pri();
 
-			if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
+
+			if (maxPri != null && minPri != null && td_opn_pri != null && cur_pri != null) {
 
 				double marketDegree = StockMarket.getDegree();
 				
 				tradeThresh = getBuyThreshValueByDegree(marketDegree, stk);
 				
-				double maxPct = (maxPri - minPri) / yt_cls_pri;
-				double curPct =(cur_pri - minPri) / yt_cls_pri;
+				double maxPct = (maxPri - minPri) / td_opn_pri;
+				double curPct =(cur_pri - minPri) / td_opn_pri;
 
 				boolean qtyPlused = stk.isLstQtyPlused();
 				
@@ -110,7 +113,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " margin_pct:" + margin_pct);
                     
 					stk.setTradedBySelector(this.selector_name);
-					stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + margin_pct + " also qtyPlused:" + qtyPlused);
+					stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + td_opn_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + margin_pct + " also qtyPlused:" + qtyPlused);
 					return true;
 				} else if (stk.isStoppingJumpWater() && !StockMarket.isGzStocksJumpWater(5, 0.01, 0.5)) {
 					log.info("Stock cur price is stopping dumping, isGoodBuyPoint return true.");
@@ -124,23 +127,21 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh);
 				}
 			} else {
-				log.info("isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
+				log.info("isGoodBuyPoint says either maxPri, minPri, td_opn_pri or cur_pri is null, return false");
 			}
 		} else {
 			// has stock in hand;
 			Double lstBuy = ac.getLstBuyPri(stk);
-			Double cur_pri = stk.getCur_pri();
-			Double yt_cls_pri = stk.getYtClsPri();
-			if (lstBuy != null && cur_pri != null && yt_cls_pri != null) {
-				if ((lstBuy - cur_pri) / yt_cls_pri > tradeThresh && stk.isLstQtyPlused()) {
+			if (lstBuy != null && cur_pri != null && td_opn_pri != null) {
+				if ((lstBuy - cur_pri) / td_opn_pri > tradeThresh && stk.isLstQtyPlused()) {
 					log.info("isGoodBuyPoint Buy true:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:"
-							+ lstBuy + " curPri:" + cur_pri + " yt_cls_pri:" + yt_cls_pri);
+							+ lstBuy + " curPri:" + cur_pri + " td_opn_pri:" + td_opn_pri);
                     stk.setTradedBySelector(this.selector_name);
 					stk.setTradedBySelectorComment("cur_pri:" + cur_pri + " is tradeThresh:" + tradeThresh + " comparing to last buy price:" + lstBuy);
 					return true;
 				}
 				log.info("isGoodBuyPoint Buy false:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:" + lstBuy
-						+ " curPri:" + cur_pri + " yt_cls_pri:" + yt_cls_pri);
+						+ " curPri:" + cur_pri + " td_opn_pri:" + td_opn_pri);
 			} else {
 				log.info("isGoodBuyPoint Buy false: fields is null");
 			}
@@ -165,7 +166,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     	try {
     		Connection con = DBManager.getConnection();
     		Statement stm = con.createStatement();
-    		String sql = "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev "
+    		String sql = "select stddev((cur_pri - td_opn_pri) / td_opn_pri) dev "
     				   + "  from stkdat2 "
     				   + " where id ='" + stk.getID() + "'"
     				   + "   and left(dl_dt, 10) = left(" + deadline + ", 10)";

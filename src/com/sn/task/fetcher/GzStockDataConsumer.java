@@ -54,7 +54,6 @@ public class GzStockDataConsumer implements IWork {
     public GzStockDataConsumer(long id, long dbn) throws Exception {
         initDelay = id;
         delayBeforNxtStart = dbn;
-        strategy = TradeStrategyGenerator.generatorStrategy(false);
     }
 
     public ArrayBlockingQueue<RawStockData> getDq() {
@@ -88,6 +87,10 @@ public class GzStockDataConsumer implements IWork {
                 
                 log.info("check stock " + s.getID() + " for buy/sell point");
                 
+                if (strategy == null)
+                {
+                    strategy = TradeStrategyGenerator.generatorStrategy(false);
+                }
                 log.info("Now start trading with stragtegy:" + strategy.getTradeStrategyName() + " on stock:" + s.getID() + ", name:" + s.getName() + "\n\n");
                 st.setStrategy(strategy);
                 st.performTrade(s);

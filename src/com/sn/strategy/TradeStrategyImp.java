@@ -68,6 +68,11 @@ public class TradeStrategyImp implements ITradeStrategy {
     private static boolean unbalanced_db_lstTradeForStocks_loaded = false;
     
     public static Map<String, StockBuySellEntry> getLstTradeForStocks() {
+        
+        if (lstTradeForStocks == null)
+        {
+            lstTradeForStocks = new HashMap<String, StockBuySellEntry>();
+        }
         return lstTradeForStocks;
     }
 
@@ -75,45 +80,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return tradeRecord.get(s.getID()).getLast();
 	}
 
-    public boolean isGoodPointtoBuy(Stock2 s) {
-        
-        boolean good_flg = false;
-        for (IBuyPointSelector bp : buypoint_selectors)
-        {
-            log.info("********** BUY POINT " + bp.getClass().getSimpleName() + " CHECK START ***************");
-            if (bp.isGoodBuyPoint(s, cash_account))
-            {
-                good_flg = true;
-                cur_buypoint_selector = bp;
-            }
-            log.info("************ BUY POINT CHECK FOR " + s.getID() + (good_flg? " PASS ":" FAIL ") + "END**********\n");
-            
-            if (good_flg)
-            {
-                break;
-            }
-        }
-        return good_flg;
-    }
 
-    public boolean isGoodPointtoSell(Stock2 s) {
-        boolean good_flg = false;
-        for (ISellPointSelector sp : sellpoint_selectors)
-        {
-           log.info("**************** SELL POINT " + sp.getClass().getSimpleName() + " CHECK START ******************");
-            if (sp.isGoodSellPoint(s, cash_account))
-            {
-                good_flg = true;
-                cur_sellpoint_selector = sp;
-            }
-            log.info("**************** SELL POINT CHECK FOR " + s.getID() + (good_flg? " PASS ":" FAIL ") + "END**************");
-            if (good_flg)
-            {
-                break;
-            }
-        }
-        return good_flg;
-    }
     
     public TradeStrategyImp(List<IBuyPointSelector> bs,
                             List<ISellPointSelector> ses,
@@ -307,21 +274,77 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean performTrade(Stock2 s) {
         
         boolean result = false;
+        int i = 0, j = 0;
         
         log.info("####################### PERFORM TRADE FOR " + s.getID() + ":" + s.getName() + " BEGIN #######################");
-		if (isGoodPointtoBuy(s) && buyStock(s)) {
-        	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
-        	rc.printStockInfo();
-        	result = true;
-        }
-        else if(isGoodPointtoSell(s) && sellStock(s)) {
-        	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
-        	rc.printStockInfo();
-        	result = true;
+        //Here we want try trading in buy...sell...buy...sell order to keep in balance as much as possible, which is why used i,j.
+        for (IBuyPointSelector bp : buypoint_selectors)
+        {
+            i++;
+            cur_buypoint_selector = bp;
+            for (ISellPointSelector sp : sellpoint_selectors)
+            {
+                j++;
+                
+                //j must be equal to i before trading.
+                if (j > i)
+                {
+                    j = 0;
+                    break;
+                }
+                else if (j < i)
+                {
+                    continue;
+                }
+                cur_sellpoint_selector = sp;
+		        if (isGoodPointtoBuy(s) && buyStock(s)) {
+                	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
+                	rc.printStockInfo();
+                	result = true;
+                }
+                else if(isGoodPointtoSell(s) && sellStock(s)) {
+                	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
+                	rc.printStockInfo();
+                	result = true;
+                }
+                if (result)
+                {
+                    break;
+                }
+            }
+            if (result)
+            {
+                break;
+            }
         }
         log.info("##################### PERFORM TRADE FOR " + s.getID() + ":" + s.getName() + " END ############################\n\n");
         return result;
 	}
+    
+    public boolean isGoodPointtoBuy(Stock2 s) {
+        
+        boolean good_flg = false;
+        log.info("********** BUY POINT " + cur_buypoint_selector.getClass().getSimpleName() + " CHECK START ***************");
+        if (cur_buypoint_selector.isGoodBuyPoint(s, cash_account))
+        {
+            good_flg = true;
+        }
+        log.info("************ BUY POINT CHECK FOR " + s.getID() + (good_flg? " PASS ":" FAIL ") + "END**********\n");
+        
+        return good_flg;
+    }
+
+    public boolean isGoodPointtoSell(Stock2 s) {
+        boolean good_flg = false;
+        log.info("**************** SELL POINT " + cur_sellpoint_selector.getClass().getSimpleName() + " CHECK START ******************");
+        if (cur_sellpoint_selector.isGoodSellPoint(s, cash_account))
+        {
+            good_flg = true;
+        }
+        log.info("**************** SELL POINT CHECK FOR " + s.getID() + (good_flg? " PASS ":" FAIL ") + "END**************");
+        
+        return good_flg;
+    }
 	
 	public boolean loadStocksForTrade() {
 		String sql;
@@ -453,6 +476,18 @@ public class TradeStrategyImp implements ITradeStrategy {
 								+ s.getCur_pri() + "/" + lst.price + ", skip same trade.");
 						return false;
 					}
+                    
+	                int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING");
+	                int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING");
+	                
+	                long hour = t1.getHours();
+	                long minutes = t1.getMinutes();
+	                if (hour >= hour_for_balance && minutes >= mins_for_balance)
+	                {
+	                    log.info("Reaching " + hour_for_balance + ":" + mins_for_balance
+	                             + ", Stock:" + s.getID() + " bought " + mins + " minutes agao which is less than: " + mins_max + ", but we allow sell it out");
+	                    return true;
+	                }
 				}
 				return true;
 			}
