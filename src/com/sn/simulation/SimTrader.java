@@ -212,7 +212,7 @@ public class SimTrader implements IWork{
                                   "                  and cur_pri > 5" + 
                                   "                  and left(dl_dt, 10) = (select left(max(s2.dl_dt), 10) from stkdat2 s2)" +
                                   "               ) tmp" +
-                                  " where floor(1+rand()*100) <= 1" +
+                                  " where floor(1+rand()*100) <= 100" +
                                   "                order by id";
                     }
                     

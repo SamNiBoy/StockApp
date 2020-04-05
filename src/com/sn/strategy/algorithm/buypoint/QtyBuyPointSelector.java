@@ -50,7 +50,6 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         long hour = t1.getHours();
         long minutes = t1.getMinutes();
         
-        log.info("Hour:" + hour + ", Minute:" + minutes);
         
         int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING");
         int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING");
@@ -59,6 +58,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         {
             if (sbs == null || (sbs != null && sbs.is_buy_point))
             {
+                log.info("Hour:" + hour + ", Minute:" + minutes);
                 log.info("Close to market shutdown time, no need to break balance");
                 return false;
             }
@@ -223,6 +223,16 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
             maxMnt = (int)(useableMny/s.getCur_pri()) / 100 * 100;
             
            	buyMnt = maxMnt;
+            
+           	if (!sim_mode)
+           	{
+           	    int sellableAmt = ac.getSellableAmt(s.getID(), null);
+                if (buyMnt > sellableAmt)
+                {
+                    log.info("Tradex sellable amount:" + sellableAmt + " less than calculated amt:" + buyMnt + " use sellabeAmt.");
+                    buyMnt = sellableAmt;
+                }
+           	}
             log.info("getBuyQty, useableMny:" + useableMny + " buyMnt:" + buyMnt + " maxMnt:" + maxMnt);
         }
         else {

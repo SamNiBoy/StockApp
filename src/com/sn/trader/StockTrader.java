@@ -44,7 +44,7 @@ import oracle.sql.DATE;
 public class StockTrader {
 
 	//interface vars.
-    ITradeStrategy strategy = TradeStrategyGenerator.generatorStrategy(false);
+    private ITradeStrategy strategy = null; //TradeStrategyGenerator.generatorStrategy(true);
     private List<StockBuySellEntry> stockTomail = new ArrayList<StockBuySellEntry>();
     private GzStockBuySellPointObserverable gsbsob = new GzStockBuySellPointObserverable(stockTomail);
 	private boolean sim_mode = false;
@@ -77,7 +77,11 @@ public class StockTrader {
 	}
 	public StockTrader(boolean is_simulation_mode) {
 		sim_mode = is_simulation_mode;
-		strategy.enableSimulationMode(is_simulation_mode);
+        
+		if (strategy != null)
+		{
+		    strategy.enableSimulationMode(is_simulation_mode);
+		}
     }
     
 	public static void doTest() throws Exception {

@@ -863,6 +863,17 @@ public class TradeStrategyImp implements ITradeStrategy {
             
             updateLstTradeRecordForStock(stk);
             
+            /*
+             * Here once after we trade a stock, clear it's historic memory data.
+             * This is important as it make a big difference for calculating some
+             * critial data like max/min price and based on which buy/sell decision
+             * made.
+             */
+            if (s != null) {
+                log.info("After selling " + s.getName() + " clear InjectedRaw Data...");
+                s.getSd().clearInjectRawData();
+            }
+
             return true;
         }
         catch(SQLException e) {
@@ -985,6 +996,18 @@ public class TradeStrategyImp implements ITradeStrategy {
             
             updateLstTradeRecordForStock(stk);
             
+            
+            /*
+             * Here once after we trade a stock, clear it's historic memory data.
+             * This is important as it make a big difference for calculating some
+             * critial data like max/min price and based on which buy/sell decision
+             * made.
+             */
+            if (s != null) {
+                log.info("After buying " + s.getName() + " clear InjectedRaw Data...");
+                s.getSd().clearInjectRawData();
+            }
+            
             return true;
         }
         catch(SQLException e) {
@@ -1001,7 +1024,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         {
             log.info("Stock " + rc.id + " did new trade, add to lstTradeForStocks.");
             lstTradeForStocks.put(rc.id, rc);
-            TradeStrategyImp.createBuySellRecord(rc);
+            createBuySellRecord(rc);
         }
         else {
             log.info("had a new trade, refresh balance information:");
@@ -1023,27 +1046,27 @@ public class TradeStrategyImp implements ITradeStrategy {
                 pre.quantity = (pre.quantity + rc.quantity);
                 pre.dl_dt = rc.dl_dt;
                 lstTradeForStocks.put(pre.id, pre);
-                TradeStrategyImp.updateBuySellRecord(pre);
+                updateBuySellRecord(pre);
             }
             else {
                 if (pre.quantity == rc.quantity)
                 {
                     log.info("Revserse trade with same qty, clean up lstTradeForStocks.");
                     lstTradeForStocks.remove(rc.id);
-                    TradeStrategyImp.removeBuySellRecord(rc);
+                    removeBuySellRecord(rc);
                 }
                 else if (pre.quantity > rc.quantity)
                 {
                     log.info("pre quantity is  > cur quanaity, subtract cur quantity and refresh the map");
                     pre.quantity -= rc.quantity;
                     lstTradeForStocks.put(pre.id, pre);
-                    TradeStrategyImp.updateBuySellRecord(pre);
+                    updateBuySellRecord(pre);
                 }
                 else {
                     log.info("pre quantity is  < cur quanaity, update cur quantity and refresh the map");
                     rc.quantity -= pre.quantity;
                     lstTradeForStocks.put(rc.id, rc);
-                    TradeStrategyImp.updateBuySellRecord(rc);
+                    updateBuySellRecord(rc);
                 }
             }
         }
@@ -1100,8 +1123,14 @@ public class TradeStrategyImp implements ITradeStrategy {
         } 
     }
 	
-	public static boolean createBuySellRecord(StockBuySellEntry rc) {
+	public boolean createBuySellRecord(StockBuySellEntry rc) {
 		String sql;
+        
+		if (sim_mode)
+		{
+		     log.info("Simulation mode, do not deal with SellBuyRecord.");
+             return false;
+		}
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
@@ -1124,8 +1153,15 @@ public class TradeStrategyImp implements ITradeStrategy {
 		}
 		return true;
 	}
-	public static boolean updateBuySellRecord(StockBuySellEntry rc) {
+	public boolean updateBuySellRecord(StockBuySellEntry rc) {
 		String sql;
+        
+	    if (sim_mode)
+	      {
+	           log.info("Simulation mode, do not deal with SellBuyRecord.");
+	           return false;
+	      }
+	    
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
@@ -1149,8 +1185,15 @@ public class TradeStrategyImp implements ITradeStrategy {
 		}
 		return true;
 	}
-	public static boolean removeBuySellRecord(StockBuySellEntry rc) {
+	public boolean removeBuySellRecord(StockBuySellEntry rc) {
 		String sql;
+        
+	    if (sim_mode)
+        {
+             log.info("Simulation mode, do not deal with SellBuyRecord.");
+             return false;
+        }
+	      
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
@@ -1172,8 +1215,14 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return true;
 	}
     
-	   public static void loadBuySellRecord() {
+	   public void loadBuySellRecord() {
            
+	        if (sim_mode)
+	        {
+	             log.info("Simulation mode, do not deal with SellBuyRecord.");
+                 return;
+	        }
+	        
 	       synchronized (TradeStrategyImp.class)
            {
 	           if (unbalanced_db_lstTradeForStocks_loaded)

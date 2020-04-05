@@ -60,8 +60,12 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                 return true;
 	        }
 	        else {
+                
 	            Timestamp t0 = sbs.dl_dt;
 	            Timestamp t1 = stk.getDl_dt();
+                
+                long hour = t1.getHours();
+                long minutes = t1.getMinutes();
                 
                 long millisec = t1.getTime() - t0.getTime();
                 long mins = millisec / (1000*60);
@@ -69,7 +73,14 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                 log.info("Stock:" + stk.getID() + " sold " + mins + " minutes before");
                 
                 int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING");
-	            if (mins > mins_max)
+                
+                if (hour == 13 && minutes == 0)
+                {
+                    log.info("Market just restarted at 13:00, refresh the timestame for last trade instead of trading.");
+                    sbs.dl_dt = stk.getDl_dt();
+                    return false;
+                }
+                else if (mins > mins_max)
 	            {
                     log.info("Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
                     stk.setTradedBySelector(this.selector_name);
@@ -77,15 +88,13 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                     return true;
 	            }
                 
-                long hour = t1.getHours();
-                long minutes = t1.getMinutes();
                 
                 int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING");
                 int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING");
                 
-                log.info("Hour:" + hour + ", Minute:" + minutes);
                 if (hour >= hour_for_balance && minutes >= mins_for_balance)
                 {
+                    log.info("Hour:" + hour + ", Minute:" + minutes);
                     log.info("Reaching " + hour_for_balance + ":" + mins_for_balance
                              + ", Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
                     stk.setTradedBySelector(this.selector_name);
