@@ -74,8 +74,9 @@ public class WeChatReporter extends BaseWCReporter{
         resContent = "你可以发送以下代码:\n"
                 + "1.获取我关注的股票.\n" + "2.获取系统推荐股票.\n"
                 + "3.启用/停止买卖.\n" + "4.启用/停止推荐.\n"
-                + "5.启用/取消一键平仓\n"
-                + "6.报告数据情况.\n"
+                + "5.启用/取消一键平仓.\n"
+                + "6.查询交易赢利.\n"
+                + "7.报告数据情况.\n"
                 + "xxxxxx 关注/取消关注股票.\n"
                 + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
     	}
@@ -85,8 +86,9 @@ public class WeChatReporter extends BaseWCReporter{
                     + "2.获取系统推荐股票数据.\n"
                     + "3.启用/停止股票买卖.\n"
                     + "4.启用/停止推荐.\n"
-                    + "5.启用/取消一键平仓\n"
-                    + "6.报告数据情况.\n"
+                    + "5.启用/取消一键平仓.\n"
+                    + "6.查询交易赢利.\n"
+                    + "7.报告数据情况.\n"
                     + "xxxxxx 关注/取消关注股票.\n"
                     + "xxx@yyy.zzz添加邮箱接收买卖信息.\n";
     	}
@@ -465,6 +467,101 @@ public class WeChatReporter extends BaseWCReporter{
                 }
             }
             else if(content.equals("6"))
+            {
+                String msg = "实际账户:";
+                Connection con = DBManager.getConnection();
+                Statement stm = null;
+                DecimalFormat df2 = new DecimalFormat("##.##");
+                DecimalFormat df4 = new DecimalFormat("##.####");
+                String simAcntPrefix = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT");
+                
+                String sql = "select count(*) cnt,"
+                            + "      case when sum(used_mny) is null then 0 else sum(used_mny) end tot_used_mny,"
+                            + "      case when sum(used_mny * used_mny_hrs) / sum(used_mny) is null then 0 else sum(used_mny * used_mny_hrs) / sum(used_mny) end tot_used_mny_hrs,"
+                            + "      case when sum(pft_mny) is null then 0 else sum(pft_mny) end tot_pft_mny,"
+                            + "      case when sum(pft_mny) - sum(commission_mny) is null then 0 else sum(pft_mny) - sum(commission_mny) end net_pft_mny,"
+                            + "      case when sum(in_hand_stk_mny) is null then 0 else sum(in_hand_stk_mny) end tot_in_hand_stk_mny,"
+                            + "      case when sum(amount_mny) is null then 0 else sum(amount_mny) end tot_amount_mny,"
+                            + "      case when sum(commission_mny) is null then 0 else sum(commission_mny) end tot_commission_mny,"
+                            + "      case when sum(used_mny) is null then 0 else (sum(pft_mny) - sum(commission_mny)) / (case when sum(used_mny) <= 0 then 1 else sum(used_mny) end) end profit_pct"
+                            + "  from cashacnt ca"
+                            + "  join (select sum(in_hand_qty * in_hand_stk_price) in_hand_stk_mny,"
+                            + "               sum(total_amount) amount_mny,"
+                            + "               sum(commission_mny) commission_mny,"
+                            + "               acntid"
+                            + "          from tradehdr group by acntid) th  "
+                            + "    on ca.acntid = th.acntid "
+                            + " where ca.acntid not like '" + simAcntPrefix + "%'";
+                    log.info(sql);
+                try {
+                    stm = con.createStatement();
+                    ResultSet rs = stm.executeQuery(sql);
+                    if (rs.next()){
+                        msg += "账户数:" + rs.getLong("cnt")+ "\n"
+                              +"总使用金额:" + df2.format(rs.getDouble("tot_used_mny")) + "\n"
+                              +"平均使用小时:" + df2.format(rs.getDouble("tot_used_mny_hrs")) + "\n"
+                              +"总利润:" + df2.format(rs.getDouble("tot_pft_mny")) + "\n"
+                              +"净利润:" + df2.format(rs.getDouble("net_pft_mny")) + "\n"
+                              +"股票价值:" + df2.format(rs.getDouble("tot_in_hand_stk_mny")) + "\n"
+                              +"总交易额:" + df2.format(rs.getDouble("tot_amount_mny")) + "\n"
+                              +"佣金:" + df2.format(rs.getDouble("tot_commission_mny")) + "\n"
+                              +"利润率:" + df4.format(rs.getDouble("profit_pct")) + "\n";
+                    }
+                    rs.close();
+                    stm.close();
+                    
+                    msg += "\n\n";
+                    msg += "模拟账户:";
+                    sql = "select count(*) cnt,"
+                            + "      case when sum(used_mny) is null then 0 else sum(used_mny) end tot_used_mny,"
+                            + "      case when sum(used_mny * used_mny_hrs) / sum(used_mny) is null then 0 else sum(used_mny * used_mny_hrs) / sum(used_mny) end tot_used_mny_hrs,"
+                            + "      case when sum(pft_mny) is null then 0 else sum(pft_mny) end tot_pft_mny,"
+                            + "      case when sum(pft_mny) - sum(commission_mny) is null then 0 else sum(pft_mny) - sum(commission_mny) end net_pft_mny,"
+                            + "      case when sum(in_hand_stk_mny) is null then 0 else sum(in_hand_stk_mny) end tot_in_hand_stk_mny,"
+                            + "      case when sum(amount_mny) is null then 0 else sum(amount_mny) end tot_amount_mny,"
+                            + "      case when sum(commission_mny) is null then 0 else sum(commission_mny) end tot_commission_mny,"
+                            + "      case when sum(used_mny) is null then 0 else (sum(pft_mny) - sum(commission_mny)) / (case when sum(used_mny) <= 0 then 1 else sum(used_mny) end) end profit_pct"
+                            + "  from cashacnt ca"
+                            + "  join (select sum(in_hand_qty * in_hand_stk_price) in_hand_stk_mny,"
+                            + "               sum(total_amount) amount_mny,"
+                            + "               sum(commission_mny) commission_mny,"
+                            + "               acntid"
+                            + "          from tradehdr group by acntid) th  "
+                            + "    on ca.acntid = th.acntid "
+                            + " where ca.acntid like '" + simAcntPrefix + "%'";
+                    log.info(sql);
+                    stm = con.createStatement();
+                    rs = stm.executeQuery(sql);
+                    if (rs.next()){
+                        msg += "账户数:" + rs.getLong("cnt")+ "\n"
+                                +"总使用金额:" + df2.format(rs.getDouble("tot_used_mny")) + "\n"
+                                +"平均使用小时:" + df2.format(rs.getDouble("tot_used_mny_hrs")) + "\n"
+                                +"总利润:" + df2.format(rs.getDouble("tot_pft_mny")) + "\n"
+                                +"净利润:" + df2.format(rs.getDouble("net_pft_mny")) + "\n"
+                                +"股票价值:" + df2.format(rs.getDouble("tot_in_hand_stk_mny")) + "\n"
+                                +"总交易额:" + df2.format(rs.getDouble("tot_amount_mny")) + "\n"
+                                +"佣金:" + df2.format(rs.getDouble("tot_commission_mny")) + "\n"
+                                +"利润率:" + df4.format(rs.getDouble("profit_pct")) + "\n";
+                    }
+                    rs.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    msg = "无数据.\n";
+                }
+                finally {
+                    try {
+                    stm.close();
+                    con.close();
+                    }
+                    catch (Exception e)
+                    {
+                        log.error("DB exception:" + e.getMessage());
+                        resContent = "数据库异常:" + e.getMessage();
+                    }
+                }
+                resContent = msg;
+            }
+            else if(content.equals("7"))
             {
                 String msg = "";
                 Connection con = DBManager.getConnection();
