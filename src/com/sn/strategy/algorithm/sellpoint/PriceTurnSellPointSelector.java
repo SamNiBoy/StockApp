@@ -6,6 +6,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -24,7 +25,7 @@ public class PriceTurnSellPointSelector implements ISellPointSelector {
 	static Logger log = Logger.getLogger(PriceTurnSellPointSelector.class);
 
 	private double BASE_TRADE_THRESH = 0.03;
-	Map<String, Boolean> preSellMode = new HashMap<String, Boolean>();
+	Map<String, Boolean> preSellMode = new ConcurrentHashMap<String, Boolean>();
     
     private boolean sim_mode;
     

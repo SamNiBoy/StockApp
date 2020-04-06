@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -42,9 +43,7 @@ public class TradeStrategyImp implements ITradeStrategy {
     
     //interface vars.
     List<IBuyPointSelector> buypoint_selectors = new LinkedList<IBuyPointSelector>();
-    IBuyPointSelector cur_buypoint_selector = null;
     List<ISellPointSelector> sellpoint_selectors = new LinkedList<ISellPointSelector>();
-    ISellPointSelector cur_sellpoint_selector = null;
     ICashAccount cash_account = null;
     String name = "Default Trade Strategy";
     
@@ -62,16 +61,16 @@ public class TradeStrategyImp implements ITradeStrategy {
 
     // non interface vars.
 	private static List<String> tradeStocks = new ArrayList<String>();
-	private static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new HashMap<String, LinkedList<StockBuySellEntry>>();
+	private static Map<String, LinkedList<StockBuySellEntry>> tradeRecord = new ConcurrentHashMap<String, LinkedList<StockBuySellEntry>>();
     private static Map<String, StockBuySellEntry> lstTradeForStocks = null;
-    private static Map<String, ICashAccount> cash_account_map = new HashMap<String, ICashAccount>();
+    private static Map<String, ICashAccount> cash_account_map = new ConcurrentHashMap<String, ICashAccount>();
     private static boolean unbalanced_db_lstTradeForStocks_loaded = false;
     
     public static Map<String, StockBuySellEntry> getLstTradeForStocks() {
         
         if (lstTradeForStocks == null)
         {
-            lstTradeForStocks = new HashMap<String, StockBuySellEntry>();
+            lstTradeForStocks = new ConcurrentHashMap<String, StockBuySellEntry>();
         }
         return lstTradeForStocks;
     }
@@ -109,13 +108,13 @@ public class TradeStrategyImp implements ITradeStrategy {
 	}
 	
 	@Override
-	public boolean buyStock(Stock2 s) {
+	public boolean buyStock(Stock2 s, IBuyPointSelector buypoint_selector) {
 		// TODO Auto-generated method stub
 		loadStocksForTrade();
 		ICashAccount ac = getCashAcntForStock(s.getID());
 		int qtb = 0;
 		
-		qtb = cur_buypoint_selector.getBuyQty(s, ac);
+		qtb = buypoint_selector.getBuyQty(s, ac);
 		
 		if (qtb <= 0) {
 			log.info("qty to buy is zero, can not buyStock.");
@@ -172,13 +171,13 @@ public class TradeStrategyImp implements ITradeStrategy {
 	}
 	
 	@Override
-	public boolean sellStock(Stock2 s) {
+	public boolean sellStock(Stock2 s, ISellPointSelector sellpoint_selector) {
 		// TODO Auto-generated method stub
 		loadStocksForTrade();
 		ICashAccount ac = getCashAcntForStock(s.getID());
 		int qtb = 0;
 		
-		qtb = cur_sellpoint_selector.getSellQty(s, ac);
+		qtb = sellpoint_selector.getSellQty(s, ac);
 		
 		if (qtb <= 0) {
 			log.info("qtb is <=0, can not sell!");
@@ -283,7 +282,6 @@ public class TradeStrategyImp implements ITradeStrategy {
         for (IBuyPointSelector bp : buypoint_selectors)
         {
             i++;
-            cur_buypoint_selector = bp;
             for (ISellPointSelector sp : sellpoint_selectors)
             {
                 j++;
@@ -298,13 +296,12 @@ public class TradeStrategyImp implements ITradeStrategy {
                 {
                     continue;
                 }
-                cur_sellpoint_selector = sp;
-		        if (isGoodPointtoBuy(s) && buyStock(s)) {
+		        if (isGoodPointtoBuy(s, bp) && buyStock(s, bp)) {
                 	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
                 	rc.printStockInfo();
                 	result = true;
                 }
-                else if(isGoodPointtoSell(s) && sellStock(s)) {
+                else if(isGoodPointtoSell(s, sp) && sellStock(s, sp)) {
                 	StockBuySellEntry rc = tradeRecord.get(s.getID()).getLast();
                 	rc.printStockInfo();
                 	result = true;
@@ -323,11 +320,11 @@ public class TradeStrategyImp implements ITradeStrategy {
         return result;
 	}
     
-    public boolean isGoodPointtoBuy(Stock2 s) {
+    public boolean isGoodPointtoBuy(Stock2 s, IBuyPointSelector bp) {
         
         boolean good_flg = false;
-        log.info("********** BUY POINT " + cur_buypoint_selector.getClass().getSimpleName() + " CHECK START ***************");
-        if (cur_buypoint_selector.isGoodBuyPoint(s, cash_account))
+        log.info("********** BUY POINT " + bp.getClass().getSimpleName() + " CHECK START ***************");
+        if (bp.isGoodBuyPoint(s, cash_account))
         {
             good_flg = true;
         }
@@ -336,10 +333,10 @@ public class TradeStrategyImp implements ITradeStrategy {
         return good_flg;
     }
 
-    public boolean isGoodPointtoSell(Stock2 s) {
+    public boolean isGoodPointtoSell(Stock2 s, ISellPointSelector sp){
         boolean good_flg = false;
-        log.info("**************** SELL POINT " + cur_sellpoint_selector.getClass().getSimpleName() + " CHECK START ******************");
-        if (cur_sellpoint_selector.isGoodSellPoint(s, cash_account))
+        log.info("**************** SELL POINT " + sp.getClass().getSimpleName() + " CHECK START ******************");
+        if (sp.isGoodSellPoint(s, cash_account))
         {
             good_flg = true;
         }
@@ -1055,58 +1052,61 @@ public class TradeStrategyImp implements ITradeStrategy {
     
 	private void updateLstTradeRecordForStock(StockBuySellEntry rc)
 	{
-        StockBuySellEntry pre = lstTradeForStocks.get(rc.id);
-        
-        if (pre == null)
-        {
-            log.info("Stock " + rc.id + " did new trade, add to lstTradeForStocks.");
-            lstTradeForStocks.put(rc.id, rc);
-            createBuySellRecord(rc);
-        }
-        else {
-            log.info("had a new trade, refresh balance information:");
-            log.info("pre id:" + pre.id);
-            log.info("pre name:" + pre.name);
-            log.info("pre price:" + pre.price);
-            log.info("pre quantity:" + pre.quantity);
-            log.info("pre buy_flg:" + pre.is_buy_point);
+	    synchronized (lstTradeForStocks) {
             
-            log.info("cur id:" + rc.id);
-            log.info("cur name:" + rc.name);
-            log.info("cur price:" + rc.price);
-            log.info("cur quantity:" + rc.quantity);
-            log.info("cur buy_flg:" + rc.is_buy_point);
+            StockBuySellEntry pre = lstTradeForStocks.get(rc.id);
             
-            if (rc.is_buy_point == pre.is_buy_point){
-                log.info("Same direction trade, refresh lstTradeForStocks.");
-                pre.price = (pre.price * pre.quantity + rc.price * rc.quantity) / (pre.quantity + rc.quantity);
-                pre.quantity = (pre.quantity + rc.quantity);
-                pre.dl_dt = rc.dl_dt;
-                lstTradeForStocks.put(pre.id, pre);
-                updateBuySellRecord(pre);
+            if (pre == null)
+            {
+                log.info("Stock " + rc.id + " did new trade, add to lstTradeForStocks.");
+                lstTradeForStocks.put(rc.id, rc);
+                createBuySellRecord(rc);
             }
             else {
-                if (pre.quantity == rc.quantity)
-                {
-                    log.info("Revserse trade with same qty, clean up lstTradeForStocks.");
-                    lstTradeForStocks.remove(rc.id);
-                    removeBuySellRecord(rc);
-                }
-                else if (pre.quantity > rc.quantity)
-                {
-                    log.info("pre quantity is  > cur quanaity, subtract cur quantity and refresh the map");
-                    pre.quantity -= rc.quantity;
+                log.info("had a new trade, refresh balance information:");
+                log.info("pre id:" + pre.id);
+                log.info("pre name:" + pre.name);
+                log.info("pre price:" + pre.price);
+                log.info("pre quantity:" + pre.quantity);
+                log.info("pre buy_flg:" + pre.is_buy_point);
+                
+                log.info("cur id:" + rc.id);
+                log.info("cur name:" + rc.name);
+                log.info("cur price:" + rc.price);
+                log.info("cur quantity:" + rc.quantity);
+                log.info("cur buy_flg:" + rc.is_buy_point);
+                
+                if (rc.is_buy_point == pre.is_buy_point){
+                    log.info("Same direction trade, refresh lstTradeForStocks.");
+                    pre.price = (pre.price * pre.quantity + rc.price * rc.quantity) / (pre.quantity + rc.quantity);
+                    pre.quantity = (pre.quantity + rc.quantity);
+                    pre.dl_dt = rc.dl_dt;
                     lstTradeForStocks.put(pre.id, pre);
                     updateBuySellRecord(pre);
                 }
                 else {
-                    log.info("pre quantity is  < cur quanaity, update cur quantity and refresh the map");
-                    rc.quantity -= pre.quantity;
-                    lstTradeForStocks.put(rc.id, rc);
-                    updateBuySellRecord(rc);
+                    if (pre.quantity == rc.quantity)
+                    {
+                        log.info("Revserse trade with same qty, clean up lstTradeForStocks.");
+                        lstTradeForStocks.remove(rc.id);
+                        removeBuySellRecord(rc);
+                    }
+                    else if (pre.quantity > rc.quantity)
+                    {
+                        log.info("pre quantity is  > cur quanaity, subtract cur quantity and refresh the map");
+                        pre.quantity -= rc.quantity;
+                        lstTradeForStocks.put(pre.id, pre);
+                        updateBuySellRecord(pre);
+                    }
+                    else {
+                        log.info("pre quantity is  < cur quanaity, update cur quantity and refresh the map");
+                        rc.quantity -= pre.quantity;
+                        lstTradeForStocks.put(rc.id, rc);
+                        updateBuySellRecord(rc);
+                    }
                 }
             }
-        }
+	    }
 	}
     /* Now do acutal trade to Tradex system*/
     private static TradexBuySellResult placeSellTradeToTradex(Stock2 s, int qtyToTrade, double price) {
@@ -1269,7 +1269,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	           }
 	           String sql;
                
-	           lstTradeForStocks = new HashMap<String, StockBuySellEntry>();
+	           lstTradeForStocks = new ConcurrentHashMap<String, StockBuySellEntry>();
                int i = 0;
                Connection con = DBManager.getConnection();
                Statement stm = null;
@@ -1332,28 +1332,32 @@ public class TradeStrategyImp implements ITradeStrategy {
         
         if (sim_mode) {
         	String AcntForStk = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + stk;
-            ICashAccount acnt = cash_account_map.get(AcntForStk);
-            if (acnt == null) {
-            	log.info("No cashAccount for stock:" + stk + " in memory, load from db.");
-                acnt = CashAcntManger.loadAcnt(AcntForStk);
-                
-                double def_init_mnt = ParamManager.getFloatParam("DFT_INIT_MNY", "ACCOUNT");
-                double def_max_mny_per_trade = ParamManager.getFloatParam("DFT_MAX_MNY_PER_TRADE", "ACCOUNT");
-                double def_max_use_pct = ParamManager.getFloatParam("DFT_MAX_USE_PCT", "ACCOUNT");
-                
+        	
+        	synchronized (cash_account_map)
+        	{
+                ICashAccount acnt = cash_account_map.get(AcntForStk);
                 if (acnt == null) {
-                	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
-                    CashAcntManger
-                    .crtAcnt(AcntForStk, def_init_mnt, 0.0, 0.0,0.0,def_max_mny_per_trade, def_max_use_pct);
+                	log.info("No cashAccount for stock:" + stk + " in memory, load from db.");
                     acnt = CashAcntManger.loadAcnt(AcntForStk);
+                    
+                    double def_init_mnt = ParamManager.getFloatParam("DFT_INIT_MNY", "ACCOUNT");
+                    double def_max_mny_per_trade = ParamManager.getFloatParam("DFT_MAX_MNY_PER_TRADE", "ACCOUNT");
+                    double def_max_use_pct = ParamManager.getFloatParam("DFT_MAX_USE_PCT", "ACCOUNT");
+                    
+                    if (acnt == null) {
+                    	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
+                        CashAcntManger
+                        .crtAcnt(AcntForStk, def_init_mnt, 0.0, 0.0,0.0,def_max_mny_per_trade, def_max_use_pct);
+                        acnt = CashAcntManger.loadAcnt(AcntForStk);
+                    }
+                    
+                    if (acnt != null) {
+                    	log.info("put the loaded/created virtual account into memory.");
+                    	cash_account_map.put(AcntForStk, acnt);
+                    }
                 }
-                
-                if (acnt != null) {
-                	log.info("put the loaded/created virtual account into memory.");
-                	cash_account_map.put(AcntForStk, acnt);
-                }
-            }
-            return acnt;
+                return acnt;
+        	}
         }
         else {
             

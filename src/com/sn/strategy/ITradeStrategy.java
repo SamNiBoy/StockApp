@@ -12,17 +12,19 @@ import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
+import com.sn.strategy.algorithm.IBuyPointSelector;
+import com.sn.strategy.algorithm.ISellPointSelector;
 
 public interface ITradeStrategy {
 
     /**
      * @param args
      */
-    public boolean isGoodPointtoBuy(Stock2 s);
-    public boolean isGoodPointtoSell(Stock2 s);
+    public boolean isGoodPointtoBuy(Stock2 s, IBuyPointSelector bs);
+    public boolean isGoodPointtoSell(Stock2 s, ISellPointSelector ss);
     
-    public boolean sellStock(Stock2 s);
-    public boolean buyStock(Stock2 s);
+    public boolean sellStock(Stock2 s, ISellPointSelector ss);
+    public boolean buyStock(Stock2 s, IBuyPointSelector bs);
     
     public void resetStrategyStatus();
     public boolean reportTradeStat();

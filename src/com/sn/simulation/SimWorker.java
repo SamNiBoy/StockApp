@@ -160,7 +160,7 @@ public class SimWorker implements IWork {
                 log.info(workName + ": simulate step:" + StepCnt + " for stock:" + s.getID() + " at time:" + curstp.toString());
                 
                 if (((lststp != null && curstp.after(lststp)) || lststp == null) && st.performTrade(s)) {
-                    strategy.reportTradeStat();
+                    //strategy.reportTradeStat();
                 }
                 else if (lststp != null && !curstp.after(lststp)) {
                 	log.info("skip trading same record for:" + s.getID() + " at:" + lststp.toString());
@@ -195,7 +195,8 @@ public class SimWorker implements IWork {
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            log.info("SimWorker run exception:" + e.getMessage());
+            log.info("SimWorker run exception as below:");
+            log.error(e.getMessage(),e); 
         }
     }
 

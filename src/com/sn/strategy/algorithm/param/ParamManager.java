@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -15,10 +16,10 @@ public class ParamManager {
 
     static Logger log = Logger.getLogger(ParamManager.class);
     
-    private static Map<String, Integer>cacheIntParams = new HashMap<String, Integer>();
-    private static Map<String, Float>cacheFloatParams = new HashMap<String, Float>();
-    private static Map<String, String>cacheStr1Params = new HashMap<String, String>();
-    private static Map<String, String>cacheStr2Params = new HashMap<String, String>();
+    private static Map<String, Integer>cacheIntParams = new ConcurrentHashMap<String, Integer>();
+    private static Map<String, Float>cacheFloatParams = new ConcurrentHashMap<String, Float>();
+    private static Map<String, String>cacheStr1Params = new ConcurrentHashMap<String, String>();
+    private static Map<String, String>cacheStr2Params = new ConcurrentHashMap<String, String>();
     
     public static void refreshAllParams()
     {
