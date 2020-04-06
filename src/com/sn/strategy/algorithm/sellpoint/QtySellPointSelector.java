@@ -49,7 +49,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 		Double maxPri = stk.getMaxCurPri();
 		Double minPri = stk.getMinCurPri();
-		Double td_opn_pri = stk.getOpen_pri();
+		Double yt_cls_pri = stk.getYtClsPri();
 		Double cur_pri = stk.getCur_pri();
         
 		
@@ -73,11 +73,12 @@ public class QtySellPointSelector implements ISellPointSelector {
             }
         }
         
-        double pct = (cur_pri - td_opn_pri) / td_opn_pri;
+        double pct = (cur_pri - yt_cls_pri) / yt_cls_pri;
         
         double stop_trade_for_max_pct = ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING");
         
         if (Math.abs(pct) >= stop_trade_for_max_pct && (sbs != null && !sbs.is_buy_point))
+        //if (Math.abs(pct) >= stop_trade_for_max_pct)
         {
            log.info("Stock:" + stk.getID() + " cur_pri:" + stk.getCur_pri() + " ytClsPri:" + stk.getYtClsPri() +", increase pct:" + pct
                    + " is exceeding " + (-stop_trade_for_max_pct) + " stop trading to increase unbalance.");
@@ -94,39 +95,39 @@ public class QtySellPointSelector implements ISellPointSelector {
 		
 		double tradeThresh = 0;
         double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING");
-		if (maxPri != null && minPri != null && td_opn_pri != null && cur_pri != null) {
+		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
 			double marketDegree = StockMarket.getDegree();
 			
 			tradeThresh = getSellThreshValueByDegree(marketDegree, stk);
 			
-			double maxPct = (maxPri - minPri) / td_opn_pri;
-			double curPct = (cur_pri - minPri) / td_opn_pri;
+			double maxPct = (maxPri - minPri) / yt_cls_pri;
+			double curPct = (cur_pri - minPri) / yt_cls_pri;
 			
 			boolean con1 = maxPct > tradeThresh && curPct > maxPct * (1 - margin_pct);
 			boolean con2 = stk.isLstQtyPlused();
 			
-			log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + "td_opn_pri:" + td_opn_pri + " maxPri:" + maxPri + " minPri:"
+			log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + "yt_cls_pri:" + yt_cls_pri + " maxPri:" + maxPri + " minPri:"
 					+ minPri + " maxPct:" + maxPct + " curPct:" + curPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh + " marginPct:" + (1-margin_pct));
 			log.info("price is reaching top margin:" + con1 + " isLstQtyPlused is:" + con2);
 			if (con1 && con2) {
                 stk.setTradedBySelector(this.selector_name);
-                stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + td_opn_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + (1 - margin_pct) + " also qtyPlused:" + con2);
+                stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + (1 - margin_pct) + " also qtyPlused:" + con2);
 				return true;
 			}
+            
+			if (sbs != null && sbs.is_buy_point) {
+			    curPct = (cur_pri - sbs.price) / yt_cls_pri;
+			    if (curPct >= tradeThresh) {
+			        log.info("We have bought unbalance, price reached tradeThresh:" + tradeThresh + ", sell it.");
+                    stk.setTradedBySelector(this.selector_name);
+                    stk.setTradedBySelectorComment("cur_pri > pre_buy_pri:[" + cur_pri + "," + sbs.price + "], curPct:" + curPct + " > tradeTresh:" + tradeThresh);
+                    return true;
+			    }
+			}
 			
-			/*Boolean psd = preSellMode.get(stk.getID());
-			Boolean csd = SellModeWatchDog.isStockInSellMode(stk);
-			
-			preSellMode.put(stk.getID(), csd);*/
-
-			//sell mode means not good for trade, BalanceSelector should do reverse trade clean up stock in hand.
-			/*if (csd == true && (psd == null || psd != csd)) {
-				log.info("Stock " + stk.getID() + " is in sell mode, at sell point, return true.");
-				return true;
-			}*/
 		} else {
-			log.info("isGoodSellPoint says either maxPri, minPri, td_opn_pri or cur_pri is null, return false");
+			log.info("isGoodSellPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
 		}
 		return false;
 	}
@@ -148,7 +149,7 @@ public class QtySellPointSelector implements ISellPointSelector {
     	try {
     		Connection con = DBManager.getConnection();
     		Statement stm = con.createStatement();
-    		String sql = "select stddev((cur_pri - td_opn_pri) / td_opn_pri) dev "
+    		String sql = "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev "
     				   + "  from stkdat2 "
     				   + " where id ='" + stk.getID() + "'"
     				   + "   and left(dl_dt, 10) = left(" + deadline + ", 10)";
