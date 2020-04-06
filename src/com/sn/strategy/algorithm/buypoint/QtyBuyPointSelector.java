@@ -27,8 +27,6 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
 	static Logger log = Logger.getLogger(QtyBuyPointSelector.class);
 	
-    private StockBuySellEntry sbs = null;
-    
     private boolean sim_mode;
     private String selector_name = "QtyBuyPointSelector";
     private String selector_comment = "";
@@ -48,7 +46,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         Double yt_cls_pri = stk.getYtClsPri();
         Double cur_pri = stk.getCur_pri();
         
-        sbs = lstTrades.get(stk.getID());
+        StockBuySellEntry sbs = lstTrades.get(stk.getID());
 
         Timestamp t1 = stk.getDl_dt();
         

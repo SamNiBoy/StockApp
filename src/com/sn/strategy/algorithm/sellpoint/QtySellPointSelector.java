@@ -28,9 +28,6 @@ public class QtySellPointSelector implements ISellPointSelector {
 
 	static Logger log = Logger.getLogger(QtySellPointSelector.class);
 
-	//Map<String, Boolean> preSellMode = new HashMap<String, Boolean>();
-    private StockBuySellEntry sbs = null;
-    
     private String selector_name = "QtySellPointSelector";
     private String selector_comment = "";
     
@@ -54,7 +51,7 @@ public class QtySellPointSelector implements ISellPointSelector {
         
 		
         Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
-        sbs = lstTrades.get(stk.getID());
+        StockBuySellEntry sbs = lstTrades.get(stk.getID());
 
         Timestamp t1 = stk.getDl_dt();
         
