@@ -202,6 +202,7 @@ public class GzStockDataFetcher implements IWork {
         try {
             String fs [] = getFetchLst().split("#"), cs;
             RawStockData srd = null;
+            boolean first_start_flg = false; 
             String stkSql = "http://hq.sinajs.cn/list=";
             for (int i = 0; i < fs.length; i++)
             {
@@ -218,6 +219,10 @@ public class GzStockDataFetcher implements IWork {
                         break;
                     }
                     else {
+                        if (lstStkDat.length() <= 0)
+                        {
+                            first_start_flg = true;
+                        }
                         failCnt = 0;
                     }
                     if (i == j && i == 0)
@@ -228,10 +233,11 @@ public class GzStockDataFetcher implements IWork {
                     
                     j++;
                     
-                    if (i==0 && j==1)
+                    if (first_start_flg)
                     {
                         //skip very first record to avoid alwasy fetching when start program during non-business time.
-                        continue;
+                        br.close();
+                        return;
                     }
                 
                     //log.info(str);

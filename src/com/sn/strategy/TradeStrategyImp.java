@@ -244,11 +244,13 @@ public class TradeStrategyImp implements ITradeStrategy {
     @Override
     public boolean reportTradeStat() {
         // TODO Auto-generated method stub
+        synchronized(cash_account_map) {
     	for (String acnt :cash_account_map.keySet()) {
     		ICashAccount ac = cash_account_map.get(acnt);
             ac.printAcntInfo();
             ac.printTradeInfo();
     	}
+        }
         return false;
     }
 

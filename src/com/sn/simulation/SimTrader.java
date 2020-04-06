@@ -190,6 +190,8 @@ public class SimTrader implements IWork{
         
         simOnGzStk = true;
         
+        ITradeStrategy strategy = TradeStrategyGenerator.generatorStrategy(true);
+        
         /*
          * we simulate twice:
          * 1. Simuate gz_flg stocks which should be finished quickly.
@@ -198,6 +200,8 @@ public class SimTrader implements IWork{
         
         try {
                 for (int i = 0; i < 2; i++) {
+                    
+                    strategy.resetStrategyStatus();
                     
                     resetTest(simOnGzStk);
                     
@@ -266,7 +270,7 @@ public class SimTrader implements IWork{
                             SimWorker sw;
                             
                             try {
-                                sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch);
+                                sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch, strategy);
                                 
                                 sw.addStksToWorker(stks);
                                 
@@ -314,7 +318,7 @@ public class SimTrader implements IWork{
                         log.info("Last have " + rowid + " stocks to sim, start a worker for batcnt:" + batcnt);
                         SimWorker sw;
                         try {
-                            sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch);
+                            sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch, strategy);
                             
                             sw.addStksToWorker(stks);
                             

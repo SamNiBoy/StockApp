@@ -90,7 +90,7 @@ public class SimWorker implements IWork {
      */
     public static void main(String[] args) throws Exception {
 
-        SimWorker sw = new SimWorker(0, 0, "testSimWorker");
+        SimWorker sw = new SimWorker(0, 0, "testSimWorker", TradeStrategyGenerator.generatorStrategy(true));
         sw.stkToSim.add("300265");
         sw.startSim();
     }
@@ -174,24 +174,18 @@ public class SimWorker implements IWork {
         log.info("Now end simulate trading.");
     }
 
-    public SimWorker(long id, long dbn, String wn) throws Exception {
+    public SimWorker(long id, long dbn, String wn, ITradeStrategy stg) throws Exception {
         initDelay = id;
         delayBeforNxtStart = dbn;
         workName = wn;
-        strategy = TradeStrategyGenerator.generatorStrategy(true);
+        strategy = stg;
     }
 
     public void run() {
         try {
             log.info("SimWorker about to run...");
            //Reset some set/map entries before/after Simulation. 
-            log.info("SimWorker reset strategy status for " + strategy.getTradeStrategyName());
-            strategy.resetStrategyStatus(); 
-            
             startSim();
-            
-            log.info("SimWorker finished, reset strategy status for " + strategy.getTradeStrategyName());
-            strategy.resetStrategyStatus(); 
             
             log.info("threadsCountDown about to countdown:" + threadsCountDown.getCount());
             

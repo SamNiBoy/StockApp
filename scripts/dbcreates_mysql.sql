@@ -20,7 +20,7 @@ insert into param values('COMMISSION_RATE', 'VENDOR',null, 0.0014, '', '', 'Comm
 
 insert into param values('SIM_DAYS', 'SIMULATION', 1,null, '', '', 'How many days data for simulation.', sysdate(),sysdate());
 insert into param values('SIM_THREADS_COUNT', 'SIMULATION', 2,null, '', '', 'How many thread in parallel to run the simulation.', sysdate(),sysdate());
-insert into param values('SIM_STOCK_COUNT_FOR_EACH_THREAD', 'SIMULATION', 150,null, '', '', 'How many stocks to be run simulation per thread at one time.', sysdate(),sysdate());
+insert into param values('SIM_STOCK_COUNT_FOR_EACH_THREAD', 'SIMULATION', 10,null, '', '', 'How many stocks to be run simulation per thread at one time.', sysdate(),sysdate());
 
 insert into param values('ARCHIVE_DAYS_OLD', 'ARCHIVE', 1,null, '', '', 'How many days stock data to keep in prod db.', sysdate(),sysdate());
 insert into param values('PURGE_DAYS_OLD', 'ARCHIVE', 5,null, '', '', 'How many days stock data to keep in archive db.', sysdate(),sysdate());

@@ -338,6 +338,9 @@ public class SimStockDriver {
         try {
             DtRs.close();
             con.close();
+            DtRs = null;
+            simstocks.clear();
+            stk_list.clear();
         }
         catch (SQLException e) {
             e.printStackTrace();

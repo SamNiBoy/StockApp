@@ -53,7 +53,7 @@ public class GzStock implements IWork {
     }
 
     public void run()
-    {        // //////////////////Menu
+    {
         String msg = "";
         Connection con = DBManager.getConnection();
         Statement stm = null;
