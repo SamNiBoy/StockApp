@@ -154,7 +154,7 @@ public class SimTrader implements IWork{
         log.info("SimWork, time:" + time);
         DayOfWeek week = lt.getDayOfWeek();
         
-        /*if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
+        if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
         {
             log.info("SimTrader skipped because of weekend, goto sleep 8 hours.");
             try {
@@ -171,7 +171,7 @@ public class SimTrader implements IWork{
         {
             log.info("SimTrader skipped because of hour:" + hr + " less than 18:00.");
             return;
-        }*/
+        }
         
         LocalDateTime n = LocalDateTime.now();
         
@@ -212,7 +212,7 @@ public class SimTrader implements IWork{
                         //We randomly select 50% data for simulation.
                             sql = "select * from (select distinct s.id" + 
                                   "                 from stkdat2 s" + 
-                                  "                where cur_pri < 6" + 
+                                  "                where cur_pri < 100" + 
                                   "                  and cur_pri > 5" +
                                   "                  and left(dl_dt, 10) = (select left(max(s2.dl_dt), 10) from stkdat2 s2)" +
                                   "               ) tmp" +

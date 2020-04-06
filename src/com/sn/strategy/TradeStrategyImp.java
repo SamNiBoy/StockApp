@@ -462,31 +462,31 @@ public class TradeStrategyImp implements ITradeStrategy {
 					// If we just sold/buy it, and now the price has no
 					// significant change, we will not do the same trade.
 					StockBuySellEntry lst = rcds.getLast();
-                    
 		            Timestamp t0 = lst.dl_dt;
 		            Timestamp t1 = s.getDl_dt();
-		            
-		            long millisec = t1.getTime() - t0.getTime();
-		            long mins = millisec / (1000*60);
-		            
-		            int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING");
-					if (is_buy_flg == lst.is_buy_point && Math.abs((s.getCur_pri() - lst.price)) / lst.price <= 0.01 && !(mins > mins_max)) {
-						log.info("Just " + (is_buy_flg ? "buy" : "sell") + " this stock with similar prices "
-								+ s.getCur_pri() + "/" + lst.price + ", skip same trade.");
-						return false;
-					}
                     
 	                int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING");
 	                int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING");
+		            int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING");
 	                
 	                long hour = t1.getHours();
 	                long minutes = t1.getMinutes();
+		            long millisec = t1.getTime() - t0.getTime();
+		            long mins = millisec / (1000*60);
+                    
 	                if (hour >= hour_for_balance && minutes >= mins_for_balance)
 	                {
 	                    log.info("Reaching " + hour_for_balance + ":" + mins_for_balance
 	                             + ", Stock:" + s.getID() + " bought " + mins + " minutes agao which is less than: " + mins_max + ", but we allow sell it out");
 	                    return true;
 	                }
+		            
+					if (is_buy_flg == lst.is_buy_point && Math.abs((s.getCur_pri() - lst.price)) / lst.price <= 0.01 && !(mins > mins_max)) {
+						log.info("Just " + (is_buy_flg ? "buy" : "sell") + " this stock with similar prices "
+								+ s.getCur_pri() + "/" + lst.price + ", skip same trade.");
+						return false;
+					}
+                    
 				}
 				return true;
 			}
