@@ -47,6 +47,7 @@ insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.01, '',
 
 insert into param values('STOCK2_QUEUE_SIZE', 'TRADING',60,null , '', '', 'Defined how big the queue size for Stock2 object to calculate statistics, this is critial param, if you fetch every one second, then it stores one minute data.', sysdate(),sysdate());
 insert into param values('FETCH_EVERY_SECONDS', 'TRADING',10,null , '', '', 'Define how often we fetch stock data for all stocks as well as for gzed stocks.', sysdate(),sysdate());
+insert into param values('VOLUME_PLUS_PCT', 'TRADING',null,0.5, '', '', 'Define the last delta trading volume is this above the pct of delta volumes in the queue then it means volume plused.', sysdate(),sysdate());
 
 
 insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',10,null , '', '', 'Stock suggester param to define at min how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());

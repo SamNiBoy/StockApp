@@ -716,12 +716,15 @@ public class Stock2 implements Comparable<Stock2>{
                     cnt++;
                 }
             }
-            if (cnt * 1.0 / (sz - 1) > 0.8) {
-                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " big than 0.8, plused return true.");
+            
+            float plus_pct = ParamManager.getFloatParam("VOLUME_PLUS_PCT", "TRADING");
+            
+            if (cnt * 1.0 / (sz - 1) > plus_pct) {
+                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " big than " + plus_pct + ", plused return true.");
                 return true;
             }
             else {
-                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " less than 0.8, plused return false.");
+                log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " less than " + plus_pct + ", plused return false.");
                 return false;
             }
         }
