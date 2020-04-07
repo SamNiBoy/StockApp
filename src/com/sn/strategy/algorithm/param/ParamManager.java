@@ -21,6 +21,9 @@ public class ParamManager {
     private static Map<String, String>cacheStr1Params = new ConcurrentHashMap<String, String>();
     private static Map<String, String>cacheStr2Params = new ConcurrentHashMap<String, String>();
     
+    
+    private static Map<String, Map<String, Object>> proxy = new ConcurrentHashMap<String, Map<String, Object>>();
+    
     public static void refreshAllParams()
     {
         log.info("Refresh out all cached parameters.");

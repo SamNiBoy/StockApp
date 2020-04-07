@@ -1,0 +1,119 @@
+package com.sn.strategy.algorithm.param;
+
+import java.sql.Connection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.log4j.Logger;
+import com.sn.db.DBManager;
+
+public class ParamMap {
+    
+    static Logger log = Logger.getLogger(Param.class);
+    Connection con = DBManager.getConnection();
+    
+    public static void main(String[] args) {
+        // TODO Auto-generated method stub
+        ParamMap pm = new ParamMap();
+        
+        pm.initParams();
+        
+        pm.printParamMap();
+        
+        pm.mutate(1);
+        
+        log.info("After mutate:\n");
+        pm.printParamMap();
+        
+        log.info("Now below is for pm2:\n");
+        ParamMap pm2 = new ParamMap();
+        
+        pm2.initParams();
+        
+        pm2.crossover(pm);
+        
+        pm2.printParamMap();
+        
+    }
+    
+    private Map<String, Param> pm = new ConcurrentHashMap<String, Param>();
+    
+    /*
+     * insert into param values('VOLUME_PLUS_PCT', 'TRADING',null,0.5, '', '', 'Define the last delta trading volume is this above the pct of delta volumes in the queue then it means volume plused.', sysdate(),sysdate());
+       insert into param values('BUY_SELL_MAX_DIFF_CNT', 'TRADING', 3,null, '', '', 'Max extra times between buy and sell for same stock.', sysdate(),sysdate());
+       insert into param values('MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE', 'TRADING', 30,null, '', '', 'How many minutes in maximum we need to buy/sell stock back for keep balance.', sysdate(),sysdate());
+       insert into param values('STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT', 'TRADING',null, 0.06, '', '', 'If delta price go above this percentage, stop trading for breaking balance.', sysdate(),sysdate());
+       insert into param values('BUY_BASE_TRADE_THRESH', 'TRADING',null, 0.03, '', '', 'QtyBuyPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
+       insert into param values('SELL_BASE_TRADE_THRESH', 'TRADING',null, 0.03, '', '', 'QtySellPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
+       insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.01, '', '', 'How close to the margin of BASE_TRADE_THRESHOLD value.', sysdate(),sysdate());
+     */
+    public void initParams() {
+        Param p1 = new Param("VOLUME_PLUS_PCT", "TRADING", 0.5, 0.1, 0.8, 0.1, Param.TYPE.FLOAT);
+        Param p2 = new Param("BUY_SELL_MAX_DIFF_CNT", "TRADING", 3, 1, 5, 1, Param.TYPE.INT);
+        Param p3 = new Param("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", 30, 10, 120, 10, Param.TYPE.INT);
+        Param p4 = new Param("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", 0.05, 0.03, 0.08, 0.01, Param.TYPE.FLOAT);
+        Param p5 = new Param("BUY_BASE_TRADE_THRESH", "TRADING", 0.03, 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
+        Param p6 = new Param("SELL_BASE_TRADE_THRESH", "TRADING", 0.03, 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
+        Param p7 = new Param("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", 0.01, 0.001, 0.02, 0.002, Param.TYPE.FLOAT);
+        
+        pm.put("VOLUME_PLUS_PCT", p1);
+        pm.put("BUY_SELL_MAX_DIFF_CNT", p2);
+        pm.put("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", p3);
+        pm.put("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", p4);
+        pm.put("BUY_BASE_TRADE_THRESH", p5);
+        pm.put("SELL_BASE_TRADE_THRESH", p6);
+        pm.put("MARGIN_PCT_TO_TRADE_THRESH", p7);
+    }
+    
+    public void printParamMap() {
+        for (String k : pm.keySet())
+        {
+            log.info("Print param for key:" + k);
+            pm.get(k).print();
+        }
+    }
+    
+    public boolean mutate(double pct)
+    {
+        boolean mutated = false;
+        for (String k : pm.keySet())
+        {
+            double rd = Math.random();
+            if (rd < pct)
+            {
+                Param p = pm.get(k);
+                p.generateARandomValue();
+                mutated = true;
+            }
+        }
+        return mutated;
+    }
+    
+    public Map<String, Param> getPm() {
+        return pm;
+    }
+
+    public void crossover (ParamMap p)
+    {
+        int sz = pm.size();
+        long pos = Math.round((sz - 2) * Math.random()) + 2;
+        log.info("crossover at position:" + pos + " with size:" + sz);
+        
+        int i = 0;
+        for (String k : pm.keySet())
+        {
+            i++;
+            if (i < pos)
+            {
+                continue;
+            }
+            Param t = pm.get(k);
+            Param t2 = p.getPm().get(k);
+            
+            log.info("Exchange param: " + k);
+            pm.put(k, t2);
+            p.getPm().put(k, t);
+        }
+    }
+    
+}

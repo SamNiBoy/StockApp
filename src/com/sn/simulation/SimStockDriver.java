@@ -54,7 +54,7 @@ public class SimStockDriver {
     
     public ConcurrentHashMap<String, Stock2> simstocks = null;
     
-    boolean addStkToSim(String stkId) {
+    public boolean addStkToSim(String stkId) {
         if (stkId != null && !stkId.equals("")) {
             stk_list.add(stkId);
         }
@@ -68,7 +68,7 @@ public class SimStockDriver {
         stk_list.clear();
     }
     
-    boolean setStartEndSimDt(String s, String e) {
+    public boolean setStartEndSimDt(String s, String e) {
         start_dt = s;
         end_dt = e;
         //SimpleDateFormat df = new SimpleDateFormat("YYYY-MM-DD");
@@ -176,7 +176,7 @@ public class SimStockDriver {
     
     }
     
-    boolean initData() {
+    public boolean initData() {
         if (is_sim_on_today) {
             log.info("is_sim_on_today is true, initWithTodayData will take care of initData!");
             return true;
@@ -262,7 +262,7 @@ public class SimStockDriver {
     
     Map<String, Integer> pointer = new HashMap<String, Integer>();
     
-    boolean step() {
+    public boolean step() {
         if (DtRs == null && !is_sim_on_today) {
             log.info("DtRs is null, can not step");
             return false;
@@ -333,7 +333,7 @@ public class SimStockDriver {
         return false;
     }
     
-    boolean finishStep() {
+    public boolean finishStep() {
         log.info("start finishStep");
         try {
             DtRs.close();
