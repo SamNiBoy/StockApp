@@ -61,7 +61,7 @@ public class StockDataFetcher implements IWork {
     static public boolean start() {
         //self = new StockDataFetcher(0, Stock2.StockData.SECONDS_PER_FETCH * 1000);
         
-        int fetch_per_seconds = ParamManager.getIntParam("FETCH_EVERY_SECONDS", "TRADING");
+        int fetch_per_seconds = ParamManager.getIntParam("FETCH_EVERY_SECONDS", "TRADING", null);
         
         self = new StockDataFetcher(0,  fetch_per_seconds * 1 * 1000);
         if (WorkManager.submitWork(self)) {

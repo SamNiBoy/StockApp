@@ -262,7 +262,7 @@ public class SuggestStock implements IWork {
 		Statement stm = null;
 		ResultSet rs = null;
 		try {
-		    String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+		    String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", s.getID());
 			sql = "select * from usr where suggest_stock_enabled = 1";
 			log.info(sql);
 			stm = con.createStatement();
@@ -315,7 +315,7 @@ public class SuggestStock implements IWork {
 		ResultSet rs = null;
 		int exiter = 0;
 		try {
-	        String system_role_for_trade = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+	        String system_role_for_trade = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 			sql = "select * from usr where suggest_stock_enabled = 1";
 			log.info(sql);
 			stm = con.createStatement();
@@ -368,8 +368,8 @@ public class SuggestStock implements IWork {
 			return;
 		}
         
-		String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
-		String system_role_for_trade = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+		String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
+		String system_role_for_trade = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 		try {
 			sql = "select distinct s.id from usrStk s"
 				+ "where s.gz_flg = 1 "
@@ -477,14 +477,14 @@ public class SuggestStock implements IWork {
 			rs.close();
 			stm.close();
 			
-            int max_lost_before_exit = ParamManager.getIntParam("MAX_LOST_TIME_BEFORE_EXIT_TRADE", "TRADING");
+            int max_lost_before_exit = ParamManager.getIntParam("MAX_LOST_TIME_BEFORE_EXIT_TRADE", "TRADING", stkid);
 			log.info("Stock:" + stkid + " lost_cnt:" + lost_cnt + " gain_cnt:" + gain_cnt);
 			if (lost_cnt - gain_cnt > max_lost_before_exit) {
 				log.info("Lost cnt is " + max_lost_before_exit + " times more than gain_cnt, should exit trade.");
 				return true;
 			}
 			
-            int max_days_without_trade_to_exit = ParamManager.getIntParam("MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE", "TRADING");
+            int max_days_without_trade_to_exit = ParamManager.getIntParam("MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE", "TRADING", stkid);
 			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "' and acntid not like 'SIM%' "
 				+ "   and dl_dt >= sysdate() - interval " + max_days_without_trade_to_exit + " day)"
 				+ " or exists (select 'y' from usrStk where gz_flg = 1 and id = '" + stkid +  "' and add_dt > sysdate() - interval " + max_days_without_trade_to_exit + " day)";
@@ -519,7 +519,7 @@ public class SuggestStock implements IWork {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
         
-	    String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+	    String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 	      
 		try {
 			sql = "update usrStk set gz_flg = 0, mod_dt = sysdate() where gz_flg = 1 and suggested_by in ('" + system_role_for_suggest + "')";

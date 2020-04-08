@@ -127,7 +127,7 @@ public class WeChatReporter extends BaseWCReporter{
                             + "    where s.id = u.id "
                             + "      and u.gz_flg = 1 "
                             + "      and u.openID ='" + frmUsr + "' "
-                            + "      and u.suggested_by in ('" + frmUsr + "','" + ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING") + "')";
+                            + "      and u.suggested_by in ('" + frmUsr + "','" + ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null) + "')";
                     log.info(sql);
                     stm = mycon.createStatement();
                     ResultSet rs = stm.executeQuery(sql);
@@ -258,8 +258,8 @@ public class WeChatReporter extends BaseWCReporter{
             }
             else if (content.equals("2")) {
                 Statement stm = null;
-                String system_suggester = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
-                String system_trader = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+                String system_suggester = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
+                String system_trader = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
                 
                 String sql = "select s.id, s.name from stk s, usrStk u where s.id = u.id and u.gz_flg = 1 and u.openID ='" + frmUsr + "' and u.suggested_by in ('" + system_suggester + "','" + system_trader + "')";
                 String content = "";
@@ -473,7 +473,7 @@ public class WeChatReporter extends BaseWCReporter{
                 Statement stm = null;
                 DecimalFormat df2 = new DecimalFormat("##.##");
                 DecimalFormat df4 = new DecimalFormat("##.####");
-                String simAcntPrefix = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT");
+                String simAcntPrefix = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null);
                 
                 String sql = "select count(*) cnt,"
                             + "      case when sum(used_mny) is null then 0 else sum(used_mny) end tot_used_mny,"
@@ -612,7 +612,7 @@ public class WeChatReporter extends BaseWCReporter{
                 String sql = "select gz_flg, suggested_by from usrStk where id = '" + stockID + "' and openID = '" + frmUsr + "'";
                 try {
                     
-                    String system_suggest_role = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+                    String system_suggest_role = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
                     stm = con.createStatement();
                     ResultSet rs = null;
                     rs = stm.executeQuery(sql);

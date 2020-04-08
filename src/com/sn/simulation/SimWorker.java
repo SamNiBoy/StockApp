@@ -104,7 +104,7 @@ public class SimWorker implements IWork {
     	ResultSet rs = null;
     	String sql = "";
         
-    	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION");
+    	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
     	
     	try {
     		con = DBManager.getConnection();

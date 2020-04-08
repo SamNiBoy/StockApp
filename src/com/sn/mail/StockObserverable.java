@@ -649,7 +649,7 @@ public class StockObserverable extends Observable {
 
 			String id, name, area;
 
-			int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
+			int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", null);
 			
             rs.close();
             stm.close();
@@ -660,6 +660,7 @@ public class StockObserverable extends Observable {
 				id = rs.getString("id");
 				name = rs.getString("name");
 				area = rs.getString("area");
+     			stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", id);
 				s = new Stock2(id, name, area, stock2_queue_sz);
 				// s.setCur_pri(7.8);
 				// s.constructFollowers();

@@ -33,8 +33,8 @@ public class PriceShakingStockSelector implements IStockSelector {
     int to_lvl2_cnt = 0;
     int to_lvl3_cnt = 0;
     
-    int MIN_JUMP_TIMES_FOR_GOOD_STOCK = ParamManager.getIntParam("MIN_JUMP_TIMES_FOR_GOOD_STOCK", "SUGGESTER");
-    double MIN_SHAKING_PCT = ParamManager.getFloatParam("MIN_SHAKING_PCT", "SUGGESTER");
+    int MIN_JUMP_TIMES_FOR_GOOD_STOCK = ParamManager.getIntParam("MIN_JUMP_TIMES_FOR_GOOD_STOCK", "SUGGESTER", null);
+    double MIN_SHAKING_PCT = ParamManager.getFloatParam("MIN_SHAKING_PCT", "SUGGESTER", null);
     
     private String suggest_by = "PriceShakingStockSelector";
     private String suggest_comment = "";

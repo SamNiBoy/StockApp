@@ -54,6 +54,44 @@ insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.01, '',
 insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',10,null , '', '', 'Stock suggester param to define at min how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());
 insert into param values('MIN_SHAKING_PCT', 'SUGGESTER',null,0.06, '', '', 'Stock suggester param to define min percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
 
+
+create table if not exists stockParam(
+stock varchar(20 ) not null,
+name varchar(50 ) not null,
+cat varchar(50 ) not null,
+intval int,
+fltval decimal(10, 4),
+str1 varchar(200),
+str2 varchar(200),
+comment varchar(500),
+add_dt datetime not null,
+mod_dt datetime not null,
+CONSTRAINT stock_param_name_PK PRIMARY KEY (stock, name)
+);
+
+create table if not exists stockParamSearch(
+stock varchar(20 ) not null,
+id int,
+score decimal(10, 4),
+param_as_string varchar(500),
+add_dt datetime not null,
+CONSTRAINT stock_param_search_PK PRIMARY KEY (stock, id)
+);
+
+create table if not exists param(
+name varchar(50 ) not null,
+cat varchar(50 ) not null,
+intval int,
+fltval decimal(10, 4),
+str1 varchar(200),
+str2 varchar(200),
+comment varchar(500),
+add_dt datetime not null,
+mod_dt datetime not null,
+CONSTRAINT param_name_PK PRIMARY KEY (name)
+);
+
+
 create table if not exists usr(
 openID varchar(100 ) not null,
 host_flg int not null,

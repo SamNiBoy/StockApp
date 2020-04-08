@@ -120,7 +120,7 @@ public class SimStockDriver {
         simstocks = new ConcurrentHashMap<String, Stock2>();
         Stock2 s = null;
         int cnt = 0;
-        int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
+        int stock2_queue_sz = 0;
         
         try {
             if (stk_list.isEmpty()) {
@@ -131,11 +131,11 @@ public class SimStockDriver {
                 String id, name, area;
                 
                 
-                
                 while (rs.next()) {
                     id = rs.getString("id");
                     name = rs.getString("name");
                     area = rs.getString("area");
+                    stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", id);
                     s = new Stock2(id, name, area, start_dt, end_dt, stock2_queue_sz);
                     simstocks.put(id, s);
                     cnt++;
@@ -156,6 +156,7 @@ public class SimStockDriver {
                         id = rs.getString("id");
                         name = rs.getString("name");
                         area = rs.getString("area");
+                        stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", id);
                         s = new Stock2(id, name, area, start_dt, end_dt, stock2_queue_sz);
                         simstocks.put(id, s);
                         cnt++;

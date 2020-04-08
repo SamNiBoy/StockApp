@@ -60,7 +60,7 @@ public class GzStock implements IWork {
         String sql = "select gz_flg, suggested_by from usrStk where id = '" + stockID + "' and openID = '" + frmUsr + "'";
         try {
             
-            String system_suggest_role = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+            String system_suggest_role = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", stockID);
             stm = con.createStatement();
             ResultSet rs = null;
             rs = stm.executeQuery(sql);

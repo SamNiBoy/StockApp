@@ -93,19 +93,19 @@ public class SimTrader implements IWork{
             if (simgzstk)
             {
 			    Statement stm = con.createStatement();
-			    sql = "delete from tradedtl where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
+			    sql = "delete from tradedtl where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
 			    
 			    stm = con.createStatement();
-			    sql = "delete from tradehdr where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
+			    sql = "delete from tradehdr where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
 			    
 			    stm = con.createStatement();
-			    sql = "delete from CashAcnt where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
+			    sql = "delete from CashAcnt where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
@@ -114,19 +114,19 @@ public class SimTrader implements IWork{
             else 
             {
 			    Statement stm = con.createStatement();
-			    sql = "update tradedtl set acntid = concat(acntid, '_GZ') where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
+			    sql = "update tradedtl set acntid = concat(acntid, '_GZ') where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
 			    
 			    stm = con.createStatement();
-			    sql = "update tradehdr set acntid = concat(acntid, '_GZ')  where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
+			    sql = "update tradehdr set acntid = concat(acntid, '_GZ')  where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
 			    
 			    stm = con.createStatement();
-			    sql = "update CashAcnt set acntid = concat(acntid, '_GZ') where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT") + "%'";
+			    sql = "update CashAcnt set acntid = concat(acntid, '_GZ') where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
@@ -242,8 +242,8 @@ public class SimTrader implements IWork{
                          rs.first();
                     }
                     
-                    int stock_cnt_per_thread = ParamManager.getIntParam("SIM_STOCK_COUNT_FOR_EACH_THREAD", "SIMULATION");
-                    int thread_cnt = ParamManager.getIntParam("SIM_THREADS_COUNT", "SIMULATION");
+                    int stock_cnt_per_thread = ParamManager.getIntParam("SIM_STOCK_COUNT_FOR_EACH_THREAD", "SIMULATION", null);
+                    int thread_cnt = ParamManager.getIntParam("SIM_THREADS_COUNT", "SIMULATION", null);
                     
                     int total_batch = total_stock_cnt / stock_cnt_per_thread;
                     
@@ -425,10 +425,10 @@ public class SimTrader implements IWork{
         Statement stm = null;
         ResultSet rs = null;
         
-        int arc_days_old = ParamManager.getIntParam("ARCHIVE_DAYS_OLD", "ARCHIVE");
-        int purge_days_old = ParamManager.getIntParam("PURGE_DAYS_OLD", "ARCHIVE");
+        int arc_days_old = ParamManager.getIntParam("ARCHIVE_DAYS_OLD", "ARCHIVE", null);
+        int purge_days_old = ParamManager.getIntParam("PURGE_DAYS_OLD", "ARCHIVE", null);
         
-        String sim_acnt = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT");
+        String sim_acnt = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null);
         String sql;
         long rowcnt = 0;
         

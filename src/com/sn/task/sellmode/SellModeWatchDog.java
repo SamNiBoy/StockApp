@@ -205,7 +205,7 @@ public class SellModeWatchDog implements IWork {
                log.info("got incPct:" + incPct);
            }
            
-           double max_pct_to_disable_sell_mode = ParamManager.getIntParam("MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE", "TRADING");
+           double max_pct_to_disable_sell_mode = ParamManager.getIntParam("MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE", "TRADING", s.getID());
            
            if (incPct < max_pct_to_disable_sell_mode) {
                log.info("cur price is incPct:" + incPct + " which is less 5% yt_cls_pri, not suggest disable sell mode.");

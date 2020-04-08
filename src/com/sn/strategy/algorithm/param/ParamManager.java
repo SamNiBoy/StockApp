@@ -17,12 +17,17 @@ public class ParamManager {
     static Logger log = Logger.getLogger(ParamManager.class);
     
     private static Map<String, Integer>cacheIntParams = new ConcurrentHashMap<String, Integer>();
-    private static Map<String, Float>cacheFloatParams = new ConcurrentHashMap<String, Float>();
+    private static Map<String, Double>cacheFloatParams = new ConcurrentHashMap<String, Double>();
     private static Map<String, String>cacheStr1Params = new ConcurrentHashMap<String, String>();
     private static Map<String, String>cacheStr2Params = new ConcurrentHashMap<String, String>();
     
     
-    private static Map<String, Map<String, Object>> proxy = new ConcurrentHashMap<String, Map<String, Object>>();
+    private static Map<String, ParamMap> stock_param = new ConcurrentHashMap<String, ParamMap>();
+    
+    public static void setStockParamMap(String stkid, ParamMap pm)
+    {
+        stock_param.put(stkid, pm);
+    }
     
     public static void refreshAllParams()
     {
@@ -76,16 +81,16 @@ public class ParamManager {
         }
         else if (val instanceof Float || val instanceof Double)
         {
-            Float oldVal = cacheFloatParams.get(PK);
+            Double oldVal = cacheFloatParams.get(PK);
             double newVal = (double)val;
             if (oldVal != null)
             {
                 log.info("Overriding old float param:" + oldVal + " with new value:" + val);
-                cacheFloatParams.put(PK, (float)newVal);
+                cacheFloatParams.put(PK, (double)newVal);
             }
             else {
                 log.info("Overriding put new float value:" + val + " into cache.");
-                cacheFloatParams.put(PK, (float)newVal);
+                cacheFloatParams.put(PK, (double)newVal);
             }
             sql_to_run = "update param set fltval = " + val + " where name = '" + name + "' and cat = '" + cat + "'";
         }
@@ -151,10 +156,10 @@ public class ParamManager {
     
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        ParamManager.getIntParam("BUY_SELL_MAX_DIFF_CNT", "TRADING");
-        ParamManager.getFloatParam("COMMISSION_RATE", "VENDOR");
-        ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
-        ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING");
+        ParamManager.getIntParam("BUY_SELL_MAX_DIFF_CNT", "TRADING", null);
+        ParamManager.getFloatParam("COMMISSION_RATE", "VENDOR", null);
+        ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
+        ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
         printAllParams();
         ParamManager.overrideParam("BUY_SELL_MAX_DIFF_CNT", "TRADING", 3, false);
         ParamManager.overrideParam("COMMISSION_RATE", "VENDOR", 0.0014, false);
@@ -163,9 +168,30 @@ public class ParamManager {
         printAllParams();
     }
     
-    public static Integer getIntParam(String name, String cat)
+    public static Integer getIntParam(String name, String cat, String stkid)
     {
         
+        
+        if (stkid != null)
+        {
+            String pk = name + "@" + cat;
+            ParamMap pm = stock_param.get(stkid);
+            
+            if (pm != null)
+            {
+                Map<String, Param> p = pm.getKV();
+                
+                if (p.get(pk) != null)
+                {
+                    Integer v = (Integer)p.get(pk).val;
+                    if (v != null)
+                    {
+                        log.info("get int param from stockParam:" + v);
+                        return v;
+                    }
+                }
+            }
+        }
         String PK = name + "@" + cat;
         Integer val = cacheIntParams.get(PK);
         
@@ -210,11 +236,30 @@ public class ParamManager {
         return rtval;
     }
     
-    public static Float getFloatParam(String name, String cat)
+    public static double getFloatParam(String name, String cat, String stkid)
     {
-        
+        if (stkid != null)
+        {
+            String pk = name + "@" + cat;
+            ParamMap pm = stock_param.get(stkid);
+            
+            if (pm != null)
+            {
+                Map<String, Param> p = pm.getKV();
+                
+                if (p.get(pk) != null)
+                {
+                    Double v = (double)p.get(pk).val;
+                    if (v != null)
+                    {
+                        log.info("get float param from stockParam:" + v);
+                        return v;
+                    }
+                }
+            }
+        }
         String PK = name + "@" + cat;
-        Float val = cacheFloatParams.get(PK);
+        Double val = cacheFloatParams.get(PK);
         
         if (val != null)
         {
@@ -227,7 +272,7 @@ public class ParamManager {
         Connection con = DBManager.getConnection();
         String sql = "select fltval from param where name = '" + name + "' and cat = '" + cat + "'";
         
-        Float rtval =  null;
+        Double rtval =  null;
         
         try {
             st = con.createStatement();
@@ -235,7 +280,7 @@ public class ParamManager {
             if (rs.next())
             {
                 log.info("Got param float value:" + rs.getFloat("fltval") + " for name:" + name + ", catagory:" + cat);
-                rtval = rs.getFloat("fltval");
+                rtval = (Double)rs.getDouble("fltval");
                 
                 cacheFloatParams.put(PK, rtval);
                 
@@ -257,8 +302,29 @@ public class ParamManager {
         }
         return rtval;
     }
-    public static String getStr1Param(String name, String cat)
+    public static String getStr1Param(String name, String cat, String stkid)
     {
+        if (stkid != null)
+        {
+            String pk = name + "@" + cat;
+            ParamMap pm = stock_param.get(stkid);
+            
+            if (pm != null)
+            {
+                Map<String, Param> p = pm.getKV();
+                
+                if (p.get(pk) != null)
+                {
+                    String v = (String)p.get(pk).val;
+                    
+                    if (v != null)
+                    {
+                        log.info("get str1 param from stockParam:" + v);
+                        return v;
+                    }
+                }
+            }
+        }
         String PK = name + "@" + cat;
         String val = cacheStr1Params.get(PK);
         
@@ -303,8 +369,28 @@ public class ParamManager {
         }
         return rtval;
     }
-    public static String getStr2Param(String name, String cat)
+    public static String getStr2Param(String name, String cat, String stkid)
     {
+        if (stkid != null)
+        {
+            String pk = name + "@" + cat;
+            ParamMap pm = stock_param.get(stkid);
+            
+            if (pm != null)
+            {
+                Map<String, Param> p = pm.getKV();
+                if (p.get(pk) != null)
+                {
+                    String v = (String)p.get(pk).val;
+                    if (v != null)
+                    {
+                        log.info("get str2 param from stockParam:" + v);
+                        return v;
+                    }
+                }
+            }
+        }
+        
         String PK = name + "@" + cat;
         String val = cacheStr2Params.get(PK);
         

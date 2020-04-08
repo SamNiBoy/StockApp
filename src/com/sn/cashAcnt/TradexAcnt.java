@@ -34,9 +34,9 @@ public class TradexAcnt implements ICashAccount {
     private double initMny;
     private double usedMny;
     private double usedMny_Hrs;
-    private double maxMnyPerTrade = ParamManager.getFloatParam("DFT_MAX_MNY_PER_TRADE", "ACCOUNT");
+    private double maxMnyPerTrade = ParamManager.getFloatParam("DFT_MAX_MNY_PER_TRADE", "ACCOUNT", null);
     private double pftMny;
-    private double maxUsePct=ParamManager.getFloatParam("DFT_MAX_USE_PCT", "ACCOUNT");
+    private double maxUsePct=ParamManager.getFloatParam("DFT_MAX_USE_PCT", "ACCOUNT", null);
 
 	/**
 	 * @param args

@@ -1,16 +1,24 @@
 package com.sn.strategy.algorithm.param;
 
 import java.sql.Connection;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 
-public class Param {
+public class Param implements Cloneable{
     
     static Logger log = Logger.getLogger(Param.class);
     //Connection con = DBManager.getConnection();
     
-    enum TYPE {
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        log.info("Cloning Param...");
+        Object obj=super.clone();
+        return obj;
+    }
+    
+    public enum TYPE {
         INT,
         FLOAT,
         STR1,

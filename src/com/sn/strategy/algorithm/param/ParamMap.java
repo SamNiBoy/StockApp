@@ -7,10 +7,25 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 import com.sn.db.DBManager;
 
-public class ParamMap {
+public class ParamMap implements Cloneable{
     
     static Logger log = Logger.getLogger(Param.class);
-    Connection con = DBManager.getConnection();
+    //Connection con = DBManager.getConnection();
+    
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        log.info("Cloning ParamMap...");
+        Object obj=super.clone();
+        ((ParamMap)obj).kv = new ConcurrentHashMap<String, Param>();
+        for(String k : kv.keySet())
+        {
+            Param c = kv.get(k);
+            Param cl = (Param)c.clone();
+            ((ParamMap)obj).kv.put(k, cl);
+        }
+        return obj;
+    }
+    
     
     public static void main(String[] args) {
         // TODO Auto-generated method stub
@@ -36,7 +51,7 @@ public class ParamMap {
         
     }
     
-    private Map<String, Param> pm = new ConcurrentHashMap<String, Param>();
+    private Map<String, Param> kv = new ConcurrentHashMap<String, Param>();
     
     /*
      * insert into param values('VOLUME_PLUS_PCT', 'TRADING',null,0.5, '', '', 'Define the last delta trading volume is this above the pct of delta volumes in the queue then it means volume plused.', sysdate(),sysdate());
@@ -56,32 +71,53 @@ public class ParamMap {
         Param p6 = new Param("SELL_BASE_TRADE_THRESH", "TRADING", 0.03, 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
         Param p7 = new Param("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", 0.01, 0.001, 0.02, 0.002, Param.TYPE.FLOAT);
         
-        pm.put("VOLUME_PLUS_PCT", p1);
-        pm.put("BUY_SELL_MAX_DIFF_CNT", p2);
-        pm.put("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", p3);
-        pm.put("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", p4);
-        pm.put("BUY_BASE_TRADE_THRESH", p5);
-        pm.put("SELL_BASE_TRADE_THRESH", p6);
-        pm.put("MARGIN_PCT_TO_TRADE_THRESH", p7);
+        kv.put("VOLUME_PLUS_PCT@TRADING", p1);
+        kv.put("BUY_SELL_MAX_DIFF_CNT@TRADING", p2);
+        kv.put("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE@TRADING", p3);
+        kv.put("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT@TRADING", p4);
+        kv.put("BUY_BASE_TRADE_THRESH@TRADING", p5);
+        kv.put("SELL_BASE_TRADE_THRESH@TRADING", p6);
+        kv.put("MARGIN_PCT_TO_TRADE_THRESH@TRADING", p7);
+        
+        randomize();
     }
     
-    public void printParamMap() {
-        for (String k : pm.keySet())
+    public void randomize() {
+        for (String k : kv.keySet())
         {
-            log.info("Print param for key:" + k);
-            pm.get(k).print();
+            log.info("Randomize param for key:" + k);
+            kv.get(k).generateARandomValue();
         }
+    }
+    
+    public void nextStep() {
+        for (String k : kv.keySet())
+        {
+            log.info("param for key:" + k);
+            kv.get(k).generateNxtValue();
+        }
+    }
+    public void printParamMap() {
+        log.info("Print paramMap:");
+        String msg = "";
+        for (String k : kv.keySet())
+        {
+            msg += kv.get(k).val + "|";
+            
+            //kv.get(k).print();
+        }
+        log.info(msg);
     }
     
     public boolean mutate(double pct)
     {
         boolean mutated = false;
-        for (String k : pm.keySet())
+        for (String k : kv.keySet())
         {
             double rd = Math.random();
             if (rd < pct)
             {
-                Param p = pm.get(k);
+                Param p = kv.get(k);
                 p.generateARandomValue();
                 mutated = true;
             }
@@ -89,30 +125,30 @@ public class ParamMap {
         return mutated;
     }
     
-    public Map<String, Param> getPm() {
-        return pm;
+    public Map<String, Param> getKV() {
+        return kv;
     }
 
     public void crossover (ParamMap p)
     {
-        int sz = pm.size();
+        int sz = kv.size();
         long pos = Math.round((sz - 2) * Math.random()) + 2;
         log.info("crossover at position:" + pos + " with size:" + sz);
         
         int i = 0;
-        for (String k : pm.keySet())
+        for (String k : kv.keySet())
         {
             i++;
             if (i < pos)
             {
                 continue;
             }
-            Param t = pm.get(k);
-            Param t2 = p.getPm().get(k);
+            Param t = kv.get(k);
+            Param t2 = p.getKV().get(k);
             
             log.info("Exchange param: " + k);
-            pm.put(k, t2);
-            p.getPm().put(k, t);
+            kv.put(k, t2);
+            p.getKV().put(k, t);
         }
     }
     

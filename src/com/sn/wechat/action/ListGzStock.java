@@ -79,7 +79,7 @@ public class ListGzStock implements IWork {
         		+ "    where s.id = u.id "
         		+ "      and u.gz_flg = 1 "
         		+ "      and u.openID ='" + frmUsr + "' "
-        	    + "      and u.suggested_by in ('" + frmUsr + "','" + ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING") + "')";
+        	    + "      and u.suggested_by in ('" + frmUsr + "','" + ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null) + "')";
         String content = "";
         Map<String, String> Stocks = new HashMap<String, String> ();
         Map<String, Integer> sellmodes = new HashMap<String, Integer> ();

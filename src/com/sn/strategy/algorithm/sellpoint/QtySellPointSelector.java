@@ -58,8 +58,8 @@ public class QtySellPointSelector implements ISellPointSelector {
         long hour = t1.getHours();
         long minutes = t1.getMinutes();
         
-        int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING");
-        int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING");
+        int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING", stk.getID());
+        int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING", stk.getID());
         if ((hour * 100 + minutes) >= (hour_for_balance * 100 + mins_for_balance))
         {
             if (sbs == null || (sbs != null && !sbs.is_buy_point))
@@ -72,7 +72,7 @@ public class QtySellPointSelector implements ISellPointSelector {
         
         double pct = (cur_pri - yt_cls_pri) / yt_cls_pri;
         
-        double stop_trade_for_max_pct = ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING");
+        double stop_trade_for_max_pct = ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", stk.getID());
         
         if (Math.abs(pct) >= stop_trade_for_max_pct && (sbs != null && !sbs.is_buy_point))
         //if (Math.abs(pct) >= stop_trade_for_max_pct)
@@ -91,7 +91,7 @@ public class QtySellPointSelector implements ISellPointSelector {
         }
 		
 		double tradeThresh = 0;
-        double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING");
+        double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", stk.getID());
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
 			double marketDegree = StockMarket.getDegree();
@@ -131,7 +131,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 	
     public double getSellThreshValueByDegree(double Degree, Stock2 stk) {
     	
-    	double baseThresh = ParamManager.getFloatParam("SELL_BASE_TRADE_THRESH", "TRADING");
+    	double baseThresh = ParamManager.getFloatParam("SELL_BASE_TRADE_THRESH", "TRADING", stk.getID());
     	
     	Timestamp tm = stk.getDl_dt();
         String deadline = null;

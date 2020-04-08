@@ -717,7 +717,7 @@ public class Stock2 implements Comparable<Stock2>{
                 }
             }
             
-            float plus_pct = ParamManager.getFloatParam("VOLUME_PLUS_PCT", "TRADING");
+            double plus_pct = ParamManager.getFloatParam("VOLUME_PLUS_PCT", "TRADING", this.stkid);
             
             if (cnt * 1.0 / (sz - 1) > plus_pct) {
                 log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " big than " + plus_pct + ", plused return true.");

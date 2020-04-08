@@ -6,16 +6,20 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.simulation.SimStockDriver;
 import com.sn.stock.Stock2;
+import com.sn.stock.StockMarket;
 import com.sn.strategy.ITradeStrategy;
 import com.sn.strategy.TradeStrategyGenerator;
 import com.sn.strategy.algorithm.param.Param;
@@ -23,15 +27,99 @@ import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.strategy.algorithm.param.ParamMap;
 import com.sn.trader.StockTrader;
 
+import sun.util.logging.resources.logging;
 
-class STKParamMap {
+
+class STKParamMap implements Cloneable {
+    static Logger log = Logger.getLogger(STKParamMap.class);
     public ParamMap pm = new ParamMap();
     public double score = 0.0;
+    
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        log.info("cloning STKParamMap...");
+        Object obj=super.clone();
+        ((STKParamMap)obj).pm= (ParamMap)pm.clone();
+        return obj;
+    }
+    
+    public void calcualteScore(String stk) {
+        log.info("Start calculate score for stk:" + stk);
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        
+        try {
+            String sql = "select count(*) cnt,"
+                    + "      case when sum(used_mny) is null then 0 else sum(used_mny) end tot_used_mny,"
+                    + "      case when sum(used_mny * used_mny_hrs) / sum(used_mny) is null then 0 else sum(used_mny * used_mny_hrs) / sum(used_mny) end tot_used_mny_hrs,"
+                    + "      case when sum(pft_mny) is null then 0 else sum(pft_mny) end tot_pft_mny,"
+                    + "      case when sum(pft_mny) - sum(commission_mny) is null then 0 else sum(pft_mny) - sum(commission_mny) end net_pft_mny,"
+                    + "      case when sum(in_hand_stk_mny) is null then 0 else sum(in_hand_stk_mny) end tot_in_hand_stk_mny,"
+                    + "      case when sum(amount_mny) is null then 0 else sum(amount_mny) end tot_amount_mny,"
+                    + "      case when sum(commission_mny) is null then 0 else sum(commission_mny) end tot_commission_mny,"
+                    + "      case when sum(used_mny) is null then 0 else (sum(pft_mny) - sum(commission_mny)) / (case when sum(used_mny) <= 0 then 1 else sum(used_mny) end) end profit_pct"
+                    + "  from cashacnt ca"
+                    + "  join (select sum(in_hand_qty * in_hand_stk_price) in_hand_stk_mny,"
+                    + "               sum(total_amount) amount_mny,"
+                    + "               sum(commission_mny) commission_mny,"
+                    + "               acntid"
+                    + "          from tradehdr "
+                    + "         where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", stk) + stk + "%'"
+                    + "         group by acntid) th  "
+                    + "    on ca.acntid = th.acntid ";
+            log.info(sql);
+            stm = con.createStatement();
+            ResultSet rs = stm.executeQuery(sql);
+            
+            rs.next();
+            if (rs.getInt("cnt")>0) {
+                log.info("got score:" + score + " as net profit mny for stock" + stk);
+                this.score = rs.getDouble("net_pft_mny");
+            }
+            else {
+                log.info("No net profit got for stok" + stk);
+            }
+            rs.close();
+            stm.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+          try {
+            con.close();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        }
+        }
+        log.info("After calculate score for stk:" + stk);
+    }
 }
+
+class STKParamMapComparator implements Comparator<STKParamMap> {
+    public int compare(STKParamMap a, STKParamMap b) {
+        if(a.score < b.score){
+            return 1;
+        }else if(a.score == b.score){
+            return 0;
+        }else{
+            return -1;
+        }
+    }
+}
+
 class Generation {
-    private static int size = 10;
-    private STKParamMap [] generation = new STKParamMap[size];
+    static Logger log = Logger.getLogger(Generation.class);
+    private static int size = 4;
+    private static int topN = 2;
+    private Vector<STKParamMap> entities = new Vector<STKParamMap>(size);
     private String stk = "";
+    
+    public STKParamMap getSTKParamMap(int i)
+    {
+        return entities.get(i);
+    }
     
     public Generation(String sid)
     {
@@ -44,56 +132,276 @@ class Generation {
         stk = sid;
     }
     public boolean initGeneration() {
-        for (int i = 0; i<generation.length; i++)
+        for (int i = 0; i<size; i++)
         {
             STKParamMap spm = new STKParamMap();
             spm.pm.initParams();
-            generation[i]  = spm;
+            log.info("add STKParamMap " + i + " at initGeneration.");
+            entities.add(i, spm);
         }
         return true;
     }
     public int getSize() {
         return size;
     }
+    public void calculateScore(int kid)
+    {
+        entities.get(kid).calcualteScore(stk);
+    }
+    public void keepTopN() throws CloneNotSupportedException {
+        Comparator<STKParamMap> cmp =new STKParamMapComparator();
+        Collections.sort(entities, cmp);
+        printGen();
+        
+        for (int j = topN; j<entities.size(); j++) {
+            entities.set(j, (STKParamMap)entities.get(j - topN).clone());
+        }
+        log.info("After keep TopN:" + topN);
+        printGen();
+    }
     
-    public double calcualteProfit() {
-        return 0;
+    public void MutateOnTopN(int i, int max) {
+        
+        for (int j = topN; j<entities.size(); j++) {
+            entities.get(j).score = 0;
+            entities.get(j).pm.mutate((max -i) * 1.0 /max);
+        }
+        log.info("After mutate");
+        printGen();
+    }
+    
+    public void CrossoverOnTopN(int i, int max) {
+        
+        for (int j = topN; j<entities.size() - 1; j++) {
+            entities.get(j).pm.crossover(entities.get(j+1).pm);
+        }
+        log.info("After crossover:" + topN);
+        printGen();
+    }
+    
+    public void SaveStockBestParam() {
+        log.info("Save best param for stock:" + this.stk + " with score:" + entities.get(0).score);
+        String sql = "";
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        try {
+            //fist one is the best.
+            STKParamMap spm = entities.get(0);
+            ParamMap pm = spm.pm;
+            Map<String, Param> kv = pm.getKV();
+            
+            for (String name : kv.keySet())
+            {
+                String PK[] = name.split("@");
+                
+                Param p = kv.get(name);
+                
+                if (p.typ == Param.TYPE.INT)
+                {
+                    sql = "insert into stockParam value('" + stk + "','" + PK[0] + "','" + PK[1] + "'," + (Integer)p.val + ", null, null, null, 'GA Algorithm', sysdate(), sysdate())";
+                }
+                else if (p.typ == Param.TYPE.FLOAT)
+                {
+                    sql = "insert into stockParam value('" + stk + "','" + PK[0] + "','" + PK[1] + "',null," + (Double)p.val + ", null, null, 'GA Algorithm', sysdate(), sysdate())";
+                }
+                else if (p.typ == Param.TYPE.STR1)
+                {
+                    sql = "insert into stockParam value('" + stk + "','" + PK[0] + "','" + PK[1] + "',null,null,'" + (String)p.val + "', null, 'GA Algorithm', sysdate(), sysdate())";
+                }
+                else if (p.typ == Param.TYPE.STR2)
+                {
+                    sql = "insert into stockParam value('" + stk + "','" + PK[0] + "','" + PK[1] + "',null,null,null,'" + (String)p.val + "', 'GA Algorithm', sysdate(), sysdate())";
+                }
+                log.info(sql);
+                stm = con.createStatement();
+                stm.execute(sql);
+                stm.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+          try {
+            con.close();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        }
+        }
+        log.info("After keep TopN:" + topN);
+    }
+    
+    public void SaveBestScoreSoFar(int i) {
+        String sql = "";
+        String msg = "";
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        try {
+            //fist one is the best.
+            STKParamMap spm = entities.get(0);
+            ParamMap pm = spm.pm;
+            Map<String, Param> kv = pm.getKV();
+            
+            log.info("Save best score for stock:" + this.stk + " so fare with score:" + spm.score);
+            
+            for (String PK : kv.keySet())
+            {
+                
+                if (msg.length() > 0)
+                {
+                    msg += ":";
+                }
+                Param p = kv.get(PK);
+                if (p.typ == Param.TYPE.INT)
+                {
+                    msg += PK + "=>" + (Integer) p.val;
+                }
+                else if (p.typ == Param.TYPE.FLOAT)
+                {
+                    msg += PK + "=>" + (Double) p.val;
+                }
+                else if (p.typ == Param.TYPE.STR1)
+                {
+                    msg += PK + "=>" + (String) p.val;
+                }
+                else if (p.typ == Param.TYPE.STR2)
+                {
+                    msg += PK + "=>" + (String) p.val;
+                }
+            }
+            
+            sql = "insert into stockParamSearch values ('" + stk + "'," + i + "," + spm.score + ", '" + msg + "', sysdate())";
+            
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            stm.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+          try {
+            con.close();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        }
+        }
+        log.info("After SaveBestScoreSoFar");
+    }
+    
+    public void printGen() {
+        for(int i=0; i<entities.size(); i++)
+        {
+            log.info("Gen:" + i + " with score:" + entities.get(i).score);
+            entities.get(i).pm.printParamMap();
+        }
     }
 }
 public class Algorithm {
     
     static Logger log = Logger.getLogger(Algorithm.class);
-    private int size = 10;
     private Generation gen = null;
-    private SimStockDriver ssd = new SimStockDriver();
+    private SimStockDriver ssd = null;
     private ITradeStrategy strategy = null;
     private StockTrader st = StockTrader.getSimTrader();
-    private int MAX_LOOP= 100;
+    private int MAX_LOOP= 2;
     
     public Algorithm()
     {
     }
-    
-    public void run() {
-        
-        //get gzed stock, for each do:
-        gen.initGeneration();
-        int i = 0;
-        while(i < MAX_LOOP)
-        {
-            i++;
-            for (int j=0; j<gen.getSize(); j++)
-            {
-                simTradeOnStock(gen.getStk());
-                gen.calcualteProfit();
-            }
-            /*keepTopN();
-            MutateOnTopN();
-            CrossoverOnTopN();*/
-        }
-        //SaveBest();
+    public static void main(String[] args) throws CloneNotSupportedException {
+        // TODO Auto-generated method stub
+        Algorithm ag = new Algorithm();
+        ag.run();
     }
     
+    public void run() throws CloneNotSupportedException {
+        
+        //get gzed stock, for each do:
+        
+        log.info("Now start search best param for gz stock");
+        ConcurrentHashMap<String, Stock2> gzstocks = StockMarket.getGzstocks();
+        
+        for (String stk : gzstocks.keySet())
+        {
+            log.info("Start search best param for:" + stk);
+            gen = new Generation(stk);
+            
+            gen.initGeneration();
+            
+            int i = 0;
+            
+            
+            while(i < MAX_LOOP)
+            {
+                i++;
+                for (int j=0; j<gen.getSize(); j++)
+                {
+                    ParamManager.setStockParamMap(gen.getStk(), gen.getSTKParamMap(j).pm);
+                    
+                    ssd = new SimStockDriver();
+                    resetTest(stk);
+                    //simTradeOnStock(gen.getStk());
+                    gen.calculateScore(j);;
+                }
+                
+                gen.keepTopN();
+                gen.SaveBestScoreSoFar(i);
+
+                if (i < MAX_LOOP)
+                {
+                    gen.MutateOnTopN(i, MAX_LOOP);
+                    gen.CrossoverOnTopN(i, MAX_LOOP);
+                }
+            }
+            gen.SaveStockBestParam();
+            log.info("Finished search best param for stk:" + stk);
+            break;
+        }
+    }
+    
+    private static void resetTest(String stkid) {
+        String sql;
+        try {
+            Connection con = DBManager.getConnection();
+            Statement stm = con.createStatement();
+            sql = "delete from tradedtl where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", stkid) + stkid + "%'";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+            
+            stm = con.createStatement();
+            sql = "delete from tradehdr where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", stkid) + stkid + "%'";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+            
+            stm = con.createStatement();
+            sql = "delete from stockParam where stock = '" + stkid + "'";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+            
+            stm = con.createStatement();
+            sql = "delete from stockParamSearch where stock = '" + stkid + "'";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+            
+            stm = con.createStatement();
+            sql = "delete from CashAcnt where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", stkid) + stkid + "%'";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        }
+    }
     
     public void simTradeOnStock(String stkid) {
         // SimStockDriver.addStkToSim("000727");
@@ -107,12 +415,14 @@ public class Algorithm {
         try {
             con = DBManager.getConnection();
             stm = con.createStatement();
-            sql = "select left(max(dl_dt) - interval 1  day, 10) sd, left(max(dl_dt), 10) ed from stkdat2 where stkid = '" + stkid + "'";
+            sql = "select left(max(dl_dt) - interval 1  day, 10) sd, left(max(dl_dt), 10) ed from stkdat2 where id = '" + stkid + "'";
             log.info(sql);
             rs = stm.executeQuery(sql);
             rs.next();
             start_dt = rs.getString("sd");
             end_dt = rs.getString("ed");
+            
+            rs.close();
             
             log.info("got start_dt:" + start_dt + " end_dt:" + end_dt);
         }
@@ -122,7 +432,6 @@ public class Algorithm {
         }
         finally {
             try {
-                rs.close();
                 stm.close();
                 con.close();
             } catch (SQLException e) {

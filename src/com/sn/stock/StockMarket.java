@@ -45,13 +45,13 @@ public class StockMarket{
     		                             + "from stk s, usrStk u "
     		                             + "where s.id = u.id "
     		                             + "  and u.gz_flg = 1 "
-                                         + "  and u.suggested_by <> '" + ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING") + "'"
+                                         + "  and u.suggested_by <> '" + ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null) + "'"
     		                             + "order by s.id";
     public static String GZ_STOCK_CNT_SELECT = "select count(distinct s.id) TotalCnt "
     		                             + "from stk s, usrStk u "
     		                             + "where s.id = u.id "
     		                             + "  and u.gz_flg = 1 "
-                                         + "  and u.suggested_by <> '" + ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING") + "'";
+                                         + "  and u.suggested_by <> '" + ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null) + "'";
     /**
      * @param args
      */
@@ -82,7 +82,7 @@ public class StockMarket{
             rs = stm.executeQuery(sql);
             String id, name, area;
             
-            int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
+            int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", null);
 
             rs.close();
             stm.close();
@@ -93,6 +93,7 @@ public class StockMarket{
                 id = rs.getString("id");
                 name = rs.getString("name");
                 area = rs.getString("area");
+                stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", id);
                 s = new Stock2(id, name, area, stock2_queue_sz);
                 stocks.put(id, s);
                 cnt++;
@@ -138,7 +139,7 @@ public class StockMarket{
             rs.close();
             stm.close();
             
-            int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
+            int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", null);
             
             String id, name, area;
             stm = con.createStatement();
@@ -149,6 +150,7 @@ public class StockMarket{
                 id = rs.getString("id");
                 name = rs.getString("name");
                 area = rs.getString("area");
+                stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", id);
                 s = new Stock2(id, name, area, stock2_queue_sz);
                 gzstocks.put(id, s);
                 cnt++;
@@ -195,12 +197,13 @@ public class StockMarket{
             
             String id, name, area;
             
-            int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
+            int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", null);
             
             if (rs.next()) {
                 id = rs.getString("id");
                 name = rs.getString("name");
                 area = rs.getString("area");
+                stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", id);
                 s = new Stock2(id, name, area, stock2_queue_sz);
                 gzstocks.put(id, s);
                 log.info("addGzStocks completed for: " + stkId);

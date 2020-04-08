@@ -73,7 +73,7 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                 
                 log.info("Stock:" + stk.getID() + " bought " + mins + " minutes before");
                 
-                int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING");
+                int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", stk.getID());
                 
                 if (hour == 13 && minutes == 0)
                 {
@@ -92,8 +92,8 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                 
                 log.info("Hour:" + hour + ", Minute:" + minutes);
                 
-                int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING");
-                int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING");
+                int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING", stk.getID());
+                int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING", stk.getID());
                 
                 if (hour >= hour_for_balance && minutes >= mins_for_balance)
                 {

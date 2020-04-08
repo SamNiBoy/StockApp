@@ -55,7 +55,7 @@ public class GzStockDataFetcher implements IWork {
     static public boolean start() {
         //Fetch every 30 seconds
         
-        int fetch_per_seconds = ParamManager.getIntParam("FETCH_EVERY_SECONDS", "TRADING");
+        int fetch_per_seconds = ParamManager.getIntParam("FETCH_EVERY_SECONDS", "TRADING", null);
         
         self = new GzStockDataFetcher(0,  fetch_per_seconds * 1 * 1000);
         try {

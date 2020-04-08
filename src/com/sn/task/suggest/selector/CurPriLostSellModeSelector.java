@@ -24,7 +24,7 @@ public class CurPriLostSellModeSelector implements IStockSelector {
     		log.info("got lost:" + lostPct);
     	}
         
-    	double max_pct_to_sell_mode = ParamManager.getIntParam("MAX_LOST_PCT_FOR_SELL_MODE", "TRADING");
+    	double max_pct_to_sell_mode = ParamManager.getIntParam("MAX_LOST_PCT_FOR_SELL_MODE", "TRADING", s.getID());
         if (lostPct < max_pct_to_sell_mode) {
             log.info("cur price is lost:" + lostPct + " which is over " + max_pct_to_sell_mode + " yt_cls_pri, set to sell mode.");
             return true;

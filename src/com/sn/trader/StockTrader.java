@@ -102,7 +102,7 @@ public class StockTrader {
         resetTest();
         
         
-        int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING");
+        int stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", null);
         
         Stock2 s1 = new Stock2("600503", "abcdef", "sh", stock2_queue_sz);
         Stock2 s2 = new Stock2("000975", "hijklmn", "sz", stock2_queue_sz);
