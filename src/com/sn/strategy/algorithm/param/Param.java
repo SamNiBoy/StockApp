@@ -146,9 +146,13 @@ public class Param implements Cloneable{
         log.info("Name:" + name);
         log.info("cat:" + cat);
         log.info("val:" + val);
-        log.info("Step:" + step);
         log.info("Typ:" + typ);
-        log.info("min:" + min);
-        log.info("max:" + max);
+        
+        if (step != null)
+        {
+            log.info("Step:" + step);
+            log.info("min:" + min);
+            log.info("max:" + max);
+        }
     }
 }

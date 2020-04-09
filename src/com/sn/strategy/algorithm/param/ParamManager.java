@@ -24,11 +24,104 @@ public class ParamManager {
     
     private static Map<String, ParamMap> stock_param = new ConcurrentHashMap<String, ParamMap>();
     
+    static {
+        loadStockParam();
+    }
+    
     public static void setStockParamMap(String stkid, ParamMap pm)
     {
         stock_param.put(stkid, pm);
     }
     
+    public static void loadStockParam() {
+        ResultSet rs = null;
+        Statement st = null;
+        Connection con = DBManager.getConnection();
+        String sql = "select * from stockparam order by stock, name";
+        String pre_stock = "";
+        String cur_stock = "";
+        String name = "";
+        String cat = "";
+        String PK = "";
+        ParamMap pm = null;
+        
+        try {
+            st = con.createStatement();
+            log.info(sql);
+            rs = st.executeQuery(sql);
+            while (rs.next())
+            {
+                cur_stock = rs.getString("stock");
+                name = rs.getString("name");
+                cat = rs.getString("cat");
+                
+                PK = name + "@" + cat;
+                if (!cur_stock.equals(pre_stock))
+                {
+                    log.info("Loaded stock param for " + cur_stock);
+                    
+                    pm = new ParamMap();
+                    stock_param.put(cur_stock, pm);
+                    
+                    pre_stock = cur_stock;
+                }
+                
+                String sintv = rs.getString("intval");
+                Integer intv = rs.getInt("intval");
+                
+                if (sintv != null)
+                {
+                    log.info("loading param:" + name + ", " + cat + ", with int value:" + intv);
+                    Param p = new Param(name, cat, intv, null, null, null, Param.TYPE.INT);
+                    pm.getKV().put(PK, p);
+                }
+                
+                String sfltv = rs.getString("fltval");
+                Double fltv = rs.getDouble("fltval");
+                
+                if (sfltv != null)
+                {
+                    log.info("loading param:" + name + ", " + cat + ", with float value:" + fltv);
+                    Param p = new Param(name, cat, fltv, null, null, null, Param.TYPE.FLOAT);
+                    pm.getKV().put(PK, p);
+                }
+                
+                String str1v = rs.getString("str1");
+                
+                if (str1v != null)
+                {
+                    log.info("loading param:" + name + ", " + cat + ", with str1 value:" + str1v);
+                    Param p = new Param(name, cat, str1v, null, null, null, Param.TYPE.STR1);
+                    pm.getKV().put(PK, p);
+                }
+                
+                String str2v = rs.getString("str2");
+                
+                if (str2v != null)
+                {
+                    log.info("loading param:" + name + ", " + cat + ", with str2 value:" + str1v);
+                    Param p = new Param(name, cat, str2v, null, null, null, Param.TYPE.STR2);
+                    pm.getKV().put(PK, p);
+                }
+            }
+            rs.close();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        }
+        finally {
+            try {
+                 st.close();
+                 con.close();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
     public static void refreshAllParams()
     {
         log.info("Refresh out all cached parameters.");
@@ -40,6 +133,20 @@ public class ParamManager {
     
     public static void printAllParams()
     {
+        log.info("Now we dump stock_param values:");
+        for (String PK : stock_param.keySet())
+        {
+            log.info("Stock:" + PK + " params:");
+            ParamMap pm = stock_param.get(PK);
+            Map<String, Param> kv = pm.getKV();
+            for (String paramPK : kv.keySet())
+            {
+                Param p = kv.get(paramPK);
+                p.print();
+            }
+        }
+        log.info("Dump stock_param values completed.");
+        
         log.info("Now dump all cached params:");
         for(String PK : cacheIntParams.keySet())
         {
@@ -156,7 +263,7 @@ public class ParamManager {
     
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        ParamManager.getIntParam("BUY_SELL_MAX_DIFF_CNT", "TRADING", null);
+        /*ParamManager.getIntParam("BUY_SELL_MAX_DIFF_CNT", "TRADING", null);
         ParamManager.getFloatParam("COMMISSION_RATE", "VENDOR", null);
         ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
         ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
@@ -165,7 +272,8 @@ public class ParamManager {
         ParamManager.overrideParam("COMMISSION_RATE", "VENDOR", 0.0014, false);
         ParamManager.overrideParam("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", "SYSTEM_SUGGESTER", true);
         ParamManager.overrideParam("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", "SYSTEM_GRANTED_TRADER", false);
-        printAllParams();
+        printAllParams();*/
+        loadStockParam();
     }
     
     public static Integer getIntParam(String name, String cat, String stkid)

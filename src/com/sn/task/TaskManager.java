@@ -11,6 +11,7 @@ import com.sn.task.IWork;
 import com.sn.simulation.SimTrader;
 import com.sn.task.fetcher.GzStockDataFetcher;
 import com.sn.task.fetcher.StockDataFetcher;
+import com.sn.task.ga.StockParamSearch;
 import com.sn.task.suggest.SuggestStock;
 import com.sn.task.WorkManager;
 
@@ -36,6 +37,7 @@ public class TaskManager {
         {
             log.info("Starting tasks...");
             tskStarted = true;
+            StockParamSearch.start(); 
             StockDataFetcher.start();
             GzStockDataFetcher.start();
         	SuggestStock.start();

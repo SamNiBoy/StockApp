@@ -45,6 +45,11 @@ class STKParamMap implements Cloneable {
     
     public void calcualteScore(String stk) {
         log.info("Start calculate score for stk:" + stk);
+        log.info("With param:");
+        pm.printParamMap();
+        
+        //this.score = Math.random();
+        //log.info("got a random value as score:" + this.score);
         Connection con = DBManager.getConnection();
         Statement stm = null;
         
@@ -73,11 +78,12 @@ class STKParamMap implements Cloneable {
             
             rs.next();
             if (rs.getInt("cnt")>0) {
-                log.info("got score:" + score + " as net profit mny for stock" + stk);
                 this.score = rs.getDouble("net_pft_mny");
+                log.info("got score:" + score + " as net profit mny for stock" + stk);
             }
             else {
                 log.info("No net profit got for stok" + stk);
+                this.score = 0;
             }
             rs.close();
             stm.close();
@@ -111,8 +117,8 @@ class STKParamMapComparator implements Comparator<STKParamMap> {
 
 class Generation {
     static Logger log = Logger.getLogger(Generation.class);
-    private static int size = 4;
-    private static int topN = 2;
+    private int size = 20;
+    private int topN = 10;
     private Vector<STKParamMap> entities = new Vector<STKParamMap>(size);
     private String stk = "";
     
@@ -121,9 +127,11 @@ class Generation {
         return entities.get(i);
     }
     
-    public Generation(String sid)
+    public Generation(String sid, int Topn, int sz)
     {
         stk = sid;
+        topN = Topn;
+        size = sz;
     }
     public String getStk() {
         return stk;
@@ -172,8 +180,13 @@ class Generation {
     
     public void CrossoverOnTopN(int i, int max) {
         
-        for (int j = topN; j<entities.size() - 1; j++) {
-            entities.get(j).pm.crossover(entities.get(j+1).pm);
+        double r = Math.random();
+        
+        if (r < (max - i) * 1.0 / max)
+        {
+            for (int j = topN; j<entities.size() - 1; j++) {
+                entities.get(j).pm.crossover(entities.get(j+1).pm);
+            }
         }
         log.info("After crossover:" + topN);
         printGen();
@@ -307,7 +320,9 @@ public class Algorithm {
     private SimStockDriver ssd = null;
     private ITradeStrategy strategy = null;
     private StockTrader st = StockTrader.getSimTrader();
-    private int MAX_LOOP= 2;
+    private int MAX_LOOP= 5;
+    private int TOPN = 5;
+    private int GEN_SIZE = 20;
     
     public Algorithm()
     {
@@ -320,6 +335,7 @@ public class Algorithm {
     
     public void run() throws CloneNotSupportedException {
         
+
         //get gzed stock, for each do:
         
         log.info("Now start search best param for gz stock");
@@ -328,24 +344,35 @@ public class Algorithm {
         for (String stk : gzstocks.keySet())
         {
             log.info("Start search best param for:" + stk);
-            gen = new Generation(stk);
+            gen = new Generation(stk, TOPN, GEN_SIZE);
             
             gen.initGeneration();
             
             int i = 0;
+            int start_frm = 0;
             
+            resetParamData(stk);
             
             while(i < MAX_LOOP)
             {
                 i++;
-                for (int j=0; j<gen.getSize(); j++)
+                
+                if (i == 1)
+                {
+                    start_frm = 0;
+                }
+                else
+                {
+                    start_frm = TOPN;
+                }
+                for (int j= start_frm; j<gen.getSize(); j++)
                 {
                     ParamManager.setStockParamMap(gen.getStk(), gen.getSTKParamMap(j).pm);
                     
                     ssd = new SimStockDriver();
-                    resetTest(stk);
-                    //simTradeOnStock(gen.getStk());
-                    gen.calculateScore(j);;
+                    resetTradeData(stk);
+                    simTradeOnStock(gen.getStk());
+                    gen.calculateScore(j);
                 }
                 
                 gen.keepTopN();
@@ -359,14 +386,50 @@ public class Algorithm {
             }
             gen.SaveStockBestParam();
             log.info("Finished search best param for stk:" + stk);
-            break;
+        }
+        log.info("After GA searched all good param for stocks, load these pareams into ParamManager for trading.");
+        ParamManager.loadStockParam();
+        ParamManager.printAllParams();
+        log.info("Now GA Algorithm task completed!");
+    }
+    
+    private static void resetParamData(String stkid) {
+        String sql;
+        Connection con = null;
+        try {
+            con = DBManager.getConnection();
+            Statement stm = con.createStatement();
+            
+            stm = con.createStatement();
+            sql = "delete from stockParam where stock = '" + stkid + "'";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+            
+            stm = con.createStatement();
+            sql = "delete from stockParamSearch where stock = '" + stkid + "'";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        }
+        finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
     
-    private static void resetTest(String stkid) {
+    private static void resetTradeData(String stkid) {
         String sql;
+        Connection con = null;
         try {
-            Connection con = DBManager.getConnection();
+            con = DBManager.getConnection();
             Statement stm = con.createStatement();
             sql = "delete from tradedtl where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", stkid) + stkid + "%'";
             log.info(sql);
@@ -380,18 +443,6 @@ public class Algorithm {
             stm.close();
             
             stm = con.createStatement();
-            sql = "delete from stockParam where stock = '" + stkid + "'";
-            log.info(sql);
-            stm.execute(sql);
-            stm.close();
-            
-            stm = con.createStatement();
-            sql = "delete from stockParamSearch where stock = '" + stkid + "'";
-            log.info(sql);
-            stm.execute(sql);
-            stm.close();
-            
-            stm = con.createStatement();
             sql = "delete from CashAcnt where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", stkid) + stkid + "%'";
             log.info(sql);
             stm.execute(sql);
@@ -400,6 +451,14 @@ public class Algorithm {
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage(), e);
+        }
+        finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
     
@@ -459,6 +518,8 @@ public class Algorithm {
         log.info("Now start simulate trading...");
         
         strategy = TradeStrategyGenerator.generatorStrategy(true);
+        
+        strategy.resetStrategyStatus();
         
         st.setStrategy(strategy);
         log.info("Simulate trading with Strategy:" + strategy.getTradeStrategyName() + "\n\n");

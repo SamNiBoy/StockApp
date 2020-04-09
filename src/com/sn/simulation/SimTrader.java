@@ -40,6 +40,7 @@ import com.sn.strategy.ITradeStrategy;
 import com.sn.STConstants;
 import com.sn.strategy.TradeStrategyGenerator;
 import com.sn.strategy.TradeStrategyImp;
+import com.sn.strategy.algorithm.ga.Algorithm;
 import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.suggest.SuggestStock;
 import com.sn.stock.Stock2;
@@ -144,8 +145,9 @@ public class SimTrader implements IWork{
 	    WorkManager.submitWork(st);
 	}
 	
-    public void run() {
-    	
+public void run() {
+   log.info("Before start simuation, waiting for GA Algorithm task finished."); 	
+   synchronized(Algorithm.class) {
         LocalDateTime lt = LocalDateTime.now();
         int hr = lt.getHour();
         int mnt = lt.getMinute();
@@ -167,9 +169,9 @@ public class SimTrader implements IWork{
         }
         
         //Only run at every night after 18 clock.
-        if (hr < 18)
+        if (hr < 18 && hr > 8)
         {
-            log.info("SimTrader skipped because of hour:" + hr + " less than 18:00.");
+            log.info("SimTrader skipped because of hour:" + hr + " is between 8:00 to 18:00.");
             return;
         }
         
@@ -199,6 +201,8 @@ public class SimTrader implements IWork{
          */
         
         try {
+                ParamManager.loadStockParam();
+                
                 for (int i = 0; i < 2; i++) {
                     
                     strategy.resetStrategyStatus();
@@ -380,6 +384,7 @@ public class SimTrader implements IWork{
           		log.info(e2.getMessage());
           	}
           }
+      }
        //WorkManager.shutdownWorks();
 
     }

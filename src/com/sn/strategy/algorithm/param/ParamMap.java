@@ -79,7 +79,7 @@ public class ParamMap implements Cloneable{
         kv.put("SELL_BASE_TRADE_THRESH@TRADING", p6);
         kv.put("MARGIN_PCT_TO_TRADE_THRESH@TRADING", p7);
         
-        randomize();
+        //randomize();
     }
     
     public void randomize() {
@@ -118,7 +118,7 @@ public class ParamMap implements Cloneable{
             if (rd < pct)
             {
                 Param p = kv.get(k);
-                p.generateARandomValue();
+                p.generateNxtValue();
                 mutated = true;
             }
         }

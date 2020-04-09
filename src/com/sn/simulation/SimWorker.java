@@ -120,9 +120,9 @@ public class SimWorker implements IWork {
     		end_dt = "2020-03-30";*/
             
     		log.info("got start_dt:" + start_dt + " end_dt:" + end_dt);
+    		rs.close();
     	}
     	finally {
-    		rs.close();
     		stm.close();
     		con.close();
     	}
@@ -197,6 +197,8 @@ public class SimWorker implements IWork {
             e.printStackTrace();
             log.info("SimWorker run exception as below:");
             log.error(e.getMessage(),e); 
+            log.info("Exception happened, countdown so other threads can continue.");
+            threadsCountDown.countDown();
         }
     }
 
