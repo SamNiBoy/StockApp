@@ -87,7 +87,7 @@ public class CalStkStats implements IWork {
     }
 
     public boolean isCycleWork() {
-        return false;
+        return true;
     }
 
 }
