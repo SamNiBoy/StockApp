@@ -41,6 +41,25 @@ public class StockMarket{
     private static double totEqlDlMny = 0.0;
     private static double Degree = 0.0;
     
+    private static Timestamp pre_stats_ts = null;
+    private static Timestamp cur_stats_ts = null;
+    
+    private static String fetch_stat = "";
+    
+    public static String getFetch_stat() {
+        return fetch_stat;
+    }
+
+    public static void setCur_stats_ts(Timestamp cur_stats_ts) {
+        StockMarket.cur_stats_ts = cur_stats_ts;
+    }
+
+    private static ConcurrentHashMap<String, String> gzStockStats = new ConcurrentHashMap<String, String>();
+    
+    public static ConcurrentHashMap<String, String> getGzStockStats() {
+        return gzStockStats;
+    }
+
     public static String GZ_STOCK_SELECT = "select distinct s.id, s.name, s.area "
     		                             + "from stk s, usrStk u "
     		                             + "where s.id = u.id "
@@ -485,8 +504,272 @@ public class StockMarket{
         return true;
     }
     
+    public static boolean calStats()
+    {
+        long ct = -1;
+        long pt = -1;
+        
+        if (cur_stats_ts != null)
+        {
+            ct = cur_stats_ts.getTime();
+            long minutes = -1;
+        
+            if (pre_stats_ts != null)
+            {
+                pt = pre_stats_ts.getTime();
+                minutes = (ct - pt)/1000/60;
+                log.info("passed minutes:" + minutes);
+            }
+            
+            //We only refresh stock market stats information every 10 minutes.
+            if (pt == -1 || minutes >= 10)
+            {
+                calIndex(cur_stats_ts);
+                log.info("Finished stats calculation for cur_stats_ts:" + cur_stats_ts.toString());
+                pre_stats_ts = cur_stats_ts;
+            }
+        }
+        
+        log.info("Now start to refresh user's gz stock stats");
+        calGzStockStats();
+        log.info("Finished GzStockstats calculation for frmUsr.");
+        
+        log.info("Now start to calculate fetch information:");
+        calFetchInfor();
+        log.info("Calculate fetch information completed");
+        return true;
+    }
+   static public boolean calGzStockStats()
+   {
+        Connection mycon = DBManager.getConnection();
+        Statement stm = null;
+        
+        try {
+            String sql = "select distinct u.openID "
+                    + "     from stk s, usrStk u "
+                    + "    where s.id = u.id "
+                    + "      and u.gz_flg = 1 "
+                    + "      and u.suggested_by in (u.openID,'" + ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null) + "')";
+            log.info(sql);
+            stm = mycon.createStatement();
+            ResultSet rs = stm.executeQuery(sql);
+            while (rs.next())
+            {
+                String usr = rs.getString("openID");
+                String msg = getGzStockStats(usr);
+                log.info("Put user:" + " gzed stock stats:" + msg);
+                log.info(msg);
+                gzStockStats.put(usr, msg);
+            }
+            rs.close();
+        }
+        catch (Exception e)
+        {
+            log.error(e.getMessage(),e);
+        }
+        finally {
+            try {
+                stm.close();
+                mycon.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.error(e.getMessage(), e);
+            }
+        }
+        return true;
+    }
+   
+    static private String getGzStockStats(String frmUsr)
+    {
+
+        String msg = "";
+        Map<String, String> Stocks = new HashMap<String, String> ();
+        Map<String, Integer> sellmodes = new HashMap<String, Integer> ();
+        DecimalFormat df2 = new DecimalFormat("##.##");
+        DecimalFormat df3 = new DecimalFormat("##.###");
+        Connection mycon = DBManager.getConnection();
+        Statement stm = null;
+
+        try {
+            String sql = "select s.id, s.name, u.stop_trade_mode_flg "
+                    + "     from stk s, usrStk u "
+                    + "    where s.id = u.id "
+                    + "      and u.gz_flg = 1 "
+                    + "      and u.openID ='" + frmUsr + "' "
+                    + "      and u.suggested_by in ('" + frmUsr + "','" + ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null) + "')";
+            log.info(sql);
+            stm = mycon.createStatement();
+            ResultSet rs = stm.executeQuery(sql);
+            
+            while (rs.next()) {
+                Stocks.put(rs.getString("id"), rs.getString("name"));
+                sellmodes.put(rs.getString("id"), rs.getInt("stop_trade_mode_flg"));
+            }
+            rs.close();
+            stm.close();
+            
+            if (Stocks.size() > 0)
+            {
+            for (String stock : Stocks.keySet()) {
+                double dev = 0;
+                double cur_pri = 0;
+                
+                int stkcnt = Stocks.keySet().size();
+
+                
+                String sellMode = (sellmodes.get(stock) == 1) ? "是" : "否";
+
+                try {
+                    sql = "select avg(dev) dev from ("
+                           + "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev, left(dl_dt, 10) atDay "
+                           + "  from stkdat2 "
+                           + " where id ='" + stock + "'"
+                           + "   and yt_cls_pri > 0 "
+                           + "   and left(dl_dt, 10) >= left(sysdate() - interval 7 day, 10)"
+                           + " group by left(dl_dt, 10)) t";
+                    log.info(sql);
+                    stm = mycon.createStatement();
+                    rs = stm.executeQuery(sql);
+                    if (rs.next()) {
+                        dev = rs.getDouble("dev");
+                    }
+                    Stock2 stk = (Stock2)StockMarket.getStocks().get(stock);
+                    Double cur_pri1 = stk.getCur_pri();
+                    if (cur_pri1 != null) {
+                        cur_pri = cur_pri1;
+                    }
+                    else {
+                        log.info("cur_pri for stock:" + stock + " is null, reloading...");
+                        cur_pri = -1;
+                        stk.getSd().LoadData();
+                        cur_pri = stk.getCur_pri();
+                        log.info("regot cur_pri:" + cur_pri);
+                    }
+                    
+                    Integer dl_stk_num = stk.getDl_stk_num();
+                    Double dl_mny_num = stk.getDl_mny_num();
+                    
+                    Double hst_pri = stk.getMaxTd_hst_pri();
+                    Double lst_pri = stk.getMinTd_lst_pri();
+                    Double b1_pri = stk.getB1_pri();
+                    Double b2_pri = stk.getB2_pri();
+                    Double b3_pri = stk.getB3_pri();
+                    Double b4_pri = stk.getB4_pri();
+                    Double b5_pri = stk.getB5_pri();
+                    Integer b1_num = stk.getB1_num();
+                    Integer b2_num = stk.getB2_num();
+                    Integer b3_num = stk.getB3_num();
+                    Integer b4_num = stk.getB4_num();
+                    Integer b5_num = stk.getB5_num();
+                    Double s1_pri = stk.getS1_pri();
+                    Double s2_pri = stk.getS2_pri();
+                    Double s3_pri = stk.getS3_pri();
+                    Double s4_pri = stk.getS4_pri();
+                    Double s5_pri = stk.getS5_pri();
+                    Integer s1_num = stk.getS1_num();
+                    Integer s2_num = stk.getS2_num();
+                    Integer s3_num = stk.getS3_num();
+                    Integer s4_num = stk.getS4_num();
+                    Integer s5_num = stk.getS5_num();
+                    Double opn_pri = stk.getOpen_pri();
+                    Double yt_cls_pri = stk.getYtClsPri();
+                    Double dlt_pri = cur_pri - yt_cls_pri;
+                    Double pct = dlt_pri / yt_cls_pri * 100;
+                    
+                    //max support 4 stock with detail infor.
+                    if (stkcnt < 5)
+                    {
+                        msg += "[" + stock + "]:" + Stocks.get(stock) + " 昨收" + df2.format(yt_cls_pri) + "\n";
+                        msg += "现价:" + df2.format(cur_pri) + "    今开:" + df2.format(opn_pri) + "\n";
+                        msg += "涨跌:" + df2.format(dlt_pri) + "    涨幅:" + df2.format(pct) + "%\n";
+                        msg += "最高:" + df2.format(hst_pri) + "    最低:" + df2.format(lst_pri) + "\n";
+                        msg += "成交:" + df2.format(dl_stk_num / 1000000.0) + "万手" + "  金额:" + df2.format(dl_mny_num / 10000000) + "千万\n";
+                    
+                        msg += "买五:" + df2.format(b5_pri) + "   手:" + b5_num / 100 + "\n";
+                        msg += "买四:" + df2.format(b4_pri) + "   手:" + b4_num / 100 + "\n";
+                        msg += "买三:" + df2.format(b3_pri) + "   手:" + b3_num / 100 + "\n";
+                        msg += "买二:" + df2.format(b2_pri) + "   手:" + b2_num / 100 + "\n";
+                        msg += "买一:" + df2.format(b1_pri) + "   手:" + b1_num / 100 + "\n";
+                        msg += "--------------------\n";
+                        msg += "卖一:" + df2.format(s1_pri) + "   手:" + s1_num / 100 + "\n";
+                        msg += "卖二:" + df2.format(s2_pri) + "   手:" + s2_num / 100 + "\n";
+                        msg += "卖三:" + df2.format(s3_pri) + "   手:" + s3_num / 100 + "\n";
+                        msg += "卖四:" + df2.format(s4_pri) + "   手:" + s4_num / 100 + "\n";
+                        msg += "卖五:" + df2.format(s5_pri) + "   手:" + s5_num / 100 + "\n";
+                        msg += "统计:" + " 七天dev:" + df3.format(dev) + " StopTrade: " + sellMode + "\n\n";
+                    }
+                    else {
+                        msg += "[" + stock + "]:" + Stocks.get(stock) + "  停交:" + sellMode;
+                        msg += "\n涨幅:" + df2.format(pct) + "%" + "  Dev:" + df3.format(dev) + "\n";
+                        msg += "现价:" + df2.format(cur_pri) + "  金额:" + df2.format(dl_mny_num / 10000000) + "千万\n";
+                        msg += "\n";
+                    }
+                    rs.close();
+                } catch(Exception e0) {
+                    log.info("No price infor for stock:" + stock + " continue...");
+                    continue;
+                }
+            }
+            }
+            else {
+                msg = "你没有主动或者系统推荐可买卖关注的股票.";
+            }
+        } catch (SQLException e) {
+            log.error("DB Exception:" + e.getMessage());
+        }
+        finally {
+            try {
+                stm.close();
+                mycon.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.error("DB Exception:" + e.getMessage());
+            }
+        }
+    
+        return msg;
+        
+    }
+    
+    static public boolean calFetchInfor()
+    {
+        fetch_stat = "";
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        String sql = "select count(*) totCnt, count(*)/case when count(distinct id) = 0 then 1 else count(distinct id) end cntPerStk "
+                + "  from stkDat2 where left(dl_dt, 10) = left(sysdate(), 10) ";
+        try {
+            stm = con.createStatement();
+            ResultSet rs = stm.executeQuery(sql);
+            if (rs.next()){
+                fetch_stat += "总共收集:" + rs.getLong("totCnt") + "条记录.\n"
+                      +"平均每股收集:" + rs.getLong("cntPerStk") + "次.\n";
+            }
+            rs.close();
+            log.info("calculate fetch stat msg:" + fetch_stat  + " for opt 5");
+        } catch (Exception e) {
+            e.printStackTrace();
+            fetch_stat = "无数据.\n";
+        }
+        finally {
+            try {
+            stm.close();
+            con.close();
+            }
+            catch (Exception e)
+            {
+                log.error("DB exception:" + e.getMessage());
+                fetch_stat = "数据库异常:" + e.getMessage();
+            }
+        }
+        
+        fetch_stat += getShortDesc();
+        
+        return true;
+    }
+    
     static public String getShortDesc() {
-    	calIndex(null);
     	DecimalFormat df = new DecimalFormat("##.##");
         return "温度:" + df.format(Degree) + "[" + StkNum + "/" + df.format((totDecDlMny +totEqlDlMny + totIncDlMny)/100000000) + "亿 "
     			+ TotInc + "/" + df.format(AvgIncPct) + "/" + df.format(totIncDlMny/100000000) + "亿涨 "
@@ -495,20 +778,12 @@ public class StockMarket{
     }
     
     static public String getDegreeMny() {
-    	if (Degree == 0.0) {
-    		calIndex(null);
-    	}
-    	
     	DecimalFormat df = new DecimalFormat("##.##");
         return "温度:" + df.format(Degree) + "[" + StkNum + "/" + df.format((totDecDlMny +totEqlDlMny + totIncDlMny)/100000000) + "亿 ]";
     }
     
     static public String getLongDsc() {
         
-    	if (Degree == 0.0) {
-    		calIndex(null);
-    	}
-    	
     	DecimalFormat df = new DecimalFormat("##.##");
         String index = "<table border = 1>" +
         "<tr>" +
@@ -535,9 +810,6 @@ public class StockMarket{
         return index;
     }
     static public boolean isMarketTooCold(Timestamp tm) {
-        if (Degree == 0.0) {
-            calIndex(tm);
-        }
         return Degree < -20;
     }
     

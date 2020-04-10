@@ -503,7 +503,7 @@ public void run() {
         try {
             log.info("Archiving non simulation tradehdr table...");
             
-            sql = "insert into arc_tradehdr select * from tradehdr where acntid not like '" + sim_acnt + "%'";
+            sql = "insert into arc_tradehdr select concat(acntid, '_', left(add_dt, 10)), stkid, in_hand_stk_mny,in_hand_qty, in_hand_stk_price,total_amount, com_rate, commission_mny, add_dt from tradehdr where acntid not like '" + sim_acnt + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
@@ -523,7 +523,7 @@ public void run() {
         try {
             log.info("Archiving non simulation tradedtl table...");
             
-            sql = "insert into arc_tradedtl select * from tradedtl where acntid not like '" + sim_acnt + "%'";
+            sql = "insert into arc_tradedtl select concat(acntid, '_', left(dl_dt, 10)), stkid, seqnum, price, amount, dl_dt, buy_flg, order_id, trade_selector_name, trade_selector_comment from tradedtl where acntid not like '" + sim_acnt + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);

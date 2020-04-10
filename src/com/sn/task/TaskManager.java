@@ -14,6 +14,7 @@ import com.sn.task.fetcher.StockDataFetcher;
 import com.sn.task.ga.StockParamSearch;
 import com.sn.task.suggest.SuggestStock;
 import com.sn.task.WorkManager;
+import com.sn.task.calstkstats.CalStkStats;
 
 public class TaskManager {
 
@@ -43,6 +44,7 @@ public class TaskManager {
         	SuggestStock.start();
         	//SellModeWatchDog.start();
             SimTrader.start(); 
+            CalStkStats.start();
             return true;
         }
         else {

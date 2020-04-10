@@ -269,7 +269,6 @@ public class SimStockDriver {
             return false;
         }
         boolean nxt_stk = false;
-        boolean need_cal_index = true;
         boolean has_data_loaded = false;
         try {
             for (String stkId : stk_list) {
@@ -315,10 +314,8 @@ public class SimStockDriver {
                 if (s != null) {
                     //log.info("Now, loading DtRs for stock:" + s.getID());
                     s.getSd().loadDataFromRs(DtRs);
-                    /*if (need_cal_index) {
-                        StockMarket.calIndex(s.getDl_dt());
-                        need_cal_index = false;
-                    }*/
+                    StockMarket.setCur_stats_ts(s.getDl_dt());
+                    //StockMarket.calIndex(s.getDl_dt());
                     has_data_loaded = true;
                 }
 

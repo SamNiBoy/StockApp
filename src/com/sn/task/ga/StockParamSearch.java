@@ -9,6 +9,8 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -36,6 +38,8 @@ public class StockParamSearch implements IWork {
 
         TimeUnit tu = TimeUnit.MILLISECONDS;
         
+        private LocalDateTime pre_sim_time = null;
+        
         static Logger log = Logger.getLogger(StockParamSearch.class);
         /**
          * @param args
@@ -55,7 +59,7 @@ public class StockParamSearch implements IWork {
         static public boolean start() {
             //self = new StockDataFetcher(0, Stock2.StockData.SECONDS_PER_FETCH * 1000);
             
-            IWork self = new StockParamSearch(0,  24 * 60 * 1 * 1000);
+            IWork self = new StockParamSearch(0,  2 * 60 * 60 * 1 * 1000);
             if (WorkManager.submitWork(self)) {
                 log.info("开始GAParamSearch task!");
                 return true;
@@ -72,6 +76,43 @@ public class StockParamSearch implements IWork {
         public void run()
         {
             // TODO Auto-generated method stub
+            
+            LocalDateTime lt = LocalDateTime.now();
+            int hr = lt.getHour();
+            int mnt = lt.getMinute();
+            
+            int time = hr*100 + mnt;
+            log.info("StockParamSearch, time:" + time);
+            
+            DayOfWeek week = lt.getDayOfWeek();
+            
+            if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
+            {
+                log.info("StockParamSearch skipped because of weekend, goto sleep 8 hours.");
+                try {
+                    Thread.currentThread().sleep(8 * 60 * 60 * 1000);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                return;
+            }
+            
+            //Only run at every night after 16 clock.
+            if (hr < 16 && hr > 8)
+            {
+                log.info("SimTrader skipped because of hour:" + hr + " is between 8:00 to 16:00.");
+                return;
+            }
+            
+            LocalDateTime n = LocalDateTime.now();
+            
+            if (pre_sim_time != null && n.getHour() - pre_sim_time.getHour() < 12)
+            {
+                log.info("SimTrader previous ran at:" + pre_sim_time.toString() + " which is within 12 hours, skip run it again.");
+                return;
+            }
+            
                 try {
                     log.info("Start GAParamSearch stocks...");
                     Algorithm ag = new Algorithm();

@@ -25,9 +25,9 @@ insert into param values('SIM_STOCK_COUNT_FOR_EACH_THREAD', 'SIMULATION', 10,nul
 insert into param values('ARCHIVE_DAYS_OLD', 'ARCHIVE', 1,null, '', '', 'How many days stock data to keep in prod db.', sysdate(),sysdate());
 insert into param values('PURGE_DAYS_OLD', 'ARCHIVE', 5,null, '', '', 'How many days stock data to keep in archive db.', sysdate(),sysdate());
 
-insert into param values('MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK', 'TRADING', 20,null, '', '', 'Max number of buy/sell per stock each day.', sysdate(),sysdate());
-insert into param values('MAX_TRADE_TIMES_PER_STOCK', 'TRADING', 50,null, '', '', 'Max number of trading per stock each day.', sysdate(),sysdate());
-insert into param values('MAX_TRADE_TIMES_PER_DAY', 'TRADING', 1000,null, '', '', 'Max number of times total trade a day allowed.', sysdate(),sysdate());
+insert into param values('MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK', 'TRADING', 100,null, '', '', 'Max number of buy/sell per stock each day.', sysdate(),sysdate());
+insert into param values('MAX_TRADE_TIMES_PER_STOCK', 'TRADING', 500,null, '', '', 'Max number of trading per stock each day.', sysdate(),sysdate());
+insert into param values('MAX_TRADE_TIMES_PER_DAY', 'TRADING', 5000,null, '', '', 'Max number of times total trade a day allowed.', sysdate(),sysdate());
 insert into param values('HOUR_TO_KEEP_BALANCE', 'TRADING', 14,null, '', '', 'At which hour the market is going to close, so keep balance.', sysdate(),sysdate());
 insert into param values('MINUTE_TO_KEEP_BALANCE', 'TRADING', 57,null, '', '', 'At which minute the market is going to close, so keep balance.', sysdate(),sysdate());
 insert into param values('STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES', 'TRADING', 3,null, '', '', 'Stop trade if same stock lost than gain this times', sysdate(),sysdate());

@@ -377,6 +377,16 @@ public class TradeStrategyImp implements ITradeStrategy {
 			log.info("stock " + s.getID() + " is not available for trade.");
 			return false;
 		}
+        
+		
+        Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
+        StockBuySellEntry sbs = lstTrades.get(s.getID());
+        
+        if (sbs != null && sbs.is_buy_point != is_buy_flg)
+        {
+            log.info("We allow trading as we have unbalance to deal with.");
+            return true;
+        }
 		
 		/*if (isInSellMode(s) && is_buy_flg) {
 			log.info("Stock:" + s.getID() + " is in sell mode, can not buy it!");

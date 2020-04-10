@@ -63,13 +63,14 @@ public class ParamMap implements Cloneable{
        insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.01, '', '', 'How close to the margin of BASE_TRADE_THRESHOLD value.', sysdate(),sysdate());
      */
     public void initParams() {
-        Param p1 = new Param("VOLUME_PLUS_PCT", "TRADING", 0.5, 0.1, 0.8, 0.1, Param.TYPE.FLOAT);
-        Param p2 = new Param("BUY_SELL_MAX_DIFF_CNT", "TRADING", 3, 1, 5, 1, Param.TYPE.INT);
-        Param p3 = new Param("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", 30, 10, 120, 10, Param.TYPE.INT);
-        Param p4 = new Param("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", 0.05, 0.03, 0.08, 0.01, Param.TYPE.FLOAT);
-        Param p5 = new Param("BUY_BASE_TRADE_THRESH", "TRADING", 0.03, 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
-        Param p6 = new Param("SELL_BASE_TRADE_THRESH", "TRADING", 0.03, 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
-        Param p7 = new Param("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", 0.01, 0.001, 0.02, 0.002, Param.TYPE.FLOAT);
+        
+        Param p1 = new Param("VOLUME_PLUS_PCT", "TRADING", ParamManager.getFloatParam("VOLUME_PLUS_PCT", "TRADING", null), 0.1, 0.8, 0.1, Param.TYPE.FLOAT);
+        Param p2 = new Param("BUY_SELL_MAX_DIFF_CNT", "TRADING", ParamManager.getIntParam("BUY_SELL_MAX_DIFF_CNT", "TRADING", null), 1, 5, 1, Param.TYPE.INT);
+        Param p3 = new Param("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", null), 10, 120, 10, Param.TYPE.INT);
+        Param p4 = new Param("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING",ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", null), 0.03, 0.08, 0.01, Param.TYPE.FLOAT);
+        Param p5 = new Param("BUY_BASE_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING", null), 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
+        Param p6 = new Param("SELL_BASE_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("SELL_BASE_TRADE_THRESH", "TRADING", null), 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
+        Param p7 = new Param("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", null), 0.001, 0.02, 0.002, Param.TYPE.FLOAT);
         
         kv.put("VOLUME_PLUS_PCT@TRADING", p1);
         kv.put("BUY_SELL_MAX_DIFF_CNT@TRADING", p2);

@@ -86,6 +86,7 @@ public class StockDataConsumer implements IWork {
                 	log.info("after fetch:" + cnt + " rows, and calIndex at:" + s.getDl_dt());
                     Timestamp ts = s.getDl_dt();
                     //StockMarket.calIndex(null);
+                    StockMarket.setCur_stats_ts(ts);
                     cnt = 0;
                 }
             }
