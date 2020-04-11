@@ -91,7 +91,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
 		double tradeThresh = 0;
 		double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", stk.getID());
-		double marketDegree = StockMarket.getDegree();
+		double marketDegree = StockMarket.getDegree(stk.getDl_dt());
      	tradeThresh = getBuyThreshValueByDegree(marketDegree, stk);
          
 		if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {

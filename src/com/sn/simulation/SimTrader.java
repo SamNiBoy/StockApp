@@ -203,6 +203,8 @@ public void run() {
         try {
                 ParamManager.loadStockParam();
                 
+                StockMarket.clearDegreeMap();
+                
                 for (int i = 0; i < 2; i++) {
                     
                     strategy.resetStrategyStatus();
@@ -361,8 +363,6 @@ public void run() {
                     //Send mail to user for top10 best and worst.
                     sto.update();
                     
-                    pre_sim_time = LocalDateTime.now();
-                    
                     simOnGzStk = false;
                 }
                 
@@ -370,6 +370,9 @@ public void run() {
                 
                 archiveStockData();
                 
+                pre_sim_time = LocalDateTime.now();
+                
+                StockMarket.clearDegreeMap();
                 log.info("SimTrader end...");
                 
           } catch (Exception e) {

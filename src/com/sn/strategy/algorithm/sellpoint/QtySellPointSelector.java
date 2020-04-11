@@ -94,7 +94,7 @@ public class QtySellPointSelector implements ISellPointSelector {
         double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", stk.getID());
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
-			double marketDegree = StockMarket.getDegree();
+			double marketDegree = StockMarket.getDegree(stk.getDl_dt());
 			
 			tradeThresh = getSellThreshValueByDegree(marketDegree, stk);
 			

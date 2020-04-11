@@ -29,6 +29,7 @@ public class StockMarket{
     static private ConcurrentHashMap<String, Stock2> stocks = new ConcurrentHashMap<String, Stock2>();
     static private ConcurrentHashMap<String, Stock2> gzstocks = new ConcurrentHashMap<String, Stock2>();
     static private ConcurrentHashMap<String, Stock2> recomstocks = null;
+    static private ConcurrentHashMap<String, Double> degreesForSim = new ConcurrentHashMap<String, Double>();
     
     private static int StkNum = 0;
     private static int TotInc = 0;
@@ -364,14 +365,109 @@ public class StockMarket{
         StockMarket.totEqlDlMny = totEqlDlMny;
     }
 
-    public static double getDegree() {
-        return Degree;
-    }
-
-    public static void setDegree(double degree) {
-        Degree = degree;
+    public static double getDegree(Timestamp ts) {
+        
+        String PK = ts.toString().substring(0, 16);
+        
+        Double deg = degreesForSim.get(PK);
+        
+        if (deg == null)
+        {
+            if (degreesForSim.size() > 0)
+            {
+                log.info("Not able to get degree from map at:" + ts.toString() + ",but in sim mode use 0,  market not opened?");
+                Degree = 0.0;
+            }
+            else
+            {
+                log.info("Not able to get degree from map at:" + ts.toString() + ", not in sim Mode, return whatever value as is:" + Degree);
+            }
+            return Degree;
+        }
+        else
+        {
+            log.info("Got degree from map for key:" + PK + ", return value:" + deg);
+            return deg;
+        }
     }
     
+    public static void clearDegreeMap()
+    {
+        log.info("Clear degreesForSim...");
+        degreesForSim.clear();
+        Degree = 0.0;
+    }
+    
+    public static void buildDegreeMapForSim(String start_dt, String end_dt)
+    {
+        
+        synchronized (degreesForSim)
+        {
+            
+            if (degreesForSim.size() > 0)
+            {
+                log.info("degreesForSim is loaded, skip reload again.");
+                return;
+            }
+            
+            Connection con = DBManager.getConnection();
+            Statement stm = null;
+            ResultSet rs = null;
+            int maxDays = 2;
+            
+            try {
+                stm = con.createStatement();
+                
+                //start_dt is not included.
+                for (int i = 1; i<= maxDays; i++)
+                {
+                    String sql = "select left(str_to_date('" + start_dt + "', '%Y-%m-%d') + interval " + i + " day, 10) mydt from dual " +
+                                 " where str_to_date('" + start_dt + "', '%Y-%m-%d') + interval " + i + " day <= str_to_date('" + end_dt + "', '%Y-%m-%d')";
+                    
+                    log.info(sql);
+                    
+                    rs = stm.executeQuery(sql);
+                    
+                    if (!rs.next()) {
+                       break; 
+                    }
+                    
+                    String mydt = rs.getString("mydt");
+                    
+                    log.info("calculate index for date:" + mydt.toString());
+                    
+                    for (int h = 9; h<=15; h++)
+                    {
+                        for (int m = 0; m<60; m++)
+                        {
+                            if ((h == 9 && m <= 30) || (h == 11 && m >= 30) || (h >11 && h < 13) || (h == 15 && m > 0))
+                                continue;
+                            String PK = mydt + " " + (h < 10 ? ("0" + h) : h) + ":" + (m < 10 ? ("0" + m) : m);
+                            calIndex(PK + ":00");
+                            log.info("calculate degree:" + Degree + " at timestamp:" + PK + " put into degreeForSim.");
+                            degreesForSim.put(PK, Degree);
+                        }
+                    }
+                }
+            }
+            catch(SQLException e)
+            {
+                e.printStackTrace();
+            }
+            finally {
+                try {
+                    rs.close();
+                    stm.close();
+                    con.close();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    log.error(e.getMessage() + " with error code:" + e.getErrorCode());
+                }
+            }
+        }
+    }
+
     public static boolean isJumpWater(int tailSz, double jumpPct, double stockJumpCntPct) {
     	int total = stocks.size();
     	if (total == 0) {
@@ -419,7 +515,7 @@ public class StockMarket{
     	return false;
     }
     
-    static public boolean calIndex(Timestamp tm) {
+    static public boolean calIndex(Object tm) {
 
         Connection con = DBManager.getConnection();
         Statement stm = null;
@@ -428,7 +524,14 @@ public class StockMarket{
         	deadline = "sysdate()";
         }
         else {
-        	deadline = "str_to_date('" + tm.toString() + "', '%Y-%m-%d %H:%i:%s')";
+            if (tm instanceof Timestamp)
+            {
+        	    deadline = "str_to_date('" + tm.toString() + "', '%Y-%m-%d %H:%i:%s')";
+            }
+            else 
+            {
+                deadline = "str_to_date('" + tm + "', '%Y-%m-%d %H:%i:%s')";
+            }
         }
 
         int catagory = -2;
@@ -512,17 +615,17 @@ public class StockMarket{
         if (cur_stats_ts != null)
         {
             ct = cur_stats_ts.getTime();
-            long minutes = -1;
+            long seconds = -1;
         
             if (pre_stats_ts != null)
             {
                 pt = pre_stats_ts.getTime();
-                minutes = (ct - pt)/1000/60;
-                log.info("passed minutes:" + minutes);
+                seconds = (ct - pt)/1000;
+                log.info("passed seconds:" + seconds);
             }
             
-            //We only refresh stock market stats information every 10 minutes.
-            if (pt == -1 || minutes >= 10)
+            //For simulation mode, seconds may < 0.
+            if (pt == -1 || Math.abs(seconds) >= 0)
             {
                 calIndex(cur_stats_ts);
                 log.info("Finished stats calculation for cur_stats_ts:" + cur_stats_ts.toString());

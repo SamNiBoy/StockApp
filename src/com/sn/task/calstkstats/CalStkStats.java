@@ -9,12 +9,15 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.IWork;
 import com.sn.task.WorkManager;
 import com.sn.task.ga.StockParamSearch;
@@ -51,7 +54,9 @@ public class CalStkStats implements IWork {
     }
 
     static public boolean start() {
-        IWork self = new CalStkStats(0,  1 * 60 * 1000);
+        int fetch_per_seconds = ParamManager.getIntParam("FETCH_EVERY_SECONDS", "TRADING", null);
+
+        IWork self = new CalStkStats(0,  1 * fetch_per_seconds * 1000);
         if (WorkManager.submitWork(self)) {
             log.info("开始CalStkStats task!");
             return true;

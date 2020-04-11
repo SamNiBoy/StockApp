@@ -124,6 +124,7 @@ public class StockParamSearch implements IWork {
                     e.printStackTrace();
                 }
                 finally {
+                    pre_sim_time = LocalDateTime.now();
                 }
         }
 

@@ -73,7 +73,7 @@ public class SimStockDriver {
         end_dt = e;
         //SimpleDateFormat df = new SimpleDateFormat("YYYY-MM-DD");
         log.info("end_dt string:" + end_dt);
-        Statement stm = null;
+        /*Statement stm = null;
         ResultSet rs = null;
 
         String sql = "select 'x' from dual where left(sysdate(), 10) = '" + end_dt + "'";
@@ -100,7 +100,9 @@ public class SimStockDriver {
         	catch(Exception e2) {
         		log.info(e2.getMessage());
         	}
-        }
+        }*/
+        
+        StockMarket.buildDegreeMapForSim(s, e);
         return true;
     }
     

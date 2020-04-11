@@ -341,6 +341,8 @@ public class Algorithm {
         log.info("Now start search best param for gz stock");
         ConcurrentHashMap<String, Stock2> gzstocks = StockMarket.getGzstocks();
         
+        StockMarket.clearDegreeMap();
+        
         for (String stk : gzstocks.keySet())
         {
             log.info("Start search best param for:" + stk);
@@ -390,6 +392,7 @@ public class Algorithm {
         log.info("After GA searched all good param for stocks, load these pareams into ParamManager for trading.");
         ParamManager.loadStockParam();
         ParamManager.printAllParams();
+        StockMarket.clearDegreeMap();
         log.info("Now GA Algorithm task completed!");
     }
     
