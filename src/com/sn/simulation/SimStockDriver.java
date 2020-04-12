@@ -316,7 +316,7 @@ public class SimStockDriver {
                 if (s != null) {
                     //log.info("Now, loading DtRs for stock:" + s.getID());
                     s.getSd().loadDataFromRs(DtRs);
-                    StockMarket.setCur_stats_ts(s.getDl_dt());
+                    //StockMarket.setCur_stats_ts(s.getDl_dt());
                     //StockMarket.calIndex(s.getDl_dt());
                     has_data_loaded = true;
                 }

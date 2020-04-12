@@ -175,9 +175,12 @@ public void run() {
             return;
         }
         
-        LocalDateTime n = LocalDateTime.now();
+        Timestamp n = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp p = Timestamp.valueOf(pre_sim_time);
         
-        if (pre_sim_time != null && n.getHour() - pre_sim_time.getHour() < 12)
+        long milliseconds = n.getTime() - p.getTime();
+        
+        if (pre_sim_time != null && milliseconds / (1000.0 * 60 * 60) < 12)
         {
             log.info("SimTrader previous ran at:" + pre_sim_time.toString() + " which is within 12 hours, skip run it again.");
             return;
