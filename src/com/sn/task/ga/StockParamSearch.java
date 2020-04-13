@@ -87,6 +87,8 @@ public class StockParamSearch implements IWork {
             
             DayOfWeek week = lt.getDayOfWeek();
             
+            log.info("StockParamSearch, check weekday" + week);
+            
             if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
             {
                 log.info("StockParamSearch skipped because of weekend, goto sleep 8 hours.");
@@ -102,7 +104,7 @@ public class StockParamSearch implements IWork {
             //Only run at every night after 16 clock.
             if (hr < 16 && hr > 8)
             {
-                log.info("SimTrader skipped because of hour:" + hr + " is between 8:00 to 16:00.");
+                log.info("StockParamSearch skipped because of hour:" + hr + " is between 8:00 to 16:00.");
                 return;
             }
             
@@ -113,7 +115,7 @@ public class StockParamSearch implements IWork {
             
             if (pre_sim_time != null && milliseconds / (1000.0 * 60 * 60) < 12)
             {
-                log.info("SimTrader previous ran at:" + pre_sim_time.toString() + " which is within 12 hours, skip run it again.");
+                log.info("StockParamSearch previous ran at:" + pre_sim_time.toString() + " which is within 12 hours, skip run it again.");
                 return;
             }
             

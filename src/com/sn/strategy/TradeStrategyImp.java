@@ -137,11 +137,24 @@ public class TradeStrategyImp implements ITradeStrategy {
 			            
 			            StringSelection sel = new StringSelection(txt);
 			            cpb.setContents(sel, null);*/
-			    	    tbsr = placeBuyTradeToTradex(s, qtb, s.getCur_pri());
-                        if (tbsr == null)
+                        
+			    	    int tradeLocal = ParamManager.getIntParam("MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK", "TRADING", s.getID());
+                        if (tradeLocal == 1)
                         {
-                            log.info("failed to placeBuyOrder to Tradex, skipping create tradehdr/tradedtl record.");
-                            return false;
+                            tbsr = placeBuyTradeToLocal(s, qtb, s.getCur_pri());
+                            if (tbsr == null)
+                            {
+                                log.info("failed to placeBuyOrder to Local , skipping create tradehdr/tradedtl record.");
+                                return false;
+                            }
+                        }
+                        else {
+			    	        tbsr = placeBuyTradeToTradex(s, qtb, s.getCur_pri());
+                            if (tbsr == null)
+                            {
+                                log.info("failed to placeBuyOrder to Tradex, skipping create tradehdr/tradedtl record.");
+                                return false;
+                            }
                         }
 			    	}
 			        
@@ -200,12 +213,25 @@ public class TradeStrategyImp implements ITradeStrategy {
 			            
 			            StringSelection sel = new StringSelection(txt);
 			            cpb.setContents(sel, null);*/
-			    	    tbsr = placeSellTradeToTradex(s, qtb, s.getCur_pri());
-			    	    if (tbsr == null)
-			    	    {
-			    	        log.info("failed to placeSellOrder to Tradex, skipping create tradehdr/tradedtl record.");
-                            return false;
-			    	    }
+                        
+                        int tradeLocal = ParamManager.getIntParam("MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK", "TRADING", s.getID());
+                        if (tradeLocal == 1)
+                        {
+                            tbsr = placeSellTradeToLocal(s, qtb, s.getCur_pri());
+                            if (tbsr == null)
+                            {
+                                log.info("failed to placeSellOrder to Local , skipping create tradehdr/tradedtl record.");
+                                return false;
+                            }
+                        }
+                        else {
+			    	        tbsr = placeSellTradeToTradex(s, qtb, s.getCur_pri());
+			    	        if (tbsr == null)
+			    	        {
+			    	            log.info("failed to placeSellOrder to Tradex, skipping create tradehdr/tradedtl record.");
+                                return false;
+			    	        }
+                        }
 			    	}
 			        
                     
@@ -1118,6 +1144,150 @@ public class TradeStrategyImp implements ITradeStrategy {
             }
 	    }
 	}
+    /* Now do acutal trade to Local GF trader.*/
+    private static TradexBuySellResult placeSellTradeToLocal(Stock2 s, int qtyToTrade, double price) {
+            Connection con = DBManager.getConnection();
+            Statement stm = null;
+        try {
+            TradexBuySellResult tbsr = null;
+            
+            String sql = "insert into pendingTrade select '" + s.getID() + "', case when max(id) is null then 0 else max(id) + 1 end, " + qtyToTrade + ", " + price + ", 0.0, 0, 'N', 0, sysdate(), sysdate() from pendingTrade where stock = '" + s.getID() + "'";
+            log.info(sql);
+            stm = con.createStatement();
+            stm.execute(sql);
+            
+            stm.close();
+            
+            int MaxTry = 5;
+            do {
+                
+                if (MaxTry == 0)
+                {
+                    log.info("Attempted 5 times failed, return fail for placeSellTradeToLocal");
+                    return null;
+                }
+                sql = "select t.success_qty, t.success_price, t.status from pendingTrade t where t.stock = '" + s.getID() + "' and t.id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
+                log.info(sql);
+                stm = con.createStatement();
+                ResultSet rs = stm.executeQuery(sql);
+                
+                if (rs.next())
+                {
+                    String status = rs.getString("status");
+                    if (status.equals("N"))
+                    {
+                        log.info("Pending for GF trader to finish trading, sleep 1 second.");
+                        rs.close();
+                        stm.close();
+                        Thread.currentThread().sleep(1000);
+                        MaxTry--;
+                        continue;
+                    }
+                    else if (status.equals("C"))
+                    {
+                        log.info("Trading is cancelled, return null to fail the trading");
+                        return null;
+                    }
+                    else {
+                        int trade_qty = rs.getInt("success_qty");
+                        double trade_price = rs.getDouble("success_price");
+                        int order_id = rs.getInt("order_id");
+                        tbsr = new TradexBuySellResult(s.getID(),
+                                trade_price,
+                                trade_qty,
+                                trade_price * trade_qty,
+                                order_id,
+                                false);
+                        return tbsr;
+                    }
+                }
+            } while (true);
+        } catch (Exception e) {
+            log.error("Sell: placeSellTradeToLocal exception:" + e.getMessage());
+            return null;
+        }
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+	
+    /* Now do acutal trade to Tradex system*/
+    private static TradexBuySellResult placeBuyTradeToLocal(Stock2 s, int qtyToTrade, double price) {
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+    try {
+        TradexBuySellResult tbsr = null;
+        
+        String sql = "insert into pendingTrade select '" + s.getID() + "', case when max(id) is null then 0 else max(id) + 1 end, " + qtyToTrade + ", " + price + ", 0.0, 0, 'N', 1, sysdate(), sysdate() from pendingTrade where stock = '" + s.getID() + "'";
+        log.info(sql);
+        stm = con.createStatement();
+        stm.execute(sql);
+        
+        stm.close();
+        
+        int MaxTry = 5;
+        do {
+            
+            if (MaxTry == 0)
+            {
+                log.info("Attempted 5 times failed, return fail for placeBuyTradeToLocal");
+                return null;
+            }
+            sql = "select t.success_qty, t.success_price, t.status from pendingTrade t where t.stock = '" + s.getID() + "' and t.id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
+            log.info(sql);
+            stm = con.createStatement();
+            ResultSet rs = stm.executeQuery(sql);
+            
+            if (rs.next())
+            {
+                String status = rs.getString("status");
+                if (status.equals("N"))
+                {
+                    log.info("Pending for GF trader to finish trading, sleep 1 second.");
+                    rs.close();
+                    stm.close();
+                    Thread.currentThread().sleep(1000);
+                    MaxTry--;
+                    continue;
+                }
+                else if (status.equals("C"))
+                {
+                    log.info("Trading is cancelled, return null to fail the trading");
+                    return null;
+                }
+                else {
+                    int trade_qty = rs.getInt("success_qty");
+                    double trade_price = rs.getDouble("success_price");
+                    int order_id = rs.getInt("order_id");
+                    tbsr = new TradexBuySellResult(s.getID(),
+                            trade_price,
+                            trade_qty,
+                            trade_price * trade_qty,
+                            order_id,
+                            true);
+                    return tbsr;
+                }
+            }
+        } while (true);
+    } catch (Exception e) {
+        log.error("Sell: placeBuyTradeToLocal exception:" + e.getMessage());
+        return null;
+    }
+    finally {
+        try {
+            stm.close();
+            con.close();
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+    }
+    
     /* Now do acutal trade to Tradex system*/
     private static TradexBuySellResult placeSellTradeToTradex(Stock2 s, int qtyToTrade, double price) {
         try {
@@ -1143,7 +1313,7 @@ public class TradeStrategyImp implements ITradeStrategy {
             return null;
         } 
     }
-	
+    
     /* Now do acutal trade to Tradex system*/
     private static TradexBuySellResult placeBuyTradeToTradex(Stock2 s, int qtyToTrade, double price) {
         try {

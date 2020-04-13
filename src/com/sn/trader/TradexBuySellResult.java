@@ -16,7 +16,7 @@ public class TradexBuySellResult
    private int error_code;
    private String error_msg;
    
-   TradexBuySellResult(
+   public TradexBuySellResult(
            String id1,
            double trade_price1,
            int trade_quantity1,

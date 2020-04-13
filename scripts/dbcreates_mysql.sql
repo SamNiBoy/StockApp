@@ -53,7 +53,22 @@ insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.01, '',
 
 insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',10,null , '', '', 'Stock suggester param to define at min how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());
 insert into param values('MIN_SHAKING_PCT', 'SUGGESTER',null,0.06, '', '', 'Stock suggester param to define min percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
+insert into param values('TRADING_AT_LOCAL', 'TRADING',1,null, '', '', 'Do trading at local with GF trader, other then send to Tradex trading system.', sysdate(),sysdate());
 
+create table if not exists pendingTrade(
+stock varchar(20 ) not null,
+id int,
+qty int,
+price decimal(10, 4),
+success_qty int,
+success_price decimal(10, 4),
+status varchar(10) not null, //N: New, C: Cancelled, S:Success, P:Partial 
+order_id varchar(20) not null, 
+is_buy_flg int,
+add_dt datetime not null,
+mod_dt datetime not null,
+CONSTRAINT pendingTrade_PK PRIMARY KEY (stock, id)
+);
 
 create table if not exists stockParam(
 stock varchar(20 ) not null,
