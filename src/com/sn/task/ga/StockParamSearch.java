@@ -108,15 +108,18 @@ public class StockParamSearch implements IWork {
                 return;
             }
             
-            Timestamp n = Timestamp.valueOf(LocalDateTime.now());
-            Timestamp p = Timestamp.valueOf(pre_sim_time);
-            
-            long milliseconds = n.getTime() - p.getTime();
-            
-            if (pre_sim_time != null && milliseconds / (1000.0 * 60 * 60) < 12)
+            if (pre_sim_time != null)
             {
-                log.info("StockParamSearch previous ran at:" + pre_sim_time.toString() + " which is within 12 hours, skip run it again.");
-                return;
+                Timestamp n = Timestamp.valueOf(LocalDateTime.now());
+                Timestamp p = Timestamp.valueOf(pre_sim_time);
+                
+                long milliseconds = n.getTime() - p.getTime();
+                
+                if (milliseconds / (1000.0 * 60 * 60) < 12)
+                {
+                    log.info("StockParamSearch previous ran at:" + pre_sim_time.toString() + " which is within 12 hours, skip run it again.");
+                    return;
+                }
             }
             
                 try {

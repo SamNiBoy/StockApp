@@ -138,7 +138,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			            StringSelection sel = new StringSelection(txt);
 			            cpb.setContents(sel, null);*/
                         
-			    	    int tradeLocal = ParamManager.getIntParam("MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK", "TRADING", s.getID());
+			    	    int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
                         if (tradeLocal == 1)
                         {
                             tbsr = placeBuyTradeToLocal(s, qtb, s.getCur_pri());
@@ -214,7 +214,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			            StringSelection sel = new StringSelection(txt);
 			            cpb.setContents(sel, null);*/
                         
-                        int tradeLocal = ParamManager.getIntParam("MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK", "TRADING", s.getID());
+                        int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
                         if (tradeLocal == 1)
                         {
                             tbsr = placeSellTradeToLocal(s, qtb, s.getCur_pri());
@@ -1158,12 +1158,16 @@ public class TradeStrategyImp implements ITradeStrategy {
             
             stm.close();
             
-            int MaxTry = 5;
+            int MaxTry = 7;
             do {
                 
                 if (MaxTry == 0)
                 {
-                    log.info("Attempted 5 times failed, return fail for placeSellTradeToLocal");
+                    log.info("Attempted 7 times failed, return fail for placeSellTradeToLocal");
+                    sql = "update pendingTrade set status = 'C' where stock = '" + s.getID() + "' and status = 'N' and id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
+                    log.info(sql);
+                    stm = con.createStatement();
+                    stm.execute(sql);
                     return null;
                 }
                 sql = "select t.success_qty, t.success_price, t.status from pendingTrade t where t.stock = '" + s.getID() + "' and t.id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
@@ -1198,6 +1202,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                                 trade_price * trade_qty,
                                 order_id,
                                 false);
+                        rs.close();
                         return tbsr;
                     }
                 }
@@ -1230,14 +1235,18 @@ public class TradeStrategyImp implements ITradeStrategy {
         
         stm.close();
         
-        int MaxTry = 5;
+        int MaxTry = 7;
         do {
             
             if (MaxTry == 0)
             {
-                log.info("Attempted 5 times failed, return fail for placeBuyTradeToLocal");
+                log.info("Attempted 7 times failed, return fail for placeBuyTradeToLocal");
+                sql = "update pendingTrade set status = 'C' where stock = '" + s.getID() + "' and status = 'N' and id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
+                log.info(sql);
+                stm = con.createStatement();
+                stm.execute(sql);
                 return null;
-            }
+            } 
             sql = "select t.success_qty, t.success_price, t.status from pendingTrade t where t.stock = '" + s.getID() + "' and t.id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
             log.info(sql);
             stm = con.createStatement();
@@ -1270,6 +1279,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                             trade_price * trade_qty,
                             order_id,
                             true);
+                    rs.close();
                     return tbsr;
                 }
             }

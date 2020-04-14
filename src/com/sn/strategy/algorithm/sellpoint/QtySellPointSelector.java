@@ -207,15 +207,22 @@ public class QtySellPointSelector implements ISellPointSelector {
             
             if (!sim_mode)
             {
-                sellableAmt = ac.getSellableAmt(s.getID(), null);
-                if (sellMnt > sellableAmt)
-                {
-                    log.info("Tradex sellable amount:" + sellableAmt + " less than calculated amt:" + sellMnt + " use sellabeAmt.");
-                    sellMnt = sellableAmt;
-                }
-            }
-            
-            log.info("getSellQty, sellableAmt:" + sellableAmt + " sellMnt:" + sellMnt);
+                  int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
+                  if (tradeLocal == 1)
+                  {
+                      log.info("Trade at local sellable amount is zero, user max mny per trade to get the qty:" + sellMnt);
+                  }
+                  else
+                  {
+                       sellableAmt = ac.getSellableAmt(s.getID(), null);
+                       if (sellMnt > sellableAmt)
+                       {
+                            log.info("Tradex sellable amount:" + sellableAmt + " less than calculated amt:" + sellMnt + " use sellabeAmt.");
+                            sellMnt = sellableAmt;
+                       }
+                  }
+             }
+             log.info("getSellQty, sellableAmt:" + sellableAmt + " sellMnt:" + sellMnt);
         }
         else {
         	if (s.getCur_pri() <= 10) {

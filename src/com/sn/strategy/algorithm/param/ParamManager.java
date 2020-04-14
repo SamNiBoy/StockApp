@@ -21,6 +21,8 @@ public class ParamManager {
     private static Map<String, String>cacheStr1Params = new ConcurrentHashMap<String, String>();
     private static Map<String, String>cacheStr2Params = new ConcurrentHashMap<String, String>();
     
+    private static boolean ignore_cache_flg = true;
+    
     
     private static Map<String, ParamMap> stock_param = new ConcurrentHashMap<String, ParamMap>();
     
@@ -303,7 +305,7 @@ public class ParamManager {
         String PK = name + "@" + cat;
         Integer val = cacheIntParams.get(PK);
         
-        if (val != null)
+        if (val != null && !ignore_cache_flg)
         {
             log.info("get int param from cache:" + val + " for name:" + name + ", cat:" + cat);
             return val;
@@ -369,7 +371,7 @@ public class ParamManager {
         String PK = name + "@" + cat;
         Double val = cacheFloatParams.get(PK);
         
-        if (val != null)
+        if (val != null && !ignore_cache_flg)
         {
             log.info("get float param from cache:" + val + " for name:" + name + ", cat:" + cat);
             return val;
@@ -436,7 +438,7 @@ public class ParamManager {
         String PK = name + "@" + cat;
         String val = cacheStr1Params.get(PK);
         
-        if (val != null)
+        if (val != null && !ignore_cache_flg)
         {
             log.info("get Str1 param from cache:" + val + " for name:" + name + ", cat:" + cat);
             return val;
@@ -502,7 +504,7 @@ public class ParamManager {
         String PK = name + "@" + cat;
         String val = cacheStr2Params.get(PK);
         
-        if (val != null)
+        if (val != null && !ignore_cache_flg)
         {
             log.info("get Str2 param from cache:" + val + " for name:" + name + ", cat:" + cat);
             return val;

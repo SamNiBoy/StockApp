@@ -55,6 +55,7 @@ insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',10,null , 
 insert into param values('MIN_SHAKING_PCT', 'SUGGESTER',null,0.06, '', '', 'Stock suggester param to define min percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
 insert into param values('TRADING_AT_LOCAL', 'TRADING',1,null, '', '', 'Do trading at local with GF trader, other then send to Tradex trading system.', sysdate(),sysdate());
 
+
 create table if not exists pendingTrade(
 stock varchar(20 ) not null,
 id int,
@@ -63,7 +64,7 @@ price decimal(10, 4),
 success_qty int,
 success_price decimal(10, 4),
 status varchar(10) not null, //N: New, C: Cancelled, S:Success, P:Partial 
-order_id varchar(20) not null, 
+order_id varchar(20), 
 is_buy_flg int,
 add_dt datetime not null,
 mod_dt datetime not null,
