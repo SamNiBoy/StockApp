@@ -14,29 +14,22 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.SchedulerException;
 
 import com.sn.db.DBManager;
 import com.sn.stock.StockMarket;
 import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.IWork;
+import com.sn.task.JobScheduler;
 import com.sn.task.WorkManager;
 import com.sn.task.ga.StockParamSearch;
 
-public class CalStkStats implements IWork {
+public class CalStkStats implements Job {
 
     static Connection con = null;
-    /*
-     * Initial delay before executing work.
-     */
-    long initDelay = 0;
-
-    /*
-     * Seconds delay befor executing next work.
-     */
-    long delayBeforNxtStart = 60000;
-
-    TimeUnit tu = TimeUnit.MILLISECONDS;
-
     static Logger log = Logger.getLogger(CalStkStats.class);
 
     /**
@@ -44,55 +37,17 @@ public class CalStkStats implements IWork {
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        CalStkStats fsd = new CalStkStats(1, 3);
-        fsd.run();
+        CalStkStats fsd = new CalStkStats();
     }
 
-    public CalStkStats(long id, long dbn) {
-        initDelay = id;
-        delayBeforNxtStart = dbn;
-    }
-
-    static public boolean start() {
-        int fetch_per_seconds = ParamManager.getIntParam("FETCH_EVERY_SECONDS", "TRADING", null);
-
-        IWork self = new CalStkStats(0,  1 * fetch_per_seconds * 1000);
-        if (WorkManager.submitWork(self)) {
-            log.info("开始CalStkStats task!");
-            return true;
-        }
-        return false;
+    public CalStkStats() {
     }
     
-    public void run() {
+    public void execute(JobExecutionContext context)
+            throws JobExecutionException {
         // TODO Auto-generated method stub
         log.info("Running CalStkStats task begin");
         StockMarket.calStats();
         log.info("Running CalStkStats task end");
     }
-
-    public String getWorkResult() {
-        return "";
-    }
-
-    public String getWorkName() {
-        return "CalStkStats";
-    }
-
-    public long getInitDelay() {
-        return initDelay;
-    }
-
-    public long getDelayBeforeNxt() {
-        return delayBeforNxtStart;
-    }
-
-    public TimeUnit getTimeUnit() {
-        return tu;
-    }
-
-    public boolean isCycleWork() {
-        return true;
-    }
-
 }

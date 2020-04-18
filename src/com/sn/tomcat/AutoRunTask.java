@@ -4,13 +4,20 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
+import org.quartz.SchedulerException;
 
-import com.sn.task.TaskManager;
-import com.sn.task.WorkManager;
+import com.sn.db.DBManager;
+import com.sn.task.JobScheduler;
+
 
 public class AutoRunTask implements ServletContextListener{
 
-    static Logger log = Logger.getLogger(WorkManager.class);
+    static Logger log = Logger.getLogger(AutoRunTask.class);
+    
+    static {
+    	DBManager.initLog4j();
+    	DBManager.initDataSource();
+    }
     
     public static void main(String[] args) {
         // TODO Auto-generated method stub
@@ -19,17 +26,23 @@ public class AutoRunTask implements ServletContextListener{
 
     //Tomcat startup.
     public void contextInitialized(ServletContextEvent arg0){
-        if(!TaskManager.isTasksStarted())
+        if(!JobScheduler.isJobScheduled())
         {
             log.info("Tomcat startsup, run TaskManager startTasks()");
-            TaskManager.startTasks();
+            try {
+				JobScheduler.submitAllTasks();
+			} catch (SchedulerException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getMessage(), e);
+			}
             log.info("Tomcat startsup, run TaskManager ended.");
         }
     }
     //tomcat close.
     public void contextDestroyed(ServletContextEvent arg0){
         log.info("Tomcat destroyed, run TaskManager stopTasks()");
-        TaskManager.stopTasks();
+        JobScheduler.stopJobs();
         log.info("Tomcat destroyed, run TaskManager stopTasks ended.");
     }
 }

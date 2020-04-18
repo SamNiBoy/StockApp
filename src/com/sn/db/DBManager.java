@@ -29,25 +29,22 @@ public class DBManager {
     /**
      * �û� ����
      */
-    private static final String url = "jdbc:mysql://111.229.27.150/stockApp?autoReconnect=true&failOverReadOnly=false";
+    private static final String url4 = "jdbc:mysql://111.229.27.150/stockApp?autoReconnect=true&failOverReadOnly=false";
+    private static final String url = "jdbc:mysql://localhost/stockApp?autoReconnect=true&failOverReadOnly=false";
+
     /**
      * �û� ����
      */
     private static final String DBUSER = "root";
     private static final String password = "mysql,16";
     
-    private static final String AppDir = "D:/tomcat7/webapps/StockApp";
-    private static final String AppDir1 = "/usr/share/tomcat/webapps/StockApp";
+    private static final String AppDir1 = "D:/tomcat9034/webapps/StockApp";
+    private static final String AppDir = "/usr/share/tomcat/webapps/StockApp";
     private static final String AppDir2 = "E:/mfc/stockapp";
 
     static ComboPooledDataSource  ds = null;
     static Connection conn = null;
 
-
-    static {
-        initLog4j();
-        initDataSource();
-    }
     // TODO Auto-generated method stub
 
     /**
@@ -91,12 +88,12 @@ public class DBManager {
         return conn;
     }
 
-    static void initLog4j() {
+    public static void initLog4j() {
         PropertyConfigurator.configure(AppDir1
                 + "/WEB-INF/conf/log4j.properties");
     }
 
-    static void initDataSource()
+    public static void initDataSource()
     {
         log.info("connecting db using:" + url + "\n Usr/pwd:" + DBUSER
                 + "/" + password);

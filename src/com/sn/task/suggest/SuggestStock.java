@@ -15,6 +15,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 import com.sn.db.DBManager;
 import com.sn.mail.RecommandStockObserverable;
@@ -34,23 +37,9 @@ import com.sn.task.IStockSelector;
 import com.sn.task.WorkManager;
 import com.sn.task.IWork;
 
-public class SuggestStock implements IWork {
-
-	/*
-	 * Initial delay before executing work.
-	 */
-	long initDelay = 0;
-
-	/*
-	 * Seconds delay befor executing next work.
-	 */
-	long delayBeforNxtStart = 5;
-
-	TimeUnit tu = TimeUnit.MILLISECONDS;
+public class SuggestStock implements Job {
 
 	int maxLstNum = 50;
-
-	static public String resMsg = "Initial msg for work SuggestStock.";
 
 	List<IStockSelector> selectors = new LinkedList<IStockSelector>();
 
@@ -62,59 +51,19 @@ public class SuggestStock implements IWork {
 
 	static Logger log = Logger.getLogger(SuggestStock.class);
 
-	public static String getResMsg() {
-		return resMsg;
-	}
-
-	public static void setResMsg(String resMsg) {
-		SuggestStock.resMsg = resMsg;
-	}
-
-	static public boolean start() {
-		if (self == null) {
-			self = new SuggestStock(0, 30 * 60000);
-			if (WorkManager.submitWork(self)) {
-				resMsg = "Newly created SuggestStock and started!";
-				return true;
-			}
-		} else if (WorkManager.canSubmitWork(self.getWorkName())) {
-			if (WorkManager.submitWork(self)) {
-				resMsg = "Resubmitted SuggestStock and started!";
-				return true;
-			}
-		}
-		resMsg = "Work SuggestStock is started, can not start again!";
-		return false;
-	}
-
-	static public boolean stop() {
-		if (self == null) {
-			resMsg = "SuggestStock is null, how did you stop it?";
-			return true;
-		} else if (WorkManager.canSubmitWork(self.getWorkName())) {
-			resMsg = "SuggestStock is stopped, but can submit again.";
-			return true;
-		} else if (WorkManager.cancelWork(self.getWorkName())) {
-			resMsg = "SuggestStock is cancelled successfully.";
-			return true;
-		}
-		resMsg = "SuggestStock can not be cancelled!, this is unexpected";
-		return false;
-	}
-
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock(0, 10000);
+		SuggestStock fsd = new SuggestStock();
 		log.info("Main exit");
-		WorkManager.submitWork(fsd);
+		//WorkManager.submitWork(fsd);
 	}
 
-	public SuggestStock(long id, long dbn) {
-		initDelay = id;
-		delayBeforNxtStart = dbn;
+	public SuggestStock() {
+		//initDelay = id;
+		//delayBeforNxtStart = dbn;
 		//selectors.add(new DefaultStockSelector());
 		//selectors.add(new PriceStockSelector());
 		//selectors.add(new StddevStockSelector());
@@ -126,7 +75,8 @@ public class SuggestStock implements IWork {
 //		selectors.add(new KeepLostStockSelector());
 	}
 
-	public void run() {
+    public void execute(JobExecutionContext context)
+            throws JobExecutionException {
 		// TODO Auto-generated method stub
 		boolean suggest_flg = false;
 		boolean loop_nxt_stock = false;
@@ -144,32 +94,6 @@ public class SuggestStock implements IWork {
             StockDataFetcher.lock.unlock();
         }*/
         
-        LocalDateTime lt = LocalDateTime.now();
-        int hr = lt.getHour();
-        int mnt = lt.getMinute();
-        
-        int time = hr*100 + mnt;
-        log.info("SuggestStock, starts now at time:" + time);
-        DayOfWeek week = lt.getDayOfWeek();
-        
-        if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
-        {
-            log.info("SuggestStock skipped because of weekend, goto sleep 8 hours.");
-            try {
-                Thread.currentThread().sleep(8 * 60 * 60 * 1000);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return;
-        }
-        
-        //Only run at every night after 22 clock.
-        if (hr < 22)
-        {
-            log.info("SuggestStock skipped because of hour:" + hr + " less than 22:00.");
-            return;
-        }
 
 		resetSuggestion();
 		
@@ -540,29 +464,4 @@ public class SuggestStock implements IWork {
             }
         }
 	}
-
-	public String getWorkResult() {
-		return "";
-	}
-
-	public String getWorkName() {
-		return "SuggestStock";
-	}
-
-	public long getInitDelay() {
-		return initDelay;
-	}
-
-	public long getDelayBeforeNxt() {
-		return delayBeforNxtStart;
-	}
-
-	public TimeUnit getTimeUnit() {
-		return tu;
-	}
-
-	public boolean isCycleWork() {
-		return true;
-	}
-
 }

@@ -191,7 +191,7 @@ public class ParamManager {
         else if (val instanceof Float || val instanceof Double)
         {
             Double oldVal = cacheFloatParams.get(PK);
-            double newVal = (double)val;
+            double newVal = (Double)val;
             if (oldVal != null)
             {
                 log.info("Overriding old float param:" + oldVal + " with new value:" + val);
@@ -359,7 +359,7 @@ public class ParamManager {
                 
                 if (p.get(pk) != null)
                 {
-                    Double v = (double)p.get(pk).val;
+                    Double v = (Double)p.get(pk).val;
                     if (v != null)
                     {
                         log.info("get float param from stockParam:" + v);

@@ -38,13 +38,13 @@ public class TaskManager {
         {
             log.info("Starting tasks...");
             tskStarted = true;
-            StockParamSearch.start(); 
+            /*StockParamSearch.start(); 
             StockDataFetcher.start();
             GzStockDataFetcher.start();
         	SuggestStock.start();
         	//SellModeWatchDog.start();
             SimTrader.start(); 
-            CalStkStats.start();
+            //CalStkStats.start();*/
             return true;
         }
         else {

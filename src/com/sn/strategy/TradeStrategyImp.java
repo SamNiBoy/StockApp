@@ -260,7 +260,6 @@ public class TradeStrategyImp implements ITradeStrategy {
 		}
 	}
 
-    @Override
     public boolean calProfit() {
         // TODO Auto-generated method stub
         return cash_account.calProfit();

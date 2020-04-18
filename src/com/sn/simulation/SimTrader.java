@@ -22,6 +22,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -50,41 +53,27 @@ import com.sn.wechat.WCMsgSender;
 import com.sn.task.WorkManager;
 import com.sn.task.IWork;
 
-public class SimTrader implements IWork{
+public class SimTrader implements Job{
 
     static Logger log = Logger.getLogger(SimTrader.class);
 
     SimTraderObserverable sto = new SimTraderObserverable();
-    /*
-     * Initial delay before executing work.
-     */
-    private long initDelay = 0;
-
-    /*
-     * Seconds delay befor executing next work.
-     */
-    private long delayBeforNxtStart = 23 * 60 * 60;
-
-    private TimeUnit tu = TimeUnit.MILLISECONDS;
     
     private boolean simOnGzStk = true;
     private LocalDateTime pre_sim_time = null;
-    
-    public String resMsg = "Initial msg for work SimTrader.";
     
     private CountDownLatch threadsCountDown = null;
     
     static Connection con = null;
     SimStockDriver ssd = new SimStockDriver();
 
-    public SimTrader(long id, long dbn) {
-        initDelay = id;
-        delayBeforNxtStart = dbn;
+    public SimTrader() {
+
     }
 
     static public void main(String[] args) throws Exception {
-        SimTrader st = new SimTrader(0, 0);
-        st.run();
+        SimTrader st = new SimTrader();
+        //st.run();
     }
 
 	private static void resetTest(boolean simgzstk) {
@@ -139,56 +128,10 @@ public class SimTrader implements IWork{
 		}
 	}
 	
-	public static void start() {
-        log.info("Starting task SimTrader...");
-        SimTrader st = new SimTrader(5, 30 * 60 * 1000);
-	    WorkManager.submitWork(st);
-	}
-	
-public void run() {
+    public void execute(JobExecutionContext context)
+            throws JobExecutionException {
    log.info("Before start simuation, waiting for GA Algorithm task finished."); 	
-   synchronized(Algorithm.class) {
-        LocalDateTime lt = LocalDateTime.now();
-        int hr = lt.getHour();
-        int mnt = lt.getMinute();
-        
-        int time = hr*100 + mnt;
-        log.info("SimWork, time:" + time);
-        DayOfWeek week = lt.getDayOfWeek();
-        
-        if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
-        {
-            log.info("SimTrader skipped because of weekend, goto sleep 8 hours.");
-            try {
-                Thread.currentThread().sleep(8 * 60 * 60 * 1000);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return;
-        }
-        
-        //Only run at every night after 18 clock.
-        if (hr < 18 && hr > 3)
-        {
-            log.info("SimTrader skipped because of hour:" + hr + " is between 3:00 to 18:00.");
-            return;
-        }
-        
-        if (pre_sim_time != null)
-        {
-            Timestamp n = Timestamp.valueOf(LocalDateTime.now());
-            Timestamp p = Timestamp.valueOf(pre_sim_time);
-            
-            long milliseconds = n.getTime() - p.getTime();
-            
-            if (pre_sim_time != null && milliseconds / (1000.0 * 60 * 60) < 12)
-            {
-                log.info("SimTrader previous ran at:" + pre_sim_time.toString() + " which is within 12 hours, skip run it again.");
-                return;
-            }
-        }
-        
+   synchronized(Algorithm.class) {        
         
         // SimStockDriver.addStkToSim("000727");
         Connection con = DBManager.getConnection();
@@ -396,42 +339,6 @@ public void run() {
       }
        //WorkManager.shutdownWorks();
 
-    }
-
-    @Override
-    public long getDelayBeforeNxt() {
-        // TODO Auto-generated method stub
-        return delayBeforNxtStart;
-    }
-
-    @Override
-    public long getInitDelay() {
-        // TODO Auto-generated method stub
-        return initDelay;
-    }
-
-    @Override
-    public TimeUnit getTimeUnit() {
-        // TODO Auto-generated method stub
-        return tu;
-    }
-
-    @Override
-    public String getWorkName() {
-        // TODO Auto-generated method stub
-        return "SimTrader";
-    }
-
-    @Override
-    public String getWorkResult() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean isCycleWork() {
-        // TODO Auto-generated method stub
-        return true;
     }
     
     private void archiveStockData() {

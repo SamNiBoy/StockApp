@@ -17,6 +17,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 import com.sn.db.DBManager;
 import com.sn.stock.RawStockData;
@@ -25,22 +28,9 @@ import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.WorkManager;
 import com.sn.task.IWork;
 
-public class StockDataFetcher implements IWork {
-
-    Connection con = DBManager.getConnection();
-    /* Initial delay before executing work.
-     */
-    static long initDelay = 0;
-
-    /* Seconds delay befor executing next work.
-     */
-    static long delayBeforNxtStart = 5;
-
-    static TimeUnit tu = TimeUnit.MILLISECONDS;
+public class StockDataFetcher implements Job {
     
     static int maxLstNum = 50;
-    
-    static public String resMsg = "Initial msg for work StockDataFetcher.";
     
     static StockDataFetcher self = null;
     static StockDataConsumer cnsmr = null;
@@ -49,55 +39,22 @@ public class StockDataFetcher implements IWork {
     public static Condition finishedOneRoundFetch = lock.newCondition();
     
     static Logger log = Logger.getLogger(StockDataFetcher.class);
+   
     
-    public static String getResMsg() {
-        return resMsg;
-    }
-
-    public static void setResMsg(String resMsg) {
-        StockDataFetcher.resMsg = resMsg;
-    }
-
-    static public boolean start() {
-        //self = new StockDataFetcher(0, Stock2.StockData.SECONDS_PER_FETCH * 1000);
-        
-        int fetch_per_seconds = ParamManager.getIntParam("FETCH_EVERY_SECONDS", "TRADING", null);
-        
-        self = new StockDataFetcher(0,  fetch_per_seconds * 1 * 1000);
-        if (WorkManager.submitWork(self)) {
-            log.info("开始收集股票数据!");
-            cnsmr = new StockDataConsumer(0, 0);
-            WorkManager.submitWork(cnsmr);
-            return true;
-        }
-        return false;
-    }
-    
-    static public boolean stop() {
-        if (WorkManager.cancelWork(self.getWorkName())) {
-            log.info("成功取消数据收集器.");
-            WorkManager.cancelWork(cnsmr.getWorkName());
-            return true;
-        }
-        log.info("StockDataFetcher can not be cancelled!, this is unexpected");
-        return false;
-    }
     /**
      * @param args
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        start();
     }
 
-    public StockDataFetcher(long id, long dbn)
+    public StockDataFetcher()
     {
-        initDelay = id;
-        delayBeforNxtStart = dbn;
     }
 
     private String getFetchLst()
     {
+    	Connection con = null;
         Statement stm = null;
         ResultSet rs = null;
         String sql = "select area, id from stk";
@@ -107,6 +64,7 @@ public class StockDataFetcher implements IWork {
         int i = 0;
 
         try{
+        	con = DBManager.getConnection();
             stm = con.createStatement();
             rs = stm.executeQuery(sql);
             while (rs.next()) {
@@ -141,53 +99,12 @@ public class StockDataFetcher implements IWork {
     private String lstStkDat = "";
     private int failCnt = 0;
 
-    public void run()
-    {
+    public void execute(JobExecutionContext context)
+            throws JobExecutionException {
         // TODO Auto-generated method stub
         String str;
 
         log.info("Now StockDataFetcher start!!!");
-        
-        LocalDateTime lt = LocalDateTime.now();
-        DayOfWeek week = lt.getDayOfWeek();
-        
-        if(week.equals(DayOfWeek.SATURDAY) || week.equals(DayOfWeek.SUNDAY))
-        {
-            log.info("StockDataFetcher skipped because of weekend, goto sleep 8 hours.");
-            try {
-                Thread.currentThread().sleep(8 * 60 * 60 * 1000);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return;
-        }
-        
-        int hr = lt.getHour();
-        int mnt = lt.getMinute();
-        
-        if (hr >= 16 || hr <= 8)
-        {
-            int hr_to_sleep = 0;
-            log.info("StockDataFetcher skipped because of hour:" + hr + " not in business time.");
-            if (hr <= 8) {
-                hr_to_sleep = 8 - hr;
-            }
-            else {
-                hr_to_sleep = 32 - hr;
-            }
-            if (hr_to_sleep > 0)
-            {
-                log.info("StockDataFetcher goto sleep:" + hr_to_sleep + " hours.");
-                try {
-                    Thread.currentThread().sleep(hr_to_sleep * 60 * 60 * 1000);
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-            return;
-        }
         
         failCnt = 0;
         try {
@@ -269,35 +186,4 @@ public class StockDataFetcher implements IWork {
         }
         log.info("Now StockDataFetcher exit!!!");
     }
-
-    public String getWorkResult()
-    {
-        return "";
-    }
-
-    public String getWorkName()
-    {
-        return "StockDataFetcher";
-    }
-
-    public long getInitDelay()
-    {
-        return initDelay;
-    }
-
-    public long getDelayBeforeNxt()
-    {
-        return delayBeforNxtStart;
-    }
-
-    public TimeUnit getTimeUnit()
-    {
-        return tu;
-    }
-
-    public boolean isCycleWork()
-    {
-        return true;
-    }
-
 }

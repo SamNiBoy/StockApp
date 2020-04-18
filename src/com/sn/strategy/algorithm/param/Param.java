@@ -81,8 +81,8 @@ public class Param implements Cloneable{
         if (typ == TYPE.INT)
         {
             
-            int mi = (int) min;
-            int mx = (int) max;
+            int mi = (Integer) min;
+            int mx = (Integer) max;
             
             int rt = 0;
             rt = (int)Math.round(mi + Math.random() * (mx - mi));
@@ -113,21 +113,21 @@ public class Param implements Cloneable{
         Object rtv = null;
         if (typ == TYPE.INT)
         {
-            int rt = (int)val + (int)step;
+            int rt = (Integer)val + (Integer)step;
             
-            if (rt > (int) max)
+            if (rt > (Integer) max)
             {
-                rt = (int)max;
+                rt = (Integer)max;
             }
             rtv = rt;
         }
         else if (typ == TYPE.FLOAT)
         {
-            double rt = (double)val + (double)step;
+            double rt = (Double)val + (Double)step;
             
-            if (rt > (double) max)
+            if (rt > (Double) max)
             {
-                rt = (double)max;
+                rt = (Double)max;
             }
             rtv = rt;
         }
