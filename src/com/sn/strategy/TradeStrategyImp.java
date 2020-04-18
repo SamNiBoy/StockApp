@@ -1151,7 +1151,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         try {
             TradexBuySellResult tbsr = null;
             
-            String sql = "insert into pendingTrade select '" + s.getID() + "', case when max(id) is null then 0 else max(id) + 1 end, " + qtyToTrade + ", " + price + ", 0.0, 0, 'N', 0, sysdate(), sysdate() from pendingTrade where stock = '" + s.getID() + "'";
+            String sql = "insert into pendingTrade select '" + s.getID() + "', case when max(id) is null then 0 else max(id) + 1 end, " + qtyToTrade + ", " + price + ", 0, 0.0, 'N', null, 0, sysdate(), sysdate() from pendingTrade where stock = '" + s.getID() + "'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
@@ -1164,13 +1164,13 @@ public class TradeStrategyImp implements ITradeStrategy {
                 if (MaxTry == 0)
                 {
                     log.info("Attempted 7 times failed, return fail for placeSellTradeToLocal");
-                    sql = "update pendingTrade set status = 'C' where stock = '" + s.getID() + "' and status = 'N' and id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
+                    sql = "update pendingTrade set status = 'C' where stock = '" + s.getID() + "' and status = 'N'";
                     log.info(sql);
                     stm = con.createStatement();
                     stm.execute(sql);
                     return null;
                 }
-                sql = "select t.success_qty, t.success_price, t.status from pendingTrade t where t.stock = '" + s.getID() + "' and t.id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
+                sql = "select t.success_qty, t.success_price, t.order_id, t.status from pendingTrade t where t.stock = '" + s.getID() + "' and t.id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
                 log.info(sql);
                 stm = con.createStatement();
                 ResultSet rs = stm.executeQuery(sql);
@@ -1197,9 +1197,9 @@ public class TradeStrategyImp implements ITradeStrategy {
                         double trade_price = rs.getDouble("success_price");
                         int order_id = rs.getInt("order_id");
                         tbsr = new TradexBuySellResult(s.getID(),
-                                trade_price,
-                                trade_qty,
-                                trade_price * trade_qty,
+                                price,
+                                qtyToTrade,
+                                price * qtyToTrade,
                                 order_id,
                                 false);
                         rs.close();
@@ -1228,7 +1228,7 @@ public class TradeStrategyImp implements ITradeStrategy {
     try {
         TradexBuySellResult tbsr = null;
         
-        String sql = "insert into pendingTrade select '" + s.getID() + "', case when max(id) is null then 0 else max(id) + 1 end, " + qtyToTrade + ", " + price + ", 0.0, 0, 'N', 1, sysdate(), sysdate() from pendingTrade where stock = '" + s.getID() + "'";
+        String sql = "insert into pendingTrade select '" + s.getID() + "', case when max(id) is null then 0 else max(id) + 1 end, " + qtyToTrade + ", " + price + ", 0, 0.0, 'N', null, 1, sysdate(), sysdate() from pendingTrade where stock = '" + s.getID() + "'";
         log.info(sql);
         stm = con.createStatement();
         stm.execute(sql);
@@ -1241,13 +1241,13 @@ public class TradeStrategyImp implements ITradeStrategy {
             if (MaxTry == 0)
             {
                 log.info("Attempted 7 times failed, return fail for placeBuyTradeToLocal");
-                sql = "update pendingTrade set status = 'C' where stock = '" + s.getID() + "' and status = 'N' and id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
+                sql = "update pendingTrade set status = 'C' where stock = '" + s.getID() + "' and status = 'N' ";
                 log.info(sql);
                 stm = con.createStatement();
                 stm.execute(sql);
                 return null;
             } 
-            sql = "select t.success_qty, t.success_price, t.status from pendingTrade t where t.stock = '" + s.getID() + "' and t.id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
+            sql = "select t.success_qty, t.success_price, t.order_id, t.status from pendingTrade t where t.stock = '" + s.getID() + "' and t.id = (select max(id) from pendingTrade p where p.stock = '" + s.getID() + "')";
             log.info(sql);
             stm = con.createStatement();
             ResultSet rs = stm.executeQuery(sql);
@@ -1274,9 +1274,9 @@ public class TradeStrategyImp implements ITradeStrategy {
                     double trade_price = rs.getDouble("success_price");
                     int order_id = rs.getInt("order_id");
                     tbsr = new TradexBuySellResult(s.getID(),
-                            trade_price,
-                            trade_qty,
-                            trade_price * trade_qty,
+                            price,
+                            qtyToTrade,
+                            price * qtyToTrade,
                             order_id,
                             true);
                     rs.close();

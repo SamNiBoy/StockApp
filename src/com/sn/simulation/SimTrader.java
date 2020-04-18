@@ -169,9 +169,9 @@ public void run() {
         }
         
         //Only run at every night after 18 clock.
-        if (hr < 18 && hr > 8)
+        if (hr < 18 && hr > 3)
         {
-            log.info("SimTrader skipped because of hour:" + hr + " is between 8:00 to 18:00.");
+            log.info("SimTrader skipped because of hour:" + hr + " is between 3:00 to 18:00.");
             return;
         }
         

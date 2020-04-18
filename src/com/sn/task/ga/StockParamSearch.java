@@ -102,9 +102,9 @@ public class StockParamSearch implements IWork {
             }
             
             //Only run at every night after 16 clock.
-            if (hr < 16 && hr > 8)
+            if (hr < 16 && hr > 3)
             {
-                log.info("StockParamSearch skipped because of hour:" + hr + " is between 8:00 to 16:00.");
+                log.info("StockParamSearch skipped because of hour:" + hr + " is between 3:00 to 16:00.");
                 return;
             }
             
