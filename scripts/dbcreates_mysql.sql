@@ -39,7 +39,8 @@ insert into param values('MAX_LOST_PCT_FOR_SELL_MODE', 'TRADING',null, -0.06, ''
 insert into param values('MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE', 'TRADING', null,0.06, '', '', 'Put back stock for trade if stock price goes this high percentage.', sysdate(),sysdate());
 
 
-insert into param values('STOCK2_QUEUE_SIZE', 'TRADING',60,null , '', '', 'Defined how big the queue size for Stock2 object to calculate statistics, this is critial param, if you fetch every one second, then it stores one minute data.', sysdate(),sysdate());
+insert into param values('GZ_STOCK2_QUEUE_SIZE', 'TRADING',180,null , '', '', 'Defined how big the queue size for GZ Stock2 object to calculate statistics, this is critial param, if you fetch every one second, then it stores one minute data.', sysdate(),sysdate());
+insert into param values('ALL_STOCK2_QUEUE_SIZE', 'TRADING',60,null , '', '', 'Defined how big the queue size for ALL Stock2 object to calculate statistics, this is critial param, if you fetch every one second, then it stores one minute data.', sysdate(),sysdate());
 insert into param values('FETCH_EVERY_SECONDS', 'TRADING',10,null , '', '', 'Define how often we fetch stock data for all stocks as well as for gzed stocks.', sysdate(),sysdate());
 
 insert into param values('VOLUME_PLUS_PCT', 'TRADING',null,0.5, '', '', 'Define the last delta trading volume is this above the pct of delta volumes in the queue then it means volume plused.', sysdate(),sysdate());

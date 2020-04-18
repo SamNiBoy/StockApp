@@ -137,7 +137,7 @@ public class SimStockDriver {
                     id = rs.getString("id");
                     name = rs.getString("name");
                     area = rs.getString("area");
-                    stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", id);
+                    stock2_queue_sz = ParamManager.getIntParam("GZ_STOCK2_QUEUE_SIZE", "TRADING", id);
                     s = new Stock2(id, name, area, start_dt, end_dt, stock2_queue_sz);
                     simstocks.put(id, s);
                     cnt++;
@@ -158,7 +158,7 @@ public class SimStockDriver {
                         id = rs.getString("id");
                         name = rs.getString("name");
                         area = rs.getString("area");
-                        stock2_queue_sz = ParamManager.getIntParam("STOCK2_QUEUE_SIZE", "TRADING", id);
+                        stock2_queue_sz = ParamManager.getIntParam("GZ_STOCK2_QUEUE_SIZE", "TRADING", id);
                         s = new Stock2(id, name, area, start_dt, end_dt, stock2_queue_sz);
                         simstocks.put(id, s);
                         cnt++;
