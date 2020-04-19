@@ -165,12 +165,7 @@ public class SimTrader implements Job{
                     }
                     else {
                         //We randomly select 50% data for simulation.
-                            sql = "select * from (select distinct s.id" + 
-                                  "                 from stkdat2 s" + 
-                                  "                where cur_pri < 100" + 
-                                  "                  and cur_pri > 5" +
-                                  "                  and left(dl_dt, 10) = (select left(max(s2.dl_dt), 10) from stkdat2 s2)" +
-                                  "               ) tmp" +
+                            sql = "select * from stk " +
                                   " where floor(1+rand()*100) <= 100" +
                                   "                order by id";
                     }

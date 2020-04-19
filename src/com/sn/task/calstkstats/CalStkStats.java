@@ -34,10 +34,12 @@ public class CalStkStats implements Job {
 
     /**
      * @param args
+     * @throws JobExecutionException 
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JobExecutionException {
         // TODO Auto-generated method stub
         CalStkStats fsd = new CalStkStats();
+        fsd.execute(null);
     }
 
     public CalStkStats() {

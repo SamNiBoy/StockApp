@@ -7,6 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 import com.sn.mail.GzStockBuySellPointObserverable;
 import com.sn.strategy.ITradeStrategy;
@@ -18,24 +21,12 @@ import com.sn.trader.StockTrader;
 import com.sn.stock.RawStockData;
 import com.sn.task.IWork;
 
-public class GzStockDataConsumer implements IWork {
+public class GzStockDataConsumer implements Job {
 
 	static private int MAX_QUEUE_SIZE = 1;
 	static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
     static private StockTrader st = StockTrader.getTradexTrader();
     private ITradeStrategy strategy = null;
-    
-    /*
-     * Initial delay before executing work.
-     */
-    static long initDelay = 0;
-
-    /*
-     * Seconds delay befor executing next work.
-     */
-    static long delayBeforNxtStart = 5;
-
-    static TimeUnit tu = TimeUnit.MILLISECONDS;
 
     static int maxLstNum = 50;
     
@@ -47,16 +38,14 @@ public class GzStockDataConsumer implements IWork {
      */
     public static void main(String[] args) throws Exception {
         // TODO Auto-generated method stub
-        GzStockDataConsumer fsd = new GzStockDataConsumer(1, 3);
-        fsd.run();
+        GzStockDataConsumer fsd = new GzStockDataConsumer();
+        fsd.execute(null);
     }
 
-    public GzStockDataConsumer(long id, long dbn) throws Exception {
-        initDelay = id;
-        delayBeforNxtStart = dbn;
+    public GzStockDataConsumer() throws Exception {
     }
 
-    public ArrayBlockingQueue<RawStockData> getDq() {
+    public static ArrayBlockingQueue<RawStockData> getDq() {
         return dataqueue;
     }
 
@@ -64,7 +53,8 @@ public class GzStockDataConsumer implements IWork {
         this.dataqueue = dq;
     }
     
-    public void run() {
+    public void execute(JobExecutionContext context)
+            throws JobExecutionException {
         ConcurrentHashMap<String, Stock2> gzs = StockMarket
         .getGzstocks();
         while (true) {
@@ -105,29 +95,4 @@ public class GzStockDataConsumer implements IWork {
             }
         }
     }
-
-    public String getWorkResult() {
-        return "";
-    }
-
-    public String getWorkName() {
-        return "GzRawStockDataConsumer";
-    }
-
-    public long getInitDelay() {
-        return initDelay;
-    }
-
-    public long getDelayBeforeNxt() {
-        return delayBeforNxtStart;
-    }
-
-    public TimeUnit getTimeUnit() {
-        return tu;
-    }
-
-    public boolean isCycleWork() {
-        return false;
-    }
-
 }

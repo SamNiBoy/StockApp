@@ -157,6 +157,10 @@ public class SimWorker implements IWork {
                 lststp = lst_stmp.get(s.getID());
                 curstp = s.getDl_dt();
                 
+                //stock may not trade today, if so skip.
+                if (curstp == null)
+                	continue;
+                
                 log.info(workName + ": simulate step:" + StepCnt + " for stock:" + s.getID() + " at time:" + curstp.toString());
                 
                 if (((lststp != null && curstp.after(lststp)) || lststp == null) && st.performTrade(s)) {

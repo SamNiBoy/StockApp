@@ -1,5 +1,9 @@
 package com.sn.stock;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -8,6 +12,8 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -19,6 +25,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.STConstants;
+import com.sn.cashAcnt.CashAcnt;
 import com.sn.stock.Stock2.StockData;
 import com.sn.strategy.algorithm.param.ParamManager;
 
@@ -40,12 +47,156 @@ public class StockMarket{
     private static double totIncDlMny = 0.0;
     private static double totDecDlMny = 0.0;
     private static double totEqlDlMny = 0.0;
-    private static double Degree = 0.0;
+    private static double Degree = 0;
+    
+    private static double ShIndex = 0.0;
+    private static double DeltaShIndex = 0;
+    private static double DeltaShIndexPct = 0.0;
+    private static long ShDelAmt = 0;
+    private static double shDelMny = 0.0;
+    private static String sh_lstStkDat = "";
+    
+    static private List<String> DeltaTSLst = new ArrayList<String>();
+    static private List<Double> DeltaShIdxLst = new ArrayList<Double>();
+    
+    
+    
     
     private static Timestamp pre_stats_ts = null;
     private static Timestamp cur_stats_ts = null;
     
     private static String fetch_stat = "";
+    
+    public static String getDeltaTSLst() {
+    	String str = "[";
+    	for(String k : DeltaTSLst) {
+    		
+    		if (str.length() > 1)
+    		{
+    			str += ",";
+    		}
+    		str += "'" + k + "'";
+    	}
+    	
+    	str+="]";
+    	return str;
+    }
+    
+    public static String getDeltaShIdxLst() {
+    	String str = "[";
+    	for(Double k : DeltaShIdxLst) {
+    		
+    		if (str.length() > 1)
+    		{
+    			str += ",";
+    		}
+    		str += k;
+    	}
+    	
+    	str+="]";
+    	
+    	return str;
+    }
+    
+    public static String getSHIndexLngDsc()
+    {    	
+    	DecimalFormat df = new DecimalFormat("##.##");
+    	String str = "";
+    	str += "'IDX[" + df.format(ShIndex) + "] DT[" + df.format(DeltaShIndex) + "] Pct[" + df.format(DeltaShIndexPct) + "%]万手[" + df.format(ShDelAmt/10000) + "]额(亿)[" + df.format(shDelMny/10000) +"]'";
+    	return str;
+    }
+    
+    public static String getSHIndexShtDsc()
+    {
+    	DecimalFormat df = new DecimalFormat("##.##");
+    	String str = "";
+    	str += "涨跌:" + df.format(DeltaShIndex) + "\n百分比:" + df.format(DeltaShIndexPct);
+    	return str;
+    }
+    
+    public static double getSHIndexDeltaPct()
+    {
+    	DecimalFormat df = new DecimalFormat("##.##");
+    	String str = "";
+    	str = df.format(DeltaShIndexPct);
+    	return Double.valueOf(str);
+    }
+    
+    
+    
+    
+    public static boolean refreshShIndex()
+    {
+    	try {
+            String str = "";
+            String stkSql = "http://hq.sinajs.cn/list=s_sh000001";
+            log.info("Fetching..." + stkSql);
+            URL url = new URL(stkSql);
+            InputStream is = url.openStream();
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            while ((str = br.readLine()) != null) {
+                if (str.equals(sh_lstStkDat))
+                {
+                    break;
+                }
+                sh_lstStkDat = str;
+                
+                str = str.replaceAll("\"", "");
+                str = str.replaceAll(";", "");
+                String subs = str.substring(str.indexOf(",") + 1);
+                String sary[] = subs.split(",");
+                
+                ShIndex  = Double.valueOf(sary[0]);
+                DeltaShIndex  = Double.valueOf(sary[1]);
+                DeltaShIndexPct  = Double.valueOf(sary[2]);
+                ShDelAmt  = Integer.valueOf(sary[3]);
+                shDelMny  = Double.valueOf(sary[4]);
+                
+	            Timestamp t0 = Timestamp.valueOf(LocalDateTime.now());
+                
+                long hour = t0.getHours();
+                long minutes = t0.getMinutes();
+                
+                String ts = (hour < 10 ? "0" + hour : hour) + ":" + (minutes < 10 ? "0" + minutes : minutes);
+                
+                DeltaTSLst.add(ts);
+                DeltaShIdxLst.add(DeltaShIndex);
+                
+                Connection con = DBManager.getConnection();
+                Statement stm = null;
+                
+                try {
+                    stm = con.createStatement();
+                    String sql = "insert into stockIndex select 's_sh000001', case when max(id) is null then 0 else max(id) + 1 end, "
+                    		+ ShIndex + "," + DeltaShIndex + "," +  DeltaShIndexPct + ", " + ShDelAmt + ", " + shDelMny + ", sysdate() from stockIndex where indexid = 's_sh000001'";
+                    log.info(sql);
+                    stm.execute(sql);
+                }
+                catch(SQLException e)
+                {
+                    e.printStackTrace();
+                    log.info(e.getMessage() + " errored:" + e.getErrorCode());
+                }
+                finally {
+                    try {
+                        stm.close();
+                        con.close();
+                    } catch (SQLException e) {
+                        // TODO Auto-generated catch block
+                        log.info(e.getMessage() + " errored:" + e.getErrorCode());
+                    }
+                }
+                
+                log.info("Got SH index ShIndex:" + ShIndex + ", DeltaShIndex:" + DeltaShIndex + ", DeltaShIndexPct:" + DeltaShIndexPct + ", ShDelAmt:" + ShDelAmt + ", shDelMny:" + shDelMny);
+            }
+            br.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    	
+    	return true;
+    }
     
     public static String getFetch_stat() {
         return fetch_stat;
@@ -77,7 +228,8 @@ public class StockMarket{
      */
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-        log.info(getShortDesc());
+        //log.info(getShortDesc());
+        refreshShIndex();
     }
     
     static public boolean loadStocks() {
@@ -367,28 +519,32 @@ public class StockMarket{
 
     public static double getDegree(Timestamp ts) {
         
-        String PK = ts.toString().substring(0, 16);
-        
-        Double deg = degreesForSim.get(PK);
-        
-        if (deg == null)
-        {
-            if (degreesForSim.size() > 0)
+    	if (ts != null)
+    	{
+            String PK = ts.toString().substring(0, 16);
+            
+            Double deg = degreesForSim.get(PK);
+            
+            if (deg == null)
             {
-                log.info("Not able to get degree from map at:" + ts.toString() + ",but in sim mode use 0,  market not opened?");
-                Degree = 0.0;
+                if (degreesForSim.size() > 0)
+                {
+                    log.info("Not able to get degree from map at:" + ts.toString() + ",but in sim mode use 0,  market not opened?");
+                    Degree = 0.0;
+                }
+                else
+                {
+                    log.info("Not able to get degree from map at:" + ts.toString() + ", not in sim Mode, return whatever value as is:" + Degree);
+                }
+                return Degree;
             }
             else
             {
-                log.info("Not able to get degree from map at:" + ts.toString() + ", not in sim Mode, return whatever value as is:" + Degree);
+                log.info("Got degree from map for key:" + PK + ", return value:" + Degree);
+            	Degree = deg;
             }
-            return Degree;
-        }
-        else
-        {
-            log.info("Got degree from map for key:" + PK + ", return value:" + deg);
-            return deg;
-        }
+    	}
+        return Math.round(Degree * 100) / 100.0;
     }
     
     public static void clearDegreeMap()
@@ -416,7 +572,6 @@ public class StockMarket{
             int maxDays = 2;
             
             try {
-                stm = con.createStatement();
                 
                 //start_dt is not included.
                 for (int i = 1; i<= maxDays; i++)
@@ -426,6 +581,7 @@ public class StockMarket{
                     
                     log.info(sql);
                     
+                    stm = con.createStatement();
                     rs = stm.executeQuery(sql);
                     
                     if (!rs.next()) {
@@ -434,6 +590,8 @@ public class StockMarket{
                     
                     String mydt = rs.getString("mydt");
                     
+                    rs.close();
+                    stm.close();
                     log.info("calculate index for date:" + mydt.toString());
                     
                     for (int h = 9; h<=15; h++)
@@ -442,10 +600,28 @@ public class StockMarket{
                         {
                             if ((h == 9 && m <= 30) || (h == 11 && m >= 30) || (h >11 && h < 13) || (h == 15 && m > 0))
                                 continue;
-                            String PK = mydt + " " + (h < 10 ? ("0" + h) : h) + ":" + (m < 10 ? ("0" + m) : m);
-                            calIndex(PK + ":00");
-                            log.info("calculate degree:" + Degree + " at timestamp:" + PK + " put into degreeForSim.");
-                            degreesForSim.put(PK, Degree);
+                            String PK = mydt + " " + (h < 10 ? ("0" + h) : h) + ":" + (m < 10 ? ("0" + m) : m) + ":00";
+                            //calIndex(PK + ":00");
+                            sql = "select indexval, delindex, deltapct, delamt, delmny from stockindex where indexid = 's_sh000001' and add_dt <= str_to_date('" + PK + "', '%Y-%m-%d %H:%i:%s') order by id desc";
+                            stm = con.createStatement();
+                            
+                            log.info(sql);
+                            rs = stm.executeQuery(sql);
+                            
+                            if (rs.next())
+                            {
+                                ShIndex = rs.getDouble("indexval");
+                                DeltaShIndex = rs.getDouble("delindex");
+                                DeltaShIndexPct = rs.getDouble("deltapct");
+                                ShDelAmt =  rs.getLong("delamt");
+                                shDelMny = rs.getDouble("delmny");
+                            }
+                            
+                            rs.close();
+                            stm.close();
+                            
+                            log.info("calculate DeltaShIndexPct:" + DeltaShIndexPct + " at timestamp:" + PK + " put into degreeForSim.");
+                            degreesForSim.put(PK, DeltaShIndexPct);
                         }
                     }
                 }
@@ -456,8 +632,6 @@ public class StockMarket{
             }
             finally {
                 try {
-                    rs.close();
-                    stm.close();
                     con.close();
                 } catch (SQLException e) {
                     // TODO Auto-generated catch block
@@ -632,6 +806,8 @@ public class StockMarket{
                 pre_stats_ts = cur_stats_ts;
             }
         }
+        
+        refreshShIndex();
         
         log.info("Now start to refresh user's gz stock stats");
         calGzStockStats();

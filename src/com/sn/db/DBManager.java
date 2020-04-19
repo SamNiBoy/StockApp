@@ -20,6 +20,8 @@ public class DBManager {
     static Logger log = Logger.getLogger(DBManager.class);
     //public static final String drive = "oracle.jdbc.driver.OracleDriver";
     public static final String drive = "org.gjt.mm.mysql.Driver";
+    
+    public static final String drive4 = "com.mysql.cj.jdbc.Driver";
     /**
      * ���ӵ�ַ�����������ṩ������ס jdbc:oracle:thin:@localhost:1521:ORCL localhost ��ip��ַ��
      */
@@ -47,6 +49,10 @@ public class DBManager {
 
     // TODO Auto-generated method stub
 
+    static {
+    	DBManager.initLog4j();
+    	DBManager.initDataSource();
+    }
     /**
      * @param args
      */

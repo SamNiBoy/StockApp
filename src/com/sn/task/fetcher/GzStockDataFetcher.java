@@ -29,28 +29,7 @@ public class GzStockDataFetcher implements Job {
 
     static int maxLstNum = 50;
     
-    static GzStockDataFetcher self = null;
-    static GzStockDataConsumer cnsmr = null;
-    
     static Logger log = Logger.getLogger(GzStockDataFetcher.class);
-
-    static public boolean start() {
-        //Fetch every 30 seconds
-        
-        int fetch_per_seconds = ParamManager.getIntParam("FETCH_EVERY_SECONDS", "TRADING", null);
-        
-        //self = new GzStockDataFetcher(0,  fetch_per_seconds * 1 * 1000);
-        try {
-            cnsmr = new GzStockDataConsumer(0, 0);
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            log.error("GzStockDataFetcher starts GzStockDataConsumer failed, stop continue:" + e.getMessage());
-            return false;
-        }
-        log.info("can not submit GzStockDataFetcher!");
-        return false;
-    }
     /**
      * @param args
      * @throws Exception 
@@ -174,9 +153,9 @@ public class GzStockDataFetcher implements Job {
                         log.info("market not open yet. td_opn_pri <= 0 for gzstock:" + srd.id + " can not trade based on it, continue");
                         continue;
                     }
-                    cnsmr.getDq().put(srd);
+                    GzStockDataConsumer.getDq().put(srd);
                     
-                    log.info("GzStockDataFetcher put stock data to queue:" + srd.id + " size is:" + cnsmr.getDq().size());
+                    log.info("GzStockDataFetcher put stock data to queue:" + srd.id + " size is:" + GzStockDataConsumer.getDq().size());
                     
                     synchronized (srd) {
                         log.info("now wait GzStockDataConsumer consume the srd:" + srd.id);

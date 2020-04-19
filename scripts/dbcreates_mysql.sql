@@ -57,6 +57,19 @@ insert into param values('MIN_SHAKING_PCT', 'SUGGESTER',null,0.06, '', '', 'Stoc
 insert into param values('TRADING_AT_LOCAL', 'TRADING',1,null, '', '', 'Do trading at local with GF trader, other then send to Tradex trading system.', sysdate(),sysdate());
 
 
+create table if not exists stockIndex(
+indexid varchar(20 ) not null,
+id int,
+indexval decimal(10, 4),
+delindex decimal(10, 4),
+deltapct decimal(10, 4),
+delamt int,
+delmny decimal(20, 4),
+add_dt datetime not null,
+CONSTRAINT stockIndex_PK PRIMARY KEY (indexid, id)
+);
+
+
 create table if not exists pendingTrade(
 stock varchar(20 ) not null,
 id int,

@@ -168,7 +168,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     	
     	double baseThresh = ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING", stk.getID());
     	
-    	Timestamp tm = stk.getDl_dt();
+    	/*Timestamp tm = stk.getDl_dt();
         String deadline = null;
         if (tm == null) {
         	deadline = "sysdate()";
@@ -222,9 +222,9 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     			ratio = 1.1;
     		}
     	}
-    	log.info("Calculate buy thresh value with Degree:" + Degree + ", baseThresh:" + baseThresh + " ratio:" + ratio + " final thresh value:" + ratio * baseThresh);
+    	log.info("Calculate buy thresh value with Degree:" + Degree + ", baseThresh:" + baseThresh + " ratio:" + ratio + " final thresh value:" + ratio * baseThresh);*/
 
-    	return ratio * baseThresh;
+    	return baseThresh;
     }
 
 	@Override

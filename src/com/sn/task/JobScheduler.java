@@ -26,6 +26,8 @@ import com.sn.task.fetcher.StockDataFetcher;
 import com.sn.task.fetcher.GzStockDataFetcher;
 import com.sn.task.suggest.SuggestStock;
 import com.sn.simulation.SimTrader;
+import com.sn.task.fetcher.StockDataConsumer;
+import com.sn.task.fetcher.GzStockDataConsumer;
 
 /*
 
@@ -112,6 +114,15 @@ public class JobScheduler {
         
         
         
+        JobDetail job_StockDataConsumer = newJob(StockDataConsumer.class).withIdentity("StockDataConsumer", "StockApp").build();
+
+        //CronTrigger trigger = newTrigger().withIdentity("CalStkStats", "StockApp").withSchedule(cronSchedule("0 25/5 9-15 ? * MON-FRI")).build();
+        CronTrigger trigger_StockDataConsumer = newTrigger().withIdentity("StockDataConsumer", "StockApp").withSchedule(cronSchedule("0/10 25-59 9-15 ? * MON-FRI")).build();
+        
+        ft = sched.scheduleJob(job_StockDataConsumer, trigger_StockDataConsumer);
+        log.info(job_StockDataConsumer.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
+                 + trigger_StockDataConsumer.getCronExpression());
+        
         
         JobDetail job_StockDataFetcher = newJob(StockDataFetcher.class).withIdentity("StockDataFetcher", "StockApp").build();
 
@@ -123,6 +134,15 @@ public class JobScheduler {
                  + trigger_StockDataFetcher.getCronExpression());
         
         
+        
+        JobDetail job_GzStockDataConsumer = newJob(GzStockDataConsumer.class).withIdentity("GzStockDataConsumer", "StockApp").build();
+
+        //CronTrigger trigger = newTrigger().withIdentity("CalStkStats", "StockApp").withSchedule(cronSchedule("0 25/5 9-15 ? * MON-FRI")).build();
+        CronTrigger trigger_GzStockDataConsumer = newTrigger().withIdentity("GzStockDataConsumer", "StockApp").withSchedule(cronSchedule("0/10 25-59 9-15 ? * MON-FRI")).build();
+        
+        ft = sched.scheduleJob(job_GzStockDataConsumer, trigger_GzStockDataConsumer);
+        log.info(job_GzStockDataConsumer.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
+                 + trigger_GzStockDataConsumer.getCronExpression());
         
         
         JobDetail job_GzStockDataFetcher = newJob(GzStockDataFetcher.class).withIdentity("GzStockDataFetcher", "StockApp").build();
@@ -146,7 +166,7 @@ public class JobScheduler {
     	
         
         JobDetail job_SimTrader = newJob(SimTrader.class).withIdentity("SimTrader", "StockApp").build();
-        CronTrigger trigger_SimTrader = newTrigger().withIdentity("SimTrader", "StockApp").withSchedule(cronSchedule("0 0 19 ? * MON-FRI")).build();
+        CronTrigger trigger_SimTrader = newTrigger().withIdentity("SimTrader", "StockApp").withSchedule(cronSchedule("0 23 23 ? * MON-SUN")).build();
         
         ft = sched.scheduleJob(job_SimTrader, trigger_SimTrader);
         log.info(job_SimTrader.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
@@ -154,7 +174,7 @@ public class JobScheduler {
         
         
         JobDetail job_CalStkStats = newJob(CalStkStats.class).withIdentity("CalStkStats", "StockApp").build();
-        CronTrigger trigger_CalStkStats = newTrigger().withIdentity("CalStkStats", "StockApp").withSchedule(cronSchedule("0 0/1 * ? * *")).build();
+        CronTrigger trigger_CalStkStats = newTrigger().withIdentity("CalStkStats", "StockApp").withSchedule(cronSchedule("0 25/1 9-15 ? * MON-FRI")).build();
         
         ft = sched.scheduleJob(job_CalStkStats, trigger_CalStkStats);
         log.info(job_CalStkStats.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "

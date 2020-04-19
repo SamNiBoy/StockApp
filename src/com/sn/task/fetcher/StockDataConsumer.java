@@ -15,50 +15,41 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 import com.sn.db.DBManager;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.stock.RawStockData;
-import com.sn.task.WorkManager;
-import com.sn.task.IWork;
 
-public class StockDataConsumer implements IWork {
+public class StockDataConsumer implements Job {
 
     static private int MAX_QUEUE_SIZE = 10000;
     
     static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
     
     static Connection con = DBManager.getConnection();
-    /* Initial delay before executing work.
-     */
-    long initDelay = 0;
-
-    /* Seconds delay befor executing next work.
-     */
-    long delayBeforNxtStart = 5;
-
-    TimeUnit tu = TimeUnit.MILLISECONDS;
     
     static int maxLstNum = 50;
     
     static Logger log = Logger.getLogger(StockDataConsumer.class);
     /**
      * @param args
+     * @throws JobExecutionException 
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JobExecutionException {
         // TODO Auto-generated method stub
-        StockDataConsumer fsd = new StockDataConsumer(1, 3);
-        fsd.run();
+        StockDataConsumer fsd = new StockDataConsumer();
+        fsd.execute(null);
     }
 
-    public StockDataConsumer(long id, long dbn)
+    public StockDataConsumer()
     {
-        initDelay = id;
-        delayBeforNxtStart = dbn;
     }
 
-    public ArrayBlockingQueue<RawStockData> getDq() {
+    public static ArrayBlockingQueue<RawStockData> getDq() {
         return dataqueue;
     }
 
@@ -66,8 +57,8 @@ public class StockDataConsumer implements IWork {
         this.dataqueue = dq;
     }
 
-    public void run()
-    {
+    public void execute(JobExecutionContext context)
+            throws JobExecutionException {
         log.info("Now about to run StockConsumer's run...");
         ConcurrentHashMap<String, Stock2> ss = StockMarket
         .getStocks();
@@ -95,35 +86,4 @@ public class StockDataConsumer implements IWork {
             e.printStackTrace();
         }
     }
-    
-    public String getWorkResult()
-    {
-        return "";
-    }
-
-    public String getWorkName()
-    {
-        return "StockDataConsumer";
-    }
-
-    public long getInitDelay()
-    {
-        return initDelay;
-    }
-
-    public long getDelayBeforeNxt()
-    {
-        return delayBeforNxtStart;
-    }
-
-    public TimeUnit getTimeUnit()
-    {
-        return tu;
-    }
-
-    public boolean isCycleWork()
-    {
-        return false;
-    }
-
 }

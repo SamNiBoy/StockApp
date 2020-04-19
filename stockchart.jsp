@@ -1,10 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
+import="java.io.*,java.util.*,java.sql.*,javax.servlet.http.*,com.sn.db.DBManager,com.sn.stock.StockMarket,java.text.DecimalFormat,org.apache.log4j.Logger,org.apache.log4j.PropertyConfigurator"
 	pageEncoding="utf-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>使用ECharts制作图表</title>
+<meta http-equiv="refresh" content="20">
+<title>股市监控</title>
 <!-- 引入ECharts文件 -->
 <script type="text/javascript" src="./js/echarts.min.js" ></script>
 <style type="text/css">
@@ -22,11 +23,11 @@ div {
  
 <script type="text/javascript">
 var myTextStyle = {
- color: "#0000AA",//文字颜色
+ color: "#BB00AA",//文字颜色
  fontStyle: "normal",//italic斜体  oblique倾斜
  fontWeight: "normal",//文字粗细bold   bolder   lighter  100 | 200 | 300 | 400...
  fontFamily: "sans-serif",//字体系列
- fontSize: 18 //字体大小
+ fontSize: 12 //字体大小
 };
  
 </script>
@@ -35,9 +36,10 @@ var myTextStyle = {
 	<center>
 		<h1>股票实时监控</h1>
 		<div id="index" style="width: 100%;height:400px; border: solid 1px #0000AA; margin: 2px; background-color: white;">
-		     <div id="idx1" style="width: 25%;height:100%; margin: 2px; background-color: white;"></div>
-		     <div id="idx2" style="width: 25%;height:100%; margin: 2px; background-color: white;"></div>
-		     <div id="idx3" style="width: 25%;height:100%; margin: 2px; background-color: white;"></div>
+		     <div id="idx1" style="width: 15%;height:100%; margin: 2px; background-color: white;"></div>
+		     
+		     <div id="idx3" style="width: 45%;height:100%; margin: 2px; background-color: white;"></div>
+		     <div id="idx2" style="width: 15%;height:100%; margin: 2px; background-color: white;"></div>
 		     <div id="idx4" style="width: 25%;height:100%; margin: 2px; background-color: white;"></div>
 		</div>
 	    <h1>我关注的股票</h1>
@@ -53,13 +55,28 @@ var myTextStyle = {
 		<div id="showGraphic4" style="width: 90%;height:500px;border: solid 5px #CD0000; margin: 2px; background-color: #DBDBDB;"></div>
 		
         <script type="text/javascript">
-    // 基于准备好的dom，初始化echarts实例
+
+function drawIndexCharts() {
+	
+	console.log("this is for debug message.");
+	
+	//var sm = java.type("com.sn.stock.StockMarket");
+	
+	//var deg = sm.getDegree(null);
+	//alert("is this coming up?");
+	
+	<jsp:useBean id="sm" scope="application" class="com.sn.stock.StockMarket" />
+	
     var idx1 = echarts.init(document.getElementById('idx1'));
+    
+    var subtitle = <%=sm.getSHIndexLngDsc()%>;
+    var pct = <%=sm.getSHIndexDeltaPct()%>;
+    
  
     idx1_opt = {
     		title : {
         text: '上证指数涨跌幅',
-        subtext:'',
+        subtext:subtitle,
         backgroundColor: '#ABABAB',
         subtextStyle: myTextStyle
     },
@@ -114,7 +131,7 @@ var myTextStyle = {
                         fontSize: 36
                     }
                 },
-                data:[{value: 2.2, name: '\n\n  \n '}]
+                data:[{value: pct, name: '\n\n  \n '}]
             }
         ]
     };
@@ -122,6 +139,8 @@ var myTextStyle = {
     
     var idx2 = echarts.init(document.getElementById('idx2'));
     
+	var deg = <%=sm.getDegree(null)%>;
+	
     idx2_opt = {
     		title : {
         text: '股票实时温度',
@@ -181,7 +200,7 @@ var myTextStyle = {
                         fontSize: 36
                     }
                 },
-                data:[{value: -7, name: '\n\n  \n'}]
+                data:[{value: deg, name: '\n\n  \n'}]
             }
         ]
     };
@@ -189,10 +208,14 @@ var myTextStyle = {
     idx2.setOption(idx2_opt);
     
     var idx3 = echarts.init(document.getElementById('idx3'));
+    
+    var xdata = eval(<%=sm.getDeltaTSLst()%>);
+    var ydata = eval(<%=sm.getDeltaShIdxLst()%>);
+    
     idx3_opt = {
 title : {
     text: '上证指数运行轨迹',
-    subtext: '(测试)',
+    subtext: '',
     backgroundColor: '#ABABAB',
     subtextStyle: myTextStyle
 },
@@ -216,7 +239,7 @@ color :['#22B101'],
 xAxis : [
     {
         type : 'category',
-        data : ['9:30','10:00','10:30','4月','5月','6月','7月','8月','9月','10月','11月','12月']
+        data : xdata
     }
 ],
 yAxis : [
@@ -239,7 +262,7 @@ series : [
         }
             }
         },
-        data:[2.0, 4.9, 7.0, -23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3],
+        data:ydata,
         markPoint : {
             data : [
                 {type : 'max', name: '最大值'},
@@ -255,13 +278,20 @@ series : [
 ]
 };
 
-    idx3.setOption(idx3_opt);
+    //idx3.clear();
+    idx3.setOption(idx3_opt, true);
     
     var idx4 = echarts.init(document.getElementById('idx4'));
+    
+    var IncCnt = <%=sm.getTotInc()%>;
+    var DecCnt = <%=sm.getTotDec()%>;
+    var EqlCnt = <%=sm.getTotEql()%>;
+    
+    
     idx4_opt = {
     	    title : {
     	        text: '涨跌家数分布',
-    	        subtext: '纯属虚构(测试)',
+    	        subtext: '',
     	        textStyle: {
     	        	color: '#CD0000'
     	        },
@@ -295,10 +325,16 @@ series : [
     	            type: 'pie',
     	            radius : '55%',
     	            center: ['50%', '60%'],
+    	            label: {
+    	        	        normal: {
+    	        	          show: true,
+    	        	          formatter: '{b} : {c} ({d}%)'    	        	        	
+    	        	        }
+    	                   },
     	            data:[
-    	                {value:335, name:'上涨家数'},
-    	                {value:310, name:'下跌家数'},
-    	                {value:234, name:'持平家数'}
+    	                {value:IncCnt, name:'上涨家数'},
+    	                {value:DecCnt, name:'下跌家数'},
+    	                {value:EqlCnt, name:'持平家数'}
     	            ],
     	            itemStyle: {
     	                emphasis: {
@@ -312,6 +348,9 @@ series : [
     	};
     
     idx4.setOption(idx4_opt);
+}
+
+setInterval(drawIndexCharts, 2000);
     
     </script>
     
@@ -483,7 +522,7 @@ series : [
         gzstock.setOption(gzstock_opt);
 		
 
-                        var myChart = echarts.init(document.getElementById('showGraphic'));
+                       /* var myChart = echarts.init(document.getElementById('showGraphic'));
                         option = {
                     title : {
                         text: 'ECharts实现动态图表(某地区蒸发量和降水量)',
@@ -554,7 +593,7 @@ series : [
                     ]
                 };
  
-                        myChart.setOption(option);
+                        myChart.setOption(option);*/
                     </script>
                     
 		<script type="text/javascript">

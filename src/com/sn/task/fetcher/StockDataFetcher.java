@@ -32,9 +32,6 @@ public class StockDataFetcher implements Job {
     
     static int maxLstNum = 50;
     
-    static StockDataFetcher self = null;
-    static StockDataConsumer cnsmr = null;
-    
     public static ReentrantLock lock = new ReentrantLock();
     public static Condition finishedOneRoundFetch = lock.newCondition();
     
@@ -160,8 +157,8 @@ public class StockDataFetcher implements Job {
                         continue;
                     }
                     
-                    log.info("StockDataFetcher put rawdata to queue with size:" + cnsmr.getDq().size());
-                    cnsmr.getDq().put(srd);
+                    log.info("StockDataFetcher put rawdata to queue with size:" + StockDataConsumer.getDq().size());
+                    StockDataConsumer.getDq().put(srd);
                 }
                 br.close();
                 if (failCnt > 0)
