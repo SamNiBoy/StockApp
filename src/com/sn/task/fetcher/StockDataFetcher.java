@@ -17,6 +17,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -28,6 +29,7 @@ import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.WorkManager;
 import com.sn.task.IWork;
 
+@DisallowConcurrentExecution
 public class StockDataFetcher implements Job {
     
     static int maxLstNum = 50;
@@ -93,8 +95,8 @@ public class StockDataFetcher implements Job {
         return stkLst.toString();
     }
 
-    private String lstStkDat = "";
-    private int failCnt = 0;
+    private static String lstStkDat = "";
+    private static int failCnt = 0;
 
     public void execute(JobExecutionContext context)
             throws JobExecutionException {

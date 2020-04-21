@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -24,6 +25,7 @@ import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.stock.RawStockData;
 
+@DisallowConcurrentExecution
 public class StockDataConsumer implements Job {
 
     static private int MAX_QUEUE_SIZE = 10000;
@@ -53,8 +55,8 @@ public class StockDataConsumer implements Job {
         return dataqueue;
     }
 
-    public void setDq(ArrayBlockingQueue<RawStockData> dq) {
-        this.dataqueue = dq;
+    public static void setDq(ArrayBlockingQueue<RawStockData> dq) {
+        dataqueue = dq;
     }
 
     public void execute(JobExecutionContext context)

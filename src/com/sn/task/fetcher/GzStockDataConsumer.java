@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -21,12 +22,13 @@ import com.sn.trader.StockTrader;
 import com.sn.stock.RawStockData;
 import com.sn.task.IWork;
 
+@DisallowConcurrentExecution
 public class GzStockDataConsumer implements Job {
 
 	static private int MAX_QUEUE_SIZE = 1;
 	static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
     static private StockTrader st = StockTrader.getTradexTrader();
-    private ITradeStrategy strategy = null;
+    static private ITradeStrategy strategy = null;
 
     static int maxLstNum = 50;
     
@@ -49,8 +51,8 @@ public class GzStockDataConsumer implements Job {
         return dataqueue;
     }
 
-    public void setDq(ArrayBlockingQueue<RawStockData> dq) {
-        this.dataqueue = dq;
+    public static void setDq(ArrayBlockingQueue<RawStockData> dq) {
+        dataqueue = dq;
     }
     
     public void execute(JobExecutionContext context)

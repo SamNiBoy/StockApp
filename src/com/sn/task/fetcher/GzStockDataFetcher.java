@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -25,6 +26,7 @@ import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.WorkManager;
 import com.sn.task.IWork;
 
+@DisallowConcurrentExecution
 public class GzStockDataFetcher implements Job {
 
     static int maxLstNum = 50;
@@ -53,7 +55,7 @@ public class GzStockDataFetcher implements Job {
     {
     }
 
-    private String getFetchLst()
+    private static String getFetchLst()
     {
         Connection con = null;
         Statement stm = null;
@@ -96,8 +98,8 @@ public class GzStockDataFetcher implements Job {
         return stkLst.toString();
     }
 
-    private String lstStkDat = "";
-    private int failCnt = 0;
+    private static String lstStkDat = "";
+    private static int failCnt = 0;
 
     public void execute(JobExecutionContext context)
             throws JobExecutionException {

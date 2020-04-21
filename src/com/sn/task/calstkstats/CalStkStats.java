@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -27,6 +28,7 @@ import com.sn.task.JobScheduler;
 import com.sn.task.WorkManager;
 import com.sn.task.ga.StockParamSearch;
 
+@DisallowConcurrentExecution
 public class CalStkStats implements Job {
 
     static Connection con = null;
