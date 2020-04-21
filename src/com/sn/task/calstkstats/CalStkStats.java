@@ -31,7 +31,6 @@ import com.sn.task.ga.StockParamSearch;
 @DisallowConcurrentExecution
 public class CalStkStats implements Job {
 
-    static Connection con = null;
     static Logger log = Logger.getLogger(CalStkStats.class);
 
     /**

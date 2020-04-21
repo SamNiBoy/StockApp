@@ -32,7 +32,7 @@ public class StockDataConsumer implements Job {
     
     static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
     
-    static Connection con = DBManager.getConnection();
+    static Connection con = null;
     
     static int maxLstNum = 50;
     
@@ -67,6 +67,11 @@ public class StockDataConsumer implements Job {
         int cnt = 0;
         try {
             while (true) {
+                
+                if (con == null)
+                {
+                    con = DBManager.getConnection();
+                }
                 RawStockData srd = dataqueue.take();
                 log.info("take return stock:" + srd.id);
                 Stock2 s = ss.get(srd.id);
@@ -86,6 +91,15 @@ public class StockDataConsumer implements Job {
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+        finally {
+            try {
+                con.close();
+                con = null;
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.error(e.getCause(), e);
+            }
         }
     }
 }
