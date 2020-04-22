@@ -339,7 +339,7 @@ public class Algorithm {
         //get gzed stock, for each do:
         
         log.info("Now start search best param for gz stock");
-        ConcurrentHashMap<String, Stock2> gzstocks = StockMarket.getGzstocks();
+        ConcurrentHashMap<String, Stock2> gzstocks = StockMarket.getGzstocks(true);
         
         StockMarket.clearDegreeMap();
         
@@ -477,7 +477,8 @@ public class Algorithm {
         try {
             con = DBManager.getConnection();
             stm = con.createStatement();
-            sql = "select left(max(dl_dt) - interval 1  day, 10) sd, left(max(dl_dt), 10) ed from stkdat2 where id = '" + stkid + "'";
+            //We train param with one day before sim day so we can evaluate how good the result is for future data.
+            sql = "select left(max(dl_dt) - interval 2 day, 10) sd, left(max(dl_dt) - interval 1 day, 10) ed from stkdat2 where id = '" + stkid + "'";
             log.info(sql);
             rs = stm.executeQuery(sql);
             rs.next();

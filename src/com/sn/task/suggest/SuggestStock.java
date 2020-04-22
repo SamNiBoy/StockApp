@@ -237,36 +237,56 @@ public class SuggestStock implements Job {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		ResultSet rs = null;
-		int exiter = 0;
 		try {
-	        String system_role_for_trade = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
+	        String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 			sql = "select * from usr where suggest_stock_enabled = 1";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
 			while (rs.next()) {
 				String openID = rs.getString("openID");
-				sql = "select id from usrStk where openID = '" + openID + "' and stop_trade_mode_flg = 0 and suggested_by in ('" + system_role_for_trade + "') and gz_flg = 1 order by id";
+				sql = "select id from usrStk where openID = '" + openID + "' and stop_trade_mode_flg = 0 and gz_flg = 1 and suggested_by <> '" + system_role_for_suggest + "' order by id";
+				log.info(sql);
 				Statement stm2 = con.createStatement();
 				ResultSet rs2 = stm2.executeQuery(sql);
 				sql = "";
-				if (rs2.next()) {
+				while (rs2.next()) {
 					String stkid = rs2.getString("id");
 					if (shouldStockExitTrade(stkid)) {
-						exiter++;
 						putStockToStopTradeMode(stkid);
 					}
 				}
 				rs2.close();
 				stm2.close();
+				
+				int num_stok_in_trade = ParamManager.getIntParam("NUM_STOCK_IN_TRADE", "TRADING", null);
+				sql = "select count(*) cnt from usrStk where openID = '" + openID + "' and stop_trade_mode_flg = 0 and gz_flg = 1 and suggested_by <> '" + system_role_for_suggest + "' order by id";
+				
+				stm2 = con.createStatement();
+				rs2 = stm2.executeQuery(sql);
+				
+				rs2.next();
+				
+				int num_in_trading = rs2.getInt("cnt");
+				
+				log.info("Need to keep:"+ num_stok_in_trade + " to trade, with:" + num_in_trading + " in trading already.");
+				
+				int new_num_to_trade = num_stok_in_trade - num_in_trading;
+				
+				if (new_num_to_trade > 0) {
+					moveStockToTrade(new_num_to_trade);
+				}
+				rs2.close();
+				stm2.close();
 			}
 			rs.close();
+			stm.close();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
         finally {
 			try {
-     			stm.close();
                 con.close();
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
@@ -274,10 +294,6 @@ public class SuggestStock implements Job {
                 log.error(e.getMessage() + " with error code: " + e.getErrorCode());
             }
         }
-		
-		if (exiter > 0) {
-			moveStockToTrade(exiter);
-		}
 	}
 	
 	private void moveStockToTrade(int maxCnt) {
@@ -295,10 +311,10 @@ public class SuggestStock implements Job {
 		String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 		String system_role_for_trade = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 		try {
-			sql = "select distinct s.id from usrStk s"
+			sql = "select distinct s.id from usrStk s "
 				+ "where s.gz_flg = 1 "
 				+ "  and s.suggested_by in ('" + system_role_for_suggest + "') "
-				+ "  order by id ";
+				+ "  order by suggested_comment desc ";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
@@ -307,7 +323,6 @@ public class SuggestStock implements Job {
 				sql = "update usrStk set suggested_by = '" + system_role_for_trade + "',  gz_flg = 1, stop_trade_mode_flg = 0, add_dt = sysdate(), mod_dt = sysdate() where id ='" + id + "'";
 				Statement stm2 = con.createStatement();
 				stm2.execute(sql);
-				con.commit();
 				stm2.close();
 				grantCnt++;
 				stockMoved.add(id);
@@ -368,48 +383,28 @@ public class SuggestStock implements Job {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		ResultSet rs = null;
-		int lost_cnt = 0;
-		int gain_cnt = 0;
+		boolean lost = false;
 		try {
-			sql = "select * from tradedtl where stkid = '" + stkid + "' and acntid not like 'SIM%' order by seqnum";
+			sql = "select c.pft_mny from cashacnt c join tradehdr h on c.acntid = h.acntid where h.stkid = '" + stkid + "' and c.pft_mny < 0";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
-			int pre_buy_flg = -1;
-			double pre_pri = 0.0;
-			while (rs.next()) {
-				int buy_flg = rs.getInt("buy_flg");
-				double cur_pri = rs.getDouble("price");
-				
-				if (pre_buy_flg != -1 && pre_buy_flg != buy_flg) {
-					if (pre_buy_flg == 1 && cur_pri < pre_pri) {
-						lost_cnt++;
-					}
-					else if (pre_buy_flg == 1 && cur_pri > pre_pri){
-						gain_cnt++;
-					}
-					if (pre_buy_flg == 0 && cur_pri > pre_pri) {
-						lost_cnt++;
-					}
-					else if (pre_buy_flg == 0 && cur_pri < pre_pri) {
-						gain_cnt++;
-					}
-				}
-				pre_buy_flg = buy_flg;
-				pre_pri = cur_pri;
+			if (rs.next()) {
+				log.info("Stock:"+ stkid + " with pft_mnt:" + rs.getDouble("pft_mny") + " which is a lost, stop trade.");
+				lost = true;
 			}
 			rs.close();
 			stm.close();
 			
-            int max_lost_before_exit = ParamManager.getIntParam("MAX_LOST_TIME_BEFORE_EXIT_TRADE", "TRADING", stkid);
-			log.info("Stock:" + stkid + " lost_cnt:" + lost_cnt + " gain_cnt:" + gain_cnt);
-			if (lost_cnt - gain_cnt > max_lost_before_exit) {
-				log.info("Lost cnt is " + max_lost_before_exit + " times more than gain_cnt, should exit trade.");
+            //int max_lost_before_exit = ParamManager.getIntParam("MAX_LOST_TIME_BEFORE_EXIT_TRADE", "TRADING", stkid);
+
+			if (lost) {
+				log.info("Stock:" + stkid + " has lost, stop trade.");
 				return true;
 			}
 			
             int max_days_without_trade_to_exit = ParamManager.getIntParam("MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE", "TRADING", stkid);
-			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "' and acntid not like 'SIM%' "
+			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "'"
 				+ "   and dl_dt >= sysdate() - interval " + max_days_without_trade_to_exit + " day)"
 				+ " or exists (select 'y' from usrStk where gz_flg = 1 and id = '" + stkid +  "' and add_dt > sysdate() - interval " + max_days_without_trade_to_exit + " day)";
 			log.info(sql);

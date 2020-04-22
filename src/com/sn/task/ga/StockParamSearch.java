@@ -38,10 +38,10 @@ public class StockParamSearch implements Job {
          */
         public static void main(String[] args) {
             // TODO Auto-generated method stub
-            StockParamSearch fsd = new StockParamSearch(1, 3);
+            StockParamSearch fsd = new StockParamSearch();
         }
 
-        public StockParamSearch(long id, long dbn)
+        public StockParamSearch()
         {
         }
 

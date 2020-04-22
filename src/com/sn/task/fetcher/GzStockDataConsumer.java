@@ -15,6 +15,7 @@ import org.quartz.JobExecutionException;
 import com.sn.mail.GzStockBuySellPointObserverable;
 import com.sn.strategy.ITradeStrategy;
 import com.sn.strategy.TradeStrategyGenerator;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
@@ -58,7 +59,9 @@ public class GzStockDataConsumer implements Job {
     public void execute(JobExecutionContext context)
             throws JobExecutionException {
         ConcurrentHashMap<String, Stock2> gzs = StockMarket
-        .getGzstocks();
+        .getGzstocks(false);
+        
+        int trade_at_local_with_sim_mode = ParamManager.getIntParam("TRADING_AT_LOCAL_WITH_SIM", "TRADING", null);
         while (true) {
         	log.info("after while, dataqueue.take()...");
         	RawStockData srd = null;
@@ -81,7 +84,7 @@ public class GzStockDataConsumer implements Job {
                 
                 if (strategy == null)
                 {
-                    strategy = TradeStrategyGenerator.generatorStrategy(false);
+                    strategy = TradeStrategyGenerator.generatorStrategy(trade_at_local_with_sim_mode == 1 ? true : false);
                 }
                 log.info("Now start trading with stragtegy:" + strategy.getTradeStrategyName() + " on stock:" + s.getID() + ", name:" + s.getName() + "\n\n");
                 st.setStrategy(strategy);

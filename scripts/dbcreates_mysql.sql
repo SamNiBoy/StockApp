@@ -55,6 +55,9 @@ insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.01, '',
 insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',10,null , '', '', 'Stock suggester param to define at min how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());
 insert into param values('MIN_SHAKING_PCT', 'SUGGESTER',null,0.06, '', '', 'Stock suggester param to define min percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
 insert into param values('TRADING_AT_LOCAL', 'TRADING',1,null, '', '', 'Do trading at local with GF trader, other then send to Tradex trading system.', sysdate(),sysdate());
+insert into param values('TRADING_AT_LOCAL_WITH_SIM', 'TRADING',1,null, '', '', 'Do trading at local with in simulation mode, other then send to Tradex trading system or with GF trader.', sysdate(),sysdate());
+
+insert into param values('NUM_STOCK_IN_TRADE', 'TRADING',5,null, '', '', 'Do you want how many stocks in trading for suggest stock job to maintain.', sysdate(),sysdate());
 
 
 create table if not exists stockIndex(
@@ -517,6 +520,7 @@ dl_dt datetime not null
 
 create index stkdat2_id_dldt_idx on stkDat2 (id, ft_id, dl_dt);
 create index stkdat2_idx3 on stkDat2 (id, ft_id, cur_pri, yt_cls_pri,dl_stk_num);
+create index stkdat2_dldt on stkDat2 (dl_dt);
 create index arc_stkdat2_id_dldt_idx on arc_stkDat2 (id, ft_id, dl_dt);
 create index arc_stkdat2_idx3 on arc_stkDat2 (id, ft_id, cur_pri, yt_cls_pri,dl_stk_num);
 //create index stkdat2_idx4 on stkDat2 (dl_dt, id, ft_id, td_opn_pri, cur_pri, dl_mny_num, dl_stk_num, yt_cls_pri, td_hst_pri, td_lst_pri, b1_num, b1_pri, s1_num, s1_pri);

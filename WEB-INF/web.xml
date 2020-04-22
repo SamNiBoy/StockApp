@@ -23,6 +23,15 @@
   version="3.0"
   metadata-complete="true">
 
+<servlet>
+<servlet-name>GetIndex</servlet-name>
+<servlet-class>com.sn.srvlet.GetIndex</servlet-class>
+</servlet>
+<servlet-mapping>
+<servlet-name>GetIndex</servlet-name>
+<url-pattern>/GetIndex</url-pattern>
+</servlet-mapping>
+
 <listener>  
     <listener-class>com.sn.tomcat.AutoRunTask</listener-class>
 </listener>
