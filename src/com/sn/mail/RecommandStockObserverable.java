@@ -25,6 +25,7 @@ import com.sn.db.DBManager;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 
 public class RecommandStockObserverable extends Observable {
 
@@ -105,6 +106,8 @@ public class RecommandStockObserverable extends Observable {
         boolean usr_need_mail = false;
         boolean generated_mail = false;
         
+	    Connection con = DBManager.getConnection();
+        
         for (RecommandStockSubscriber u : ms) {
         	u.subject = subject;
         	u.content = "";
@@ -114,13 +117,49 @@ public class RecommandStockObserverable extends Observable {
                     "<tr>" +
                     "<th> ID</th> " +
                     "<th> Name</th> " +
-                    "<th> Price</th></tr>");
+                    "<th> Price</th> " +
+                    "<th> GZ Flag</th> " +
+                    "<th> Suggest For Trading</th> " +
+                    "<th> Suggest Comment</th> " +
+                    "<th> Stop Trade Flag</th> " +
+                    "<th> </th></tr>");
             DecimalFormat df = new DecimalFormat("##.##");
             for (Stock2 s : stocksToSuggest) {
             	if (!u.alreadySuggested(s)) {
+            		
+            		int gz_flg = 0;
+            		int suggest_trading = 0;
+            		int stop_trade_flg = 0;
+            		String sys_suggest_usr = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", s.getID());
+            		String suggest_cmt = "";
+            		try {
+            		    Statement stm = con.createStatement();
+            		    String sql = "select gz_flg, case when suggested_by = '" + sys_suggest_usr + "' then 0 else 1 end suggest_trading, stop_trade_mode_flg, suggested_comment from usrstk where id = '" + s.getID() + "'";
+            		    
+            		    log.info(sql);
+            		    
+            		    ResultSet rs = stm.executeQuery(sql);
+            		    rs.next();
+            		    
+            		    gz_flg = rs.getInt("gz_flg");
+            		    suggest_trading = rs.getInt("suggest_trading");
+            		    stop_trade_flg = rs.getInt("stop_trade_mode_flg");
+            		    suggest_cmt = rs.getString("suggested_comment");
+            		    
+            		    rs.close();
+            		    stm.close();
+            		}
+            		catch (Exception e) {
+            			log.error(e.getMessage(), e);
+            		}
+            		
                     body.append("<tr> <td>" + s.getID() + "</td>" +
                     "<td> " + s.getName() + "</td>" +
-                    "<td> " + df.format(s.getCur_pri() == null ? 0 : s.getCur_pri()) + "</td></tr>");
+                    "<td> " + df.format(s.getCur_pri() == null ? 0 : s.getCur_pri()) + "</td>" +
+                    "<td> " + gz_flg + "</td>" +
+                    "<td> " + suggest_trading + "</td>" +
+                    "<td> " + suggest_cmt + "</td>" +
+                    "<td> " + stop_trade_flg + "</td></tr>");
                     usr_need_mail = true;
                     generated_mail = true;
                     u.setSuggested(s);
@@ -134,6 +173,14 @@ public class RecommandStockObserverable extends Observable {
             	u.content = "";
             }
         }
+        
+        try {
+        	con.close();
+        }
+        catch (Exception e) {
+        	log.error(e.getMessage(), e);
+        }
+        
         return generated_mail;
     }
 

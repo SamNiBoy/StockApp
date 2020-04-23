@@ -143,7 +143,7 @@ public class PriceShakingStockSelector implements IStockSelector {
                      cur_area_id = 3;
                  }
                  
-                 log.info("line1_pri:" + line1_pri);
+                 /*log.info("line1_pri:" + line1_pri);
                  log.info("line2_pri:" + line2_pri + "\n");
                  
                  log.info("pre_pri:" + pre_pri);
@@ -154,7 +154,7 @@ public class PriceShakingStockSelector implements IStockSelector {
                  log.info("cur_area_id:" + cur_area_id + "\n");
                  
                  log.info("jump_area_pri:" + jump_area_pri + "\n");
-                 log.info("jump_area_cnt:" + jump_area_cnt + "\n");
+                 log.info("jump_area_cnt:" + jump_area_cnt + "\n");*/
                  
                  if (jump_area_pri == 0)
                  {

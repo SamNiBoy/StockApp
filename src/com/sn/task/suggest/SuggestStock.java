@@ -99,6 +99,7 @@ public class SuggestStock implements Job {
 		
 		try {
 			Map<String, Stock2> stks = StockMarket.getStocks();
+			int NumOfStockToSuggest = ParamManager.getIntParam("NUM_STOCK_TO_SUGGEST", "SUGGESTER", null);
 			int tryCnt = 5;
 			boolean tryHarderCriteria = false;
 			while(tryCnt-- > 0) {
@@ -142,6 +143,9 @@ public class SuggestStock implements Job {
 			    			}
 			    		}
 			    		if (suggest_flg) {
+			    			if(s.getCur_pri() == null || s.getCur_pri() <= 0) {
+			    			    s.getSd().LoadData();
+			    			}
 			    			stocksWaitForMail.add(s);
 			    		}
 			    		suggest_flg = false;
@@ -152,8 +156,8 @@ public class SuggestStock implements Job {
 			    	log.info("stocksWaitForMail is empty, tryHarderCriteria set to false");
 			    	tryHarderCriteria = false;
 			    }
-			    else if (stocksWaitForMail.size() > 10) {
-			    	log.info("stocksWaitForMail has " + stocksWaitForMail.size() + " which is more than 20, tryHarderCriteria set to true");
+			    else if (stocksWaitForMail.size() > NumOfStockToSuggest) {
+			    	log.info("stocksWaitForMail has " + stocksWaitForMail.size() + " which is more than " + NumOfStockToSuggest + ", tryHarderCriteria set to true");
 			    	tryHarderCriteria = true;
 			    	stocksWaitForMail.clear();
 			    }
@@ -441,7 +445,7 @@ public class SuggestStock implements Job {
 	    String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 	      
 		try {
-			sql = "update usrStk set gz_flg = 0, mod_dt = sysdate() where gz_flg = 1 and suggested_by in ('" + system_role_for_suggest + "')";
+			sql = "delete from usrStk where suggested_by in ('" + system_role_for_suggest + "')";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

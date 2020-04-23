@@ -51,7 +51,7 @@ insert into param values('BUY_BASE_TRADE_THRESH', 'TRADING',null, 0.03, '', '', 
 insert into param values('SELL_BASE_TRADE_THRESH', 'TRADING',null, 0.03, '', '', 'QtySellPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
 insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.01, '', '', 'How close to the margin of BASE_TRADE_THRESHOLD value.', sysdate(),sysdate());
 
-
+insert into param values('NUM_STOCK_TO_SUGGEST', 'SUGGESTER',100,null, '', '', 'How many stock to suggest at one time.', sysdate(),sysdate());
 insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',10,null , '', '', 'Stock suggester param to define at min how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());
 insert into param values('MIN_SHAKING_PCT', 'SUGGESTER',null,0.06, '', '', 'Stock suggester param to define min percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
 insert into param values('TRADING_AT_LOCAL', 'TRADING',1,null, '', '', 'Do trading at local with GF trader, other then send to Tradex trading system.', sysdate(),sysdate());

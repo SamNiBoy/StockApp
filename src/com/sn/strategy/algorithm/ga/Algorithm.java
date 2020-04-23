@@ -13,11 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.simulation.SimStockDriver;
+import com.sn.simulation.SimWorker;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.strategy.ITradeStrategy;
@@ -25,6 +27,7 @@ import com.sn.strategy.TradeStrategyGenerator;
 import com.sn.strategy.algorithm.param.Param;
 import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.strategy.algorithm.param.ParamMap;
+import com.sn.task.WorkManager;
 import com.sn.trader.StockTrader;
 
 import sun.util.logging.resources.logging;
@@ -316,13 +319,10 @@ class Generation {
 public class Algorithm {
     
     static Logger log = Logger.getLogger(Algorithm.class);
-    private Generation gen = null;
-    private SimStockDriver ssd = null;
+
+    private int MAX_THREAD_CNT = 3;
+    private CountDownLatch threadsCountDown = null;
     private ITradeStrategy strategy = null;
-    private StockTrader st = StockTrader.getSimTrader();
-    private int MAX_LOOP= 5;
-    private int TOPN = 5;
-    private int GEN_SIZE = 20;
     
     public Algorithm()
     {
@@ -343,51 +343,44 @@ public class Algorithm {
         
         StockMarket.clearDegreeMap();
         
+        ArrayList<GAWorker> workers = new ArrayList<GAWorker>();
+        
+        int id = 0;
+        
+        strategy = TradeStrategyGenerator.generatorStrategy(true);
+        
+        strategy.resetStrategyStatus();
+        
         for (String stk : gzstocks.keySet())
         {
-            log.info("Start search best param for:" + stk);
-            gen = new Generation(stk, TOPN, GEN_SIZE);
-            
-            gen.initGeneration();
-            
-            int i = 0;
-            int start_frm = 0;
-            
-            resetParamData(stk);
-            
-            while(i < MAX_LOOP)
-            {
-                i++;
+        	id++;
+        	
+        	GAWorker gw = new GAWorker("GAWorker-" + id + "/" + gzstocks.size(), stk, strategy);
+        	
+        	workers.add(gw);
+        	
+        	if (id % MAX_THREAD_CNT == 0 || id == gzstocks.size()) {
+        		
+        		threadsCountDown = new CountDownLatch(workers.size());
+                for (GAWorker w : workers)
+                {
+                    w.setThreadsCountDown(threadsCountDown);
+                    WorkManager.submitWork(w);
+                }
                 
-                if (i == 1)
-                {
-                    start_frm = 0;
-                }
-                else
-                {
-                    start_frm = TOPN;
-                }
-                for (int j= start_frm; j<gen.getSize(); j++)
-                {
-                    ParamManager.setStockParamMap(gen.getStk(), gen.getSTKParamMap(j).pm);
+                try {
+                    log.info("Algorithm waiting for GAWorkers finish before next round of batch");
                     
-                    ssd = new SimStockDriver();
-                    resetTradeData(stk);
-                    simTradeOnStock(gen.getStk());
-                    gen.calculateScore(j);
+                    threadsCountDown.await();
+                    
+                    workers.clear();
+                    
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    log.info("Algorithm threads_to_run.await exception:" + e.getMessage());
                 }
-                
-                gen.keepTopN();
-                gen.SaveBestScoreSoFar(i);
-
-                if (i < MAX_LOOP)
-                {
-                    gen.MutateOnTopN(i, MAX_LOOP);
-                    gen.CrossoverOnTopN(i, MAX_LOOP);
-                }
-            }
-            gen.SaveStockBestParam();
-            log.info("Finished search best param for stk:" + stk);
+        	}
         }
         log.info("After GA searched all good param for stocks, load these pareams into ParamManager for trading.");
         ParamManager.loadStockParam();
@@ -395,161 +388,4 @@ public class Algorithm {
         StockMarket.clearDegreeMap();
         log.info("Now GA Algorithm task completed!");
     }
-    
-    private static void resetParamData(String stkid) {
-        String sql;
-        Connection con = null;
-        try {
-            con = DBManager.getConnection();
-            Statement stm = con.createStatement();
-            
-            stm = con.createStatement();
-            sql = "delete from stockParam where stock = '" + stkid + "'";
-            log.info(sql);
-            stm.execute(sql);
-            stm.close();
-            
-            stm = con.createStatement();
-            sql = "delete from stockParamSearch where stock = '" + stkid + "'";
-            log.info(sql);
-            stm.execute(sql);
-            stm.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e.getMessage(), e);
-        }
-        finally {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    private static void resetTradeData(String stkid) {
-        String sql;
-        Connection con = null;
-        try {
-            con = DBManager.getConnection();
-            Statement stm = con.createStatement();
-            sql = "delete from tradedtl where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", stkid) + stkid + "%'";
-            log.info(sql);
-            stm.execute(sql);
-            stm.close();
-            
-            stm = con.createStatement();
-            sql = "delete from tradehdr where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", stkid) + stkid + "%'";
-            log.info(sql);
-            stm.execute(sql);
-            stm.close();
-            
-            stm = con.createStatement();
-            sql = "delete from CashAcnt where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", stkid) + stkid + "%'";
-            log.info(sql);
-            stm.execute(sql);
-            stm.close();
-            con.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e.getMessage(), e);
-        }
-        finally {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    public void simTradeOnStock(String stkid) {
-        // SimStockDriver.addStkToSim("000727");
-        String start_dt = "";
-        String end_dt = "";
-        Connection con = null;
-        Statement stm = null;
-        ResultSet rs = null;
-        String sql = "";
-        
-        try {
-            con = DBManager.getConnection();
-            stm = con.createStatement();
-            //We train param with one day before sim day so we can evaluate how good the result is for future data.
-            sql = "select left(max(dl_dt) - interval 2 day, 10) sd, left(max(dl_dt) - interval 1 day, 10) ed from stkdat2 where id = '" + stkid + "'";
-            log.info(sql);
-            rs = stm.executeQuery(sql);
-            rs.next();
-            start_dt = rs.getString("sd");
-            end_dt = rs.getString("ed");
-            
-            rs.close();
-            
-            log.info("got start_dt:" + start_dt + " end_dt:" + end_dt);
-        }
-        catch (Exception e)
-        {
-            
-        }
-        finally {
-            try {
-                stm.close();
-                con.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        
-        ssd.removeStkToSim();
-        ssd.addStkToSim(stkid);
-        //ssd.setStartEndSimDt("2016-03-02", "2016-04-02");
-        ssd.setStartEndSimDt(start_dt, end_dt);
-        
-        ssd.loadStocks();
-
-        if (!ssd.initData()) {
-            log.info("can not init SimStockDriver...");
-            return;
-        }
-
-        Map<String, Timestamp> lst_stmp = new HashMap<String, Timestamp>();
-        Timestamp lststp = null;
-        Timestamp curstp = null;
-        int StepCnt = 0;
-        log.info("Now start simulate trading...");
-        
-        strategy = TradeStrategyGenerator.generatorStrategy(true);
-        
-        strategy.resetStrategyStatus();
-        
-        st.setStrategy(strategy);
-        log.info("Simulate trading with Strategy:" + strategy.getTradeStrategyName() + "\n\n");
-        while (ssd.step()) {
-            log.info("Simulate step:" + (++StepCnt));
-            for (Object stock : ssd.simstocks.keySet()) {
-                Stock2 s = (Stock2) ssd.simstocks.get((String)stock);
-
-                lststp = lst_stmp.get(s.getID());
-                curstp = s.getDl_dt();
-                
-                log.info("simulate step:" + StepCnt + " for stock:" + s.getID() + " at time:" + curstp.toString());
-                
-                if (((lststp != null && curstp.after(lststp)) || lststp == null) && st.performTrade(s)) {
-                    //strategy.reportTradeStat();
-                }
-                else if (lststp != null && !curstp.after(lststp)) {
-                    log.info("skip trading same record for:" + s.getID() + " at:" + lststp.toString());
-                }
-                
-                lst_stmp.put(s.getID(), curstp);
-            }
-            //ssd.startOver();
-        }
-        ssd.finishStep();
-        log.info("Now end simulate trading.");
-    }
-
 }

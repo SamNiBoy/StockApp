@@ -91,6 +91,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         cash_account = ca;
         name = sn;
         sim_mode = sm;
+        log.info("create TradeStrategyImp with name:"+ name + ", sim_mode: "+ sim_mode);
         loadBuySellRecord();
     }
 
