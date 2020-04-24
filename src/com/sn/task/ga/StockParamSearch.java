@@ -35,10 +35,12 @@ public class StockParamSearch implements Job {
         static Logger log = Logger.getLogger(StockParamSearch.class);
         /**
          * @param args
+         * @throws JobExecutionException 
          */
-        public static void main(String[] args) {
+        public static void main(String[] args) throws JobExecutionException {
             // TODO Auto-generated method stub
             StockParamSearch fsd = new StockParamSearch();
+            fsd.execute(null);
         }
 
         public StockParamSearch()

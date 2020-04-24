@@ -59,6 +59,11 @@ insert into param values('TRADING_AT_LOCAL_WITH_SIM', 'TRADING',1,null, '', '', 
 
 insert into param values('NUM_STOCK_IN_TRADE', 'TRADING',5,null, '', '', 'Do you want how many stocks in trading for suggest stock job to maintain.', sysdate(),sysdate());
 
+insert into param values('GENERATION_SIZE', 'GAPARAM',20,null, '', '', 'How many entities per generation for GA algorithm.', sysdate(),sysdate());
+insert into param values('MAX_TRAIN_LOOP', 'GAPARAM',5,null, '', '', 'How many iterations to train the GA parameters.', sysdate(),sysdate());
+insert into param values('TOPN', 'GAPARAM',5,null, '', '', 'Keep Top N entites for mutation and crossover.', sysdate(),sysdate());
+insert into param values('MAX_TRAIN_THREAD_CNT', 'GAPARAM',5,null, '', '', 'How many threads to do GA parameter trainning.', sysdate(),sysdate());
+
 
 create table if not exists stockIndex(
 indexid varchar(20 ) not null,

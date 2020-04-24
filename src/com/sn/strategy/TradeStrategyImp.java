@@ -1600,4 +1600,13 @@ public class TradeStrategyImp implements ITradeStrategy {
         tradeRecord.clear();
         cash_account_map.clear();
     }
+    public void resetStrategyStatusForStock(String stk) {
+        // TODO Auto-generated method stub
+       	log.info("reset tradeStocks, tradeRecord, cash_account_map entries for stock:" + stk);
+        tradeRecord.remove(stk);
+        
+        String AcntForStk = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", stk) + stk;
+        
+        cash_account_map.remove(AcntForStk);
+    }
 }

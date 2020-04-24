@@ -35,8 +35,9 @@ import sun.util.logging.resources.logging;
 
 class STKParamMap implements Cloneable {
     static Logger log = Logger.getLogger(STKParamMap.class);
+    public static double DEFAULT_PROFIT = -99999;
     public ParamMap pm = new ParamMap();
-    public double score = 0.0;
+    public double score = DEFAULT_PROFIT;
     
     @Override
     protected Object clone() throws CloneNotSupportedException {
@@ -86,7 +87,7 @@ class STKParamMap implements Cloneable {
             }
             else {
                 log.info("No net profit got for stok" + stk);
-                this.score = 0;
+                this.score = STKParamMap.DEFAULT_PROFIT;
             }
             rs.close();
             stm.close();
@@ -121,7 +122,7 @@ class STKParamMapComparator implements Comparator<STKParamMap> {
 class Generation {
     static Logger log = Logger.getLogger(Generation.class);
     private int size = 20;
-    private int topN = 10;
+    private int topN = 5;
     private Vector<STKParamMap> entities = new Vector<STKParamMap>(size);
     private String stk = "";
     
@@ -174,7 +175,7 @@ class Generation {
     public void MutateOnTopN(int i, int max) {
         
         for (int j = topN; j<entities.size(); j++) {
-            entities.get(j).score = 0;
+            entities.get(j).score = STKParamMap.DEFAULT_PROFIT;
             entities.get(j).pm.mutate((max -i) * 1.0 /max);
         }
         log.info("After mutate");
@@ -320,7 +321,7 @@ public class Algorithm {
     
     static Logger log = Logger.getLogger(Algorithm.class);
 
-    private int MAX_THREAD_CNT = 3;
+    private int MAX_THREAD_CNT = ParamManager.getIntParam("MAX_TRAIN_THREAD_CNT", "GAPARAM", null);
     private CountDownLatch threadsCountDown = null;
     private ITradeStrategy strategy = null;
     

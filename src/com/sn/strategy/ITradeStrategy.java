@@ -27,6 +27,7 @@ public interface ITradeStrategy {
     public boolean buyStock(Stock2 s, IBuyPointSelector bs);
     
     public void resetStrategyStatus();
+    public void resetStrategyStatusForStock(String stk);
     public boolean reportTradeStat();
     public ICashAccount getCashAccount();
     public void setCashAccount(ICashAccount ca);

@@ -119,7 +119,8 @@ public class ParamMap implements Cloneable{
             if (rd < pct)
             {
                 Param p = kv.get(k);
-                p.generateNxtValue();
+                //p.generateNxtValue();
+                p.generateARandomValue();
                 mutated = true;
             }
         }

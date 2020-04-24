@@ -61,9 +61,9 @@ public class GAWorker implements IWork {
     private ITradeStrategy strategy = null;
     private StockTrader st = StockTrader.getSimTrader();
     private String stkid = "";
-    private int MAX_LOOP= 5;
-    private int TOPN = 5;
-    private int GEN_SIZE = 20;
+    private int MAX_LOOP= ParamManager.getIntParam("MAX_TRAIN_LOOP", "GAPARAM", null);
+    private int TOPN = ParamManager.getIntParam("TOPN", "GAPARAM", null);
+    private int GEN_SIZE = ParamManager.getIntParam("GENERATION_SIZE", "GAPARAM", null);
     
     static Logger log = Logger.getLogger(GAWorker.class);
 
@@ -86,7 +86,7 @@ public class GAWorker implements IWork {
      */
     public static void main(String[] args) throws Exception {
 
-        GAWorker sw = new GAWorker("ABC","002228", TradeStrategyGenerator.generatorStrategy(true));
+        GAWorker sw = new GAWorker("ABC","000525", TradeStrategyGenerator.generatorStrategy(true));
         sw.run();
     }
 
@@ -194,7 +194,7 @@ public class GAWorker implements IWork {
         }
     }
     
-    private static void resetTradeData(String stkid) {
+    private  void resetTradeData(String stkid) {
         String sql;
         Connection con = null;
         try {
@@ -216,9 +216,10 @@ public class GAWorker implements IWork {
             log.info(sql);
             stm.execute(sql);
             stm.close();
-            con.close();
+            
+            strategy.resetStrategyStatusForStock(stkid);
+            
         } catch (Exception e) {
-            e.printStackTrace();
             log.error(e.getMessage(), e);
         }
         finally {
@@ -226,7 +227,7 @@ public class GAWorker implements IWork {
                 con.close();
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
     }
