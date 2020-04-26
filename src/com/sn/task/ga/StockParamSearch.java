@@ -26,6 +26,7 @@ import com.sn.strategy.algorithm.ga.Algorithm;
 import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.fetcher.StockDataConsumer;
 import com.sn.task.fetcher.StockDataFetcher;
+import com.sn.task.suggest.SuggestStock;
 import com.sn.mail.StockObserver;
 import com.sn.task.WorkManager;
 import com.sn.task.IWork;
@@ -65,6 +66,7 @@ public class StockParamSearch implements Job {
                     Algorithm ag = new Algorithm();
                     synchronized(Algorithm.class) {
                         ag.run();
+                        SuggestStock.electStockforTrade();
                     }
                 }
                 catch (Exception e) {

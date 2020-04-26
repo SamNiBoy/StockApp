@@ -46,7 +46,7 @@ public class ParamManager {
         String cat = "";
         String PK = "";
         ParamMap pm = null;
-        
+        synchronized (stock_param) {
         try {
             st = con.createStatement();
             log.info(sql);
@@ -122,6 +122,7 @@ public class ParamManager {
                 e.printStackTrace();
                 log.error(e.getMessage(), e);
             }
+        }
         }
     }
     public static void refreshAllParams()
@@ -285,19 +286,21 @@ public class ParamManager {
         if (stkid != null)
         {
             String pk = name + "@" + cat;
-            ParamMap pm = stock_param.get(stkid);
+            synchronized (stock_param) {
+                ParamMap pm = stock_param.get(stkid);
             
-            if (pm != null)
-            {
-                Map<String, Param> p = pm.getKV();
-                
-                if (p.get(pk) != null)
+                if (pm != null)
                 {
-                    Integer v = (Integer)p.get(pk).val;
-                    if (v != null)
+                    Map<String, Param> p = pm.getKV();
+                    
+                    if (p.get(pk) != null)
                     {
-                        log.info("get int param from stockParam:" + v);
-                        return v;
+                        Integer v = (Integer)p.get(pk).val;
+                        if (v != null)
+                        {
+                            log.info("get int param from stockParam:" + v);
+                            return v;
+                        }
                     }
                 }
             }
@@ -351,19 +354,21 @@ public class ParamManager {
         if (stkid != null)
         {
             String pk = name + "@" + cat;
-            ParamMap pm = stock_param.get(stkid);
-            
-            if (pm != null)
-            {
-                Map<String, Param> p = pm.getKV();
+            synchronized (stock_param) {
+                ParamMap pm = stock_param.get(stkid);
                 
-                if (p.get(pk) != null)
+                if (pm != null)
                 {
-                    Double v = (Double)p.get(pk).val;
-                    if (v != null)
+                    Map<String, Param> p = pm.getKV();
+                    
+                    if (p.get(pk) != null)
                     {
-                        log.info("get float param from stockParam:" + v);
-                        return v;
+                        Double v = (Double)p.get(pk).val;
+                        if (v != null)
+                        {
+                            log.info("get float param from stockParam:" + v);
+                            return v;
+                        }
                     }
                 }
             }
@@ -417,20 +422,23 @@ public class ParamManager {
         if (stkid != null)
         {
             String pk = name + "@" + cat;
-            ParamMap pm = stock_param.get(stkid);
             
-            if (pm != null)
-            {
-                Map<String, Param> p = pm.getKV();
+            synchronized (stock_param) {
+                ParamMap pm = stock_param.get(stkid);
                 
-                if (p.get(pk) != null)
+                if (pm != null)
                 {
-                    String v = (String)p.get(pk).val;
+                    Map<String, Param> p = pm.getKV();
                     
-                    if (v != null)
+                    if (p.get(pk) != null)
                     {
-                        log.info("get str1 param from stockParam:" + v);
-                        return v;
+                        String v = (String)p.get(pk).val;
+                        
+                        if (v != null)
+                        {
+                            log.info("get str1 param from stockParam:" + v);
+                            return v;
+                        }
                     }
                 }
             }
@@ -484,18 +492,21 @@ public class ParamManager {
         if (stkid != null)
         {
             String pk = name + "@" + cat;
-            ParamMap pm = stock_param.get(stkid);
             
-            if (pm != null)
-            {
-                Map<String, Param> p = pm.getKV();
-                if (p.get(pk) != null)
+            synchronized (stock_param) {
+                ParamMap pm = stock_param.get(stkid);
+                
+                if (pm != null)
                 {
-                    String v = (String)p.get(pk).val;
-                    if (v != null)
+                    Map<String, Param> p = pm.getKV();
+                    if (p.get(pk) != null)
                     {
-                        log.info("get str2 param from stockParam:" + v);
-                        return v;
+                        String v = (String)p.get(pk).val;
+                        if (v != null)
+                        {
+                            log.info("get str2 param from stockParam:" + v);
+                            return v;
+                        }
                     }
                 }
             }

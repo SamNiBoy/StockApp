@@ -244,8 +244,7 @@ public class GAWorker implements IWork {
         try {
             con = DBManager.getConnection();
             stm = con.createStatement();
-            //We train param with one day before sim day so we can evaluate how good the result is for future data.
-            sql = "select left(max(dl_dt) - interval 2 day, 10) sd, left(max(dl_dt) - interval 1 day, 10) ed from stkdat2 where id = '" + stkid + "'";
+            sql = "select left(max(dl_dt) - interval 1 day, 10) sd, left(max(dl_dt), 10) ed from stkdat2 where id = '" + stkid + "'";
             log.info(sql);
             rs = stm.executeQuery(sql);
             rs.next();

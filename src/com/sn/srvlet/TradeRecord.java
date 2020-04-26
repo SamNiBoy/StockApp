@@ -1,0 +1,256 @@
+package com.sn.srvlet;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+
+import com.sn.db.DBManager;
+import com.sn.stock.StockMarket;
+import com.sn.task.WorkManager;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+
+public class TradeRecord{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+    static Logger log = Logger.getLogger(TradeRecord.class);
+    
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+	}
+	public TradeRecord () {
+		
+	}
+	public String acnt;
+	public String stock;
+	public String name;
+	public int seqnum;
+	public double price;
+	public int amount;
+	public int buy_flg;
+	public Timestamp dl_dt;
+	public String trade_selector_name;
+	public String trade_selector_comment;
+	public int gz_flg;
+	public int stop_trade_mode_flg;
+	public double pft_mny;
+	public double commission_mny;
+	public double net_pft;
+	public int stock_in_hand;
+	public double stock_inhand_money;
+	
+	public static List<TradeRecord> readTradeRecords() {
+		List<TradeRecord> lst = new ArrayList<TradeRecord>();
+		Connection con = DBManager.getConnection();
+		try {
+			Statement stm = con.createStatement();
+			ResultSet rs = null;
+			String sql = "select c.acntid, "
+					+ "          t.stkid, "
+					+ "          s.name, "
+					+ "          d.seqnum, "
+					+ "          d.price, "
+					+ "          d.amount, "
+					+ "          d.buy_flg, "
+					+ "          d.dl_dt, "
+					+ "          d.trade_selector_name, "
+					+ "          d.trade_selector_comment, "
+					+ "          case when u.gz_flg is null then 0 else u.gz_flg end gz_flg, "
+					+ "          case when u.stop_trade_mode_flg is null then 0 else u.stop_trade_mode_flg end stop_trade_mode_flg, "
+					+ "          c.pft_mny, "
+					+ "          t.commission_mny, "
+					+ "          (c.pft_mny - t.commission_mny) net_pft, "
+					+ "          t.in_hand_qty stock_in_hand, "
+					+ "          t.in_hand_stk_mny stock_inhand_money "
+					+ "from cashacnt c "
+					+ "join tradehdr t "
+					+ "  on c.acntid = t.acntid "
+					+ "join tradedtl d "
+					+ "  on t.acntid = d.acntid "
+					+ "join stk s "
+					+ "  on t.stkid = s.id "
+					+ "left join usrstk u "
+					+ "  on s.id = u.id "
+					+ " order by acntid, seqnum desc";
+			
+			log.info(sql);
+			rs = stm.executeQuery(sql);
+			
+			while(rs.next()) {
+				TradeRecord r = new TradeRecord();
+				r.acnt = rs.getString("acntid");
+				r.stock = rs.getString("stkid");
+				r.name = rs.getString("name");
+				r.seqnum = rs.getInt("seqnum");
+				r.price = rs.getDouble("price");
+				r.amount = rs.getInt("amount");
+				r.buy_flg = rs.getInt("buy_flg");
+				r.dl_dt = rs.getTimestamp("dl_dt");
+				r.trade_selector_name = rs.getString("trade_selector_name");
+				r.trade_selector_comment = rs.getString("trade_selector_comment");
+				r.gz_flg = rs.getInt("gz_flg");
+				r.stop_trade_mode_flg = rs.getInt("stop_trade_mode_flg");
+				r.pft_mny = rs.getDouble("pft_mny");
+				r.commission_mny = rs.getDouble("commission_mny");
+				r.net_pft = rs.getDouble("net_pft");
+				r.stock_in_hand = rs.getInt("stock_in_hand");
+				r.stock_inhand_money = rs.getDouble("stock_inhand_money");
+				lst.add(r);
+			}
+			rs.close();
+			stm.close();
+		}
+		catch(Exception e) {
+			log.error(e.getCause(), e);
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getCause(), e);
+			}
+		}
+		return lst;
+	}
+	
+	public static String getTradeRecordsAsTableString() {
+		
+		List<TradeRecord> list = readTradeRecords();
+		
+		String str = "<table border=\"0\">" +
+		"<thread> " +
+	    "<tr>                                      " +
+	    "    <td>Account ID</td>                   " +
+	    "    <td>Stock ID</td>                     " +
+	    "    <td>Name</td>                         " +
+	    "    <td>Seqnum</td>                       " +
+	    "    <td>Price</td>                        " +
+	    "    <td>Amount</td>                       " +
+	    "    <td>Buy or Sell</td>                  " +
+	    "    <td>Deal Time</td>                    " +
+	    "    <td>Trade Selector Name</td>          " +
+	    "    <td>Trade Selector Comment</td>       " +
+	    "    <td>Gzed</td>                         " +
+	    "    <td>Stop Trade</td>                   " +
+	    "    <td>Profit Money</td>                 " +
+	    "    <td>Commission Money</td>             " +
+	    "    <td>Net Profit</td>                   " +
+	    "    <td>Stock In Hand</td>                " +
+	    "    <td>Stock In Hand Money</td>          " +
+	    "</tr>                                     " +
+	    "</thead>";
+
+	    str += "<tbody> ";
+	         for(TradeRecord tl:list)
+	         {
+	            str += "<tr>" +
+	            "<td>" + tl.acnt + "</td> " +
+	            "<td>" + tl.stock + "</td> " +
+	            "<td>" + tl.name + "</td> " +
+	            "<td>" + tl.seqnum + "</td> " +
+	            "<td>" + tl.price + "</td> " +
+	            "<td>" + tl.amount + "</td>" +
+	            "<td>" + (tl.buy_flg == 1 ? "Buy" : "Sell") + "</td>" +
+	            "<td>" + tl.dl_dt + "</td> " +
+	            "<td>" + tl.trade_selector_name + "</td> " +
+	            "<td>" + tl.trade_selector_comment + "</td> " +
+	            "<td>" + tl.gz_flg + "</td> " +
+	            "<td>" + tl.stop_trade_mode_flg + "</td> " +
+	            "<td>" + tl.pft_mny + "</td> " +
+	            "<td>" + tl.commission_mny + "</td> " +
+	            "<td>" + tl.net_pft + "</td> " +
+	            "<td>" + tl.stock_in_hand + "</td> " +
+	            "<td>" + tl.stock_inhand_money + "</td> " +
+	            "</tr>";
+	         }
+	         str += "</tbody></table>";
+	         
+	         return str;
+	}
+	
+	public static String getTradeSummaryAsTableString() {
+		
+		String str = "<table border=\"0\">" +
+		"<thread> " +
+	    "<tr>    " +
+	    "    <td>Account Count</td> " +
+	    "    <td>Profit</td>    " +
+	    "    <td>Commission</td>   " +
+	    "    <td>Net Profit</td>    " +
+	    "    <td>Sell Count</td>   " +
+	    "    <td>Buy Count</td>   " +
+	    "</thead>";
+
+	    str += "<tbody> ";
+
+		Connection con = DBManager.getConnection();
+		try {
+			Statement stm = con.createStatement();
+			ResultSet rs = null;
+			String sql = "";
+			
+			sql = "select count(distinct c.acntid) acntcnt, "
+					+ "   sum(c.pft_mny) total_pft_mny, "
+					+ "   sum(t.commission_mny) total_commission_mny, "
+					+ "   sum(c.pft_mny) - sum(t.commission_mny) total_net_pft, "
+					+ "   sum(d.buy_cnt) total_buy_cnt, "
+					+ "   sum(d.sell_cnt) total_sell_cnt "
+					+ "from cashacnt c "
+					+ "join tradehdr t "
+					+ "  on c.acntid = t.acntid "
+					+ "join (select sum(buy_flg) buy_cnt, sum(case when buy_flg = 0 then 1 else 0 end) sell_cnt, acntid from tradedtl group by acntid) d"
+					+ "  on t.acntid = d.acntid ";
+			log.info(sql);
+			rs = stm.executeQuery(sql);
+			
+			rs.next();
+			
+	            str += "<tr>" +
+	            "<td>" + rs.getInt("acntcnt") + "</td> " +
+	            "<td>" + rs.getDouble("total_pft_mny") + "</td> " +
+	            "<td>" + rs.getDouble("total_commission_mny") + "</td> " +
+	            "<td>" + rs.getDouble("total_net_pft") + "</td> " +
+	            "<td>" + rs.getInt("total_buy_cnt") + "</td> " +
+	            "<td>" + rs.getInt("total_sell_cnt") + "</td> " +
+	            "</tr>";
+	            
+		         str += "</tbody></table>";
+		     
+		         rs.close();
+		         stm.close();
+	         }
+	    catch(Exception e) {
+	    	
+	    }
+	    finally {
+	    	try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
+	    }
+
+         return str;
+	}
+}

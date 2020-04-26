@@ -54,6 +54,9 @@ insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.01, '',
 insert into param values('NUM_STOCK_TO_SUGGEST', 'SUGGESTER',100,null, '', '', 'How many stock to suggest at one time.', sysdate(),sysdate());
 insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',10,null , '', '', 'Stock suggester param to define at min how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());
 insert into param values('MIN_SHAKING_PCT', 'SUGGESTER',null,0.06, '', '', 'Stock suggester param to define min percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
+insert into param values('PCT_BUYSELL_THRESH_DIFF_DISABLE_TRADE', 'SUGGESTER',null,0.04, '', '', 'Do not trading on stock when the buy/sell treshold values are very different.', sysdate(),sysdate());
+
+
 insert into param values('TRADING_AT_LOCAL', 'TRADING',1,null, '', '', 'Do trading at local with GF trader, other then send to Tradex trading system.', sysdate(),sysdate());
 insert into param values('TRADING_AT_LOCAL_WITH_SIM', 'TRADING',1,null, '', '', 'Do trading at local with in simulation mode, other then send to Tradex trading system or with GF trader.', sysdate(),sysdate());
 

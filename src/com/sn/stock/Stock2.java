@@ -194,8 +194,8 @@ public class Stock2 implements Comparable<Stock2>{
             return false;
         }
         
-        public boolean priceUpAfterSharpedDown(int periods, int downTimes) {
-            log.info("priceUpAfterSharpedDown: check if price goes up after " + downTimes + " times down during period:" + periods);
+        public boolean priceUpAfterSharpedDown(int periods, int upTimes) {
+            log.info("priceUpAfterSharpedDown: check if price goes up " + upTimes + " times after sharp down during period:" + periods);
             int size = cur_pri_lst.size();
             if (size <= periods) {
                 log.info("priceUpAfterSharpedDown: only has " + size + " data less or equal than " +periods);
@@ -207,22 +207,22 @@ public class Stock2 implements Comparable<Stock2>{
                 return false;
             }
             
-            int downTimeCnt = 0;
+            int upTimeCnt = 0;
             for (int i=0; i<periods; i++) {
-                if (cur_pri_lst.get(size - 1 - i - 1) < cur_pri_lst.get(size - 1 - i - 2)) {
-                    downTimeCnt++;
+                if (cur_pri_lst.get(size - 1 - i - 1) > cur_pri_lst.get(size - 1 - periods + 1)) {
+                	upTimeCnt++;
                 }
             }
             
-            log.info("Check if actual down times:" + downTimeCnt + " is >= parameter:" + downTimes);
-            if (downTimeCnt >= downTimes) {
+            log.info("Check if actual up times:" + upTimeCnt + " is >= parameter:" + upTimes);
+            if (upTimeCnt >= upTimes) {
                 return true;
             }
             return false;
         }
         
-        public boolean priceDownAfterSharpedUp(int periods, int upTimes) {
-            log.info("priceUpAfterSharpedDown: check if price goes down after " + upTimes + " times up during period:" + periods);
+        public boolean priceDownAfterSharpedUp(int periods, int downTimes) {
+            log.info("priceDownAfterSharpedUp: check if price goes down " + downTimes + " times after sharp up during period:" + periods);
             int size = cur_pri_lst.size();
             if (size <= periods ) {
                 log.info("priceDownAfterSharpedUp: only has " + size + " data less or equal than " +periods);
@@ -234,15 +234,15 @@ public class Stock2 implements Comparable<Stock2>{
                 return false;
             }
             
-            int upTimeCnt = 0;
+            int downTimeCnt = 0;
             for (int i=0; i<periods - 1; i++) {
-                if (cur_pri_lst.get(size - 1 - i - 1) > cur_pri_lst.get(size - 1 - i - 2)) {
-                    upTimeCnt++;
+                if (cur_pri_lst.get(size - 1 - i) < cur_pri_lst.get(size - 1 - periods + 1)) {
+                	downTimeCnt++;
                 }
             }
             
-            log.info("Check if actual up times:" + upTimeCnt + " is >= parameter:" + upTimes);
-            if (upTimeCnt >= upTimes) {
+            log.info("Check if actual down times:" + downTimeCnt + " is >= parameter:" + downTimes);
+            if (downTimeCnt >= downTimes) {
                 return true;
             }
             return false;

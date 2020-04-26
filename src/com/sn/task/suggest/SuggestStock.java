@@ -62,6 +62,11 @@ public class SuggestStock implements Job {
 	}
 
 	public SuggestStock() {
+
+	}
+	
+	private void initSelector() {
+		selectors.clear();
 		//initDelay = id;
 		//delayBeforNxtStart = dbn;
 		//selectors.add(new DefaultStockSelector());
@@ -100,6 +105,7 @@ public class SuggestStock implements Job {
 		try {
 			Map<String, Stock2> stks = StockMarket.getStocks();
 			int NumOfStockToSuggest = ParamManager.getIntParam("NUM_STOCK_TO_SUGGEST", "SUGGESTER", null);
+			int NumOfStockForTrade = ParamManager.getIntParam("NUM_STOCK_IN_TRADE", "TRADING", null);
 			int tryCnt = 5;
 			boolean tryHarderCriteria = false;
 			while(tryCnt-- > 0) {
@@ -152,8 +158,8 @@ public class SuggestStock implements Job {
 			    	}
 			    	loop_nxt_stock = false;
 			    }
-			    if (stocksWaitForMail.size() == 0) {
-			    	log.info("stocksWaitForMail is empty, tryHarderCriteria set to false");
+			    if (stocksWaitForMail.size() < NumOfStockForTrade && tryCnt > 0) {
+			    	log.info("stocksWaitForMail is " + stocksWaitForMail.size() + " less than NumOfStockForTrade:" + NumOfStockForTrade + ", tryHarderCriteria set to false");
 			    	tryHarderCriteria = false;
 			    }
 			    else if (stocksWaitForMail.size() > NumOfStockToSuggest) {
@@ -165,7 +171,7 @@ public class SuggestStock implements Job {
 			    	for (Stock2 s2 : stocksWaitForMail) {
 		    			suggestStock(s2);
 			    	}
-			    	electStockforTrade();
+			    	//electStockforTrade();
 			    	if (stocksWaitForMail.size() > 0) {
 			    	    rso.addStockToSuggest(stocksWaitForMail);
 			    	    rso.update();
@@ -236,7 +242,7 @@ public class SuggestStock implements Job {
         }
 	}
 	
-	private void electStockforTrade() {
+	public static void electStockforTrade() {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
@@ -300,7 +306,7 @@ public class SuggestStock implements Job {
         }
 	}
 	
-	private void moveStockToTrade(int maxCnt) {
+	private static void moveStockToTrade(int maxCnt) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
@@ -346,7 +352,7 @@ public class SuggestStock implements Job {
             }
         }
 		
-		Iterator<Stock2> it = stocksWaitForMail.iterator();
+		/*Iterator<Stock2> it = stocksWaitForMail.iterator();
 		while(it.hasNext())
 		{
 			Stock2 s = it.next();
@@ -354,11 +360,11 @@ public class SuggestStock implements Job {
 				log.info("remove stock:" + s.getID() + " as it is not moved for trade.");
 				it.remove();
 			}
-		}
+		}*/
 		log.info("Total granted:" + grantCnt + " stocks for trading.");
 	}
 	
-	private void putStockToStopTradeMode(String stkid) {
+	private static void putStockToStopTradeMode(String stkid) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
@@ -420,6 +426,31 @@ public class SuggestStock implements Job {
 			}
 			
 			rs.close();
+			
+//			sql = "select 'x' from stockparam where stock = '" + stkid + "'";
+//			log.info(sql);
+//			stm = con.createStatement();
+//			rs = stm.executeQuery(sql);
+//			if (!rs.next()) {
+//				log.info("Stock:" + stkid + " has no stockparam trained , should exit trade.");
+//				return true;
+//			}
+//			
+//			rs.close();
+			
+			
+            double pct_disable_trade = ParamManager.getFloatParam("PCT_BUYSELL_THRESH_DIFF_DISABLE_TRADE", "SUGGESTER", null);
+			sql = "select 'x' from stockparam b join stockparam s on b.stock = s.stock where b.stock = '" + stkid + "' and b.name = 'BUY_BASE_TRADE_THRESH' and s.name = 'SELL_BASE_TRADE_THRESH' and abs(b.fltval - s.fltval) >= " + pct_disable_trade;
+			log.info(sql);
+			stm = con.createStatement();
+			rs = stm.executeQuery(sql);
+			if (rs.next()) {
+				log.info("Stock:" + stkid + "buy/sell theshold value diff > " +pct_disable_trade + " , should exit trade.");
+				return true;
+			}
+			
+			rs.close();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -442,6 +473,8 @@ public class SuggestStock implements Job {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
         
+		initSelector();
+		
 	    String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 	      
 		try {

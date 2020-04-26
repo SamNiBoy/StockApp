@@ -199,13 +199,18 @@ class Generation {
     public void SaveStockBestParam() {
         log.info("Save best param for stock:" + this.stk + " with score:" + entities.get(0).score);
         String sql = "";
-        Connection con = DBManager.getConnection();
+        Connection con = null;
         Statement stm = null;
         try {
             //fist one is the best.
             STKParamMap spm = entities.get(0);
             ParamMap pm = spm.pm;
             Map<String, Param> kv = pm.getKV();
+            
+            if (spm.score < 0) {
+            	log.info("stock:" + stk + " has score:" + spm.score + " less than 0, no need to populate stockParam.");
+            	return;
+            }
             
             for (String name : kv.keySet())
             {
@@ -230,6 +235,7 @@ class Generation {
                     sql = "insert into stockParam value('" + stk + "','" + PK[0] + "','" + PK[1] + "',null,null,null,'" + (String)p.val + "', 'GA Algorithm', sysdate(), sysdate())";
                 }
                 log.info(sql);
+                con = DBManager.getConnection();
                 stm = con.createStatement();
                 stm.execute(sql);
                 stm.close();
@@ -252,7 +258,7 @@ class Generation {
     public void SaveBestScoreSoFar(int i) {
         String sql = "";
         String msg = "";
-        Connection con = DBManager.getConnection();
+        Connection con = null;
         Statement stm = null;
         try {
             //fist one is the best.
@@ -291,6 +297,7 @@ class Generation {
             sql = "insert into stockParamSearch values ('" + stk + "'," + i + "," + spm.score + ", '" + msg + "', sysdate())";
             
             log.info(sql);
+            con = DBManager.getConnection();
             stm = con.createStatement();
             stm.execute(sql);
             stm.close();
@@ -352,6 +359,8 @@ public class Algorithm {
         
         strategy.resetStrategyStatus();
         
+        resetParamData();
+        
         for (String stk : gzstocks.keySet())
         {
         	id++;
@@ -388,5 +397,37 @@ public class Algorithm {
         ParamManager.printAllParams();
         StockMarket.clearDegreeMap();
         log.info("Now GA Algorithm task completed!");
+    }
+    
+    private static void resetParamData() {
+        String sql;
+        Connection con = null;
+        try {
+            con = DBManager.getConnection();
+            Statement stm = con.createStatement();
+            
+            stm = con.createStatement();
+            sql = "delete from stockParam";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+            
+            stm = con.createStatement();
+            sql = "delete from stockParamSearch";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage(), e);
+        }
+        finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
     }
 }

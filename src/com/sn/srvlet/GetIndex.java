@@ -32,6 +32,8 @@ public class GetIndex extends HttpServlet {
  
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
  
+    	response.setCharacterEncoding("UTF-8");
+    	
         PrintWriter out=response.getWriter();
         
         String typ = request.getParameter("type");
@@ -51,6 +53,14 @@ public class GetIndex extends HttpServlet {
         else if ("CNT".equals(typ))
         {
         	out.write(StockMarket.getTotInc() + "#" +StockMarket.getTotDec()+ "#" + StockMarket.getTotEql());
+        }
+        else if ("TRADERECORD".equals(typ))
+        {
+        	out.write(TradeRecord.getTradeRecordsAsTableString());
+        }
+        else if ("TRADESUMMARY".equals(typ))
+        {
+        	out.write(TradeRecord.getTradeSummaryAsTableString());
         }
         out.flush();
         out.close();

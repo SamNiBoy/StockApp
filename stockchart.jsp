@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
-import="java.io.*,java.util.*,java.sql.*,javax.servlet.http.*,com.sn.db.DBManager,com.sn.stock.StockMarket,java.text.DecimalFormat,org.apache.log4j.Logger,org.apache.log4j.PropertyConfigurator"
+import="java.io.*,java.util.*,java.sql.*,javax.servlet.http.*,com.sn.db.DBManager,com.sn.srvlet.TradeRecord,com.sn.stock.StockMarket,java.text.DecimalFormat,org.apache.log4j.Logger,org.apache.log4j.PropertyConfigurator"
 	pageEncoding="utf-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -18,6 +18,18 @@ import="java.io.*,java.util.*,java.sql.*,javax.servlet.http.*,com.sn.db.DBManage
 div {
 	display: flex;
 	align-items:center;
+}
+
+.thead {
+	background:#AAAAAA;
+}
+
+.even {
+	background:#44BBDD;
+}
+
+.odd {
+	background:#FFFFEE;
 }
 </style>
  
@@ -42,14 +54,18 @@ var myTextStyle = {
 		     
 		     <div id="idx4" style="width: 25%;height:100%; margin: 2px; background-color: white;"></div>
 		</div>
+		<h1>交易汇总</h1>
+		<div id="tradeSummary" style="width: 100%;height:600px;border: solid 5px #0000AA; margin: 2px; background-color: #EEEED1;"></div>
+		<h1>交易明细</h1>
+		<div id="tradeRecord" style="width: 100%;height:600px;border: solid 5px #0000AA; margin: 2px; background-color: #EEEED1;"></div>
+		
 	    <h1>我关注的股票</h1>
 		<div id="gzstock" style="width: 100%;height:600px;border: solid 5px #0000AA; margin: 2px; background-color: #EEEED1;"></div>
 		
 	    <h1>涨跌最快的股票</h1>
 		<div id="showGraphic2" style="width: 50%;height:300px;border: solid 5px #008B45; margin: 2px; background-color: #C4C4C4;"></div>
 		
-		<h1>交易监控</h1>
-		<div id="showGraphic3" style="width: 80%;height:400px;border: solid 5px black; margin: 2px; background-color: #EEE8AA;"></div>
+
 		
 		<h1>盈利/亏损监控</h1>
 		<div id="showGraphic4" style="width: 90%;height:500px;border: solid 5px #CD0000; margin: 2px; background-color: #DBDBDB;"></div>
@@ -365,7 +381,7 @@ function drawIndexCharts() {
 
         },
         error:function (err) {
-            alert("系统错误-loginPage.jsp-ajax");
+            //alert("系统错误-loginPage.jsp-ajax");
         }
     });
     
@@ -383,7 +399,7 @@ function drawIndexCharts() {
 
         },
         error:function (err) {
-            alert("系统错误-idx2_opt-ajax");
+            //alert("系统错误-idx2_opt-ajax");
         }
     });
     
@@ -404,7 +420,7 @@ function drawIndexCharts() {
 
         },
         error:function (err) {
-            alert("系统错误-loginPage.jsp-ajax");
+            //alert("系统错误-loginPage.jsp-ajax");
         }
     });
     
@@ -424,7 +440,7 @@ function drawIndexCharts() {
 
         },
         error:function (err) {
-            alert("系统错误-idx4_opt.jsp-ajax");
+            //alert("系统错误-idx4_opt.jsp-ajax");
         }
     });
     
@@ -683,66 +699,53 @@ setInterval(drawIndexCharts, 10000);
         </script>
         
         <script type="text/javascript">
-     // 基于准备好的dom，初始化echarts实例
-        var myChart3 = echarts.init(document.getElementById('showGraphic3'));
-        option3 = {
-        	    title : {
-        	        text: '某站点用户访问来源',
-        	        subtext: '纯属虚构(测试)',
-        	        textStyle: {
-        	        	color: '#CD0000'
-        	        },
-        	        subtextStyle: myTextStyle, //小标题样式
-        	        x:'center'
-        	    },
-        	    tooltip : {
-        	        trigger: 'item',
-        	        formatter: "{a} <br/>{b} : {c} ({d}%)"
-        	    },
-        	    legend: {
-        	        orient: 'vertical',
-        	        left: 'left',
-        	        data: ['直接访问','邮件营销','联盟广告','视频广告','搜索引擎']
-        	    },
-        	    toolbox: {
-                    show : true,
-                    feature : {
-                        dataView : {show: true, readOnly: false},
-                        magicType : {show: true, type: ['line', 'bar']},
-                        restore : {show: true},
-                        saveAsImage : {show: true},
-                        dataZoom: {//数据缩放视图 
-                        	show: true},
-                        mark: {show: false}
-                    }
-                },
-        	    series : [
-        	        {
-        	            name: '访问来源',
-        	            type: 'pie',
-        	            radius : '55%',
-        	            center: ['50%', '60%'],
-        	            data:[
-        	                {value:335, name:'直接访问'},
-        	                {value:310, name:'邮件营销'},
-        	                {value:234, name:'联盟广告'},
-        	                {value:135, name:'视频广告'},
-        	                {value:1548, name:'搜索引擎'}
-        	            ],
-        	            itemStyle: {
-        	                emphasis: {
-        	                    shadowBlur: 10,
-        	                    shadowOffsetX: 0,
-        	                    shadowColor: 'rgba(0, 0, 0, 0.5)'
-        	                }
-        	            }
-        	        }
-        	    ]
-        	};
-        
-     // 使用刚指定的配置项和数据显示图表。
-        myChart3.setOption(option3);
      
+        function drawTradeSummary() {
+            $.ajax({
+                type:"GET",
+                url:"/StockApp/GetIndex",
+                 data:{
+                     type: "TRADESUMMARY"
+                 },
+                success:function (result) {
+
+                     $("#tradeSummary").replaceWith(result);
+                     $("tbody>tr:odd").addClass("odd");
+                     $("tbody>tr:even").addClass("even");
+                     $("thead>tr:even").addClass("thead");
+                     
+                },
+                error:function (err) {
+                    //alert("系统错误-TRADERECORD.jsp-ajax");
+                }
+            });
+        }
+        
+        setInterval(drawTradeSummary, 10000);
+        
+        function drawTradeRecords() {
+            $.ajax({
+                type:"GET",
+                url:"/StockApp/GetIndex",
+                 data:{
+                     type: "TRADERECORD"
+                 },
+                success:function (result) {
+
+                     $("#tradeRecord").replaceWith(result);
+                     $("tbody>tr:odd").addClass("odd");
+                     $("tbody>tr:even").addClass("even");
+                     $("thead>tr:even").addClass("thead");
+                     
+                },
+                error:function (err) {
+                    //alert("系统错误-TRADERECORD.jsp-ajax");
+                }
+            });
+        }
+        
+        setInterval(drawTradeRecords, 10000);
+        
         </script>
         
         <script type="text/javascript">
