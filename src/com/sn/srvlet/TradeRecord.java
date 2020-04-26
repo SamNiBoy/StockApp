@@ -137,8 +137,8 @@ public class TradeRecord{
 		
 		List<TradeRecord> list = readTradeRecords();
 		
-		String str = "<table border=\"0\">" +
-		"<thread> " +
+		String str = "<table border=\"0\" id=\"detail\">" +
+		"<thead> " +
 	    "<tr>                                      " +
 	    "    <td>Account ID</td>                   " +
 	    "    <td>Stock ID</td>                     " +
@@ -152,18 +152,27 @@ public class TradeRecord{
 	    "    <td>Trade Selector Comment</td>       " +
 	    "    <td>Gzed</td>                         " +
 	    "    <td>Stop Trade</td>                   " +
-	    "    <td>Profit Money</td>                 " +
-	    "    <td>Commission Money</td>             " +
-	    "    <td>Net Profit</td>                   " +
-	    "    <td>Stock In Hand</td>                " +
-	    "    <td>Stock In Hand Money</td>          " +
 	    "</tr>                                     " +
 	    "</thead>";
 
 	    str += "<tbody> ";
+	    
+	    String pre_stock = "";
 	         for(TradeRecord tl:list)
 	         {
-	            str += "<tr>" +
+	        	 if (!tl.stock.equals(pre_stock)) {
+	        		 pre_stock = tl.stock;
+	        		 str += "<tr class=\"parent\" id=\"" + tl.stock +"\">" +
+	        				   "<td>Stock:" + tl.stock + "</td> " +
+	        				    "<td>Name:" + tl.name + "</td> " +
+	        		            "<td>Profit:" + tl.pft_mny + "</td> " +
+	        		            "<td>Commission:" + tl.commission_mny + "</td> " +
+	        		            "<td>Net Profit:" + (tl.net_pft > 0 ? "+" :"") +tl.net_pft + "</td> " +
+	        		            "<td>Stock In Hand:" + tl.stock_in_hand + "</td> " +
+	        		            "<td>Stock InHand Money:" + tl.stock_inhand_money + "</td> " +
+	        		        "</tr>";
+	        	 }
+	            str += "<tr class=\"child_" + tl.stock + "\">" +
 	            "<td>" + tl.acnt + "</td> " +
 	            "<td>" + tl.stock + "</td> " +
 	            "<td>" + tl.name + "</td> " +
@@ -176,22 +185,18 @@ public class TradeRecord{
 	            "<td>" + tl.trade_selector_comment + "</td> " +
 	            "<td>" + tl.gz_flg + "</td> " +
 	            "<td>" + tl.stop_trade_mode_flg + "</td> " +
-	            "<td>" + tl.pft_mny + "</td> " +
-	            "<td>" + tl.commission_mny + "</td> " +
-	            "<td>" + tl.net_pft + "</td> " +
-	            "<td>" + tl.stock_in_hand + "</td> " +
-	            "<td>" + tl.stock_inhand_money + "</td> " +
 	            "</tr>";
 	         }
 	         str += "</tbody></table>";
 	         
+	         //log.info(str);
 	         return str;
 	}
 	
 	public static String getTradeSummaryAsTableString() {
 		
-		String str = "<table border=\"0\">" +
-		"<thread> " +
+		String str = "<table border=\"0\" id=\"sum\">" +
+		"<thead> " +
 	    "<tr>    " +
 	    "    <td>Account Count</td> " +
 	    "    <td>Profit</td>    " +
@@ -199,9 +204,8 @@ public class TradeRecord{
 	    "    <td>Net Profit</td>    " +
 	    "    <td>Sell Count</td>   " +
 	    "    <td>Buy Count</td>   " +
+	    " </tr>" +
 	    "</thead>";
-
-	    str += "<tbody> ";
 
 		Connection con = DBManager.getConnection();
 		try {
@@ -234,7 +238,7 @@ public class TradeRecord{
 	            "<td>" + rs.getInt("total_sell_cnt") + "</td> " +
 	            "</tr>";
 	            
-		         str += "</tbody></table>";
+		         str += "</table>";
 		     
 		         rs.close();
 		         stm.close();

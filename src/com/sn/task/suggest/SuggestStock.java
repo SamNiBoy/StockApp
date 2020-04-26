@@ -321,10 +321,10 @@ public class SuggestStock implements Job {
 		String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 		String system_role_for_trade = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 		try {
-			sql = "select distinct s.id from usrStk s "
+			sql = "select distinct s.id, ss.max_score from usrStk s left join (select stock, max(score) max_score from stockparamsearch group by stock) ss on s.id = ss.stock "
 				+ "where s.gz_flg = 1 "
 				+ "  and s.suggested_by in ('" + system_role_for_suggest + "') "
-				+ "  order by suggested_comment desc ";
+				+ "  order by case when ss.max_score is null then 0 else ss.max_score end desc ";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);

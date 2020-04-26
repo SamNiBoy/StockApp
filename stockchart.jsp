@@ -24,12 +24,33 @@ div {
 	background:#AAAAAA;
 }
 
+
+
 .even {
-	background:#44BBDD;
+	background:#BBBBDD;
 }
 
 .odd {
 	background:#FFFFEE;
+}
+
+.parent {
+	background:#88FF88;
+}
+
+.selected {
+	background:#7878BE;
+}
+
+.childselected {
+	background:#BCBC22;
+}
+
+.filter {
+	margin-bottom:20px;
+    display: flex;
+    align-items:center;
+    background:#FFFFEE;
 }
 </style>
  
@@ -56,7 +77,12 @@ var myTextStyle = {
 		</div>
 		<h1>交易汇总</h1>
 		<div id="tradeSummary" style="width: 100%;height:600px;border: solid 5px #0000AA; margin: 2px; background-color: #EEEED1;"></div>
+		
 		<h1>交易明细</h1>
+		<div class="filter" ">
+		<span style="width:1090px;text-align:right;">过滤:</span>
+		<input id="myfilter"></input>
+		</div>
 		<div id="tradeRecord" style="width: 100%;height:600px;border: solid 5px #0000AA; margin: 2px; background-color: #EEEED1;"></div>
 		
 	    <h1>我关注的股票</h1>
@@ -71,6 +97,13 @@ var myTextStyle = {
 		<div id="showGraphic4" style="width: 90%;height:500px;border: solid 5px #CD0000; margin: 2px; background-color: #DBDBDB;"></div>
 		
         <script type="text/javascript">
+        
+        $(function() {
+        	$("#myfilter").keyup(function() {
+        		$('#detail tbody tr').hide().filter(":contains('" + ($(this).val()) + "')").show();
+        	});
+        });
+        
 
         
     	<jsp:useBean id="sm" scope="application" class="com.sn.stock.StockMarket" />
@@ -712,7 +745,14 @@ setInterval(drawIndexCharts, 10000);
                      $("#tradeSummary").replaceWith(result);
                      $("tbody>tr:odd").addClass("odd");
                      $("tbody>tr:even").addClass("even");
-                     $("thead>tr:even").addClass("thead");
+                     $("thead").addClass("thead");
+                     
+                     $(function() {
+                         $('tr.parent').click(function() {
+                         	$(this).toggleClass("selected")
+                         	.siblings('.child_' + this.id).toggleClass("childselected");
+                         });
+                     });
                      
                 },
                 error:function (err) {
@@ -735,7 +775,7 @@ setInterval(drawIndexCharts, 10000);
                      $("#tradeRecord").replaceWith(result);
                      $("tbody>tr:odd").addClass("odd");
                      $("tbody>tr:even").addClass("even");
-                     $("thead>tr:even").addClass("thead");
+                     $("thead").addClass("thead");
                      
                 },
                 error:function (err) {
