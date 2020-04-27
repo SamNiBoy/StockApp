@@ -50,7 +50,13 @@ public class StockTrader {
 	private boolean sim_mode = false;
 	
     private static StockTrader tradexTrader = new StockTrader(false);
+    private static StockTrader GFTrader = new StockTrader(false);
     private static StockTrader simTrader = new StockTrader(true);
+    
+    public static StockTrader getGFTrader()
+    {
+        return GFTrader;
+    }
     
     public static StockTrader getTradexTrader()
     {

@@ -76,33 +76,26 @@ var myTextStyle = {
 		     <div id="idx4" style="width: 25%;height:100%; margin: 2px; background-color: white;"></div>
 		</div>
 		<h1>交易汇总</h1>
-		<div id="tradeSummary" style="width: 100%;height:600px;border: solid 5px #0000AA; margin: 2px; background-color: #EEEED1;"></div>
+		<div id="tradeSummary" ></div>
 		
 		<h1>交易明细</h1>
 		<div class="filter" ">
 		<span style="width:1090px;text-align:right;">过滤:</span>
 		<input id="myfilter"></input>
 		</div>
-		<div id="tradeRecord" style="width: 100%;height:600px;border: solid 5px #0000AA; margin: 2px; background-color: #EEEED1;"></div>
+		<div id="tradeRecord" ></div>
 		
-	    <h1>我关注的股票</h1>
-		<div id="gzstock" style="width: 100%;height:600px;border: solid 5px #0000AA; margin: 2px; background-color: #EEEED1;"></div>
+		<div id="gzstock"></div>
 		
-	    <h1>涨跌最快的股票</h1>
-		<div id="showGraphic2" style="width: 50%;height:300px;border: solid 5px #008B45; margin: 2px; background-color: #C4C4C4;"></div>
+		<div id="showGraphic2" ></div>
 		
 
 		
-		<h1>盈利/亏损监控</h1>
-		<div id="showGraphic4" style="width: 90%;height:500px;border: solid 5px #CD0000; margin: 2px; background-color: #DBDBDB;"></div>
+		<div id="showGraphic4"></div>
 		
         <script type="text/javascript">
         
-        $(function() {
-        	$("#myfilter").keyup(function() {
-        		$('#detail tbody tr').hide().filter(":contains('" + ($(this).val()) + "')").show();
-        	});
-        });
+
         
 
         
@@ -689,7 +682,7 @@ setInterval(drawIndexCharts, 10000);
             ]
         };
  
-        gzstock.setOption(gzstock_opt);
+        //gzstock.setOption(gzstock_opt);
 		
                     </script>
                     
@@ -727,7 +720,7 @@ setInterval(drawIndexCharts, 10000);
         };
  
         // 使用刚指定的配置项和数据显示图表。
-        myChart2.setOption(option2);
+       // myChart2.setOption(option2);
  
         </script>
         
@@ -776,6 +769,12 @@ setInterval(drawIndexCharts, 10000);
                      $("tbody>tr:odd").addClass("odd");
                      $("tbody>tr:even").addClass("even");
                      $("thead").addClass("thead");
+                     
+                     $(function() {
+                     	$("#myfilter").keyup(function() {
+                     		$('#detail tbody tr').hide().filter(":contains('" + ($(this).val()) + "')").show();
+                     	}).keyup();
+                     });
                      
                 },
                 error:function (err) {
@@ -869,7 +868,7 @@ setInterval(drawIndexCharts, 10000);
         	};
         
      // 使用刚指定的配置项和数据显示图表。
-        myChart4.setOption(option4);
+        //myChart4.setOption(option4);
         </script>
         
 

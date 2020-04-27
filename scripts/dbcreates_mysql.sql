@@ -15,6 +15,7 @@ insert into param values('DFT_INIT_MNY', 'ACCOUNT',null, 50000, '', '', 'Default
 insert into param values('DFT_MAX_USE_PCT', 'ACCOUNT',null, 0.8, '', '', 'Max percentage of money can be used.', sysdate(),sysdate());
 insert into param values('DFT_MAX_MNY_PER_TRADE', 'ACCOUNT',null, 10000, '', '', 'Max amount of money can be used for one trade.', sysdate(),sysdate());
 insert into param values('ACNT_SIM_PREFIX', 'ACCOUNT',null,null , 'SIM', '', 'Account prefix for simulation account.', sysdate(),sysdate());
+insert into param values('ACNT_GF_PREFIX', 'ACCOUNT',null,null , 'GF', '', 'Account prefix for GF trader.', sysdate(),sysdate());
 
 insert into param values('COMMISSION_RATE', 'VENDOR',null, 0.0014, '', '', 'Commissioin rate, as part of cost.', sysdate(),sysdate());
 
@@ -22,8 +23,8 @@ insert into param values('SIM_DAYS', 'SIMULATION', 1,null, '', '', 'How many day
 insert into param values('SIM_THREADS_COUNT', 'SIMULATION', 2,null, '', '', 'How many thread in parallel to run the simulation.', sysdate(),sysdate());
 insert into param values('SIM_STOCK_COUNT_FOR_EACH_THREAD', 'SIMULATION', 10,null, '', '', 'How many stocks to be run simulation per thread at one time.', sysdate(),sysdate());
 
-insert into param values('ARCHIVE_DAYS_OLD', 'ARCHIVE', 1,null, '', '', 'How many days stock data to keep in prod db.', sysdate(),sysdate());
-insert into param values('PURGE_DAYS_OLD', 'ARCHIVE', 5,null, '', '', 'How many days stock data to keep in archive db.', sysdate(),sysdate());
+insert into param values('ARCHIVE_DAYS_OLD', 'ARCHIVE', 15,null, '', '', 'How many days stock data to keep in prod db.', sysdate(),sysdate());
+insert into param values('PURGE_DAYS_OLD', 'ARCHIVE', 30,null, '', '', 'How many days stock data to keep in archive db.', sysdate(),sysdate());
 
 insert into param values('MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK', 'TRADING', 100,null, '', '', 'Max number of buy/sell per stock each day.', sysdate(),sysdate());
 insert into param values('MAX_TRADE_TIMES_PER_STOCK', 'TRADING', 500,null, '', '', 'Max number of trading per stock each day.', sysdate(),sysdate());

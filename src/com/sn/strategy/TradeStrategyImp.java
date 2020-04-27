@@ -423,7 +423,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 
 			//boolean overall_risk = false;
 			// If recently we lost continuously overall, stop trading.
-			/*if (stopTradeForPeriod(5)) {
+			/*if (stopTradeForPeriod(s, 5)) {
 				log.info("Now trade unsuccess for 3 days, stop trade.");
 				overall_risk = true;
 			}*/
@@ -530,17 +530,23 @@ public class TradeStrategyImp implements ITradeStrategy {
     	return true;
 	}
 	
-	private boolean stopTradeForPeriod(int days) {
+	private boolean stopTradeForPeriod(Stock2 s, int days) {
 		String sql;
 		boolean shouldStopTrade = false;
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
             
+			int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
+			int tradeLocalwithSim = ParamManager.getIntParam("TRADING_AT_LOCAL_WITH_SIM", "TRADING", null);
+			
 	         String acntId = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null);
 	            
-	         if (!sim_mode) {
+	         if (tradeLocal == 0) {
 	             acntId = tradex_acnt.getActId();
+	         }
+	         else if (tradeLocalwithSim == 0) {
+	         	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", s.getID()) + s.getID();
 	         }
 	            
 			sql = "select * from tradedtl " + " where acntId like '" + acntId + "%'" + "   and dl_dt >= sysdate() - interval "
@@ -623,10 +629,16 @@ public class TradeStrategyImp implements ITradeStrategy {
 		String sql;
 		boolean shouldStopTrade = false;
         
+		int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
+		int tradeLocalwithSim = ParamManager.getIntParam("TRADING_AT_LOCAL_WITH_SIM", "TRADING", null);
+		
         String acntId = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", s.getID()) + s.getID();
         
-        if (!sim_mode) {
+        if (tradeLocal == 0) {
             acntId = tradex_acnt.getActId();
+        }
+        else if (tradeLocalwithSim == 0) {
+        	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", s.getID()) + s.getID();
         }
         
 		try {
@@ -1520,8 +1532,18 @@ public class TradeStrategyImp implements ITradeStrategy {
 	
 	public ICashAccount getCashAcntForStock(String stk) {
         
-        if (sim_mode) {
+    	int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
+    	
+        if (sim_mode || tradeLocal == 1) {
+        	
         	String AcntForStk = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", stk) + stk;
+        	
+        	int tradeLocalwithSim = ParamManager.getIntParam("TRADING_AT_LOCAL_WITH_SIM", "TRADING", null);
+        	
+        	if (tradeLocalwithSim == 0)
+        	{
+        		AcntForStk = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", stk) + stk;
+        	}
         	
         	synchronized (cash_account_map)
         	{
@@ -1550,8 +1572,6 @@ public class TradeStrategyImp implements ITradeStrategy {
         	}
         }
         else {
-            
-            //findBestClientForTrade return true means we switch to a new account.
             String Tradexacnt = TradexCpp.findBestAccountForTrade(stk);
             
             if(tradex_acnt == null || !tradex_acnt.getActId().equals(Tradexacnt))
@@ -1576,10 +1596,8 @@ public class TradeStrategyImp implements ITradeStrategy {
                     cash_account_map.put(tradex_acnt.getActId(), tradex_acnt);
                 }
             }
-            
             return tradex_acnt;
         }
-        
 	}
 
 	@Override

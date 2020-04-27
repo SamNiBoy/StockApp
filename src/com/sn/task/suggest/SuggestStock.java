@@ -53,10 +53,12 @@ public class SuggestStock implements Job {
 
 	/**
 	 * @param args
+	 * @throws JobExecutionException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
 		SuggestStock fsd = new SuggestStock();
+		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);
 	}
@@ -70,7 +72,7 @@ public class SuggestStock implements Job {
 		//initDelay = id;
 		//delayBeforNxtStart = dbn;
 		//selectors.add(new DefaultStockSelector());
-		//selectors.add(new PriceStockSelector());
+		selectors.add(new PriceStockSelector());
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
 		selectors.add(new PriceShakingStockSelector());

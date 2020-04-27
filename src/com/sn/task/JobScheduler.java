@@ -104,12 +104,12 @@ public class JobScheduler {
     	}
     	
         String marketRunningTime = "*/10 * 9-15 ? * MON-FRI";
-        ////String stockParamTrainningTime = "0 0 16 ? * MON-FRI";
-        String stockParamTrainningTime = "0 28 1 ? * MON-SUN";
-        ////String stockSuggestTime = "0 30 14 ? * MON-FRI";
-        String stockSuggestTime = "0 25 1 ? * MON-SUN";
-        /////String stockSimTime = "0 30 18 ? * MON-FRI";
-        String stockSimTime = "0 30 1 ? * MON-SUN";
+        String stockParamTrainningTime = "0 0 12,18 ? * MON-FRI";
+        //String stockParamTrainningTime = "*/10 * 9-15 ? * MON-FRI";
+        //String stockSuggestTime = "0 30 14 ? * MON-FRI";
+        String stockSuggestTime = "0 03 16 ? * MON-SUN";
+        String stockSimTime = "0 30 18 ? * MON-FRI";
+        //String stockSimTime = "0 30 1 ? * MON-SUN";
         
         
         JobDetail job_StockParamSearch = newJob(StockParamSearch.class).withIdentity("StockParamSearch", "StockApp").build();

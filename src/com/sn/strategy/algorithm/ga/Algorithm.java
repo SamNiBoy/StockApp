@@ -360,6 +360,7 @@ public class Algorithm {
         strategy.resetStrategyStatus();
         
         resetParamData();
+        resetTradeData();
         
         for (String stk : gzstocks.keySet())
         {
@@ -427,6 +428,41 @@ public class Algorithm {
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+            }
+        }
+    }
+    
+    private static void resetTradeData() {
+        String sql;
+        Connection con = null;
+        try {
+            con = DBManager.getConnection();
+            Statement stm = con.createStatement();
+            sql = "delete from tradedtl where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + "%'";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+            
+            stm = con.createStatement();
+            sql = "delete from tradehdr where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + "%'";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+            
+            stm = con.createStatement();
+            sql = "delete from CashAcnt where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + "%'";
+            log.info(sql);
+            stm.execute(sql);
+            stm.close();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.error(e.getMessage(), e);
             }
         }
     }

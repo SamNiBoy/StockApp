@@ -317,6 +317,7 @@ public class SimTrader implements Job{
                 pre_sim_time = LocalDateTime.now();
                 
                 StockMarket.clearDegreeMap();
+                strategy.resetStrategyStatus();
                 log.info("SimTrader end...");
                 
           } catch (Exception e) {

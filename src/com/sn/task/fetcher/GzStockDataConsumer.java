@@ -28,10 +28,12 @@ public class GzStockDataConsumer implements Job {
 
 	static private int MAX_QUEUE_SIZE = 1;
 	static private ArrayBlockingQueue<RawStockData> dataqueue = new ArrayBlockingQueue<RawStockData>(MAX_QUEUE_SIZE, false);
-    static private StockTrader st = StockTrader.getTradexTrader();
+    static private StockTrader st = null;
     static private ITradeStrategy strategy = null;
 
     static int maxLstNum = 50;
+    static int trade_at_local = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
+    static int trade_at_local_with_sim_mode = ParamManager.getIntParam("TRADING_AT_LOCAL_WITH_SIM", "TRADING", null);
     
     static Logger log = Logger.getLogger(GzStockDataConsumer.class);
 
@@ -61,7 +63,6 @@ public class GzStockDataConsumer implements Job {
         ConcurrentHashMap<String, Stock2> gzs = StockMarket
         .getGzstocks(false);
         
-        int trade_at_local_with_sim_mode = ParamManager.getIntParam("TRADING_AT_LOCAL_WITH_SIM", "TRADING", null);
         while (true) {
         	log.info("after while, dataqueue.take()...");
         	RawStockData srd = null;
@@ -85,6 +86,20 @@ public class GzStockDataConsumer implements Job {
                 if (strategy == null)
                 {
                     strategy = TradeStrategyGenerator.generatorStrategy(trade_at_local_with_sim_mode == 1 ? true : false);
+                }
+                if (st == null)
+                {
+                	if (trade_at_local_with_sim_mode == 0) {
+                		if (trade_at_local == 0) {
+                	        st = StockTrader.getTradexTrader();
+                		}
+                		else {
+                			st = StockTrader.getGFTrader();
+                		}
+                	}
+                	else {
+                		st = StockTrader.getSimTrader();
+                	}
                 }
                 log.info("Now start trading with stragtegy:" + strategy.getTradeStrategyName() + " on stock:" + s.getID() + ", name:" + s.getName() + "\n\n");
                 st.setStrategy(strategy);

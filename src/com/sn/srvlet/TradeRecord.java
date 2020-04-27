@@ -137,7 +137,7 @@ public class TradeRecord{
 		
 		List<TradeRecord> list = readTradeRecords();
 		
-		String str = "<table border=\"0\" id=\"detail\">" +
+		String str = "<div id=\"tradeRecord\"> <table border=\"0\" id=\"detail\" style=\"margin: auto\">" +
 		"<thead> " +
 	    "<tr>                                      " +
 	    "    <td>Account ID</td>                   " +
@@ -187,7 +187,7 @@ public class TradeRecord{
 	            "<td>" + tl.stop_trade_mode_flg + "</td> " +
 	            "</tr>";
 	         }
-	         str += "</tbody></table>";
+	         str += "</tbody></table></div>";
 	         
 	         //log.info(str);
 	         return str;
@@ -195,7 +195,7 @@ public class TradeRecord{
 	
 	public static String getTradeSummaryAsTableString() {
 		
-		String str = "<table border=\"0\" id=\"sum\">" +
+		String str = "<div id=\"tradeSummary\"> <table border=\"0\" id=\"sum\" style=\"margin: auto\">" +
 		"<thead> " +
 	    "<tr>    " +
 	    "    <td>Account Count</td> " +
@@ -238,7 +238,7 @@ public class TradeRecord{
 	            "<td>" + rs.getInt("total_sell_cnt") + "</td> " +
 	            "</tr>";
 	            
-		         str += "</table>";
+		         str += "</table></div>";
 		     
 		         rs.close();
 		         stm.close();
