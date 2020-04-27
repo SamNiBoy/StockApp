@@ -105,10 +105,10 @@ public class JobScheduler {
     	
         String marketRunningTime = "*/10 * 9-15 ? * MON-FRI";
         String stockParamTrainningTime = "0 0 12,18 ? * MON-FRI";
-        //String stockParamTrainningTime = "*/10 * 9-15 ? * MON-FRI";
-        //String stockSuggestTime = "0 30 14 ? * MON-FRI";
-        String stockSuggestTime = "0 03 16 ? * MON-SUN";
-        String stockSimTime = "0 30 18 ? * MON-FRI";
+        //String stockParamTrainningTime = "0 30 18 ? * MON-FRI";
+        String stockSuggestTime = "0 0 14 ? * MON-FRI";
+        //String stockSuggestTime = "0 29 18 ? * MON-SUN";
+        String stockSimTime = "0 35 18 ? * MON-FRI";
         //String stockSimTime = "0 30 1 ? * MON-SUN";
         
         

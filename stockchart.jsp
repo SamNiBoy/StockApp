@@ -62,6 +62,8 @@ var myTextStyle = {
  fontFamily: "sans-serif",//字体系列
  fontSize: 12 //字体大小
 };
+
+var refresh_flg = true;
  
 </script>
 </head>
@@ -71,9 +73,8 @@ var myTextStyle = {
 		<div id="index" style="width: 100%;height:400px; border: solid 1px #0000AA; margin: 2px; background-color: white;">
 		     <div id="idx1" style="width: 15%;height:100%; margin: 2px; background-color: white;"></div>
 		     <div id="idx2" style="width: 15%;height:100%; margin: 2px; background-color: white;"></div>
-		     <div id="idx3" style="width: 45%;height:100%; margin: 2px; background-color: white;"></div>
-		     
 		     <div id="idx4" style="width: 25%;height:100%; margin: 2px; background-color: white;"></div>
+		     <div id="idx3" style="width: 45%;height:100%; margin: 2px; background-color: white;"></div>
 		</div>
 		<h1>交易汇总</h1>
 		<div id="tradeSummary" ></div>
@@ -82,6 +83,7 @@ var myTextStyle = {
 		<div class="filter" ">
 		<span style="width:1090px;text-align:right;">过滤:</span>
 		<input id="myfilter"></input>
+		<button id="refreshBtn" onclick="switchRefresh()">停止刷新</button>
 		</div>
 		<div id="tradeRecord" ></div>
 		
@@ -96,6 +98,17 @@ var myTextStyle = {
         <script type="text/javascript">
         
 
+        function switchRefresh() {
+        	//alert('clicked refres button');
+        	refresh_flg = !refresh_flg;
+        	
+        	if (refresh_flg) {
+        	    $("#refreshBtn").text('停止刷新');
+        	}
+        	else {
+        		$("#refreshBtn").text('开始刷新');
+        	}
+        }
         
 
         
@@ -388,6 +401,9 @@ var myTextStyle = {
     	    idx4.setOption(idx4_opt);
     	    
 function drawIndexCharts() {
+	
+	if (refresh_flg == false)
+		return;
 	
 	console.log("this is for debug message.");
 	    
@@ -727,6 +743,10 @@ setInterval(drawIndexCharts, 10000);
         <script type="text/javascript">
      
         function drawTradeSummary() {
+        	
+        	if (refresh_flg == false)
+        		return;
+        	
             $.ajax({
                 type:"GET",
                 url:"/StockApp/GetIndex",
@@ -757,6 +777,9 @@ setInterval(drawIndexCharts, 10000);
         setInterval(drawTradeSummary, 10000);
         
         function drawTradeRecords() {
+        	if (refresh_flg == false)
+        		return;
+        	
             $.ajax({
                 type:"GET",
                 url:"/StockApp/GetIndex",
