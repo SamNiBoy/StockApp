@@ -849,20 +849,6 @@ public class TradeStrategyImp implements ITradeStrategy {
             ResultSet rs = stm.executeQuery(sql);
             if (rs.next()) {
                 if (rs.getInt("maxseq") < 0) {
-                    /*
-                     * create table if not exists TradeHdr(
-                       acntId varchar(20 ) not null,
-                       stkId varchar(6 ) not null,
-                       in_hand_stk_mny decimal(8, 2) not null,
-                       in_hand_qty int not null,
-                       in_hand_stk_price decimal(8, 2) not null,
-                       total_amount decimal(20, 2),
-                       com_rate decimal(8, 2),
-                       commission_mny decimal(8, 2),
-                       add_dt datetime not null,
-                       CONSTRAINT TradeHdr_PK PRIMARY KEY (acntId, stkId)
-                       );
-                     */
                     sql = "insert into TradeHdr values('" + ac.getActId() + "','"
                     + s.getID() + "',"
                     + soldPrice*sellableAmt + ","
@@ -901,21 +887,7 @@ public class TradeStrategyImp implements ITradeStrategy {
             log.info(sql);
             stm.execute(sql);
             stm.close();
-            
-            if (sim_mode)
-            {
-                //now sync used money
-                /*double relasedMny = sellableAmt * s.getCur_pri();
-                double usedMny = ac.getUsedMny();
-                usedMny -= relasedMny;
-                ac.setUsedMny(usedMny);
-                
-                stm = con.createStatement();
-                sql = "update CashAcnt set used_mny = used_mny - " + relasedMny + " where acntId = '" + ac.getActId() + "'";
-                log.info(sql);
-                stm.execute(sql);*/
-            }
-                con.close();
+            con.close();
             
             LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
             StockBuySellEntry stk = null;
@@ -1035,19 +1007,6 @@ public class TradeStrategyImp implements ITradeStrategy {
             log.info(sql);
             stm.execute(sql);
             stm.close();
-            
-            if(sim_mode)
-            {
-             /*   //now sync used money
-                double usedMny = ac.getUsedMny();
-                usedMny += occupiedMny;
-                ac.setUsedMny(usedMny);
-                
-                stm = con.createStatement();
-                sql = "update CashAcnt set used_mny = " + usedMny + " where acntId = '" + ac.getActId() + "'";
-                log.info(sql);
-                stm.execute(sql);*/
-            }
             con.close();
             
             LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());

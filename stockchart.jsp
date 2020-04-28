@@ -13,6 +13,7 @@ import="java.io.*,java.util.*,java.sql.*,javax.servlet.http.*,com.sn.db.DBManage
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	box-sizing: border-box;
+    font-size:20px;
 }
 
 div {
@@ -23,8 +24,6 @@ div {
 .thead {
 	background:#AAAAAA;
 }
-
-
 
 .even {
 	background:#BBBBDD;
@@ -52,6 +51,36 @@ div {
     align-items:center;
     background:#FFFFEE;
 }
+
+.wrap{
+    width:100%;
+    height:1500px;
+    margin-top:20px;
+    overflow: hidden;
+}
+#left{
+    width:45%;
+    height:100%;
+    background: #ccffff;
+    float: left;
+}
+#middle{
+	padding-top:100px;
+    width:10%;
+    height:100%;
+    background: #ccffcc;
+}
+
+.actinbtn{
+    margin-top:50px;
+}
+#right{
+    width:45%;
+    height:100%;
+    background: #ccffff;
+    float: left;
+}
+
 </style>
  
 <script type="text/javascript">
@@ -81,23 +110,27 @@ var refresh_flg = true;
 		
 		<h1>交易明细</h1>
 		<div class="filter" ">
-		<span style="width:1090px;text-align:right;">过滤:</span>
-		<input id="myfilter"></input>
-		<button id="refreshBtn" onclick="switchRefresh()">停止刷新</button>
+		<span style="width:1190px;text-align:right;">过滤:</span>
+		<input id="myfilter" style="width:150px;height:30px;"></input>
+		<button id="refreshBtn" onclick="switchRefresh()" style="width:150px;height:40px;">停止刷新</button>
 		</div>
 		<div id="tradeRecord" ></div>
-		
-		<div id="gzstock"></div>
-		
-		<div id="showGraphic2" ></div>
-		
-
-		
-		<div id="showGraphic4"></div>
-		
+	
+		<div class="wrap">
+	    <panel id="left">推荐的股票
+	       <div id="suggestedStocks"></div>
+	    </panel>
+	    <panel id="middle">
+	        <button class="actinbtn" id="addToTrade" onclick="addToTrade()" style="width:150px;height:60px;">添加到交易池-></button>
+	        <button class="actinbtn" id="removeFromTrade" onclick="removeFromTrade()" style="width:150px;height:60px;">移动到推荐池<-</button>
+	    </panel>
+	    <panel id="right">交易中的股票
+	    		<div id="tradingStocks"></div>
+	    </panel>
+	    </div>
+	
         <script type="text/javascript">
         
-
         function switchRefresh() {
         	//alert('clicked refres button');
         	refresh_flg = !refresh_flg;
@@ -108,6 +141,77 @@ var refresh_flg = true;
         	else {
         		$("#refreshBtn").text('开始刷新');
         	}
+        }
+        
+        function addToTrade() {
+        	//alert(' has selected');
+        	var has_success=false;
+        	$("#suggestedStocks tbody>tr").each(function(){
+        		if ($(this).hasClass('selected'))
+        		{
+        			//alert($(this).attr('id') + ' has selected');
+        			
+        			var stkid = $(this).attr('id');
+        			
+                    $.ajax({
+                        type:"GET",
+                        url:"/StockApp/GetIndex",
+                         data:{
+                             type: "putStockToTrading",
+                             id: stkid
+                         },
+                        success:function (result) {
+                        	 
+                        	 if (result == "success")
+                        	 {
+                        		 //alert('put stock ' + $(this).attr('id') + ' into trade success');
+                        	 }
+                        	 
+                        	 has_success = true;
+
+                        },
+                        error:function (err) {
+                            //alert("系统错误-TRADERECORD.jsp-ajax");
+                        }
+                    });
+        			
+        		}
+            });
+        }
+        
+        function removeFromTrade() {
+        	
+        	var has_success=false;
+        	$("#tradingStocks tbody>tr").each(function(){
+        		if ($(this).hasClass('selected'))
+        		{
+        			//alert($(this).attr('id') + ' has selected');
+        			
+        			var stkid = $(this).attr('id');
+        			
+                    $.ajax({
+                        type:"GET",
+                        url:"/StockApp/GetIndex",
+                         data:{
+                             type: "putStockToSuggest",
+                             id: stkid
+                         },
+                        success:function (result) {
+                        	 
+                        	 if (result == "success")
+                        	 {
+                        		 //alert('put stock ' + $(this).attr('id') + ' into suggest pool success');
+                        	 }
+                        	 
+                        	 has_success = true;
+
+                        },
+                        error:function (err) {
+                        }
+                    });
+        			
+        		}
+            });
         }
         
 
@@ -807,6 +911,66 @@ setInterval(drawIndexCharts, 10000);
         }
         
         setInterval(drawTradeRecords, 10000);
+        
+        function listSuggestedStocks() {
+        	if (refresh_flg == false)
+        		return;
+        	
+            $.ajax({
+                type:"GET",
+                url:"/StockApp/GetIndex",
+                 data:{
+                     type: "listSuggestStocks"
+                 },
+                success:function (result) {
+
+                     $("#suggestedStocks").replaceWith(result);
+                     $("tbody>tr:odd").addClass("odd");
+                     $("tbody>tr:even").addClass("even");
+                     $("thead").addClass("thead");
+                     
+                     $("#suggestedStocks tbody>tr").click(function (){
+                    	 $(this).toggleClass('selected')
+                    	 .siblings().removeClass('selected');
+                     })
+                },
+                error:function (err) {
+                    //alert("系统错误-TRADERECORD.jsp-ajax");
+                }
+            });
+        }
+        
+        setInterval(listSuggestedStocks, 5000);
+        
+        function listTradingStocks() {
+        	if (refresh_flg == false)
+        		return;
+        	
+            $.ajax({
+                type:"GET",
+                url:"/StockApp/GetIndex",
+                 data:{
+                     type: "listTradingStocks"
+                 },
+                success:function (result) {
+
+                     $("#tradingStocks").replaceWith(result);
+                     $("tbody>tr:odd").addClass("odd");
+                     $("tbody>tr:even").addClass("even");
+                     $("thead").addClass("thead");         
+                     
+                     $("#tradingStocks tbody>tr").click(function (){
+                    	 $(this).toggleClass('selected')
+                    	 .siblings().removeClass('selected');
+                     })
+                },
+                error:function (err) {
+                    //alert("系统错误-TRADERECORD.jsp-ajax");
+                }
+            });
+        }
+        
+        setInterval(listTradingStocks, 5000);
         
         </script>
         

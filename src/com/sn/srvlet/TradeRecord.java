@@ -257,4 +257,173 @@ public class TradeRecord{
 
          return str;
 	}
+	
+	public static String getSuggestStocksAsTableString() {
+		
+		String str = "<div id=\"suggestedStocks\"> <table border=\"0\" style=\"margin: auto; width: 100%; height:100%;\">" +
+		"<thead> " +
+	    "<tr>                                      " +
+	    "    <td>No.</td>                     " +
+	    "    <td>Stock ID</td>                     " +
+	    "    <td>Name</td>                         " +
+	    "    <td>Stop Trading</td>                 " +
+	    "    <td>Suggest Selector</td>             " +
+	    "    <td>Suggest Comment</td>              " +
+	    "</tr>                                     " +
+	    "</thead>";
+
+	    str += "<tbody> ";
+	    
+		Connection con = DBManager.getConnection();
+		try {
+			Statement stm = con.createStatement();
+			ResultSet rs = null;
+			String sql = "select s.id, s.name, u.stop_trade_mode_flg, u.suggested_by_selector, u.suggested_comment  from stk s join usrstk u on s.id = u.id where u.gz_flg = 1 and u.suggested_by = 'SYSTEM_SUGGESTER'";
+			
+			log.info(sql);
+			rs = stm.executeQuery(sql);
+			int i = 0;
+			while(rs.next()) {
+				   i++;
+			       str += "<tr id=\"" + rs.getString("id") + "\">" +
+			       "<td>" + i + "</td> " +
+			       "<td>" + rs.getString("id") + "</td> " +
+			       "<td>" + rs.getString("name") + "</td> " +
+			       "<td>" + rs.getInt("stop_trade_mode_flg") + "</td> " +
+			       "<td>" + rs.getString("suggested_by_selector") + "</td> " +
+			       "<td>" + rs.getString("suggested_comment") + "</td> " +
+			       "</tr>";
+			}
+			
+			rs.close();
+			stm.close();
+			
+		    str += "</tbody></table></div>";
+		}
+		catch(Exception e) {
+			log.error(e.getCause(), e);
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getCause(), e);
+			}
+		}
+	    return str;
+	}
+	
+	public static boolean putStockIntoTrade(String stkid) {
+		
+		Connection con = DBManager.getConnection();
+		try {
+			Statement stm = con.createStatement();
+			String sql = "update usrstk set suggested_by = 'SYSTEM_GRANTED_TRADER', mod_dt = sysdate() where id = '" + stkid + "'";
+			
+			log.info(sql);
+			stm.execute(sql);
+			
+			StockMarket.addGzStocks(stkid);
+		}
+		catch(Exception e) {
+			log.error(e.getCause(), e);
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getCause(), e);
+			}
+		}
+	    return true;
+	}
+	
+	public static boolean putStockIntoSuggest(String stkid) {
+		
+		Connection con = DBManager.getConnection();
+		try {
+			Statement stm = con.createStatement();
+			String sql = "update usrstk set suggested_by = 'SYSTEM_SUGGESTER', mod_dt = sysdate() where id = '" + stkid + "'";
+			
+			log.info(sql);
+			stm.execute(sql);
+			StockMarket.removeGzStocks(stkid);
+		}
+		catch(Exception e) {
+			log.error(e.getCause(), e);
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getCause(), e);
+			}
+		}
+	    return true;
+	}
+	
+	
+	public static String getTradingStocksAsTableString() {
+		
+		String str = "<div id=\"tradingStocks\"> <table border=\"0\" style=\"margin: auto; width: 100%; height:100%;\">" +
+		"<thead> " +
+	    "<tr>                                      " +
+	    "    <td>No.</td>                     " +
+	    "    <td>Stock ID</td>                     " +
+	    "    <td>Name</td>                         " +
+	    "    <td>Stop Trading</td>                         " +
+	    "    <td>Suggest Selector</td>             " +
+	    "    <td>Suggest Comment</td>              " +
+	    "</tr>                                     " +
+	    "</thead>";
+
+	    str += "<tbody> ";
+	    
+		Connection con = DBManager.getConnection();
+		try {
+			Statement stm = con.createStatement();
+			ResultSet rs = null;
+			String sql = "select s.id, s.name, u.stop_trade_mode_flg, u.suggested_by_selector, u.suggested_comment from stk s join usrstk u on s.id = u.id where u.gz_flg = 1 and u.suggested_by <> 'SYSTEM_SUGGESTER'";
+			
+			log.info(sql);
+			rs = stm.executeQuery(sql);
+			
+			int i = 0;
+			while(rs.next()) {
+				   i++;
+			       str += "<tr id=\"" + rs.getString("id") + "\">" +
+			       "<td>" + i + "</td> " +
+			       "<td>" + rs.getString("id") + "</td> " +
+			       "<td>" + rs.getString("name") + "</td> " +
+			       "<td>" + rs.getInt("stop_trade_mode_flg") + "</td> " +
+			       "<td>" + rs.getString("suggested_by_selector") + "</td> " +
+			       "<td>" + rs.getString("suggested_comment") + "</td> " +
+			       "</tr>";
+			}
+			
+			rs.close();
+			stm.close();
+			
+		    str += "</tbody></table></div>";
+		}
+		catch(Exception e) {
+			log.error(e.getCause(), e);
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getCause(), e);
+			}
+		}
+	    return str;
+	}
 }

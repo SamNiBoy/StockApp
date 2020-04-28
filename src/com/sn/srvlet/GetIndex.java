@@ -62,6 +62,28 @@ public class GetIndex extends HttpServlet {
         {
         	out.write(TradeRecord.getTradeSummaryAsTableString());
         }
+        else if ("listSuggestStocks".equals(typ))
+        {
+        	out.write(TradeRecord.getSuggestStocksAsTableString());
+        }
+        else if ("listTradingStocks".equals(typ))
+        {
+        	out.write(TradeRecord.getTradingStocksAsTableString());
+        }
+        else if ("putStockToTrading".equals(typ))
+        {
+        	String stkid = request.getParameter("id");
+        	if (TradeRecord.putStockIntoTrade(stkid)) {
+        		out.write("success");
+        	}
+        }
+        else if ("putStockToSuggest".equals(typ))
+        {
+        	String stkid = request.getParameter("id");
+        	if (TradeRecord.putStockIntoSuggest(stkid)) {
+        		out.write("success");
+        	}
+        }
         out.flush();
         out.close();
     }
