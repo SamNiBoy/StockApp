@@ -194,55 +194,73 @@ public class Stock2 implements Comparable<Stock2>{
             return false;
         }
         
-        public boolean priceUpAfterSharpedDown(int periods, int upTimes) {
-            log.info("priceUpAfterSharpedDown: check if price goes up " + upTimes + " times after sharp down during period:" + periods);
+        public boolean priceUpAfterSharpedDown(int period) {
+            log.info("priceUpAfterSharpedDown: check if price goes up after sharp down during period:" + period);
             int size = cur_pri_lst.size();
-            if (size <= periods) {
-                log.info("priceUpAfterSharpedDown: only has " + size + " data less or equal than " +periods);
+            if (size <= 2 * period) {
+                log.info("priceUpAfterSharpedDown: only has " + size + " data less or equal than " + 2 * period);
                 return false;
             }
             double cur_pri = cur_pri_lst.get(size -1);
-            double pre_cur_pri = cur_pri_lst.get(size - 2);
-            if (cur_pri < pre_cur_pri) {
-                return false;
-            }
             
-            int upTimeCnt = 0;
-            for (int i=0; i<periods; i++) {
-                if (cur_pri_lst.get(size - 1 - i - 1) > cur_pri_lst.get(size - 1 - periods + 1)) {
-                	upTimeCnt++;
+            //make sure cur_pri is highest price during the past 2 * periods.
+            for (int i=0; i< 2 * period - 1; i++) {
+                if (cur_pri_lst.get(size - 1 - i - 1) > cur_pri) {
+                	log.info("last price:" + cur_pri + " is not higest, return fasle.");
+                	return false;
                 }
             }
             
-            log.info("Check if actual up times:" + upTimeCnt + " is >= parameter:" + upTimes);
-            if (upTimeCnt >= upTimes) {
+            //make sure avg(last period) > avg(2nd last period)
+            double avg1 = 0.0;
+            double avg2 = 0.0;
+            for (int i=0; i< period; i++) {
+                avg1 += cur_pri_lst.get(size - 1 - i);
+                avg2 += cur_pri_lst.get(size - 1 - i - period);
+            }
+            
+            avg1 = avg1 / period;
+            avg2 = avg2 / period;
+            
+            log.info("avg1:" + avg1 + " > avg2:" + avg2 + "? " +(avg1 > avg2));
+            
+            if (avg1 > avg2) {
                 return true;
             }
             return false;
         }
         
-        public boolean priceDownAfterSharpedUp(int periods, int downTimes) {
-            log.info("priceDownAfterSharpedUp: check if price goes down " + downTimes + " times after sharp up during period:" + periods);
+        public boolean priceDownAfterSharpedUp(int period) {
+            log.info("priceDownAfterSharpedUp: check if price goes down after sharp up during period:" + period);
             int size = cur_pri_lst.size();
-            if (size <= periods ) {
-                log.info("priceDownAfterSharpedUp: only has " + size + " data less or equal than " +periods);
+            if (size <= 2 * period ) {
+                log.info("priceDownAfterSharpedUp: only has " + size + " data less or equal than " + 2 * period);
                 return false;
             }
             double cur_pri = cur_pri_lst.get(size -1);
-            double pre_cur_pri = cur_pri_lst.get(size - 2);
-            if (cur_pri > pre_cur_pri) {
-                return false;
-            }
             
-            int downTimeCnt = 0;
-            for (int i=0; i<periods - 1; i++) {
-                if (cur_pri_lst.get(size - 1 - i) < cur_pri_lst.get(size - 1 - periods + 1)) {
-                	downTimeCnt++;
+            //make sure cur_pri is lowest price during the past 2 * periods.
+            for (int i=0; i< 2 * period - 1; i++) {
+                if (cur_pri_lst.get(size - 1 - i - 1) < cur_pri) {
+                	log.info("last price:" + cur_pri + " is not lowest, return fasle.");
+                	return false;
                 }
             }
             
-            log.info("Check if actual down times:" + downTimeCnt + " is >= parameter:" + downTimes);
-            if (downTimeCnt >= downTimes) {
+            //make sure avg(last period) < avg(2nd last period)
+            double avg1 = 0.0;
+            double avg2 = 0.0;
+            for (int i=0; i< period; i++) {
+                avg1 += cur_pri_lst.get(size - 1 - i);
+                avg2 += cur_pri_lst.get(size - 1 - i - period);
+            }
+            
+            avg1 = avg1 / period;
+            avg2 = avg2 / period;
+            
+            log.info("avg1:" + avg1 + " < avg2:" + avg2 + "? " +(avg1 < avg2));
+            
+            if (avg1 < avg2) {
                 return true;
             }
             return false;
@@ -1751,11 +1769,11 @@ public class Stock2 implements Comparable<Stock2>{
     public Double getMinTd_lst_pri() {
         return sd.getMinTd_lst_pri();
     }
-    public boolean priceDownAfterSharpedUp(int periods, int upTimes) {
-        return sd.priceDownAfterSharpedUp(periods, upTimes);
+    public boolean priceDownAfterSharpedUp(int period) {
+        return sd.priceDownAfterSharpedUp(period);
     }
-    public boolean priceUpAfterSharpedDown(int periods, int upTimes) {
-        return sd.priceUpAfterSharpedDown(periods, upTimes);
+    public boolean priceUpAfterSharpedDown(int period) {
+        return sd.priceUpAfterSharpedDown(period);
     }
     public String getID() {
         // TODO Auto-generated method stub

@@ -101,22 +101,17 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 				double maxPct = (maxPri - minPri) / yt_cls_pri;
 				double curPct =(cur_pri - minPri) / yt_cls_pri;
 
-				boolean qtyPlused = stk.isLstQtyPlused();
+				//boolean qtyPlused = stk.isLstQtyPlused();
+				boolean priceTurnedAround = stk.priceUpAfterSharpedDown(3);
 				
-				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", isQtyPlused:" + qtyPlused);
+				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", priceTurnedAround:" + priceTurnedAround);
 				
-				if (maxPct >= tradeThresh && curPct < maxPct * margin_pct && qtyPlused) {
+				if (maxPct >= tradeThresh && curPct < maxPct * margin_pct && priceTurnedAround) {
 					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
 							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " margin_pct:" + margin_pct);
                     
 					stk.setTradedBySelector(this.selector_name);
-					stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + margin_pct + " also qtyPlused:" + qtyPlused);
-					return true;
-				} else if (stk.isStoppingJumpWater() && !StockMarket.isGzStocksJumpWater(5, 0.01, 0.5)) {
-					log.info("Stock cur price is stopping dumping, isGoodBuyPoint return true.");
-					//for testing purpose, still return false;
-                    stk.setTradedBySelector(this.selector_name);
-                    stk.setTradedBySelectorComment("Stock price is stop jummping water");
+					stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + margin_pct + " also priceTurnedAround:" + priceTurnedAround);
 					return true;
 				}
 				else {

@@ -70,7 +70,7 @@ public class ParamMap implements Cloneable{
         Param p4 = new Param("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING",ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", null), 0.03, 0.08, 0.01, Param.TYPE.FLOAT);
         Param p5 = new Param("BUY_BASE_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING", null), 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
         Param p6 = new Param("SELL_BASE_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("SELL_BASE_TRADE_THRESH", "TRADING", null), 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
-        Param p7 = new Param("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", null), 0.001, 0.02, 0.002, Param.TYPE.FLOAT);
+        Param p7 = new Param("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", null), 0.1, 0.4, 0.02, Param.TYPE.FLOAT);
         
         kv.put("VOLUME_PLUS_PCT@TRADING", p1);
         kv.put("BUY_SELL_MAX_DIFF_CNT@TRADING", p2);

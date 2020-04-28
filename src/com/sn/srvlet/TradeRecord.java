@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -202,6 +203,8 @@ public class TradeRecord{
 	    "    <td>Profit</td>    " +
 	    "    <td>Commission</td>   " +
 	    "    <td>Net Profit</td>    " +
+	    "    <td>Total Used Money</td>    " +
+	    "    <td>Avg Used Money Hours</td>    " +
 	    "    <td>Sell Count</td>   " +
 	    "    <td>Buy Count</td>   " +
 	    " </tr>" +
@@ -212,11 +215,14 @@ public class TradeRecord{
 			Statement stm = con.createStatement();
 			ResultSet rs = null;
 			String sql = "";
+			DecimalFormat df = new DecimalFormat("##.##");
 			
 			sql = "select count(distinct c.acntid) acntcnt, "
 					+ "   sum(c.pft_mny) total_pft_mny, "
 					+ "   sum(t.commission_mny) total_commission_mny, "
 					+ "   sum(c.pft_mny) - sum(t.commission_mny) total_net_pft, "
+					+ "   sum(c.used_mny) total_used_mny, "
+					+ "   sum(ac.used_mny * ac.used_mny_hrs) / sum(ac.used_mny) avgUsedMny_Hrs,"
 					+ "   sum(d.buy_cnt) total_buy_cnt, "
 					+ "   sum(d.sell_cnt) total_sell_cnt "
 					+ "from cashacnt c "
@@ -234,6 +240,8 @@ public class TradeRecord{
 	            "<td>" + rs.getDouble("total_pft_mny") + "</td> " +
 	            "<td>" + rs.getDouble("total_commission_mny") + "</td> " +
 	            "<td>" + rs.getDouble("total_net_pft") + "</td> " +
+	            "<td>" + rs.getDouble("total_used_mny") + "</td> " +
+	            "<td>" + df.format(rs.getDouble("avgUsedMny_Hrs")) + "</td> " +
 	            "<td>" + rs.getInt("total_buy_cnt") + "</td> " +
 	            "<td>" + rs.getInt("total_sell_cnt") + "</td> " +
 	            "</tr>";

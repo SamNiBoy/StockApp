@@ -880,10 +880,18 @@ setInterval(drawIndexCharts, 10000);
         
         setInterval(drawTradeSummary, 10000);
         
+        var got_response_flg = true;
+        
         function drawTradeRecords() {
         	if (refresh_flg == false)
         		return;
         	
+        	if (got_response_flg == false) {
+        		return;
+        	}
+        	else {
+        		got_response_flg = false;
+        	}
             $.ajax({
                 type:"GET",
                 url:"/StockApp/GetIndex",
@@ -902,7 +910,7 @@ setInterval(drawIndexCharts, 10000);
                      		$('#detail tbody tr').hide().filter(":contains('" + ($(this).val()) + "')").show();
                      	}).keyup();
                      });
-                     
+                     got_response_flg = true;
                 },
                 error:function (err) {
                     //alert("系统错误-TRADERECORD.jsp-ajax");

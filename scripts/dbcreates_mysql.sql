@@ -40,17 +40,17 @@ insert into param values('MAX_LOST_PCT_FOR_SELL_MODE', 'TRADING',null, -0.06, ''
 insert into param values('MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE', 'TRADING', null,0.06, '', '', 'Put back stock for trade if stock price goes this high percentage.', sysdate(),sysdate());
 
 
-insert into param values('GZ_STOCK2_QUEUE_SIZE', 'TRADING',180,null , '', '', 'Defined how big the queue size for GZ Stock2 object to calculate statistics, this is critial param, if you fetch every one second, then it stores one minute data.', sysdate(),sysdate());
+insert into param values('GZ_STOCK2_QUEUE_SIZE', 'TRADING',360,null , '', '', 'Defined how big the queue size for GZ Stock2 object to calculate statistics, this is critial param, if you fetch every one second, then it stores one minute data.', sysdate(),sysdate());
 insert into param values('ALL_STOCK2_QUEUE_SIZE', 'TRADING',60,null , '', '', 'Defined how big the queue size for ALL Stock2 object to calculate statistics, this is critial param, if you fetch every one second, then it stores one minute data.', sysdate(),sysdate());
 insert into param values('FETCH_EVERY_SECONDS', 'TRADING',10,null , '', '', 'Define how often we fetch stock data for all stocks as well as for gzed stocks.', sysdate(),sysdate());
 
 insert into param values('VOLUME_PLUS_PCT', 'TRADING',null,0.5, '', '', 'Define the last delta trading volume is this above the pct of delta volumes in the queue then it means volume plused.', sysdate(),sysdate());
 insert into param values('BUY_SELL_MAX_DIFF_CNT', 'TRADING', 3,null, '', '', 'Max extra times between buy and sell for same stock.', sysdate(),sysdate());
-insert into param values('MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE', 'TRADING', 30,null, '', '', 'How many minutes in maximum we need to buy/sell stock back for keep balance.', sysdate(),sysdate());
+insert into param values('MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE', 'TRADING', 60,null, '', '', 'How many minutes in maximum we need to buy/sell stock back for keep balance.', sysdate(),sysdate());
 insert into param values('STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT', 'TRADING',null, 0.06, '', '', 'If delta price go above this percentage, stop trading for breaking balance.', sysdate(),sysdate());
 insert into param values('BUY_BASE_TRADE_THRESH', 'TRADING',null, 0.03, '', '', 'QtyBuyPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
 insert into param values('SELL_BASE_TRADE_THRESH', 'TRADING',null, 0.03, '', '', 'QtySellPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
-insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.01, '', '', 'How close to the margin of BASE_TRADE_THRESHOLD value.', sysdate(),sysdate());
+insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.2, '', '', 'How close to the margin of BASE_TRADE_THRESHOLD value.', sysdate(),sysdate());
 
 insert into param values('NUM_STOCK_TO_SUGGEST', 'SUGGESTER',100,null, '', '', 'How many stock to suggest at one time.', sysdate(),sysdate());
 insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',10,null , '', '', 'Stock suggester param to define at min how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());

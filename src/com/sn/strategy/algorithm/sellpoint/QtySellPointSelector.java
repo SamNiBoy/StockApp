@@ -102,14 +102,15 @@ public class QtySellPointSelector implements ISellPointSelector {
 			double curPct = (cur_pri - minPri) / yt_cls_pri;
 			
 			boolean con1 = maxPct > tradeThresh && curPct > maxPct * (1 - margin_pct);
-			boolean con2 = stk.isLstQtyPlused();
+			//boolean con2 = stk.isLstQtyPlused();
+			boolean priceTurnedAround = stk.priceDownAfterSharpedUp(3);
 			
 			log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + "yt_cls_pri:" + yt_cls_pri + " maxPri:" + maxPri + " minPri:"
 					+ minPri + " maxPct:" + maxPct + " curPct:" + curPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh + " marginPct:" + (1-margin_pct));
-			log.info("price is reaching top margin:" + con1 + " isLstQtyPlused is:" + con2);
-			if (con1 && con2) {
+			log.info("price is reaching top margin:" + con1 + " priceTurnedAround is:" + priceTurnedAround);
+			if (con1 && priceTurnedAround) {
                 stk.setTradedBySelector(this.selector_name);
-                stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + (1 - margin_pct) + " also qtyPlused:" + con2);
+                stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + (1 - margin_pct) + " also priceTurnedAround:" + priceTurnedAround);
 				return true;
 			}
             
