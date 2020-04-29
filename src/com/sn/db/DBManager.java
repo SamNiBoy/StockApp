@@ -80,11 +80,12 @@ public class DBManager {
     }
 
     static public Connection getConnection() {
-        log.info("Getting db connection from pool...");
         Connection conn = null;
 
         try {
+        	log.info("idle/active:" + ds.getNumIdleConnections() + "/" + ds.getNumConnections());
             conn = ds.getConnection();
+        	log.info("idle/active:" + ds.getNumIdleConnections() + "/" + ds.getNumConnections());
             //log.info("problem connection number:" + ds.getNumUnclosedOrphanedConnections());
         } catch (Exception e) {
             // TODO Auto-generated catch block

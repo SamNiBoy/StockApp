@@ -222,7 +222,7 @@ public class TradeRecord{
 					+ "   sum(t.commission_mny) total_commission_mny, "
 					+ "   sum(c.pft_mny) - sum(t.commission_mny) total_net_pft, "
 					+ "   sum(c.used_mny) total_used_mny, "
-					+ "   sum(ac.used_mny * ac.used_mny_hrs) / sum(ac.used_mny) avgUsedMny_Hrs,"
+					+ "   sum(c.used_mny * c.used_mny_hrs) / sum(c.used_mny) avgUsedMny_Hrs,"
 					+ "   sum(d.buy_cnt) total_buy_cnt, "
 					+ "   sum(d.sell_cnt) total_sell_cnt "
 					+ "from cashacnt c "

@@ -168,7 +168,8 @@ var refresh_flg = true;
                         	 }
                         	 
                         	 has_success = true;
-
+                        	 listSuggestedStocks();
+                        	 listTradingStocks();
                         },
                         error:function (err) {
                             //alert("系统错误-TRADERECORD.jsp-ajax");
@@ -204,7 +205,8 @@ var refresh_flg = true;
                         	 }
                         	 
                         	 has_success = true;
-
+                        	 listSuggestedStocks();
+                        	 listTradingStocks();
                         },
                         error:function (err) {
                         }
@@ -860,9 +862,9 @@ setInterval(drawIndexCharts, 10000);
                 success:function (result) {
 
                      $("#tradeSummary").replaceWith(result);
-                     $("tbody>tr:odd").addClass("odd");
-                     $("tbody>tr:even").addClass("even");
-                     $("thead").addClass("thead");
+                     $("#tradeSummary tbody>tr:odd").addClass("odd");
+                     $("#tradeSummary tbody>tr:even").addClass("even");
+                     $("#tradeSummary thead").addClass("thead");
                      
                      $(function() {
                          $('tr.parent').click(function() {
@@ -901,9 +903,9 @@ setInterval(drawIndexCharts, 10000);
                 success:function (result) {
 
                      $("#tradeRecord").replaceWith(result);
-                     $("tbody>tr:odd").addClass("odd");
-                     $("tbody>tr:even").addClass("even");
-                     $("thead").addClass("thead");
+                     $("#tradeRecord tbody>tr:odd").addClass("odd");
+                     $("#tradeRecord tbody>tr:even").addClass("even");
+                     $("#tradeRecord thead").addClass("thead");
                      
                      $(function() {
                      	$("#myfilter").keyup(function() {
@@ -933,14 +935,14 @@ setInterval(drawIndexCharts, 10000);
                 success:function (result) {
 
                      $("#suggestedStocks").replaceWith(result);
-                     $("tbody>tr:odd").addClass("odd");
-                     $("tbody>tr:even").addClass("even");
-                     $("thead").addClass("thead");
+                     $("#suggestedStocks tbody>tr:odd").addClass("odd");
+                     $("#suggestedStocks tbody>tr:even").addClass("even");
+                     $("#suggestedStocks thead").addClass("thead");
                      
                      $("#suggestedStocks tbody>tr").click(function (){
                     	 $(this).toggleClass('selected')
                     	 .siblings().removeClass('selected');
-                     })
+                     });
                 },
                 error:function (err) {
                     //alert("系统错误-TRADERECORD.jsp-ajax");
@@ -948,7 +950,9 @@ setInterval(drawIndexCharts, 10000);
             });
         }
         
-        setInterval(listSuggestedStocks, 5000);
+        listSuggestedStocks();
+        
+        //setInterval(listSuggestedStocks, 20000);
         
         function listTradingStocks() {
         	if (refresh_flg == false)
@@ -963,14 +967,14 @@ setInterval(drawIndexCharts, 10000);
                 success:function (result) {
 
                      $("#tradingStocks").replaceWith(result);
-                     $("tbody>tr:odd").addClass("odd");
-                     $("tbody>tr:even").addClass("even");
-                     $("thead").addClass("thead");         
+                     $("#tradingStocks tbody>tr:odd").addClass("odd");
+                     $("#tradingStocks tbody>tr:even").addClass("even");
+                     $("#tradingStocks thead").addClass("thead");         
                      
                      $("#tradingStocks tbody>tr").click(function (){
                     	 $(this).toggleClass('selected')
                     	 .siblings().removeClass('selected');
-                     })
+                     });
                 },
                 error:function (err) {
                     //alert("系统错误-TRADERECORD.jsp-ajax");
@@ -978,7 +982,8 @@ setInterval(drawIndexCharts, 10000);
             });
         }
         
-        setInterval(listTradingStocks, 5000);
+        listTradingStocks();
+        //setInterval(listTradingStocks, 20000);
         
         </script>
         

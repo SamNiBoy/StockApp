@@ -45,7 +45,7 @@ insert into param values('ALL_STOCK2_QUEUE_SIZE', 'TRADING',60,null , '', '', 'D
 insert into param values('FETCH_EVERY_SECONDS', 'TRADING',10,null , '', '', 'Define how often we fetch stock data for all stocks as well as for gzed stocks.', sysdate(),sysdate());
 
 insert into param values('VOLUME_PLUS_PCT', 'TRADING',null,0.5, '', '', 'Define the last delta trading volume is this above the pct of delta volumes in the queue then it means volume plused.', sysdate(),sysdate());
-insert into param values('BUY_SELL_MAX_DIFF_CNT', 'TRADING', 3,null, '', '', 'Max extra times between buy and sell for same stock.', sysdate(),sysdate());
+insert into param values('BUY_SELL_MAX_DIFF_CNT', 'TRADING', 2,null, '', '', 'Max extra times between buy and sell for same stock.', sysdate(),sysdate());
 insert into param values('MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE', 'TRADING', 60,null, '', '', 'How many minutes in maximum we need to buy/sell stock back for keep balance.', sysdate(),sysdate());
 insert into param values('STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT', 'TRADING',null, 0.06, '', '', 'If delta price go above this percentage, stop trading for breaking balance.', sysdate(),sysdate());
 insert into param values('BUY_BASE_TRADE_THRESH', 'TRADING',null, 0.03, '', '', 'QtyBuyPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
@@ -61,7 +61,7 @@ insert into param values('PCT_BUYSELL_THRESH_DIFF_DISABLE_TRADE', 'SUGGESTER',nu
 insert into param values('TRADING_AT_LOCAL', 'TRADING',1,null, '', '', 'Do trading at local with GF trader, other then send to Tradex trading system.', sysdate(),sysdate());
 insert into param values('TRADING_AT_LOCAL_WITH_SIM', 'TRADING',1,null, '', '', 'Do trading at local with in simulation mode, other then send to Tradex trading system or with GF trader.', sysdate(),sysdate());
 
-insert into param values('NUM_STOCK_IN_TRADE', 'TRADING',5,null, '', '', 'Do you want how many stocks in trading for suggest stock job to maintain.', sysdate(),sysdate());
+insert into param values('NUM_STOCK_IN_TRADE', 'TRADING',10,null, '', '', 'Do you want how many stocks in trading for suggest stock job to maintain.', sysdate(),sysdate());
 
 insert into param values('GENERATION_SIZE', 'GAPARAM',20,null, '', '', 'How many entities per generation for GA algorithm.', sysdate(),sysdate());
 insert into param values('MAX_TRAIN_LOOP', 'GAPARAM',5,null, '', '', 'How many iterations to train the GA parameters.', sysdate(),sysdate());
