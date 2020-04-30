@@ -117,10 +117,14 @@ public class DBManager {
         ds.setJdbcUrl(url);
         ds.setUser(DBUSER);
         ds.setPassword(password);
-        ds.setMaxPoolSize(200);
-        ds.setMinPoolSize(50);
-        ds.setInitialPoolSize(50);
-        ds.setMaxStatements(100);
+        ds.setMaxPoolSize(100);
+        ds.setMinPoolSize(20);
+        ds.setInitialPoolSize(20);
+        //ds.setMaxIdleTime(60);
+        //ds.setAcquireIncrement(50);
+        //ds.setCheckoutTimeout(3000);
+        ds.setMaxStatements(50);
+        //ds.setUnreturnedConnectionTimeout(7200);
     }
     
     static public ResultSet executeSelect(String sql) {

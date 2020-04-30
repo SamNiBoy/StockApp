@@ -10,7 +10,6 @@ import com.sn.db.DBManager;
 public class ParamMap implements Cloneable{
     
     static Logger log = Logger.getLogger(Param.class);
-    //Connection con = DBManager.getConnection();
     
     @Override
     public Object clone() throws CloneNotSupportedException {
@@ -66,7 +65,7 @@ public class ParamMap implements Cloneable{
         
         Param p1 = new Param("VOLUME_PLUS_PCT", "TRADING", ParamManager.getFloatParam("VOLUME_PLUS_PCT", "TRADING", null), 0.1, 0.8, 0.1, Param.TYPE.FLOAT);
         Param p2 = new Param("BUY_SELL_MAX_DIFF_CNT", "TRADING", ParamManager.getIntParam("BUY_SELL_MAX_DIFF_CNT", "TRADING", null), 1, 5, 1, Param.TYPE.INT);
-        Param p3 = new Param("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", null), 10, 60, 10, Param.TYPE.INT);
+        Param p3 = new Param("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", null), 10, 120, 10, Param.TYPE.INT);
         Param p4 = new Param("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING",ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", null), 0.03, 0.08, 0.01, Param.TYPE.FLOAT);
         Param p5 = new Param("BUY_BASE_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING", null), 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
         Param p6 = new Param("SELL_BASE_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("SELL_BASE_TRADE_THRESH", "TRADING", null), 0.01, 0.08, 0.01, Param.TYPE.FLOAT);

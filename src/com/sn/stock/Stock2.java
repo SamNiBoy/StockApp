@@ -953,8 +953,9 @@ public class Stock2 implements Comparable<Stock2>{
             if (!ft_id_lst.isEmpty()) {
                 lst_ft_id = ft_id_lst.get(ft_id_lst.size() - 1);
             }
-            Connection con = DBManager.getConnection();
+            Connection con = null;
             try {
+            	con = DBManager.getConnection();
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDat2 where ft_id > " + lst_ft_id +
                 " and id = '" + stkid +
@@ -997,12 +998,19 @@ public class Stock2 implements Comparable<Stock2>{
                 }
                 rs.close();
                 stm.close();
-                con.close();
                 //PrintStockData();
             }
             catch(SQLException e) {
                 e.printStackTrace();
             }
+    		finally {
+    			try {
+    				con.close();
+    			} catch (SQLException e) {
+    				// TODO Auto-generated catch block
+    				log.error(e.getCause(), e);
+    			}
+    		}
             return true;
         }
         
@@ -1011,8 +1019,9 @@ public class Stock2 implements Comparable<Stock2>{
             if (!ft_id_lst.isEmpty()) {
                 lst_ft_id = ft_id_lst.get(ft_id_lst.size() - 1);
             }
-            Connection con = DBManager.getConnection();
+            Connection con = null;
             try {
+            	con = DBManager.getConnection();
                 Statement stm = con.createStatement();
                 String sql = "select * from stkDat2 where ft_id > " + lst_ft_id +
                 " and id = '" + stkid +
@@ -1055,12 +1064,18 @@ public class Stock2 implements Comparable<Stock2>{
                 }
                 rs.close();
                 stm.close();
-                con.close();
-                //PrintStockData();
             }
             catch(SQLException e) {
                 e.printStackTrace();
             }
+    		finally {
+    			try {
+    				con.close();
+    			} catch (SQLException e) {
+    				// TODO Auto-generated catch block
+    				log.error(e.getCause(), e);
+    			}
+    		}
             return true;
         }
 

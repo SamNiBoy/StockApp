@@ -36,8 +36,7 @@ import com.sn.stock.StockMarket;
 public class StockObserverable extends Observable {
 
 	static Logger log = Logger.getLogger(StockObserverable.class);
-
-	static Connection con = DBManager.getConnection();
+	
 	public String subject;
 	public String content;
 	private boolean hasSentMail = false;
@@ -69,6 +68,7 @@ public class StockObserverable extends Observable {
 		needSentMail = false;
 		DecimalFormat df = new DecimalFormat("##.##");
 		int TopN = 10;
+		Connection con = null;
 		String Summary = "";
 		Summary += "<table border = 1>"
 		        + "<tr>"
@@ -95,6 +95,7 @@ public class StockObserverable extends Observable {
 				+ "  order by avgSpeed desc";
 		try {
 			log.info(sql);
+			con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 			ResultSet rs = stm.executeQuery(sql);
 			int i = 0;
@@ -154,6 +155,15 @@ public class StockObserverable extends Observable {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getMessage(), e);
+			}
+		}
 
 		if (body.length() > 0) {
 			String returnStr = "";
@@ -174,6 +184,7 @@ public class StockObserverable extends Observable {
 
 		needSentMail = false;
 		NumberFormat nf = NumberFormat.getInstance();
+		Connection con = null;
 		nf.setMaximumFractionDigits(2);
 		String Summary = "";
 		Summary += "<table border = 1>" + "<tr>" + "<th> ID</th> " + "<th> Lst_Pri</th> " + "<th> Hst_pri</th> "
@@ -184,6 +195,7 @@ public class StockObserverable extends Observable {
 				+ "  from stkPriStat sps " + " where (c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9 + c10) > 0";
 		try {
 			log.info(sql);
+			con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 			ResultSet rs = stm.executeQuery(sql);
 			while (rs.next()) {
@@ -220,6 +232,15 @@ public class StockObserverable extends Observable {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+        finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                log.info("update1 data exception:" + e.getMessage());
+            }
+        }
 
 		if (body.length() > 0) {
 			String returnStr = "";
@@ -238,6 +259,7 @@ public class StockObserverable extends Observable {
 
 	private void refreshStkPriStat(String stkId) {
 		Statement stm = null;
+		Connection con = null;
 		String sql0 = "delete from stkPriStat where id = '" + stkId + "'";
 		String sql = " insert into stkPriStat " + "	select s2.id,"
 				+ "       t.lst_pri,                                                                                                                                                                                        "
@@ -263,6 +285,7 @@ public class StockObserverable extends Observable {
 				+ "   and s2. id = '" + stkId + "'"
 				+ "group by s2.id, t.lst_pri, t.hst_pri                                                                                                                                                                     ";
 		try {
+			con = DBManager.getConnection();
 			stm = con.createStatement();
 			log.info(sql0);
 			stm.execute(sql0);
@@ -272,10 +295,17 @@ public class StockObserverable extends Observable {
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
-			con.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+        finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.info("refreshStkPriStat data exception:" + e.getMessage());
+            }
+        }
 	}
 
 	public void update0() {
@@ -307,6 +337,8 @@ public class StockObserverable extends Observable {
 		log.info("GzStockObserverable calculate gz_flg:" + gz_flg + " pctRt:" + pctRt);
 		Statement stm = null;
 		String summary = "";
+		Connection con = null;
+		
 		if (gz_flg) {
 			summary = "关注股票(pctRt:" + pctRt + ") 如下：<br/>";
 		} else {
@@ -317,6 +349,7 @@ public class StockObserverable extends Observable {
 				+ "<th> IncCnt</th> " + "<th> DscCnt</th> " + "<th> DQR</th> " + "<th> Price</th> " + "<th> Qty</th> "
 				+ "<th> Mny </th> </tr> ";
 		try {
+			con = DBManager.getConnection();
 			stm = con.createStatement();
 			String sql = "select id, name from stk where gz_flg = " + (gz_flg ? "1" : "0");
 			ResultSet rs = stm.executeQuery(sql);
@@ -327,6 +360,7 @@ public class StockObserverable extends Observable {
 			}
 
 			rs.close();
+			stm.close();
 
 			long incPriCnt = 0, eqlPriCnt = 0;
 			long desPriCnt = 0;
@@ -344,6 +378,7 @@ public class StockObserverable extends Observable {
 
 					log.info(sql);
 
+					stm = con.createStatement();
 					rs = stm.executeQuery(sql);
 
 					double pre_cur_pri = 0, cur_pri = 0;
@@ -442,6 +477,8 @@ public class StockObserverable extends Observable {
 							// sl.add(stk);
 						}
 					}
+					rs.close();
+					stm.close();
 				} catch (SQLException e1) {
 					log.info("No stkdat2 infor for stock " + stock + "continue...");
 					continue;
@@ -464,6 +501,14 @@ public class StockObserverable extends Observable {
 			e.printStackTrace();
 			log.error("GzStockObserverable update errored:" + e.getMessage());
 		}
+        finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.info("checkStatusForStock data exception:" + e.getMessage());
+            }
+        }
 		log.info("GzStockObserverable got summary:" + summary);
 		return summary;
 	}
@@ -577,11 +622,14 @@ public class StockObserverable extends Observable {
 		double totIncDlMny = 0.0;
 		double totDecDlMny = 0.0;
 		double totEqlDlMny = 0.0;
+		Connection con = null;
+		
 		int catagory = -2;
 		index += "<table border = 1>" + "<tr>" + "<th> Stock Count</th> " + "<th> Total+ </th> " + "<th> AvgPct+ </th> "
 				+ "<th> TotDlMny+ </th> " + "<th> Total-</th> " + "<th> AvgPct-</th> " + "<th> TotDlMny- </th> "
 				+ "<th> Total= </th> " + "<th> TotDlMny= </th> " + "<th> Degree </th> </tr> ";
 		try {
+			con = DBManager.getConnection();
 			stm = con.createStatement();
 			String sql = "select count(case when cur_pri > td_opn_pri then 1 else 0 end) IncNum, "
 					+ "       count(case when cur_pri < td_opn_pri then 1 else 0 end) DecNum, "
@@ -612,9 +660,18 @@ public class StockObserverable extends Observable {
 				}
 			}
 			rs.close();
+			stm.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+        finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.info("getIndex con exception:" + e.getMessage());
+            }
+        }
 		StkNum = TotDec + TotInc + TotEql;
 
 		NumberFormat nf = NumberFormat.getInstance();
@@ -640,7 +697,9 @@ public class StockObserverable extends Observable {
 		// stocks = new ConcurrentHashMap<String, Stock2>();
 		Stock2 s = null;
 		int Total = 0, cnt = 0;
+		Connection con = null;
 		try {
+			con = DBManager.getConnection();
 			stm = con.createStatement();
 			String sql = "select count(distinct id) totCnt from stk";
 			rs = stm.executeQuery(sql);
@@ -673,6 +732,14 @@ public class StockObserverable extends Observable {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+        finally {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.info("loadStocks con exception:" + e.getMessage());
+            }
+        }
 		log.info("GzStockObserverable loadStock successed!");
 		return true;
 

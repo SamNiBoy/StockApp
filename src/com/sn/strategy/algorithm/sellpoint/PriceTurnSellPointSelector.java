@@ -41,7 +41,7 @@ public class PriceTurnSellPointSelector implements ISellPointSelector {
 	public boolean isGoodSellPoint(Stock2 stk, ICashAccount ac) {
 
         if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {
-            if (stk.priceDownAfterSharpedUp(10, 6)) {
+            if (stk.priceDownAfterSharpedUp(10)) {
                 log.info("isGoodBuyPoint true as price goes down after 6/10 times up!");
                 return true;
             }
@@ -54,7 +54,7 @@ public class PriceTurnSellPointSelector implements ISellPointSelector {
             Double cur_pri = stk.getCur_pri();
             Double yt_cls_pri = stk.getYtClsPri();
             if (lstBuy != null && cur_pri != null && yt_cls_pri != null) {
-                if ((cur_pri - lstBuy) / yt_cls_pri > 0.05 && stk.priceDownAfterSharpedUp(10, 6)) {
+                if ((cur_pri - lstBuy) / yt_cls_pri > 0.05 && stk.priceDownAfterSharpedUp(10)) {
                     log.info("isGoodBuyPoint Buy true as price down after 6/10 times up:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:"
                             + lstBuy + " curPri:" + cur_pri + " yt_cls_pri:" + yt_cls_pri);
                     return true;

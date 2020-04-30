@@ -36,7 +36,7 @@ public class GzStockBuySellPointObserverable extends Observable {
 
     static Logger log = Logger.getLogger(GzStockBuySellPointObserverable.class);
 
-    static Connection con = DBManager.getConnection();
+    
     private List<StockBuySellEntry> sbse = new ArrayList<StockBuySellEntry>();
     private List<BuySellInfoSubscriber> ms = new ArrayList<BuySellInfoSubscriber>();
 
@@ -83,8 +83,11 @@ public class GzStockBuySellPointObserverable extends Observable {
     }
     private boolean loadMailScb() {
     	boolean load_success = false;
+    	Connection con = null;
+    	
     	ms.clear();
     	try {
+    		con = DBManager.getConnection();
     		Statement stm = con.createStatement();
     		String sql = "select s.*, u.* from usrStk s, usr u where s.openID = u.openID and s.gz_flg = 1 and length(u.mail) > 1 and u.buy_sell_enabled = 1";
     		log.info(sql);
@@ -105,6 +108,15 @@ public class GzStockBuySellPointObserverable extends Observable {
     	}
     	catch (Exception e) {
     		e.printStackTrace();
+    	}
+    	finally {
+    		try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getCause(), e);
+			}
     	}
     	log.info("loadMailScb return:"+load_success);
     	return load_success;

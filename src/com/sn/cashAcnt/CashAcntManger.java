@@ -129,20 +129,18 @@ public class CashAcntManger {
                 a = new CashAcnt(id);
             }
             rs.close();
-            stm.close();
-            con.close();
         }
         catch (SQLException e) {
             e.printStackTrace();
+        }
+        finally {
             try {
-				rs.close();
 	            stm.close();
 	            con.close();
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
         }
         log.info("Successed loading cashAccount information for " + acntId);
         return a;

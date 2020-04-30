@@ -42,7 +42,6 @@ public class WCMsgSender implements IWCMsg {
     String content;
     String msgId;
     long crtTime;
-    static Connection con = DBManager.getConnection();
 
     String resContent;
 
@@ -181,7 +180,9 @@ public class WCMsgSender implements IWCMsg {
 
     private void crtRcvMsg() {
         Statement stm = null;
+        Connection con = null;
         try {
+        	con = DBManager.getConnection();
             stm = con.createStatement();
             String sql;
             /*
@@ -200,11 +201,21 @@ public class WCMsgSender implements IWCMsg {
             } else {
                 log.info("Msg from user:" + frmUsr + " NOT being added!");
             }
+            stm.close();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             log.error("crtRcvMsg errored:" + e.getMessage());
         }
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getCause(), e);
+			}
+		}
     }
 
     @Override

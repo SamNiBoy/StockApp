@@ -9,7 +9,6 @@ import com.sn.db.DBManager;
 public class Param implements Cloneable{
     
     static Logger log = Logger.getLogger(Param.class);
-    //Connection con = DBManager.getConnection();
     
     @Override
     protected Object clone() throws CloneNotSupportedException {
