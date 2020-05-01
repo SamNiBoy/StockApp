@@ -206,6 +206,7 @@ class Generation {
             STKParamMap spm = entities.get(0);
             ParamMap pm = spm.pm;
             Map<String, Param> kv = pm.getKV();
+            con = DBManager.getConnection();
             
             if (spm.score < 0) {
             	log.info("stock:" + stk + " has score:" + spm.score + " less than 0, no need to populate stockParam.");
@@ -235,7 +236,6 @@ class Generation {
                     sql = "insert into stockParam value('" + stk + "','" + PK[0] + "','" + PK[1] + "',null,null,null,'" + (String)p.val + "', 'GA Algorithm', sysdate(), sysdate())";
                 }
                 log.info(sql);
-                con = DBManager.getConnection();
                 stm = con.createStatement();
                 stm.execute(sql);
                 stm.close();

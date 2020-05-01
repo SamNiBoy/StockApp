@@ -88,6 +88,13 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                     stk.setTradedBySelectorComment("Stock:" + stk.getID() + " sold:" + mins + " minutes ago.");
                     return true;
 	            }
+//                else if (stk.priceUpAfterSharpedDown(30))
+//                {
+//                    log.info("Stock:" + stk.getID() + " sold " + mins + " minutes agao, price heading expected direction, buy it back");
+//                    stk.setTradedBySelector(this.selector_name);
+//                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " sold:" + mins + " minutes ago with heading unexpected direction.");
+//                    return true;
+//                }
                 
                 
                 int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING", stk.getID());

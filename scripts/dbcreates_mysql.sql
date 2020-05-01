@@ -527,6 +527,22 @@ buy_flg int not null,
 dl_dt datetime not null
 );
 
+create table if not exists SimResult(
+strategy_name varchar(50) not null,
+add_dt datetime not null,
+acnt_traded int not null,
+totUsedMny decimal(10, 2) not null,
+totUsedMny_Hrs decimal(8, 2) not null,
+avgPft decimal(8, 2) not null,
+totPft decimal(8, 2) not null,
+tot_commission_mny decimal(8, 2) not null,
+netPft decimal(8, 2) not null,
+fundPftPct decimal(15, 5) not null,
+buyCnt int not null,
+sellCnt int not null,
+CONSTRAINT CashAcnt_PK PRIMARY KEY (strategy_name, add_dt)
+);
+
 create index stkdat2_id_dldt_idx on stkDat2 (id, ft_id, dl_dt);
 create index stkdat2_idx3 on stkDat2 (id, ft_id, cur_pri, yt_cls_pri,dl_stk_num);
 create index stkdat2_dldt on stkDat2 (dl_dt);

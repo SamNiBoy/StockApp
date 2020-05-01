@@ -60,4 +60,64 @@ public class TradeStrategyGenerator {
         
         return bts;
     }
+    static public ITradeStrategy generatorStrategy1(boolean sim_mode) {
+        
+        List<IBuyPointSelector> buyPoints = new LinkedList<IBuyPointSelector>();
+        List<ISellPointSelector> sellPoints = new LinkedList<ISellPointSelector>();
+        
+        //IBuyPointSelector bs = new QtyBuyPointSelector(sim_mode);
+        //ISellPointSelector ses = new QtySellPointSelector(sim_mode);
+        IBuyPointSelector bs = new MacdBuyPointSelector(true);
+        ISellPointSelector ses = new MacdSellPointSelector(true);
+//        IBuyPointSelector bs = new PriceTurnBuyPointSelector();
+//        ISellPointSelector ses = new PriceTurnSellPointSelector();
+//        IBuyPointSelector bs = new DefaultBuyPointSelector();
+//        ISellPointSelector ses = new DefaultSellPointSelector();
+        //ICashAccount ca = null;
+        //CashAcntManger.getDftAcnt();
+        //ca.initAccount();
+        IBuyPointSelector bbs = new BalanceBuyPointSelector(sim_mode);
+        ISellPointSelector bes = new BalanceSellPointSelector(sim_mode);
+        
+        
+        buyPoints.add(bs);
+        buyPoints.add(bbs);
+        
+        sellPoints.add(ses);
+        sellPoints.add(bes);
+        
+        ITradeStrategy bts = new TradeStrategyImp(buyPoints, sellPoints , null, "MacdTradeStrategy", sim_mode);
+        
+        return bts;
+    }
+    static public ITradeStrategy generatorStrategy2(boolean sim_mode) {
+        
+        List<IBuyPointSelector> buyPoints = new LinkedList<IBuyPointSelector>();
+        List<ISellPointSelector> sellPoints = new LinkedList<ISellPointSelector>();
+        
+        IBuyPointSelector bs = new QtyBuyPointSelector(sim_mode);
+        ISellPointSelector ses = new QtySellPointSelector(sim_mode);
+//        IBuyPointSelector bs = new MacdBuyPointSelector();
+//        ISellPointSelector ses = new MacdSellPointSelector();
+//        IBuyPointSelector bs = new PriceTurnBuyPointSelector();
+//        ISellPointSelector ses = new PriceTurnSellPointSelector();
+//        IBuyPointSelector bs = new DefaultBuyPointSelector();
+//        ISellPointSelector ses = new DefaultSellPointSelector();
+        //ICashAccount ca = null;
+        //CashAcntManger.getDftAcnt();
+        //ca.initAccount();
+        IBuyPointSelector bbs = new BalanceBuyPointSelector(sim_mode);
+        ISellPointSelector bes = new BalanceSellPointSelector(sim_mode);
+        
+        
+        buyPoints.add(bs);
+        buyPoints.add(bbs);
+        
+        sellPoints.add(ses);
+        sellPoints.add(bes);
+        
+        ITradeStrategy bts = new TradeStrategyImp(buyPoints, sellPoints , null, "QtyTradeStrategy", sim_mode);
+        
+        return bts;
+    }
 }

@@ -23,7 +23,7 @@ public class MacdBuyPointSelector implements IBuyPointSelector {
     private boolean sim_mode;
     
     
-    MacdBuyPointSelector(boolean sm)
+    public MacdBuyPointSelector(boolean sm)
     {
         sim_mode = sm;
     }
@@ -51,7 +51,7 @@ public class MacdBuyPointSelector implements IBuyPointSelector {
 
 	@Override
 	public int getBuyQty(Stock2 s, ICashAccount ac) {
-        // TODO Auto-generated method stub
+		// TODO Auto-generated method stub
         double useableMny = 0;
         int buyMnt = 0;
         int maxMnt = 0;
@@ -60,26 +60,30 @@ public class MacdBuyPointSelector implements IBuyPointSelector {
             useableMny = ac.getMaxMnyForTrade();
             maxMnt = (int)(useableMny/s.getCur_pri()) / 100 * 100;
             
-            if (maxMnt >= 400) {
-                buyMnt = maxMnt / 2;
-                buyMnt = buyMnt - buyMnt % 100;
-            }
-            else {
-                buyMnt = maxMnt;
-            }
+           	buyMnt = maxMnt;
+            
+           	if (!sim_mode)
+           	{
+           	    int sellableAmt = ac.getSellableAmt(s.getID(), null);
+                if (buyMnt > sellableAmt)
+                {
+                    log.info("Tradex sellable amount:" + sellableAmt + " less than calculated amt:" + buyMnt + " use sellabeAmt.");
+                    buyMnt = sellableAmt;
+                }
+           	}
             log.info("getBuyQty, useableMny:" + useableMny + " buyMnt:" + buyMnt + " maxMnt:" + maxMnt);
         }
         else {
-            if (s.getCur_pri() <= 10) {
-                buyMnt = 200;
-            }
-            else {
-                buyMnt = 100;
-            }
-            log.info("getBuyQty, cur_pri:" + s.getCur_pri() + " buyMnt:" + buyMnt);
+        	if (s.getCur_pri() <= 10) {
+        		buyMnt = 200;
+        	}
+        	else {
+        		buyMnt = 100;
+        	}
+        	log.info("getBuyQty, cur_pri:" + s.getCur_pri() + " buyMnt:" + buyMnt);
         }
-        return buyMnt;
-    }
+		return buyMnt;
+	}
 
     public boolean isSimMode() {
         // TODO Auto-generated method stub

@@ -60,7 +60,6 @@ public class SimTrader implements Job{
     SimTraderObserverable sto = new SimTraderObserverable();
     
     private boolean simOnGzStk = true;
-    private LocalDateTime pre_sim_time = null;
     
     private CountDownLatch threadsCountDown = null;
     
@@ -141,7 +140,15 @@ public class SimTrader implements Job{
         
         simOnGzStk = true;
         
-        ITradeStrategy strategy = TradeStrategyGenerator.generatorStrategy(true);
+        ArrayList<ITradeStrategy> slst = new ArrayList<ITradeStrategy>();
+        
+        ITradeStrategy s = TradeStrategyGenerator.generatorStrategy(true);
+        
+        slst.add(s);
+        
+        ITradeStrategy s1 = TradeStrategyGenerator.generatorStrategy1(true);
+        
+        slst.add(s1);
         
         /*
          * we simulate twice:
@@ -150,7 +157,13 @@ public class SimTrader implements Job{
          */
         
         try {
-                ParamManager.loadStockParam();
+        	ITradeStrategy strategy = null;
+        	
+        	for(ITradeStrategy its : slst) {
+        		
+        		strategy = its;
+                
+        		ParamManager.loadStockParam();
                 
                 StockMarket.clearDegreeMap();
                 
@@ -166,7 +179,8 @@ public class SimTrader implements Job{
                     else {
                         //We randomly select 50% data for simulation.
                             sql = "select * from stk " +
-                                  " where floor(1+rand()*100) <= 100" +
+                                  " where floor(1+rand()*100) <= 100 " +
+                                  "   and id not in (select id from usrStk where gz_flg = 1) " +
                                   "                order by id";
                     }
                     
@@ -309,12 +323,12 @@ public class SimTrader implements Job{
                     
                     simOnGzStk = false;
                 }
+                saveSimResult(strategy.getTradeStrategyName());
+        	}
                 
                 log.info("now to run archive and purge...");
                 
                 archiveStockData();
-                
-                pre_sim_time = LocalDateTime.now();
                 
                 StockMarket.clearDegreeMap();
                 strategy.resetStrategyStatus();
@@ -336,6 +350,57 @@ public class SimTrader implements Job{
        //WorkManager.shutdownWorks();
 
     }
+    
+    public boolean saveSimResult(String strategyName)
+    {
+         Connection con = null;
+         Statement stm = null;
+         
+         try {
+        	 con = DBManager.getConnection();
+             String sql = "insert into simresult select '" + strategyName + "', left(h.add_dt, 10), count(distinct(ac.acntid)) ACNTCNT, " + 
+             		"                                   sum(ac.used_mny) totUsedMny," + 
+             		"                                   sum(ac.used_mny * ac.used_mny_hrs) / sum(ac.used_mny) avgUsedMny_Hrs," + 
+             		"        				           avg(ac.pft_mny) avgPft, " + 
+             		"        				           sum(ac.pft_mny) totPft, " + 
+             		"                                   sum(h.commission_mny) total_commission_mny," + 
+             		"                                   sum(ac.pft_mny)  - sum(h.commission_mny) netPft," + 
+             		"                                   (sum(ac.pft_mny)  - sum(h.commission_mny)) / (sum(h.total_amount) /2.0) funPft," + 
+             		"        				           sum(tmp.buyCnt) buyCnt," + 
+             		"        				           sum(tmp.sellCnt) sellCnt" + 
+             		"        				     from cashacnt ac, " + 
+             		"        				          (select sum(case when td.buy_flg = 1 then 1 else 0 end) buyCnt, " + 
+             		"        				                  sum(case when td.buy_flg  = 1 then 0 else 1 end) sellCnt, " + 
+             		"        				                  th.acntid " + 
+             		"        				             from tradehdr th, tradedtl td" + 
+             		"        			                where th.acntid = td.acntid " + 
+             		"        			                  and th.stkid = td.stkid " + 
+             		"        			                 group by th.acntid ) tmp, " + 
+             		"                                  TradeHdr h" + 
+             		"        			         where ac.acntid = tmp.acntid" + 
+             		"                               and ac.acntid = h.acntid " + 
+             		"        			           and ac.acntid like 'SIM%'" + 
+             		"        			           group by left(h.add_dt, 10)";
+             log.info(sql);
+             stm = con.createStatement();
+             stm.execute(sql);
+         }
+         catch (Exception e)
+         {
+             log.error(e.getMessage(),e);
+         }
+         finally {
+             try {
+                 stm.close();
+                 con.close();
+             } catch (SQLException e) {
+                 // TODO Auto-generated catch block
+                 e.printStackTrace();
+                 log.error(e.getMessage(), e);
+             }
+         }
+         return true;
+     }
     
     private void archiveStockData() {
         Connection con = DBManager.getConnection();

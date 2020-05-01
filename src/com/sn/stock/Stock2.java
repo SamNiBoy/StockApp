@@ -222,7 +222,7 @@ public class Stock2 implements Comparable<Stock2>{
             avg1 = avg1 / period;
             avg2 = avg2 / period;
             
-            log.info("avg1:" + avg1 + " > avg2:" + avg2 + "? " +(avg1 > avg2));
+            log.info(stkid + " at time:" + dl_dt_lst.get(size - 1) + " avg1:" + avg1 + " > avg2:" + avg2 + "? " +(avg1 > avg2));
             
             if (avg1 > avg2) {
                 return true;
@@ -258,7 +258,7 @@ public class Stock2 implements Comparable<Stock2>{
             avg1 = avg1 / period;
             avg2 = avg2 / period;
             
-            log.info("avg1:" + avg1 + " < avg2:" + avg2 + "? " +(avg1 < avg2));
+            log.info(stkid + " at time:" + dl_dt_lst.get(size - 1) + " avg1:" + avg1 + " < avg2:" + avg2 + "? " +(avg1 < avg2));
             
             if (avg1 < avg2) {
                 return true;

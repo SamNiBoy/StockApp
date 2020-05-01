@@ -88,6 +88,13 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                     stk.setTradedBySelectorComment("Stock:" + stk.getID() + " bought:" + mins + " minutes ago.");
                     return true;
                 }
+//                else if (stk.priceDownAfterSharpedUp(30))
+//                {
+//                    log.info("Stock:" + stk.getID() + " bought " + mins + " minutes agao, price heading expected direction, sold it out");
+//                    stk.setTradedBySelector(this.selector_name);
+//                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " bought:" + mins + " minutes ago with heading unexpected direction.");
+//                    return true;
+//                }
                 
                 
                 log.info("Hour:" + hour + ", Minute:" + minutes);
