@@ -129,6 +129,12 @@ public class JobScheduler {
         log.info(job_SuggestStock.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
                  + trigger_SuggestStock.getCronExpression());
         
+        JobDetail job_SimCalStkStats = newJob(CalStkStats.class).withIdentity("CalStkStats", "StockApp").build();
+        CronTrigger trigger_SimCalStkStats = newTrigger().withIdentity("CalStkStats", "StockApp").withSchedule(cronSchedule(stockSimTime)).build();
+        
+        ft = sched.scheduleJob(job_SimCalStkStats, trigger_SimCalStkStats);
+        log.info(job_SimCalStkStats.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
+                 + trigger_SimCalStkStats.getCronExpression());
         
         JobDetail job_SimTrader = newJob(SimTrader.class).withIdentity("SimTrader", "StockApp").build();
         CronTrigger trigger_SimTrader = newTrigger().withIdentity("SimTrader", "StockApp").withSchedule(cronSchedule(stockSimTime)).build();

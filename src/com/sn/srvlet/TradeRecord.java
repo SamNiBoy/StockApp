@@ -205,6 +205,9 @@ public class TradeRecord{
 	    "    <td>Net Profit</td>    " +
 	    "    <td>Total Used Money</td>    " +
 	    "    <td>Avg Used Money Hours</td>    " +
+	    "    <td>Total Buy Money</td>    " +
+	    "    <td>Total Sell Money</td>    " +
+	    "    <td>Total Fund Rate</td>    " +
 	    "    <td>Sell Count</td>   " +
 	    "    <td>Buy Count</td>   " +
 	    " </tr>" +
@@ -223,12 +226,15 @@ public class TradeRecord{
 					+ "   sum(c.pft_mny) - sum(t.commission_mny) total_net_pft, "
 					+ "   sum(c.used_mny) total_used_mny, "
 					+ "   sum(c.used_mny * c.used_mny_hrs) / sum(c.used_mny) avgUsedMny_Hrs,"
+					+ "   sum(d.buy_mny) total_buy_mny,"
+					+ "   sum(d.sell_mny) total_sell_mny,"
+					+ "   (sum(c.pft_mny) - sum(t.commission_mny)) * 100.0 / ((sum(d.buy_mny) + sum(d.sell_mny)) / 2.0) fundRt, "
 					+ "   sum(d.buy_cnt) total_buy_cnt, "
 					+ "   sum(d.sell_cnt) total_sell_cnt "
 					+ "from cashacnt c "
 					+ "join tradehdr t "
 					+ "  on c.acntid = t.acntid "
-					+ "join (select sum(buy_flg) buy_cnt, sum(case when buy_flg = 0 then 1 else 0 end) sell_cnt, acntid from tradedtl group by acntid) d"
+					+ "join (select sum(buy_flg) buy_cnt, sum(case when buy_flg = 0 then 1 else 0 end) sell_cnt, sum(case when buy_flg = 1 then price*amount else 0 end) buy_mny, sum(case when buy_flg = 0 then price*amount else 0 end) sell_mny, acntid from tradedtl group by acntid) d"
 					+ "  on t.acntid = d.acntid ";
 			log.info(sql);
 			rs = stm.executeQuery(sql);
@@ -242,6 +248,9 @@ public class TradeRecord{
 	            "<td>" + rs.getDouble("total_net_pft") + "</td> " +
 	            "<td>" + rs.getDouble("total_used_mny") + "</td> " +
 	            "<td>" + df.format(rs.getDouble("avgUsedMny_Hrs")) + "</td> " +
+	            "<td>" + rs.getDouble("total_buy_mny") + "</td> " +
+	            "<td>" + rs.getDouble("total_sell_mny") + "</td> " +
+	            "<td>" + df.format(rs.getDouble("fundRt")) + "%</td> " +
 	            "<td>" + rs.getInt("total_sell_cnt") + "</td> " +
 	            "<td>" + rs.getInt("total_buy_cnt") + "</td> " +
 	            "</tr>";

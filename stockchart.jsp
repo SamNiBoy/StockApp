@@ -594,7 +594,7 @@ function drawIndexCharts() {
     
 }
 
-setInterval(drawIndexCharts, 10000);
+setInterval(drawIndexCharts, 30000);
     
     </script>
     
@@ -880,7 +880,7 @@ setInterval(drawIndexCharts, 10000);
             });
         }
         
-        setInterval(drawTradeSummary, 10000);
+        setInterval(drawTradeSummary, 30000);
         
         var got_response_flg = true;
         
@@ -920,7 +920,7 @@ setInterval(drawIndexCharts, 10000);
             });
         }
         
-        setInterval(drawTradeRecords, 10000);
+        setInterval(drawTradeRecords, 60000);
         
         function listSuggestedStocks() {
         	if (refresh_flg == false)
