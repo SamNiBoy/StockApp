@@ -167,14 +167,14 @@ public class SimTrader implements Job{
                 
                 simOnGzStk = true;
                 
-                for (int i = 0; i < 1; i++) {
+                for (int i = 0; i < 2; i++) {
                     
                     strategy.resetStrategyStatus();
                     
                     resetTest(simOnGzStk);
                     
                     if (simOnGzStk) {
-                        sql = "select distinct id from usrStk where gz_flg = 1 order by id";
+                        sql = "select distinct id from usrStk where gz_flg = 1 and stop_trade_mode_flg = 0 order by id";
                     }
                     else {
                         //We randomly select 50% data for simulation.

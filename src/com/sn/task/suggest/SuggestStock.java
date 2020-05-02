@@ -173,7 +173,7 @@ public class SuggestStock implements Job {
 			    	for (Stock2 s2 : stocksWaitForMail) {
 		    			suggestStock(s2);
 			    	}
-			    	//electStockforTrade();
+			    	electStockforTrade();
 			    	if (stocksWaitForMail.size() > 0) {
 			    	    rso.addStockToSuggest(stocksWaitForMail);
 			    	    rso.update();
@@ -211,7 +211,7 @@ public class SuggestStock implements Job {
 				sql = "";
 				if (rs2.next()) {
 					if (rs2.getLong("gz_flg") == 0) {
-						sql = "update usrStk set gz_flg = 1, suggested_by = '" + system_role_for_suggest + "', mod_dt = sysdate() " + ", suggested_by_selector = '" + s.getSuggestedBy() + "', suggested_comment = '" +
+						sql = "update usrStk set gz_flg = 1, stop_trade_mode_flg = 0, suggested_by = '" + system_role_for_suggest + "', mod_dt = sysdate() " + ", suggested_by_selector = '" + s.getSuggestedBy() + "', suggested_comment = '" +
 					s.getSuggestedComment() + "' where openID = '" + openID
 								+ "' and id = '" + s.getID() + "'";
 					}
@@ -326,13 +326,14 @@ public class SuggestStock implements Job {
 			sql = "select distinct s.id, ss.max_score from usrStk s left join (select stock, max(score) max_score from stockparamsearch group by stock) ss on s.id = ss.stock "
 				+ "where s.gz_flg = 1 "
 				+ "  and s.suggested_by in ('" + system_role_for_suggest + "') "
-				+ "  order by case when ss.max_score is null then 0 else ss.max_score end desc ";
+				+ "  and s.stop_trade_mode_flg = 0 "
+				+ "  order by case when ss.max_score is null then 0 else ss.max_score end desc, s.suggested_comment desc ";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
 			while (rs.next() && maxCnt-- > 0) {
 				String id = rs.getString("id");
-				sql = "update usrStk set suggested_by = '" + system_role_for_trade + "',  gz_flg = 1, stop_trade_mode_flg = 0, add_dt = sysdate(), mod_dt = sysdate() where id ='" + id + "'";
+				sql = "update usrStk set suggested_by = '" + system_role_for_trade + "',  gz_flg = 1, stop_trade_mode_flg = 0, mod_dt = sysdate() where id ='" + id + "'";
 				Statement stm2 = con.createStatement();
 				stm2.execute(sql);
 				stm2.close();

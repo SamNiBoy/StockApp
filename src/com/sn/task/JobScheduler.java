@@ -105,27 +105,27 @@ public class JobScheduler {
     	
         String marketRunningTime = "*/10 * 9-15 ? * MON-FRI";
         //String stockParamTrainningTime = "0 35 11 ? * MON-FRI";
-        String stockParamTrainningTime = "0 49 21 ? * MON-FRI";
+        String stockParamTrainningTime = "0 50 16 ? * MON-SUN";
         //String stockSuggestTime = "0 44 11 ? * MON-FRI";
-        String stockSuggestTime = "0 5 16 ? * MON-FRI";
+        String stockSuggestTime = "0 50 17 ? * MON-SUN";
         ////String stockSimTime = "0 35 18 ? * MON-FRI";
-        String stockSimTime = "0 31 16 ? * MON-SUN";
+        String stockSimTime = "0 25 18 ? * MON-SUN";
         
         
-        JobDetail job_StockParamSearch = newJob(StockParamSearch.class).withIdentity("StockParamSearch", "StockApp").build();
+       // JobDetail job_StockParamSearch = newJob(StockParamSearch.class).withIdentity("StockParamSearch", "StockApp").build();
 
         //CronTrigger trigger = newTrigger().withIdentity("CalStkStats", "StockApp").withSchedule(cronSchedule("0 25/5 9-15 ? * MON-FRI")).build();
-        CronTrigger trigger_StockParamSearch = newTrigger().withIdentity("StockParamSearch", "StockApp").withSchedule(cronSchedule(stockParamTrainningTime)).build();
-        
-        Date ft = sched.scheduleJob(job_StockParamSearch, trigger_StockParamSearch);
-        log.info(job_StockParamSearch.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
-                 + trigger_StockParamSearch.getCronExpression());
+//        CronTrigger trigger_StockParamSearch = newTrigger().withIdentity("StockParamSearch", "StockApp").withSchedule(cronSchedule(stockParamTrainningTime)).build();
+//        
+//        Date ft = sched.scheduleJob(job_StockParamSearch, trigger_StockParamSearch);
+//        log.info(job_StockParamSearch.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
+//                 + trigger_StockParamSearch.getCronExpression());
         
         
         JobDetail job_SuggestStock = newJob(SuggestStock.class).withIdentity("SuggestStock", "StockApp").build();
         CronTrigger trigger_SuggestStock = newTrigger().withIdentity("SuggestStock", "StockApp").withSchedule(cronSchedule(stockSuggestTime)).build();
         
-        ft = sched.scheduleJob(job_SuggestStock, trigger_SuggestStock);
+        Date ft = sched.scheduleJob(job_SuggestStock, trigger_SuggestStock);
         log.info(job_SuggestStock.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
                  + trigger_SuggestStock.getCronExpression());
         
