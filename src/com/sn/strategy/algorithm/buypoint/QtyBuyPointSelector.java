@@ -47,6 +47,34 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         Double cur_pri = stk.getCur_pri();
         
         StockBuySellEntry sbs = lstTrades.get(stk.getID());
+		double marketDegree = StockMarket.getDegree(stk.getDl_dt());
+//		double baseThresh = ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING", stk.getID());
+//		
+//		if (sbs != null && !sbs.is_buy_point) {
+//			if ((stk.getCur_pri() - sbs.price) / yt_cls_pri > baseThresh / 3) {
+//			    log.info("previous sold at price:" + sbs.price + ", now price:" + stk.getCur_pri() + "(stk.getCur_pri() - sbs.price) / yt_cls_pri > baseThresh / 3 ? " + ((stk.getCur_pri() - sbs.price) / yt_cls_pri > baseThresh / 3) + ", buy it back");
+//                stk.setTradedBySelector(this.selector_name);
+//                stk.setTradedBySelectorComment("previous sold at price:" + sbs.price + ", now price:" + stk.getCur_pri() + "(stk.getCur_pri() - sbs.price) / yt_cls_pri > baseThresh / 3 ? " + ((stk.getCur_pri() - sbs.price) / yt_cls_pri > baseThresh / 3) + ", buy it back");
+//			    return true;
+//			}
+//		}
+		
+//		if (marketDegree > 1.0) {
+//			if (sbs != null && !sbs.is_buy_point) {
+//			    log.info("MarketDegree is 1% increase, we have sold unbalance, buy it back.");
+//                stk.setTradedBySelector(this.selector_name);
+//                stk.setTradedBySelectorComment("MarketDegree is " + marketDegree + "% increase, we have sold unbalance, buy it back.");
+//			    return true;
+//			}
+//			else {
+//				log.info("MarketDegree is 1% increase, stop buy.");
+//				return false;
+//			}
+//		}
+//		else if (marketDegree < -1.0) {
+//			log.info("MarketDegree is -1% decrease, no buy.");
+//			return false;
+//		}
 
         Timestamp t1 = stk.getDl_dt();
         
@@ -91,7 +119,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
 		double tradeThresh = 0;
 		double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", stk.getID());
-		double marketDegree = StockMarket.getDegree(stk.getDl_dt());
+
      	tradeThresh = getBuyThreshValueByDegree(marketDegree, stk);
          
 		if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {

@@ -63,18 +63,18 @@ public class ParamMap implements Cloneable{
      */
     public void initParams() {
         
-        Param p1 = new Param("VOLUME_PLUS_PCT", "TRADING", ParamManager.getFloatParam("VOLUME_PLUS_PCT", "TRADING", null), 0.1, 0.8, 0.1, Param.TYPE.FLOAT);
-        Param p2 = new Param("BUY_SELL_MAX_DIFF_CNT", "TRADING", ParamManager.getIntParam("BUY_SELL_MAX_DIFF_CNT", "TRADING", null), 1, 5, 1, Param.TYPE.INT);
-        Param p3 = new Param("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", null), 10, 120, 10, Param.TYPE.INT);
-        Param p4 = new Param("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING",ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", null), 0.03, 0.08, 0.01, Param.TYPE.FLOAT);
-        Param p5 = new Param("BUY_BASE_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING", null), 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
-        Param p6 = new Param("SELL_BASE_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("SELL_BASE_TRADE_THRESH", "TRADING", null), 0.01, 0.08, 0.01, Param.TYPE.FLOAT);
-        Param p7 = new Param("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", null), 0.1, 0.4, 0.02, Param.TYPE.FLOAT);
+        //Param p1 = new Param("VOLUME_PLUS_PCT", "TRADING", ParamManager.getFloatParam("VOLUME_PLUS_PCT", "TRADING", null), 0.1, 0.8, 0.1, Param.TYPE.FLOAT);
+        //Param p2 = new Param("BUY_SELL_MAX_DIFF_CNT", "TRADING", ParamManager.getIntParam("BUY_SELL_MAX_DIFF_CNT", "TRADING", null), 1, 5, 1, Param.TYPE.INT);
+        //Param p3 = new Param("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", null), 10, 120, 10, Param.TYPE.INT);
+        //Param p4 = new Param("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING",ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", null), 0.03, 0.08, 0.01, Param.TYPE.FLOAT);
+        Param p5 = new Param("BUY_BASE_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING", null), 0.03, 0.08, 0.01, Param.TYPE.FLOAT);
+        Param p6 = new Param("SELL_BASE_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("SELL_BASE_TRADE_THRESH", "TRADING", null), 0.03, 0.08, 0.01, Param.TYPE.FLOAT);
+        Param p7 = new Param("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", null), 0.2, 0.5, 0.02, Param.TYPE.FLOAT);
         
-        kv.put("VOLUME_PLUS_PCT@TRADING", p1);
-        kv.put("BUY_SELL_MAX_DIFF_CNT@TRADING", p2);
-        kv.put("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE@TRADING", p3);
-        kv.put("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT@TRADING", p4);
+        //kv.put("VOLUME_PLUS_PCT@TRADING", p1);
+        //kv.put("BUY_SELL_MAX_DIFF_CNT@TRADING", p2);
+        //kv.put("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE@TRADING", p3);
+        //kv.put("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT@TRADING", p4);
         kv.put("BUY_BASE_TRADE_THRESH@TRADING", p5);
         kv.put("SELL_BASE_TRADE_THRESH@TRADING", p6);
         kv.put("MARGIN_PCT_TO_TRADE_THRESH@TRADING", p7);

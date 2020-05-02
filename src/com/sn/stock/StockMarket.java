@@ -558,12 +558,12 @@ public class StockMarket{
             {
                 if (degreesForSim.size() > 0)
                 {
-                    log.info("Not able to get degree from map at:" + ts.toString() + ",but in sim mode use 0,  market not opened?");
+                    log.info("Not able to get degree from map at:" + PK + ",but in sim mode use 0,  market not opened?");
                     Degree = 0.0;
                 }
                 else
                 {
-                    log.info("Not able to get degree from map at:" + ts.toString() + ", not in sim Mode, return whatever value as is:" + Degree);
+                    log.info("Not able to get degree from map at:" + PK + ", not in sim Mode, return whatever value as is:" + Degree);
                 }
                 return Degree;
             }
@@ -598,12 +598,12 @@ public class StockMarket{
             Connection con = DBManager.getConnection();
             Statement stm = null;
             ResultSet rs = null;
-            int maxDays = 2;
+            int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
             
             try {
                 
                 //start_dt is not included.
-                for (int i = 1; i<= maxDays; i++)
+                for (int i = 1; i<= sim_days; i++)
                 {
                     String sql = "select left(str_to_date('" + start_dt + "', '%Y-%m-%d') + interval " + i + " day, 10) mydt from dual " +
                                  " where str_to_date('" + start_dt + "', '%Y-%m-%d') + interval " + i + " day <= str_to_date('" + end_dt + "', '%Y-%m-%d')";
@@ -629,9 +629,9 @@ public class StockMarket{
                         {
                             if ((h == 9 && m <= 30) || (h == 11 && m >= 30) || (h >11 && h < 13) || (h == 15 && m > 0))
                                 continue;
-                            String PK = mydt + " " + (h < 10 ? ("0" + h) : h) + ":" + (m < 10 ? ("0" + m) : m) + ":00";
+                            String PK = mydt + " " + (h < 10 ? ("0" + h) : h) + ":" + (m < 10 ? ("0" + m) : m);
                             //calIndex(PK + ":00");
-                            sql = "select indexval, delindex, deltapct, delamt, delmny from stockindex where indexid = 's_sh000001' and add_dt <= str_to_date('" + PK + "', '%Y-%m-%d %H:%i:%s') order by id desc";
+                            sql = "select indexval, delindex, deltapct, delamt, delmny from stockindex where indexid = 's_sh000001' and add_dt <= str_to_date('" + PK  + ":59', '%Y-%m-%d %H:%i:%s') order by id desc";
                             stm = con.createStatement();
                             
                             log.info(sql);
@@ -644,13 +644,13 @@ public class StockMarket{
                                 DeltaShIndexPct = rs.getDouble("deltapct");
                                 ShDelAmt =  rs.getLong("delamt");
                                 shDelMny = rs.getDouble("delmny");
+                                
+                                log.info("calculate DeltaShIndexPct:" + DeltaShIndexPct + " at timestamp:" + PK + " put into degreeForSim.");
+                                degreesForSim.put(PK, DeltaShIndexPct);
                             }
                             
                             rs.close();
                             stm.close();
-                            
-                            log.info("calculate DeltaShIndexPct:" + DeltaShIndexPct + " at timestamp:" + PK + " put into degreeForSim.");
-                            degreesForSim.put(PK, DeltaShIndexPct);
                         }
                     }
                 }

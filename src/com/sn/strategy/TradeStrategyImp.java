@@ -641,80 +641,42 @@ public class TradeStrategyImp implements ITradeStrategy {
         	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", s.getID()) + s.getID();
         }
         
+        Connection con = null;
 		try {
-			Connection con = DBManager.getConnection();
+			con = DBManager.getConnection();
 			Statement stm = con.createStatement();
-			sql = "select * from tradedtl " + " where acntId ='" + acntId + "' and stkid ='" + s.getID() + "'  and left(dl_dt, 10) = left(str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s.%f'), 10) order by stkid, seqnum";
+			sql = "select 'x' from cashacnt " + " where acntId ='" + acntId + "' and pft_mny < 0";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
-			String pre_stkID = "";
-			String stkID = "";
-			int incCnt = 0;
-			int descCnt = 0;
-
-			double pre_price = 0.0;
-			double price = 0.0;
-
-			int pre_buy_flg = 1;
-			int buy_flg = 1;
-			int seqnum = -1;
-			int pre_seqnum = -1;
-
-			while (rs.next()) {
-
-				stkID = rs.getString("stkid");
-				price = rs.getDouble("price");
-				buy_flg = rs.getInt("buy_flg");
-				seqnum = rs.getInt("seqnum");
-
-                log.info("stkID:" + stkID + ", price:" + price + ", buy_flg:" + buy_flg + ", seqnum:" + seqnum);
-                log.info("pre_stkID:" + pre_stkID + ", pre_price:" + pre_price + ", pre_buy_flg:" + pre_buy_flg + ", pre_seqnum:" + pre_seqnum);
-				if (pre_stkID.length() > 0) {
-					log.info("stock:" + s.getName() + " buy_flg:" + buy_flg + " with price:" + price + " and pre_buy_flg:"
-							+ pre_buy_flg + " with price:" + pre_price + " on seqnum:" + seqnum + ", pre_seqnum:" + pre_seqnum);
-					if (buy_flg == 1 && pre_buy_flg == 0) {
-						if (price < pre_price) {
-							incCnt++;
-							pre_stkID = "";
-						} else {
-							descCnt++;
-							pre_stkID = "";
-						}
-					} else if (buy_flg == 0 && pre_buy_flg == 1) {
-						if (price > pre_price) {
-							incCnt++;
-							pre_stkID = "";
-						} else {
-							descCnt++;
-							pre_stkID = "";
-						}
-					} else {
-						log.info("continue buy or sell does not means success or fail trade, continue.");
-					}
-					pre_price = price;
-					pre_buy_flg = buy_flg;
-				} else {
-					pre_stkID = stkID;
-					pre_price = price;
-					pre_buy_flg = buy_flg;
-                    pre_seqnum = seqnum;
-				}
-			}
-			
-			log.info("stopTradeForStock, incCnt:" + incCnt + " descCnt:" + descCnt);
-
-			// For specific stock, if there are 50% lost, stop trading.
-			int max_trade_lost_times = ParamManager.getIntParam("STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES", "TRADING", s.getID());
-			if ((descCnt - incCnt) >= max_trade_lost_times) {
-				log.info("Stock:" + stkID + "lost time is more than " + max_trade_lost_times + " times, stop trade!");
+			if (rs.next()) {
+				sql = "update usrstk set stop_trade_mode_flg = 1, mod_dt = sysdate() where id = '" + s.getID() + "' and gz_flg = 1";
+				Statement stm2 = con.createStatement();
+				log.info(sql);
+				stm2.execute(sql);
+				stm2.close();
 				shouldStopTrade = true;
 			}
+			
+//			// For specific stock, if there are 50% lost, stop trading.
+//			int max_trade_lost_times = ParamManager.getIntParam("STOP_TRADE_IF_LOST_MORE_THAN_GAIN_TIMES", "TRADING", s.getID());
+//			if ((descCnt - incCnt) >= max_trade_lost_times) {
+//				log.info("Stock:" + stkID + "lost time is more than " + max_trade_lost_times + " times, stop trade!");
+//				shouldStopTrade = true;
+//			}
 			rs.close();
 			stm.close();
-			con.close();
+
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
 		}
 		return shouldStopTrade;
 	}

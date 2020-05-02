@@ -52,6 +52,34 @@ public class QtySellPointSelector implements ISellPointSelector {
 		
         Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
         StockBuySellEntry sbs = lstTrades.get(stk.getID());
+        double marketDegree = StockMarket.getDegree(stk.getDl_dt());
+//        double baseThresh = ParamManager.getFloatParam("SELL_BASE_TRADE_THRESH", "TRADING", stk.getID());
+//        
+//		if (sbs != null && sbs.is_buy_point) {
+//			if ((stk.getCur_pri() - sbs.price) / yt_cls_pri < -baseThresh / 3) {
+//			    log.info("previous bought at price:" + sbs.price + ", now price:" + stk.getCur_pri() + "(stk.getCur_pri() - sbs.price) / yt_cls_pri < -baseThresh / 3 ?" + ((stk.getCur_pri() - sbs.price) / yt_cls_pri < -baseThresh / 3) + ", sell it out.");
+//                stk.setTradedBySelector(this.selector_name);
+//                stk.setTradedBySelectorComment("previous bought at price:" + sbs.price + ", now price:" + stk.getCur_pri() + "(stk.getCur_pri() - sbs.price) / yt_cls_pri < -baseThresh / 3 ?" + ((stk.getCur_pri() - sbs.price) / yt_cls_pri < -baseThresh / 3) + ", sell it out.");
+//			    return true;
+//			}
+//		}
+		
+//		if (marketDegree < -1.0) {
+//			if (sbs != null && sbs.is_buy_point) {
+//			    log.info("MarketDegree is 1% decrease, we have bought unbalance, sold it out.");
+//                stk.setTradedBySelector(this.selector_name);
+//                stk.setTradedBySelectorComment("MarketDegree is " + marketDegree + "% decrease, we have bought unbalance, sold it out.");
+//			    return true;
+//			}
+//			else {
+//				log.info("MarketDegree is 1% decrease, stop sell.");
+//				return false;
+//			}
+//		}
+//		else if (marketDegree > 1.0) {
+//			log.info("MarketDegree is 1% increase, no sell.");
+//			return false;
+//		}
 
         Timestamp t1 = stk.getDl_dt();
         
@@ -94,7 +122,7 @@ public class QtySellPointSelector implements ISellPointSelector {
         double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", stk.getID());
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
-			double marketDegree = StockMarket.getDegree(stk.getDl_dt());
+			
 			
 			tradeThresh = getSellThreshValueByDegree(marketDegree, stk);
 			

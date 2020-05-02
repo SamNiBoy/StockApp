@@ -20,6 +20,7 @@ public class MacdSellPointSelector implements ISellPointSelector {
 	static Logger log = Logger.getLogger(MacdSellPointSelector.class);
 
     private boolean sim_mode;
+    private String selector_name = "MacdSellPointSelector";
     
     
     public MacdSellPointSelector(boolean sm)
@@ -32,7 +33,7 @@ public class MacdSellPointSelector implements ISellPointSelector {
 	 */
 	public boolean isGoodSellPoint(Stock2 stk, ICashAccount ac) {
 
-		int s = 2, l = 6, m = 4;
+		int s = 6, l = 30, m = 5;
 
 		MACD macd = new MACD(s, l, m, stk);
 
@@ -40,12 +41,12 @@ public class MacdSellPointSelector implements ISellPointSelector {
 			log.info("MACD is not calculatable, returned false");
 			return false;
 		}
-		if (macd.DIF > macd.DEF && macd.DEF > 0.01) {
-			log.info("MACD good, sell it.");
+		log.info("MacdSellPointSelector:" + stk.getID() + "/" + stk.getName() + " at time:" + stk.getDl_dt() + ", DIF:" + macd.DIF + ", DEF:" + macd.DEF + ", (macd.DIF - macd.DEF) < 0 && macd.DIF * macd.DEF < 0 && Math.abs(macd.DIF) > 0.001 ? " + ((macd.DIF - macd.DEF) < 0 && macd.DIF * macd.DEF < 0 && Math.abs(macd.DIF) > 0.001));
+		if ((macd.DIF - macd.DEF) < 0 && macd.DIF * macd.DEF < 0 && Math.abs(macd.DIF) > 0.001) {
+            stk.setTradedBySelector(this.selector_name);
+            stk.setTradedBySelectorComment("DIF:" + macd.DIF + ", DEF:" + macd.DEF + ", (macd.DIF - macd.DEF) < 0 && macd.DIF * macd.DEF < 0 && Math.abs(macd.DIF) > 0.001? " + ((macd.DIF - macd.DEF) < 0 && macd.DIF * macd.DEF < 0 && Math.abs(macd.DIF) > 0.001));
 			return true;
 		}
-
-		log.info("MACD returned false");
 		return false;
 	}
 

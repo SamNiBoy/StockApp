@@ -21,6 +21,7 @@ public class MacdBuyPointSelector implements IBuyPointSelector {
 
 
     private boolean sim_mode;
+    private String selector_name = "MacdBuyPointSelector";
     
     
     public MacdBuyPointSelector(boolean sm)
@@ -39,12 +40,13 @@ public class MacdBuyPointSelector implements IBuyPointSelector {
 			log.info("MACD is not calculatable, returned false");
 			return false;
 		}
-		if (macd.DIF > macd.DEF && macd.DEF < -0.001 && macd.DIF - macd.DEF < 0.004) {
-			log.info("MACD good, buy it.");
+		
+		log.info("MacdBuyPointSelector:" + stk.getID() + "/" + stk.getName() + " at time:" + stk.getDl_dt() + ", DIF:" + macd.DIF + ", DEF:" + macd.DEF + ", (macd.DIF - macd.DEF) > 0 && macd.DIF * macd.DEF < 0 ? " + ((macd.DIF - macd.DEF) > 0 && macd.DIF * macd.DEF < 0 && Math.abs(macd.DIF) > 0.001));
+		if ((macd.DIF - macd.DEF) > 0 && macd.DIF * macd.DEF < 0 && Math.abs(macd.DIF) > 0.001) {
+            stk.setTradedBySelector(this.selector_name);
+            stk.setTradedBySelectorComment("DIF:" + macd.DIF + ", DEF:" + macd.DEF + ", (macd.DIF - macd.DEF) > 0 && macd.DIF * macd.DEF < 0 && Math.abs(macd.DIF) > 0.001? " + ((macd.DIF - macd.DEF) > 0 && macd.DIF * macd.DEF < 0 && Math.abs(macd.DIF) > 0.001));
 			return true;
 		}
-
-		log.info("MACD returned false for buy.");
 		return false;
 	}
 

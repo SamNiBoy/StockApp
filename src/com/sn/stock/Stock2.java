@@ -1086,7 +1086,25 @@ public class Stock2 implements Comparable<Stock2>{
                 log.info("Can not LoadDataFromRs as rs is null");
                 return false;
             }
+
             try {
+            	
+                if (dl_dt_lst.size() > 0) {
+                	Timestamp ts = dl_dt_lst.get(dl_dt_lst.size() - 1);
+                	String dtstr = ts.toString().substring(0, 10);
+                	
+                	Timestamp rsts = rs.getTimestamp("dl_dt");
+                	String rsstr = rsts.toString().substring(0, 10);
+                	
+                	log.info("date in dl_dt_lst:" + dtstr);
+                	log.info("date in rs:" + rsstr);
+                	
+                	if (!rsstr.equals(dtstr)) {
+                		log.debug("clear all data in list as date changed");
+                		clearInjectRawData();
+                	}
+                }
+                
                     ft_id_lst.add(rs.getInt("ft_id"));
                     cur_pri_lst.add(rs.getDouble("cur_pri"));
                     b1_bst_pri_lst.add(rs.getDouble("b1_bst_pri"));

@@ -50,18 +50,11 @@ public class MACD {
 		List<Double> difLst = new ArrayList<Double>(m);
 		for (int k = 0; k < m; k++) {
 			double avgShtPri = 0;
-			for (int i = 0; i < s; i++) {
-				avgShtPri += prilst.get(sz - i - 1 - k) / yt_cls_pri;
-			}
-
-			avgShtPri /= s;
+			
+			avgShtPri = getEMA(prilst, sz - 1 - k, s, yt_cls_pri);
 
 			double avgLngPri = 0;
-			for (int i = 0; i < l; i++) {
-				avgLngPri += prilst.get(sz - i - 1 - k) / yt_cls_pri;
-			}
-
-			avgLngPri /= l;
+			avgLngPri = getEMA(prilst, sz - 1 - k, l, yt_cls_pri);
 
 			double dif = avgShtPri - avgLngPri;
 			difLst.add(dif);
@@ -75,7 +68,7 @@ public class MACD {
 		if (difLst.size() > 0) {
 			DIF = difLst.get(0);
 			DEF = def / difLst.size();
-			MACD = 2 * (DEF - DIF);
+			MACD = 2 * (DIF - DEF);
 			log.info("Got MACD: dif[" + DIF + "] DEF[" + DEF + "] MACD[" + MACD + "] for stock:" + stk.getID());
 			return true;
 		}
@@ -83,6 +76,15 @@ public class MACD {
 		{
 			log.info("should not possible, No MACD calculated success because of less data!");
 			return false;
+		}
+	}
+	
+	private double getEMA(List<Double> prilst, int lstidx, int period, double yt_cls_pri)
+	{
+		if (period == 1)
+			return (prilst.get(lstidx) - yt_cls_pri) / yt_cls_pri;
+		else {
+			return 2.0 * ((prilst.get(lstidx) - yt_cls_pri) /yt_cls_pri) / (period + 1) + (period - 1) * (getEMA(prilst, lstidx - 1, period - 1, yt_cls_pri)) / (period + 1);
 		}
 	}
 

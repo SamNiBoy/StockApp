@@ -242,8 +242,8 @@ public class TradeRecord{
 	            "<td>" + rs.getDouble("total_net_pft") + "</td> " +
 	            "<td>" + rs.getDouble("total_used_mny") + "</td> " +
 	            "<td>" + df.format(rs.getDouble("avgUsedMny_Hrs")) + "</td> " +
-	            "<td>" + rs.getInt("total_buy_cnt") + "</td> " +
 	            "<td>" + rs.getInt("total_sell_cnt") + "</td> " +
+	            "<td>" + rs.getInt("total_buy_cnt") + "</td> " +
 	            "</tr>";
 	            
 		         str += "</table></div>";

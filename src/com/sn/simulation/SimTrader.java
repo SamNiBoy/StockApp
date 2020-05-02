@@ -138,17 +138,15 @@ public class SimTrader implements Job{
         ResultSet rs = null;
         String sql = "";
         
-        simOnGzStk = true;
-        
         ArrayList<ITradeStrategy> slst = new ArrayList<ITradeStrategy>();
         
         ITradeStrategy s = TradeStrategyGenerator.generatorStrategy(true);
         
         slst.add(s);
         
-        ITradeStrategy s1 = TradeStrategyGenerator.generatorStrategy1(true);
+        //ITradeStrategy s1 = TradeStrategyGenerator.generatorStrategy1(true);
         
-        slst.add(s1);
+        //slst.add(s1);
         
         /*
          * we simulate twice:
@@ -167,7 +165,9 @@ public class SimTrader implements Job{
                 
                 StockMarket.clearDegreeMap();
                 
-                for (int i = 0; i < 2; i++) {
+                simOnGzStk = true;
+                
+                for (int i = 0; i < 1; i++) {
                     
                     strategy.resetStrategyStatus();
                     
@@ -358,7 +358,7 @@ public class SimTrader implements Job{
          
          try {
         	 con = DBManager.getConnection();
-             String sql = "insert into simresult select '" + strategyName + "', left(h.add_dt, 10), count(distinct(ac.acntid)) ACNTCNT, " + 
+             String sql = "insert into simresult select '" + strategyName + "', tmp.dl_dt, count(distinct(ac.acntid)) ACNTCNT, " + 
              		"                                   sum(ac.used_mny) totUsedMny," + 
              		"                                   sum(ac.used_mny * ac.used_mny_hrs) / sum(ac.used_mny) avgUsedMny_Hrs," + 
              		"        				           avg(ac.pft_mny) avgPft, " + 
@@ -371,16 +371,17 @@ public class SimTrader implements Job{
              		"        				     from cashacnt ac, " + 
              		"        				          (select sum(case when td.buy_flg = 1 then 1 else 0 end) buyCnt, " + 
              		"        				                  sum(case when td.buy_flg  = 1 then 0 else 1 end) sellCnt, " + 
-             		"        				                  th.acntid " + 
+             		"        				                  th.acntid, " + 
+             		"        				                  left(td.dl_dt, 10) dl_dt " + 
              		"        				             from tradehdr th, tradedtl td" + 
              		"        			                where th.acntid = td.acntid " + 
              		"        			                  and th.stkid = td.stkid " + 
-             		"        			                 group by th.acntid ) tmp, " + 
+             		"        			                 group by th.acntid, left(td.dl_dt, 10)) tmp, " + 
              		"                                  TradeHdr h" + 
              		"        			         where ac.acntid = tmp.acntid" + 
              		"                               and ac.acntid = h.acntid " + 
              		"        			           and ac.acntid like 'SIM%'" + 
-             		"        			           group by left(h.add_dt, 10)";
+             		"        			           group by tmp.dl_dt";
              log.info(sql);
              stm = con.createStatement();
              stm.execute(sql);
