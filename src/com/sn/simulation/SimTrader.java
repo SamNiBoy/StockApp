@@ -144,6 +144,9 @@ public class SimTrader implements Job{
         
         slst.add(s);
         
+        StockMarket.clearSimData();
+        StockMarket.startSim();
+        
         //ITradeStrategy s1 = TradeStrategyGenerator.generatorStrategy1(true);
         
         //slst.add(s1);
@@ -331,6 +334,7 @@ public class SimTrader implements Job{
                 archiveStockData();
                 
                 StockMarket.clearDegreeMap();
+                StockMarket.stopSim();
                 strategy.resetStrategyStatus();
                 log.info("SimTrader end...");
                 

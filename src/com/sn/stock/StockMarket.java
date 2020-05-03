@@ -59,6 +59,12 @@ public class StockMarket{
     static private List<String> DeltaTSLst = new ArrayList<String>();
     static private List<Double> DeltaShIdxLst = new ArrayList<Double>();
     
+    static private boolean isSimRunning = false;
+    static private List<String> SimTSLst = new ArrayList<String>();
+    static private List<Double> SimNetPFitLst = new ArrayList<Double>();
+    static private List<Double> SimUsedMnyLst = new ArrayList<Double>();
+    static private List<Double> SimCommMnyLst = new ArrayList<Double>();
+    
     
     
     
@@ -122,7 +128,137 @@ public class StockMarket{
     	return Double.valueOf(str);
     }
     
+    public static void clearSimData() {
+    	log.info("Clear Sim Data now.");
+    	SimTSLst.clear();
+    	SimNetPFitLst.clear();
+    	SimUsedMnyLst.clear();
+    	SimCommMnyLst.clear();
+    }
     
+    public static void startSim() {
+    	log.info("start Sim now.");
+    	isSimRunning = true;
+    }
+    
+    public static void stopSim() {
+    	log.info("stop Sim now.");
+    	isSimRunning = false;
+    }
+    
+    
+    public static String getSimTSLst() {
+    	String str = "[";
+    	for(String k : SimTSLst) {
+    		
+    		if (str.length() > 1)
+    		{
+    			str += ",";
+    		}
+    		str += "'" + k + "'";
+    	}
+    	
+    	str+="]";
+    	return str;
+    }
+    
+    public static String getSimNetPFitLst() {
+    	String str = "[";
+    	for(Double k : SimNetPFitLst) {
+    		
+    		if (str.length() > 1)
+    		{
+    			str += ",";
+    		}
+    		str += k;
+    	}
+    	
+    	str+="]";
+    	
+    	return str;
+    }
+    
+    public static String getSimUsedMnyLst() {
+    	String str = "[";
+    	for(Double k : SimUsedMnyLst) {
+    		
+    		if (str.length() > 1)
+    		{
+    			str += ",";
+    		}
+    		str += k;
+    	}
+    	
+    	str+="]";
+    	
+    	return str;
+    }
+    
+    public static String getSimCommMnyLst() {
+    	String str = "[";
+    	for(Double k : SimCommMnyLst) {
+    		
+    		if (str.length() > 1)
+    		{
+    			str += ",";
+    		}
+    		str += k;
+    	}
+    	
+    	str+="]";
+    	
+    	return str;
+    }
+    
+    public static boolean calSimData()
+    {
+    	if (!isSimRunning) {
+    		return false;
+    	}
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        
+        try {
+            stm = con.createStatement();
+            String sql = "select round(sum(ac.used_mny)/100000.0, 2) totUsedMny," + 
+             		"                                   round(sum(h.commission_mny)/1000.0, 2) total_commission_mny," + 
+             		"                                   round((sum(ac.pft_mny)  - sum(h.commission_mny))/1000.0, 2) netPft," + 
+             		"                                   tmp.max_dl_dt" +
+             		"        				     from cashacnt ac, " + 
+             		"        				          (select max(td.dl_dt) max_dl_dt " + 
+             		"        				             from tradedtl td) tmp, " + 
+             		"                                  TradeHdr h" + 
+             		"        			         where ac.acntid = h.acntid " + 
+             		"        			           and ac.acntid like 'SIM%'";
+            log.info(sql);
+            ResultSet rs = stm.executeQuery(sql);
+            if (rs.next()) {
+	            Timestamp t0 = rs.getTimestamp("max_dl_dt");
+	            if (t0 != null) {
+	                SimTSLst.add(t0.toString());
+	                SimNetPFitLst.add(rs.getDouble("netPft"));
+	                SimUsedMnyLst.add(rs.getDouble("totUsedMny"));
+	                SimCommMnyLst.add(rs.getDouble("total_commission_mny"));
+	            }
+            }
+            rs.close();
+        }
+        catch(SQLException e)
+        {
+            log.info(e.getMessage() + " errored:" + e.getErrorCode());
+        }
+        finally {
+            try {
+                stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.info(e.getMessage() + " errored:" + e.getErrorCode());
+            }
+        }
+        
+    	return true;
+    }
     
     
     public static boolean refreshShIndex()

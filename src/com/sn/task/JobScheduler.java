@@ -25,6 +25,7 @@ import com.sn.task.ga.StockParamSearch;
 import com.sn.task.fetcher.StockDataFetcher;
 import com.sn.task.fetcher.GzStockDataFetcher;
 import com.sn.task.suggest.SuggestStock;
+import com.sn.simulation.SimResultCollector;
 import com.sn.simulation.SimTrader;
 import com.sn.task.fetcher.StockDataConsumer;
 import com.sn.task.fetcher.GzStockDataConsumer;
@@ -109,7 +110,8 @@ public class JobScheduler {
         //String stockSuggestTime = "0 44 11 ? * MON-FRI";
         String stockSuggestTime = "0 50 17 ? * MON-SUN";
         ////String stockSimTime = "0 35 18 ? * MON-FRI";
-        String stockSimTime = "0 25 18 ? * MON-SUN";
+        String stockSimTime = "0 05 21 ? * MON-SUN";
+        String stockSimResCollectorTime = "*/10 * 18-23 ? * MON-SUN";
         
         
        // JobDetail job_StockParamSearch = newJob(StockParamSearch.class).withIdentity("StockParamSearch", "StockApp").build();
@@ -129,8 +131,8 @@ public class JobScheduler {
         log.info(job_SuggestStock.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
                  + trigger_SuggestStock.getCronExpression());
         
-        JobDetail job_SimCalStkStats = newJob(CalStkStats.class).withIdentity("CalStkStats", "StockApp").build();
-        CronTrigger trigger_SimCalStkStats = newTrigger().withIdentity("CalStkStats", "StockApp").withSchedule(cronSchedule(stockSimTime)).build();
+        JobDetail job_SimCalStkStats = newJob(CalStkStats.class).withIdentity("SimCalStkStats", "StockApp").build();
+        CronTrigger trigger_SimCalStkStats = newTrigger().withIdentity("SimCalStkStats", "StockApp").withSchedule(cronSchedule(stockSimTime)).build();
         
         ft = sched.scheduleJob(job_SimCalStkStats, trigger_SimCalStkStats);
         log.info(job_SimCalStkStats.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
@@ -143,6 +145,12 @@ public class JobScheduler {
         log.info(job_SimTrader.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
                  + trigger_SimTrader.getCronExpression());
         
+        JobDetail job_SimResultCollector = newJob(SimResultCollector.class).withIdentity("SimResultCollector", "StockApp").build();
+        CronTrigger trigger_SimResultCollector = newTrigger().withIdentity("SimResultCollector", "StockApp").withSchedule(cronSchedule(stockSimResCollectorTime)).build();
+        
+        ft = sched.scheduleJob(job_SimResultCollector, trigger_SimResultCollector);
+        log.info(job_SimResultCollector.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
+                 + trigger_SimResultCollector.getCronExpression());
         
         JobDetail job_StockDataConsumer = newJob(StockDataConsumer.class).withIdentity("StockDataConsumer", "StockApp").build();
 

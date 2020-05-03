@@ -6,6 +6,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+
+import com.sn.simulation.SimTrader;
 import com.sn.stock.StockMarket;
 
 import java.io.IOException;
@@ -19,6 +22,8 @@ public class GetIndex extends HttpServlet {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	static Logger log = Logger.getLogger(GetIndex.class);
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -83,6 +88,17 @@ public class GetIndex extends HttpServlet {
         	if (TradeRecord.putStockIntoSuggest(stkid)) {
         		out.write("success");
         	}
+        }
+        else if ("SIMRESULT".equals(typ))
+        {
+        	String str1 = StockMarket.getSimTSLst();
+        	String str2 = StockMarket.getSimNetPFitLst();
+        	String str3 = StockMarket.getSimUsedMnyLst();
+        	String str4 = StockMarket.getSimCommMnyLst();
+        	String finalStr = str1 + "#" + str2 + "#" + str3 + "#" + str4;
+        	log.info(finalStr);
+        	out.write(finalStr);
+        	
         }
         out.flush();
         out.close();
