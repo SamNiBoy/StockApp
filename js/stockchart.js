@@ -540,7 +540,7 @@ function drawSimResultChart(xdata, y1data, y2data, y3data)
             }
         ]
     };
-    //SimResult.setOption(SimResult_opt, true);
+    SimResult.setOption(SimResult_opt, true);
     return SimResult_opt;
 }
 

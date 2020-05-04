@@ -542,11 +542,14 @@ public class TradeStrategyImp implements ITradeStrategy {
 			
 	         String acntId = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null);
 	            
-	         if (tradeLocal == 0) {
-	             acntId = tradex_acnt.getActId();
-	         }
-	         else if (tradeLocalwithSim == 0) {
-	         	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", s.getID()) + s.getID();
+	         if (!sim_mode)
+	         {
+	             if (tradeLocal == 0) {
+	                 acntId = tradex_acnt.getActId();
+	             }
+	             else if (tradeLocalwithSim == 0) {
+	             	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", s.getID()) + s.getID();
+	             }
 	         }
 	            
 			sql = "select * from tradedtl " + " where acntId like '" + acntId + "%'" + "   and dl_dt >= sysdate() - interval "
@@ -634,13 +637,15 @@ public class TradeStrategyImp implements ITradeStrategy {
 		
         String acntId = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", s.getID()) + s.getID();
         
-        if (tradeLocal == 0) {
-            acntId = tradex_acnt.getActId();
-        }
-        else if (tradeLocalwithSim == 0) {
-        	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", s.getID()) + s.getID();
-        }
-        
+		if (!sim_mode) {
+             if (tradeLocal == 0) {
+                 acntId = tradex_acnt.getActId();
+             }
+             else if (tradeLocalwithSim == 0) {
+             	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", s.getID()) + s.getID();
+             }
+		}
+		
         Connection con = null;
 		try {
 			con = DBManager.getConnection();
@@ -690,11 +695,18 @@ public class TradeStrategyImp implements ITradeStrategy {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 
-            
+			int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
+			int tradeLocalwithSim = ParamManager.getIntParam("TRADING_AT_LOCAL_WITH_SIM", "TRADING", null);
+			
 			String acntId = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", s.getID()) + s.getID();
 			
 			if (!sim_mode) {
-			    acntId = tradex_acnt.getActId();
+	             if (tradeLocal == 0) {
+	                 acntId = tradex_acnt.getActId();
+	             }
+	             else if (tradeLocalwithSim == 0) {
+	             	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", s.getID()) + s.getID();
+	             }
 			}
 			// get last trade record.
 			sql = "select * from tradedtl " + " where acntId ='" + acntId + "'" + "   and stkId ='" + s.getID()
