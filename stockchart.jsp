@@ -92,6 +92,7 @@ var myTextStyle = {
 	    var y3data = eval(<%=sm.getSimCommMnyLst()%>);
 	    var SimResult = echarts.init(document.getElementById('SimResult'));
 	    var SimResult_opt = drawSimResultChart(xdata, y1data, y2data, y3data);
+	    drawSimResult();
 
 	    setInterval(drawSimResult, 10000);
 	    

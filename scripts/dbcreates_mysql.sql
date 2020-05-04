@@ -20,6 +20,7 @@ insert into param values('ACNT_GF_PREFIX', 'ACCOUNT',null,null , 'GF', '', 'Acco
 insert into param values('COMMISSION_RATE', 'VENDOR',null, 0.0014, '', '', 'Commissioin rate, as part of cost.', sysdate(),sysdate());
 
 insert into param values('SIM_DAYS', 'SIMULATION', 5,null, '', '', 'How many days data for simulation.', sysdate(),sysdate());
+insert into param values('SIM_SHIFT_DAYS', 'SIMULATION', 1,null, '', '', 'How many days shift data for simulation, 1 means simulating on last - 1 day.', sysdate(),sysdate());
 insert into param values('SIM_THREADS_COUNT', 'SIMULATION', 2,null, '', '', 'How many thread in parallel to run the simulation.', sysdate(),sysdate());
 insert into param values('SIM_STOCK_COUNT_FOR_EACH_THREAD', 'SIMULATION', 10,null, '', '', 'How many stocks to be run simulation per thread at one time.', sysdate(),sysdate());
 
@@ -468,6 +469,7 @@ buy_flg int not null,
 order_id int,
 trade_selector_name varchar(50) not null,
 trade_selector_comment varchar(500) not null,
+strategy_name varchar(30) not null,
 CONSTRAINT TradeDtl_PK PRIMARY KEY (acntId, stkId, seqnum)
 );
 
@@ -529,7 +531,7 @@ dl_dt datetime not null
 
 create table if not exists SimResult(
 strategy_name varchar(50) not null,
-add_dt datetime not null,
+dl_dt datetime not null,
 acnt_traded int not null,
 totUsedMny decimal(10, 2) not null,
 totUsedMny_Hrs decimal(8, 2) not null,
@@ -540,7 +542,8 @@ netPft decimal(8, 2) not null,
 fundPftPct decimal(15, 5) not null,
 buyCnt int not null,
 sellCnt int not null,
-CONSTRAINT CashAcnt_PK PRIMARY KEY (strategy_name, add_dt)
+add_dt datetime not null,
+CONSTRAINT CashAcnt_PK PRIMARY KEY (strategy_name, dl_dt, add_dt)
 );
 
 create index stkdat2_id_dldt_idx on stkDat2 (id, ft_id, dl_dt);

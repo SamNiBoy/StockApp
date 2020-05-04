@@ -129,8 +129,108 @@ public class SimTrader implements Job{
 	
     public void execute(JobExecutionContext context)
             throws JobExecutionException {
-   log.info("Before start simuation, waiting for GA Algorithm task finished."); 	
-   synchronized(Algorithm.class) {        
+    	
+    	log.info("Start to run SimTrader...");
+    	
+    	Connection con = DBManager.getConnection();
+    	try {
+        	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
+        	simOnGzStk = true;
+        	
+            resetTest(simOnGzStk);
+            StockMarket.clearSimData();
+            StockMarket.startSim();
+    		ParamManager.loadStockParam();
+            
+        	for (int i=0; i<sim_days; i++) {
+        		
+        		int shift_days = (sim_days - i);
+        		
+        		String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
+				int num_stok_in_trade = ParamManager.getIntParam("NUM_STOCK_IN_TRADE", "TRADING", null);
+				
+				String sql = "select count(*) cnt from usrStk where stop_trade_mode_flg = 0 and gz_flg = 1 and suggested_by <> '" + system_role_for_suggest + "'";
+				
+				log.info(sql);
+				Statement stm = con.createStatement();
+				ResultSet rs = stm.executeQuery(sql);
+				
+				rs.next();
+				
+				int num_in_trading = rs.getInt("cnt");
+				
+				rs.close();
+				stm.close();
+				
+				int new_num_to_trade = num_stok_in_trade - num_in_trading;
+				
+				log.info("Need to keep:"+ num_stok_in_trade + " to trade, with:" + num_in_trading + " in trading already, resugget more stocks.");
+				
+				if (new_num_to_trade > 0)
+				{
+        		    sql =  "select left(max(dl_dt) - interval " + sim_days + " day, 10) sd, left(max(dl_dt) - interval " + (sim_days - 1) + " day, 10) ed from stkdat2";
+        		    
+        		    log.info(sql);
+        		    stm = con.createStatement();
+        		    rs = stm.executeQuery(sql);
+        		    
+        		    if (rs.next() && rs.getString("sd") != null)
+        		    {
+        		    	String sd = rs.getString("sd");
+        		    	String ed = rs.getString("ed");
+        		    	SuggestStock ss = new SuggestStock(sd, ed);
+        		    	ss.execute(null);
+        		    }
+        		    
+        		    rs.close();
+        		    stm.close();
+				}
+        		
+        		stm = con.createStatement();
+        		
+        		sql = "update param set intval = " + shift_days + " where name = 'SIM_SHIFT_DAYS'";
+        		log.info(sql);
+        		stm.execute(sql);
+        		stm.close();
+        		runSim();
+        	}
+        	
+        	//simOnGzStk = false;
+        	//log.info("Start to run SimTrader on all stocks...");
+            //resetTest(simOnGzStk);
+        	//runSim();
+        	
+            //Send mail to user for top10 best and worst.
+            sto.update();
+        	
+            log.info("now to run archive and purge...");
+            
+            archiveStockData();
+            
+            StockMarket.clearDegreeMap();
+            StockMarket.stopSim();
+            saveSimResult();
+
+            
+        	log.info("Finishing run SimTrader...");
+    	}
+    	catch(Exception e) {
+    		log.error(e.getMessage(), e);
+    	}
+    	finally {
+    		try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
+    	}
+    }
+	
+    public void runSim()
+    {
+        //log.info("Before start simuation, waiting for GA Algorithm task finished."); 	
+        //synchronized(Algorithm.class) {
         
         // SimStockDriver.addStkToSim("000727");
         Connection con = DBManager.getConnection();
@@ -143,9 +243,6 @@ public class SimTrader implements Job{
         ITradeStrategy s = TradeStrategyGenerator.generatorStrategy(true);
         
         slst.add(s);
-        
-        StockMarket.clearSimData();
-        StockMarket.startSim();
         
         //ITradeStrategy s1 = TradeStrategyGenerator.generatorStrategy1(true);
         
@@ -164,17 +261,11 @@ public class SimTrader implements Job{
         		
         		strategy = its;
                 
-        		ParamManager.loadStockParam();
-                
                 StockMarket.clearDegreeMap();
                 
-                simOnGzStk = true;
-                
-                for (int i = 0; i < 2; i++) {
+                for (int i = 0; i < 1; i++) {
                     
                     strategy.resetStrategyStatus();
-                    
-                    resetTest(simOnGzStk);
                     
                     if (simOnGzStk) {
                         sql = "select distinct id from usrStk where gz_flg = 1 and stop_trade_mode_flg = 0 order by id";
@@ -320,23 +411,11 @@ public class SimTrader implements Job{
                         }
                     }
                     log.info("Now end simulate trading, sending mail...");
-                
-                    //Send mail to user for top10 best and worst.
-                    sto.update();
-                    
-                    simOnGzStk = false;
                 }
-                saveSimResult(strategy.getTradeStrategyName());
         	}
                 
-                log.info("now to run archive and purge...");
-                
-                archiveStockData();
-                
-                StockMarket.clearDegreeMap();
-                StockMarket.stopSim();
-                strategy.resetStrategyStatus();
-                log.info("SimTrader end...");
+            strategy.resetStrategyStatus();
+            log.info("SimTrader end...");
                 
           } catch (Exception e) {
               e.printStackTrace();
@@ -350,19 +429,18 @@ public class SimTrader implements Job{
           		log.info(e2.getMessage());
           	}
           }
-      }
+      //}
        //WorkManager.shutdownWorks();
-
     }
     
-    public boolean saveSimResult(String strategyName)
+    public boolean saveSimResult()
     {
          Connection con = null;
          Statement stm = null;
          
          try {
         	 con = DBManager.getConnection();
-             String sql = "insert into simresult select '" + strategyName + "', tmp.dl_dt, count(distinct(ac.acntid)) ACNTCNT, " + 
+             String sql = "insert into simresult select tmp.strategy_name, tmp.dl_dt, count(distinct(ac.acntid)) ACNTCNT, " + 
              		"                                   sum(ac.used_mny) totUsedMny," + 
              		"                                   sum(ac.used_mny * ac.used_mny_hrs) / sum(ac.used_mny) avgUsedMny_Hrs," + 
              		"        				           avg(ac.pft_mny) avgPft, " + 
@@ -371,21 +449,23 @@ public class SimTrader implements Job{
              		"                                   sum(ac.pft_mny)  - sum(h.commission_mny) netPft," + 
              		"                                   (sum(ac.pft_mny)  - sum(h.commission_mny)) / (sum(h.total_amount) /2.0) funPft," + 
              		"        				           sum(tmp.buyCnt) buyCnt," + 
-             		"        				           sum(tmp.sellCnt) sellCnt" + 
+             		"        				           sum(tmp.sellCnt) sellCnt," + 
+             		"        				           sysdate()" +
              		"        				     from cashacnt ac, " + 
              		"        				          (select sum(case when td.buy_flg = 1 then 1 else 0 end) buyCnt, " + 
              		"        				                  sum(case when td.buy_flg  = 1 then 0 else 1 end) sellCnt, " + 
              		"        				                  th.acntid, " + 
+             		"        				                  td.strategy_name, " + 
              		"        				                  left(td.dl_dt, 10) dl_dt " + 
              		"        				             from tradehdr th, tradedtl td" + 
              		"        			                where th.acntid = td.acntid " + 
              		"        			                  and th.stkid = td.stkid " + 
-             		"        			                 group by th.acntid, left(td.dl_dt, 10)) tmp, " + 
+             		"        			                 group by th.acntid, td.strategy_name, left(td.dl_dt, 10)) tmp, " + 
              		"                                  TradeHdr h" + 
              		"        			         where ac.acntid = tmp.acntid" + 
              		"                               and ac.acntid = h.acntid " + 
              		"        			           and ac.acntid like 'SIM%'" + 
-             		"        			           group by tmp.dl_dt";
+             		"        			           group by tmp.strategy_name, tmp.dl_dt";
              log.info(sql);
              stm = con.createStatement();
              stm.execute(sql);

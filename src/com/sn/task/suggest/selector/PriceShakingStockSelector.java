@@ -28,7 +28,7 @@ public class PriceShakingStockSelector implements IStockSelector {
     static Logger log = Logger.getLogger(PriceShakingStockSelector.class);
     double line1_pri = 0.0;
     double line2_pri = 0.0;
-    private String lstdte = "";
+    private String start_dte = "", end_dte = "";
     
     int to_lvl1_cnt = 0;
     int to_lvl2_cnt = 0;
@@ -39,32 +39,9 @@ public class PriceShakingStockSelector implements IStockSelector {
     
     private String suggest_by = "PriceShakingStockSelector";
 
-    public PriceShakingStockSelector () {
-    	Connection con = DBManager.getConnection();
-    	try {
-            Statement stm = null;
-            stm = con.createStatement();
-            String sql = "select left(max(dl_dt) - interval 1 day , 10) lstdte from stkdat2";
-            
-            log.info(sql);
-            
-            ResultSet rs = stm.executeQuery(sql);
-            rs.next();
-            
-            lstdte = rs.getString("lstdte");
-            rs.close();
-            stm.close();
-    	}
-        catch(Exception e) {
-        }
-        finally {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-               log.error(e.getMessage() + " with error code:" + e.getErrorCode()); 
-            }
-        }
+    public PriceShakingStockSelector (String s, String e) {
+    	start_dte = s;
+    	end_dte = e;
     }
     /**
      * @param args
@@ -96,7 +73,8 @@ public class PriceShakingStockSelector implements IStockSelector {
                        + " min(cur_pri) + 2 / 3.0 * (max(cur_pri) - min(cur_pri)) line2_pri "
                        + "  from stkdat2 "
                        + " where id ='" + s.getID() + "'"
-                       + "   and left(dl_dt, 10) >= '" + lstdte + "'";
+                       + "   and left(dl_dt, 10) >= '" + start_dte + "'"
+                       + "   and left(dl_dt, 10) <= '" + end_dte + "'";
             log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
             if (rs.next() && rs.getDouble("line1_pri") > 0) {
@@ -130,7 +108,8 @@ public class PriceShakingStockSelector implements IStockSelector {
             sql = "select cur_pri, ft_id, dl_dt"
                    + "  from stkdat2 "
                    + " where id ='" + s.getID() + "'"
-                   + "   and left(dl_dt, 10) >= '" + lstdte + "'"
+                   + "   and left(dl_dt, 10) >= '" + start_dte + "'"
+                   + "   and left(dl_dt, 10) <= '" + end_dte + "'"
                    + " order by ft_id";
             
             stm = con.createStatement();

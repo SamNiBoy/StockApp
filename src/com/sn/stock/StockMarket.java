@@ -228,8 +228,7 @@ public class StockMarket{
              		"        				          (select max(td.dl_dt) max_dl_dt " + 
              		"        				             from tradedtl td) tmp, " + 
              		"                                  TradeHdr h" + 
-             		"        			         where ac.acntid = h.acntid " + 
-             		"        			           and ac.acntid like 'SIM%'";
+             		"        			         where ac.acntid = h.acntid ";
             log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
             if (rs.next()) {

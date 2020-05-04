@@ -851,13 +851,13 @@ public class TradeStrategyImp implements ITradeStrategy {
             rs.close();
             stm.close();
             stm = con.createStatement();
-            sql = "insert into TradeDtl (acntId, stkId, seqnum, price, amount, dl_dt, buy_flg, order_id, trade_selector_name, trade_selector_comment) values( '"
+            sql = "insert into TradeDtl (acntId, stkId, seqnum, price, amount, dl_dt, buy_flg, order_id, trade_selector_name, trade_selector_comment, strategy_name) values( '"
                 + ac.getActId() + "','"
                 + s.getID() + "',"
                 + seqnum + ","
                 + soldPrice + ", "
                 + sellableAmt
-                + ", str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s.%f'), 0," + (sim_mode? "null" : tbsr.getOrder_id()) + ",'" + s.getTradedBySelector() + "','" + s.getTradedBySelectorComment() + "')";
+                + ", str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s.%f'), 0," + (sim_mode? "null" : tbsr.getOrder_id()) + ",'" + s.getTradedBySelector() + "','" + s.getTradedBySelectorComment() + "','" + this.getTradeStrategyName() + "')";
             log.info(sql);
             stm.execute(sql);
             stm.close();
@@ -971,13 +971,13 @@ public class TradeStrategyImp implements ITradeStrategy {
             }
             stm.close();
             stm = con.createStatement();
-            sql = "insert into TradeDtl (acntId, stkId, seqnum, price, amount, dl_dt, buy_flg, order_id, trade_selector_name, trade_selector_comment) values('"
+            sql = "insert into TradeDtl (acntId, stkId, seqnum, price, amount, dl_dt, buy_flg, order_id, trade_selector_name, trade_selector_comment, strategy_name) values('"
                 + ac.getActId() + "','"
                 + s.getID() + "',"
                 + seqnum + ","
                 + buyPrice + ", "
                 + buyMnt
-                + ", str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'), 1," + (sim_mode? "null":tbsr.getOrder_id()) + ",'" + s.getTradedBySelector() + "','" + s.getTradedBySelectorComment() + "')";
+                + ", str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'), 1," + (sim_mode? "null":tbsr.getOrder_id()) + ",'" + s.getTradedBySelector() + "','" + s.getTradedBySelectorComment() + "','" + this.getTradeStrategyName() + "')";
             log.info(sql);
             stm.execute(sql);
             stm.close();
@@ -1473,7 +1473,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         	
         	int tradeLocalwithSim = ParamManager.getIntParam("TRADING_AT_LOCAL_WITH_SIM", "TRADING", null);
         	
-        	if (tradeLocalwithSim == 0)
+        	if (tradeLocalwithSim == 0 && !sim_mode)
         	{
         		AcntForStk = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", stk) + stk;
         	}

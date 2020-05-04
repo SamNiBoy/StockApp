@@ -104,12 +104,13 @@ public class SimWorker implements IWork {
     	ResultSet rs = null;
     	String sql = "";
         
-    	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
+    	//int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
+    	int sim_shift_days = ParamManager.getIntParam("SIM_SHIFT_DAYS", "SIMULATION", null);
     	
     	try {
     		con = DBManager.getConnection();
     		stm = con.createStatement();
-    		sql = "select left(max(dl_dt) - interval " + sim_days + " day, 10) sd, left(max(dl_dt), 10) ed from stkdat2";
+    		sql = "select left(max(dl_dt) - interval " + sim_shift_days + " day, 10) sd, left(max(dl_dt) - interval " + (sim_shift_days - 1) + " day, 10) ed from stkdat2";
     		log.info(sql);
     		rs = stm.executeQuery(sql);
     		rs.next();

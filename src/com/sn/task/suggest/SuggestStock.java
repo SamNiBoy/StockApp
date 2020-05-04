@@ -48,6 +48,8 @@ public class SuggestStock implements Job {
 	static List<Stock2> stocksWaitForMail = new LinkedList<Stock2>();
 	
 	static RecommandStockObserverable rso = new RecommandStockObserverable();
+	
+	static String start_dte="", end_dte = "";
 
 	static Logger log = Logger.getLogger(SuggestStock.class);
 
@@ -57,14 +59,16 @@ public class SuggestStock implements Job {
 	 */
 	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock();
+		SuggestStock fsd = new SuggestStock(null, null);
 		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);
 	}
 
-	public SuggestStock() {
+	public SuggestStock(String s, String e) {
 
+		start_dte = s;
+		end_dte = e;
 	}
 	
 	private void initSelector() {
@@ -75,7 +79,7 @@ public class SuggestStock implements Job {
 		selectors.add(new PriceStockSelector());
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
-		selectors.add(new PriceShakingStockSelector());
+		selectors.add(new PriceShakingStockSelector(start_dte, end_dte));
 		//selectors.add(new AvgClsPriStockSelector());
 //		selectors.add(new ClosePriceTrendStockSelector());
 		//selectors.add(new KeepGainStockSelector());
@@ -174,11 +178,11 @@ public class SuggestStock implements Job {
 		    			suggestStock(s2);
 			    	}
 			    	electStockforTrade();
-			    	if (stocksWaitForMail.size() > 0) {
+			    	/*if (stocksWaitForMail.size() > 0) {
 			    	    rso.addStockToSuggest(stocksWaitForMail);
 			    	    rso.update();
 			    	    stocksWaitForMail.clear();
-			    	}
+			    	}*/
 			    	break;
 			    }
 			    log.info("Now recommand result is not good, adjust criteris to recommand");
