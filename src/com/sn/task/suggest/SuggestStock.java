@@ -24,6 +24,7 @@ import com.sn.mail.RecommandStockObserverable;
 import com.sn.STConstants;
 import com.sn.task.fetcher.StockDataFetcher;
 import com.sn.task.suggest.selector.AvgClsPriStockSelector;
+import com.sn.task.suggest.selector.ClosePriceUpSelector;
 import com.sn.task.suggest.selector.DealMountStockSelector;
 import com.sn.task.suggest.selector.DefaultStockSelector;
 import com.sn.task.suggest.selector.KeepGainStockSelector;
@@ -79,8 +80,8 @@ public class SuggestStock implements Job {
 		selectors.add(new PriceStockSelector());
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
+		selectors.add(new ClosePriceUpSelector(start_dte, end_dte));
 		selectors.add(new PriceShakingStockSelector(start_dte, end_dte));
-		//selectors.add(new AvgClsPriStockSelector());
 //		selectors.add(new ClosePriceTrendStockSelector());
 		//selectors.add(new KeepGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());

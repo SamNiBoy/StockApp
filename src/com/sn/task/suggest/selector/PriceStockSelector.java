@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.strategy.TradeStrategyImp;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
@@ -17,8 +18,8 @@ import com.sn.stock.StockMarket;
 public class PriceStockSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(PriceStockSelector.class);
-    double HighestPrice = 50;
-    double LowestPrice = 3;
+    double HighestPrice = ParamManager.getFloatParam("MAX_PRICE_FOR_SUGGEST", "SUGGESTER", null);
+    double LowestPrice = ParamManager.getFloatParam("MIN_PRICE_FOR_SUGGEST", "SUGGESTER", null);
     /**
      * @param args
      */

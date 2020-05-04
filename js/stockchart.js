@@ -601,6 +601,9 @@ function drawTradeSummary() {
                  });
              });
              
+        	 listSuggestedStocks();
+        	 listTradingStocks();
+             
         },
         error:function (err) {
             //alert("系统错误-TRADERECORD.jsp-ajax");

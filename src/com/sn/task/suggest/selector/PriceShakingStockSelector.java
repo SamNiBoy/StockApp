@@ -74,7 +74,7 @@ public class PriceShakingStockSelector implements IStockSelector {
                        + "  from stkdat2 "
                        + " where id ='" + s.getID() + "'"
                        + "   and left(dl_dt, 10) >= '" + start_dte + "'"
-                       + "   and left(dl_dt, 10) <= '" + end_dte + "'";
+                       + "   and left(dl_dt, 10) < '" + end_dte + "'";
             log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
             if (rs.next() && rs.getDouble("line1_pri") > 0) {
@@ -109,7 +109,7 @@ public class PriceShakingStockSelector implements IStockSelector {
                    + "  from stkdat2 "
                    + " where id ='" + s.getID() + "'"
                    + "   and left(dl_dt, 10) >= '" + start_dte + "'"
-                   + "   and left(dl_dt, 10) <= '" + end_dte + "'"
+                   + "   and left(dl_dt, 10) < '" + end_dte + "'"
                    + " order by ft_id";
             
             stm = con.createStatement();
@@ -228,8 +228,13 @@ public class PriceShakingStockSelector implements IStockSelector {
             MIN_JUMP_TIMES_FOR_GOOD_STOCK--;
         }
         
+        if (MIN_JUMP_TIMES_FOR_GOOD_STOCK < 6)
+        {
+        	log.info("MIN_JUMP_TIMES_FOR_GOOD_STOCK:" + MIN_JUMP_TIMES_FOR_GOOD_STOCK + ", can not less than 6, use 6");
+        	MIN_JUMP_TIMES_FOR_GOOD_STOCK = 6;
+        }
         log.info("try harder:" + harder);
-        log.info("new`MIN_JUMP_TIMES_FOR_GOOD_STOCK:" + MIN_JUMP_TIMES_FOR_GOOD_STOCK);
+        log.info("new MIN_JUMP_TIMES_FOR_GOOD_STOCK:" + MIN_JUMP_TIMES_FOR_GOOD_STOCK);
         log.info("new MIN_SHAKING_PCT:" + MIN_SHAKING_PCT);
 		return false;
 	}

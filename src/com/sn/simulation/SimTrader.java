@@ -168,7 +168,7 @@ public class SimTrader implements Job{
 				
 				if (new_num_to_trade > 0)
 				{
-        		    sql =  "select left(max(dl_dt) - interval " + sim_days + " day, 10) sd, left(max(dl_dt) - interval " + (sim_days - 1) + " day, 10) ed from stkdat2";
+        		    sql =  "select left(max(dl_dt) - interval " + shift_days + " day, 10) sd, left(max(dl_dt) - interval " + (shift_days - 1) + " day, 10) ed from stkdat2";
         		    
         		    log.info(sql);
         		    stm = con.createStatement();
