@@ -408,14 +408,15 @@ public class SuggestStock implements Job {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		ResultSet rs = null;
-		double yt_min_pri = 0.0;
-		double yt_max_pri = 0.0;
-		double td_min_pri = 0.0;
-		double td_max_pri = 0.0;
+		double yt_opn_pri = 0.0;
+		double yt_cls_pri = 0.0;
+		double td_opn_pri = 0.0;
+		double td_cls_pri = 0.0;
+		long max_td_ft_id = 0;
 		int trend = 0;
 		
 		try {
-			sql = "select min(cur_pri) lst_pri, max(cur_pri) hst_pri, left(dl_dt, 10) dte "
+			sql = "select max(td_opn_pri) lst_opn_pri, max(yt_cls_pri) lst_cls_pri, max(td_opn_pri) td_opn_pri, max(ft_id) max_ft_id, left(dl_dt, 10) dte "
 			    + "  from stkdat2 "
 			    + " where id = '" + stkid + "' "
 			    + "   and left(dl_dt, 10) >= left(str_to_date('" + start_dte + "', '%Y-%m-%d') - interval 5 day, 10)"
@@ -427,26 +428,42 @@ public class SuggestStock implements Job {
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
 			
-			if (rs.next() && rs.getDouble("lst_pri") > 0) {
-				td_min_pri = rs.getDouble("lst_pri");
-				td_max_pri = rs.getDouble("hst_pri");
+			if (rs.next() && rs.getDouble("td_opn_pri") > 0) {
+				td_opn_pri = rs.getDouble("td_opn_pri");
+				yt_cls_pri = rs.getDouble("lst_cls_pri");
+				max_td_ft_id = rs.getLong("max_ft_id");
 			}
 			
-			if (rs.next() && rs.getDouble("lst_pri") > 0) {
-				yt_min_pri = rs.getDouble("lst_pri");
-				yt_max_pri = rs.getDouble("hst_pri");
+			if (rs.next() && rs.getDouble("td_opn_pri") > 0) {
+				yt_opn_pri = rs.getDouble("td_opn_pri");
 			}
 			
 			rs.close();
 			stm.close();
 			
-			log.info("Got min/max price for stock:" + stkid + " yt_min_pri/yt_max_pri: [" + yt_min_pri + "," + yt_max_pri + "]" + " td_min_pri/td_max_pri: [" + td_min_pri + "," + td_max_pri + "]");
-			if (yt_min_pri > 0 && td_min_pri > 0) 
+			stm = con.createStatement();
+			
+			sql = "select cur_pri td_cls_pri from stkdat2 "
+			    + " where id = '" + stkid + "'"
+			    + "   and ft_id = " + max_td_ft_id;
+			
+			log.info(sql);
+			
+			rs = stm.executeQuery(sql);
+			
+			rs.next();
+			td_cls_pri = rs.getDouble("td_cls_pri");
+			
+			rs.close();
+			stm.close();
+			
+			log.info("Got min/max price for stock:" + stkid + " yt_opn_pri/yt_cls_pri: [" + yt_opn_pri + "," + yt_cls_pri + "]" + " td_opn_pri/td_cls_pri: [" + td_opn_pri + "," + td_cls_pri + "]");
+			if (yt_opn_pri > 0 && td_opn_pri > 0 && yt_cls_pri > 0 && td_cls_pri > 0) 
 			{
-	  			if (td_min_pri > yt_min_pri && td_max_pri > yt_max_pri) {
+	  			if (td_opn_pri > yt_opn_pri && td_cls_pri > yt_cls_pri) {
 	  				trend = 1;
 				}
-				else if (td_min_pri < yt_min_pri && td_max_pri < yt_max_pri) {
+				else if (td_opn_pri < yt_opn_pri && td_cls_pri < yt_cls_pri) {
 					trend = -1;
 				}
 			}

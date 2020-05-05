@@ -172,10 +172,10 @@ public class SimTrader implements Job{
         		runSim();
         	}
         	
-//        	simOnGzStk = false;
-//        	log.info("Start to run SimTrader on all stocks...");
-//            resetTest(simOnGzStk);
-//        	runSim();
+        	simOnGzStk = false;
+        	log.info("Start to run SimTrader on all stocks...");
+            resetTest(simOnGzStk);
+        	runSim();
         	
             //Send mail to user for top10 best and worst.
             sto.update();
