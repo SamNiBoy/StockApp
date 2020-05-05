@@ -337,7 +337,7 @@ public class TradeRecord{
 		Connection con = DBManager.getConnection();
 		try {
 			Statement stm = con.createStatement();
-			String sql = "update usrstk set suggested_by = 'SYSTEM_GRANTED_TRADER', mod_dt = sysdate() where id = '" + stkid + "'";
+			String sql = "update usrstk set suggested_by = 'SYSTEM_GRANTED_TRADER', stop_trade_mode_flg = 0, mod_dt = sysdate() where id = '" + stkid + "'";
 			
 			log.info(sql);
 			stm.execute(sql);
