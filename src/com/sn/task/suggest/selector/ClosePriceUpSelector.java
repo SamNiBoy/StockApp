@@ -12,6 +12,7 @@ import com.sn.cashAcnt.ICashAccount;
 import com.sn.db.DBManager;
 import com.sn.strategy.TradeStrategyImp;
 import com.sn.task.IStockSelector;
+import com.sn.task.suggest.SuggestStock;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 
@@ -30,6 +31,14 @@ public class ClosePriceUpSelector implements IStockSelector {
      * @param args
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
+    	
+    	//first of all, let's make sure the trend of the stock is going up.
+    	
+    	if (!(SuggestStock.calculateStockTrend(s.getID()) > 0))
+    	{
+    		log.info("skip stock:" + s.getID() + "/" + s.getName() + " as trend is not going up.");
+    		return false;
+    	}
     	Connection con = DBManager.getConnection();
     	long max_ft_id = 0;
     	boolean isGoodStock = false;

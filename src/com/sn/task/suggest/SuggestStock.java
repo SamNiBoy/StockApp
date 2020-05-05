@@ -396,6 +396,77 @@ public class SuggestStock implements Job {
         }
 	}
 	
+	/*
+	 * This method return 3 values to indicate the trend of the stock:
+	 *  1: This means the min/max price of today is both higher than yesterday, up trend.
+	 * -1: This means the min/max price of today is both lower than yesterday, down trend.
+	 *  0: none of above.
+	 */
+	public static int calculateStockTrend(String stkid)
+	{
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		ResultSet rs = null;
+		double yt_min_pri = 0.0;
+		double yt_max_pri = 0.0;
+		double td_min_pri = 0.0;
+		double td_max_pri = 0.0;
+		int trend = 0;
+		
+		try {
+			sql = "select min(cur_pri) lst_pri, max(cur_pri) hst_pri, left(dl_dt, 10) dte "
+			    + "  from stkdat2 "
+			    + " where id = '" + stkid + "' "
+			    + "   and left(dl_dt, 10) >= left(str_to_date('" + start_dte + "', '%Y-%m-%d') - interval 5 day, 10)"
+			    + "   and left(dl_dt, 10) <= left(str_to_date('" + start_dte + "', '%Y-%m-%d'), 10)"
+			    + " group by left(dl_dt, 10) order by dte desc";
+			
+			log.info(sql);
+			
+			stm = con.createStatement();
+			rs = stm.executeQuery(sql);
+			
+			if (rs.next() && rs.getDouble("lst_pri") > 0) {
+				td_min_pri = rs.getDouble("lst_pri");
+				td_max_pri = rs.getDouble("hst_pri");
+			}
+			
+			if (rs.next() && rs.getDouble("lst_pri") > 0) {
+				yt_min_pri = rs.getDouble("lst_pri");
+				yt_max_pri = rs.getDouble("hst_pri");
+			}
+			
+			rs.close();
+			stm.close();
+			
+			log.info("Got min/max price for stock:" + stkid + " yt_min_pri/yt_max_pri: [" + yt_min_pri + "," + yt_max_pri + "]" + " td_min_pri/td_max_pri: [" + td_min_pri + "," + td_max_pri + "]");
+			if (yt_min_pri > 0 && td_min_pri > 0) 
+			{
+	  			if (td_min_pri > yt_min_pri && td_max_pri > yt_max_pri) {
+	  				trend = 1;
+				}
+				else if (td_min_pri < yt_min_pri && td_max_pri < yt_max_pri) {
+					trend = -1;
+				}
+			}
+		}
+		catch(Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
+		}
+		
+		log.info("calculate trend:" + trend + " for stock:" + stkid);
+		return trend;
+	}
+	
 	public static boolean shouldStockExitTrade(String stkid) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
@@ -421,6 +492,10 @@ public class SuggestStock implements Job {
 				return true;
 			}
 			
+			if (calculateStockTrend(stkid) < 0) {
+				log.info("stock:" + stkid + " trend is going down, put to stop trading.");
+				return true;
+			}
             int max_days_without_trade_to_exit = ParamManager.getIntParam("MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE", "TRADING", stkid);
 			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "'"
 				+ "   and dl_dt >= sysdate() - interval " + max_days_without_trade_to_exit + " day)"

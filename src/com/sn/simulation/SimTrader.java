@@ -146,45 +146,22 @@ public class SimTrader implements Job{
         		
         		int shift_days = (sim_days - i);
         		
-        		String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
-				int num_stok_in_trade = ParamManager.getIntParam("NUM_STOCK_IN_TRADE", "TRADING", null);
-				
-				String sql = "select count(*) cnt from usrStk where stop_trade_mode_flg = 0 and gz_flg = 1 and suggested_by <> '" + system_role_for_suggest + "'";
-				
-				log.info(sql);
-				Statement stm = con.createStatement();
-				ResultSet rs = stm.executeQuery(sql);
-				
-				rs.next();
-				
-				int num_in_trading = rs.getInt("cnt");
-				
-				rs.close();
-				stm.close();
-				
-				int new_num_to_trade = num_stok_in_trade - num_in_trading;
-				
-				log.info("Need to keep:"+ num_stok_in_trade + " to trade, with:" + num_in_trading + " in trading already.");
-				
-				if (new_num_to_trade > 0)
-				{
-        		    sql =  "select left(max(dl_dt) - interval " + shift_days + " day, 10) sd, left(max(dl_dt) - interval " + (shift_days - 1) + " day, 10) ed from stkdat2";
+        		String sql =  "select left(max(dl_dt) - interval " + shift_days + " day, 10) sd, left(max(dl_dt) - interval " + (shift_days - 1) + " day, 10) ed from stkdat2";
         		    
-        		    log.info(sql);
-        		    stm = con.createStatement();
-        		    rs = stm.executeQuery(sql);
-        		    
-        		    if (rs.next() && rs.getString("sd") != null)
-        		    {
-        		    	String sd = rs.getString("sd");
-        		    	String ed = rs.getString("ed");
-        		    	SuggestStock ss = new SuggestStock(sd, ed);
-        		    	ss.execute(null);
-        		    }
-        		    
-        		    rs.close();
-        		    stm.close();
-				}
+        		log.info(sql);
+        		Statement stm = con.createStatement();
+        		ResultSet rs = stm.executeQuery(sql);
+        		
+        		if (rs.next() && rs.getString("sd") != null)
+        		{
+        			String sd = rs.getString("sd");
+        			String ed = rs.getString("ed");
+        			SuggestStock ss = new SuggestStock(sd, ed);
+        			ss.execute(null);
+        		}
+        		
+        		rs.close();
+        		stm.close();
         		
         		stm = con.createStatement();
         		
@@ -195,10 +172,10 @@ public class SimTrader implements Job{
         		runSim();
         	}
         	
-        	//simOnGzStk = false;
-        	//log.info("Start to run SimTrader on all stocks...");
-            //resetTest(simOnGzStk);
-        	//runSim();
+//        	simOnGzStk = false;
+//        	log.info("Start to run SimTrader on all stocks...");
+//            resetTest(simOnGzStk);
+//        	runSim();
         	
             //Send mail to user for top10 best and worst.
             sto.update();

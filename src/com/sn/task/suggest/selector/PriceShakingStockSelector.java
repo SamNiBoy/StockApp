@@ -36,6 +36,11 @@ public class PriceShakingStockSelector implements IStockSelector {
     
     int MIN_JUMP_TIMES_FOR_GOOD_STOCK = ParamManager.getIntParam("MIN_JUMP_TIMES_FOR_GOOD_STOCK", "SUGGESTER", null);
     double MIN_SHAKING_PCT = ParamManager.getFloatParam("MIN_SHAKING_PCT", "SUGGESTER", null);
+    int MAX_JUMP_TIMES_FOR_GOOD_STOCK = ParamManager.getIntParam("MAX_JUMP_TIMES_FOR_GOOD_STOCK", "SUGGESTER", null);
+    double MAX_SHAKING_PCT = ParamManager.getFloatParam("MAX_SHAKING_PCT", "SUGGESTER", null);
+    
+    int jump_times = (MIN_JUMP_TIMES_FOR_GOOD_STOCK + MAX_JUMP_TIMES_FOR_GOOD_STOCK) / 2;
+    double shaking_pct = (MIN_SHAKING_PCT + MAX_SHAKING_PCT) / 2;
     
     private String suggest_by = "PriceShakingStockSelector";
 
@@ -100,7 +105,7 @@ public class PriceShakingStockSelector implements IStockSelector {
             log.info("line2_pri:" + line2_pri + "\n");
             log.info("shaking percentage:" + (hst_pri - lst_pri) / yt_cls_pri);
             
-            if ((hst_pri - lst_pri) / yt_cls_pri < MIN_SHAKING_PCT) {
+            if ((hst_pri - lst_pri) / yt_cls_pri < shaking_pct) {
                 log.info("Price Shaking percentage: " + (hst_pri - lst_pri) / yt_cls_pri + " is less than:" + MIN_SHAKING_PCT + " not good for trade.");
                 return false;
             }
@@ -198,7 +203,7 @@ public class PriceShakingStockSelector implements IStockSelector {
             }
         }
         
-        if (jump_area_cnt >= MIN_JUMP_TIMES_FOR_GOOD_STOCK)
+        if (jump_area_cnt >= jump_times)
         {
             log.info("PriceShakingStockSelector found stock:" + s.getID() + ", name:" + s.getName() + " jumped ares " + jump_area_cnt + " times, good for trade.");
             s.setSuggestedBy(this.suggest_by);
@@ -221,21 +226,27 @@ public class PriceShakingStockSelector implements IStockSelector {
 	public boolean adjustCriteria(boolean harder) {
 		// TODO Auto-generated method stub
         if (harder) {
-            MIN_JUMP_TIMES_FOR_GOOD_STOCK++;
-            MIN_SHAKING_PCT += 0.01;
+        	jump_times++;
+        	shaking_pct += 0.01;
         }
         else {
-            MIN_JUMP_TIMES_FOR_GOOD_STOCK--;
+        	jump_times--;
+        	shaking_pct -= 0.01;
         }
         
-        if (MIN_JUMP_TIMES_FOR_GOOD_STOCK < 6)
+        if (jump_times < MIN_JUMP_TIMES_FOR_GOOD_STOCK)
         {
-        	log.info("MIN_JUMP_TIMES_FOR_GOOD_STOCK:" + MIN_JUMP_TIMES_FOR_GOOD_STOCK + ", can not less than 6, use 6");
-        	MIN_JUMP_TIMES_FOR_GOOD_STOCK = 6;
+        	log.info("jump_times:" + jump_times + ", can not less than MIN_JUMP_TIMES_FOR_GOOD_STOCK:" + MIN_JUMP_TIMES_FOR_GOOD_STOCK);
+        	jump_times = MIN_JUMP_TIMES_FOR_GOOD_STOCK;
+        }
+        if (shaking_pct < MIN_SHAKING_PCT)
+        {
+        	log.info("shaking_pct:" + jump_times + ", can not less than MIN_SHAKING_PCT:" + MIN_SHAKING_PCT);
+        	shaking_pct = MIN_SHAKING_PCT;
         }
         log.info("try harder:" + harder);
-        log.info("new MIN_JUMP_TIMES_FOR_GOOD_STOCK:" + MIN_JUMP_TIMES_FOR_GOOD_STOCK);
-        log.info("new MIN_SHAKING_PCT:" + MIN_SHAKING_PCT);
+        log.info("new jump_times:" + jump_times);
+        log.info("new shaking_pct:" + shaking_pct);
 		return false;
 	}
 }

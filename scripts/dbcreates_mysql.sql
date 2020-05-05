@@ -54,8 +54,11 @@ insert into param values('SELL_BASE_TRADE_THRESH', 'TRADING',null, 0.05, '', '',
 insert into param values('MARGIN_PCT_TO_TRADE_THRESH', 'TRADING',null, 0.4, '', '', 'How close to the margin of BASE_TRADE_THRESHOLD value.', sysdate(),sysdate());
 
 insert into param values('NUM_STOCK_TO_SUGGEST', 'SUGGESTER',100,null, '', '', 'How many stock to suggest at one time.', sysdate(),sysdate());
-insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',10,null , '', '', 'Stock suggester param to define at min how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());
-insert into param values('MIN_SHAKING_PCT', 'SUGGESTER',null,0.06, '', '', 'Stock suggester param to define min percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
+insert into param values('MAX_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',12,null , '', '', 'Stock suggester param to define at max how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());
+insert into param values('MAX_SHAKING_PCT', 'SUGGESTER',null,0.1, '', '', 'Stock suggester param to define max percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
+insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',9,null , '', '', 'Stock suggester param to define at min how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());
+insert into param values('MIN_SHAKING_PCT', 'SUGGESTER',null,0.05, '', '', 'Stock suggester param to define min percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
+
 insert into param values('PCT_BUYSELL_THRESH_DIFF_DISABLE_TRADE', 'SUGGESTER',null,0.04, '', '', 'Do not trading on stock when the buy/sell treshold values are very different.', sysdate(),sysdate());
 insert into param values('MIN_PRICE_FOR_SUGGEST', 'SUGGESTER',null,15, '', '', 'Stock price must bigger than this price for PriceStockSelector to suggest.', sysdate(),sysdate());
 insert into param values('MAX_PRICE_FOR_SUGGEST', 'SUGGESTER',null,40, '', '', 'Stock price must less than this price for PriceStockSelector to suggest.', sysdate(),sysdate());
