@@ -73,6 +73,7 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                 
                 log.info("Stock:" + stk.getID() + " sold " + mins + " minutes before");
                 
+                //int queue_size = ParamManager.getIntParam("GZ_STOCK2_QUEUE_SIZE", "TRADING", null);
                 int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", stk.getID());
                 
                 if (hour == 13 && minutes == 0)
@@ -88,7 +89,7 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                     stk.setTradedBySelectorComment("Stock:" + stk.getID() + " sold:" + mins + " minutes ago.");
                     return true;
 	            }
-//                else if (stk.priceUpAfterSharpedDown(30))
+//                else if (stk.priceUpAfterSharpedDown(queue_size / 2))
 //                {
 //                    log.info("Stock:" + stk.getID() + " sold " + mins + " minutes agao, price heading expected direction, buy it back");
 //                    stk.setTradedBySelector(this.selector_name);

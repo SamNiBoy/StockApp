@@ -512,6 +512,7 @@ buy_flg int not null,
 order_id int,
 trade_selector_name varchar(50) not null,
 trade_selector_comment varchar(500) not null,
+strategy_name varchar(30) not null,
 CONSTRAINT arc_TradeDtl_PK PRIMARY KEY (acntId, stkId, seqnum)
 );
 

@@ -73,6 +73,8 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                 
                 log.info("Stock:" + stk.getID() + " bought " + mins + " minutes before");
                 
+                //int queue_size = ParamManager.getIntParam("GZ_STOCK2_QUEUE_SIZE", "TRADING", null);
+                
                 int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", stk.getID());
                 
                 if (hour == 13 && minutes == 0)
@@ -88,7 +90,7 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                     stk.setTradedBySelectorComment("Stock:" + stk.getID() + " bought:" + mins + " minutes ago.");
                     return true;
                 }
-//                else if (stk.priceDownAfterSharpedUp(30))
+//                else if (stk.priceDownAfterSharpedUp(queue_size / 2))
 //                {
 //                    log.info("Stock:" + stk.getID() + " bought " + mins + " minutes agao, price heading expected direction, sold it out");
 //                    stk.setTradedBySelector(this.selector_name);

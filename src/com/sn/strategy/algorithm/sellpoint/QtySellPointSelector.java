@@ -102,11 +102,12 @@ public class QtySellPointSelector implements ISellPointSelector {
         
         double stop_trade_for_max_pct = ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", stk.getID());
         
-        if (Math.abs(pct) >= stop_trade_for_max_pct && (sbs != null && !sbs.is_buy_point))
-        //if (Math.abs(pct) >= stop_trade_for_max_pct)
+        log.info("check stock:" + stk.getID() + " reached no trading margin:" + stop_trade_for_max_pct + " with actual pct:" + pct);
+        
+        if (Math.abs(pct) >= stop_trade_for_max_pct && (sbs == null || !sbs.is_buy_point))
         {
            log.info("Stock:" + stk.getID() + " cur_pri:" + stk.getCur_pri() + " ytClsPri:" + stk.getYtClsPri() +", increase pct:" + pct
-                   + " is exceeding " + (-stop_trade_for_max_pct) + " stop trading to increase unbalance.");
+                   + " is exceeding " + stop_trade_for_max_pct + " stop trading to increase unbalance.");
             return false;
         }
         

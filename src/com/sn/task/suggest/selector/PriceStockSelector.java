@@ -37,7 +37,7 @@ public class PriceStockSelector implements IStockSelector {
                     log.info("returned true because price is <= " + HighestPrice + " and >= LowestPrice:" + LowestPrice);
                     return true;
         }
-        log.info("returned false for PriceStockSelector");
+        log.info("stock:" + s.getID() + " returned false for PriceStockSelector with price:" + curpri + " not in range[" + LowestPrice + "," + HighestPrice + "]");
         return false;
     }
 	@Override

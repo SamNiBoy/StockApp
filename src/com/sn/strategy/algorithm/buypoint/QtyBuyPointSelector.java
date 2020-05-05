@@ -99,7 +99,8 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         
         double stop_trade_for_max_pct = ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", stk.getID());
         
-        if (Math.abs(pct) >= stop_trade_for_max_pct && (sbs != null && sbs.is_buy_point))
+        log.info("check stock:" + stk.getID() + " reached no trading margin:" + stop_trade_for_max_pct + " with actual pct:" + pct);
+        if (Math.abs(pct) >= stop_trade_for_max_pct && (sbs == null || sbs.is_buy_point))
         //if (Math.abs(pct) >= stop_trade_for_max_pct)
         {
            log.info("Stock:" + stk.getID() + " cur_pri:" + stk.getCur_pri() + " ytClsPri:" + stk.getYtClsPri() +", increase pct:" + pct
@@ -155,33 +156,6 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 				}
 			} else {
 				log.info("isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
-			}
-		} else {
-			// has stock in hand;
-			Double lstBuy = ac.getLstBuyPri(stk);
-			if (lstBuy != null && cur_pri != null && yt_cls_pri != null) {
-				if ((lstBuy - cur_pri) / yt_cls_pri > tradeThresh && stk.isLstQtyPlused()) {
-					log.info("isGoodBuyPoint Buy true:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:"
-							+ lstBuy + " curPri:" + cur_pri + " yt_cls_pri:" + yt_cls_pri);
-                    stk.setTradedBySelector(this.selector_name);
-					stk.setTradedBySelectorComment("cur_pri:" + cur_pri + " is tradeThresh:" + tradeThresh + " comparing to last buy price:" + lstBuy);
-					return true;
-				}
-				else if (sbs != null && !sbs.is_buy_point) {
-                    
-                    double curPct = (sbs.price - cur_pri) / yt_cls_pri;
-                    
-                    if (curPct >= tradeThresh) {
-                        log.info("We have sold unbalance, price reached tradeThresh:" + tradeThresh + ", buy it.");
-                        stk.setTradedBySelector(this.selector_name);
-                        stk.setTradedBySelectorComment("cur_pri < pre_sold_pri:[" + cur_pri + "," + sbs.price + "], curPct:" + curPct + " > tradeTresh:" + tradeThresh);
-                        return true;
-                    }
-                }
-				log.info("isGoodBuyPoint Buy false:" + stk.getDl_dt() + " stock:" + stk.getID() + " lstBuyPri:" + lstBuy
-						+ " curPri:" + cur_pri + " yt_cls_pri:" + yt_cls_pri);
-			} else {
-				log.info("isGoodBuyPoint Buy false: fields is null");
 			}
 		}
 		return false;

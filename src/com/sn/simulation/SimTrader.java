@@ -164,7 +164,7 @@ public class SimTrader implements Job{
 				
 				int new_num_to_trade = num_stok_in_trade - num_in_trading;
 				
-				log.info("Need to keep:"+ num_stok_in_trade + " to trade, with:" + num_in_trading + " in trading already, resugget more stocks.");
+				log.info("Need to keep:"+ num_stok_in_trade + " to trade, with:" + num_in_trading + " in trading already.");
 				
 				if (new_num_to_trade > 0)
 				{
@@ -585,7 +585,7 @@ public class SimTrader implements Job{
         try {
             log.info("Archiving non simulation tradedtl table...");
             
-            sql = "insert into arc_tradedtl select concat(acntid, '_', left(dl_dt, 10)), stkid, seqnum, price, amount, dl_dt, buy_flg, order_id, trade_selector_name, trade_selector_comment from tradedtl where acntid not like '" + sim_acnt + "%'";
+            sql = "insert into arc_tradedtl select concat(acntid, '_', left(dl_dt, 10)), stkid, seqnum, price, amount, dl_dt, buy_flg, order_id, trade_selector_name, trade_selector_comment, strategy_name from tradedtl where acntid not like '" + sim_acnt + "%'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
