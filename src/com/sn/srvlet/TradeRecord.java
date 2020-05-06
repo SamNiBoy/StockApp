@@ -283,6 +283,8 @@ public class TradeRecord{
 	    "    <td>No.</td>                     " +
 	    "    <td>Stock ID</td>                     " +
 	    "    <td>Name</td>                         " +
+	    "    <td>Price</td>                " +
+	    "    <td>Percent</td>              " +
 	    "    <td>Stop Trading</td>                 " +
 	    "    <td>Suggest Selector</td>             " +
 	    "    <td>Suggest Comment</td>              " +
@@ -300,12 +302,32 @@ public class TradeRecord{
 			log.info(sql);
 			rs = stm.executeQuery(sql);
 			int i = 0;
+			DecimalFormat df = new DecimalFormat("##.##");
 			while(rs.next()) {
 				   i++;
+				   
+				   double cur_pri = 0.0;
+				   double pct = 0.0;
+				   Statement stm2 = con.createStatement();
+				   sql = "select cur_pri, (cur_pri - yt_cls_pri) / yt_cls_pri pct from stkdat2 s where s.ft_id = (select max(ft_id) max_ft_id from stkdat2 where id = '" + rs.getString("id") + "')";
+				   
+				   log.info(sql);
+				   
+				   ResultSet rs2 = stm2.executeQuery(sql);
+				   if (rs2.next()) {
+					   cur_pri = rs2.getDouble("cur_pri");
+					   pct = rs2.getDouble("pct");
+				   }
+				   
+				   rs2.close();
+				   stm2.close();
+				   
 			       str += "<tr id=\"" + rs.getString("id") + "\">" +
 			       "<td>" + i + "</td> " +
 			       "<td>" + rs.getString("id") + "</td> " +
 			       "<td>" + rs.getString("name") + "</td> " +
+			       "<td>" + cur_pri + "</td> " +
+			       "<td><font size=\"3\" color=\"" + ((pct>0)? "red":"green") + "\">" + df.format(pct * 100) + "%</font></td> " +
 			       "<td>" + rs.getInt("stop_trade_mode_flg") + "</td> " +
 			       "<td>" + rs.getString("suggested_by_selector") + "</td> " +
 			       "<td>" + rs.getString("suggested_comment") + "</td> " +
@@ -394,6 +416,8 @@ public class TradeRecord{
 	    "    <td>No.</td>                     " +
 	    "    <td>Stock ID</td>                     " +
 	    "    <td>Name</td>                         " +
+	    "    <td>Price</td>                " +
+	    "    <td>Percent</td>              " +
 	    "    <td>Stop Trading</td>                         " +
 	    "    <td>Suggest Selector</td>             " +
 	    "    <td>Suggest Comment</td>              " +
@@ -412,12 +436,33 @@ public class TradeRecord{
 			rs = stm.executeQuery(sql);
 			
 			int i = 0;
+			DecimalFormat df = new DecimalFormat("##.##");
+			
 			while(rs.next()) {
 				   i++;
+				   
+				   double cur_pri = 0.0;
+				   double pct = 0.0;
+				   Statement stm2 = con.createStatement();
+				   sql = "select cur_pri, (cur_pri - yt_cls_pri) / yt_cls_pri pct from stkdat2 s where s.ft_id = (select max(ft_id) max_ft_id from stkdat2 where id = '" + rs.getString("id") + "')";
+				   
+				   log.info(sql);
+				   
+				   ResultSet rs2 = stm2.executeQuery(sql);
+				   if (rs2.next()) {
+					   cur_pri = rs2.getDouble("cur_pri");
+					   pct = rs2.getDouble("pct");
+				   }
+				   
+				   rs2.close();
+				   stm2.close();
+				   
 			       str += "<tr id=\"" + rs.getString("id") + "\">" +
 			       "<td>" + i + "</td> " +
 			       "<td>" + rs.getString("id") + "</td> " +
 			       "<td>" + rs.getString("name") + "</td> " +
+			       "<td>" + cur_pri + "</td> " +
+			       "<td><font size=\"3\" color=\"" + ((pct>0)? "red":"green") + "\">" + df.format(pct * 100) + "%</font></td> " +
 			       "<td>" + rs.getInt("stop_trade_mode_flg") + "</td> " +
 			       "<td>" + rs.getString("suggested_by_selector") + "</td> " +
 			       "<td>" + rs.getString("suggested_comment") + "</td> " +

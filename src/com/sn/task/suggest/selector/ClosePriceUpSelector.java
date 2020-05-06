@@ -21,6 +21,7 @@ public class ClosePriceUpSelector implements IStockSelector {
     static Logger log = Logger.getLogger(ClosePriceUpSelector.class);
     
     private String start_dte = "", end_dte = "";
+    private String suggest_by = "ClosePriceUpSelector";
     
     public ClosePriceUpSelector (String s, String e) {
     	start_dte = s;
@@ -67,6 +68,10 @@ public class ClosePriceUpSelector implements IStockSelector {
     			double td_opn_pri = rs.getDouble("td_opn_pri");
     			double yt_cls_pri = rs.getDouble("yt_cls_pri");
     			log.info("Stock last price:" + cur_pri + " at date:" + dl_dt + " is higher than td_opn_pri:" + td_opn_pri + " and yt_cls_pri:" + yt_cls_pri + " return true.");
+    			
+                s.setSuggestedBy(this.suggest_by);
+                s.setSuggestedComment("Trend is up, Stock last price:" + cur_pri + " at date:" + dl_dt + " is higher than td_opn_pri:" + td_opn_pri + " and yt_cls_pri:" + yt_cls_pri);
+
     			isGoodStock = true;
     		}
     		rs.close();

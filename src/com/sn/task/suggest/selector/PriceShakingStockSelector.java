@@ -106,7 +106,7 @@ public class PriceShakingStockSelector implements IStockSelector {
             log.info("shaking percentage:" + (hst_pri - lst_pri) / yt_cls_pri);
             
             if ((hst_pri - lst_pri) / yt_cls_pri < shaking_pct) {
-                log.info("Price Shaking percentage: " + (hst_pri - lst_pri) / yt_cls_pri + " is less than:" + MIN_SHAKING_PCT + " not good for trade.");
+                log.info("Price Shaking percentage: " + (hst_pri - lst_pri) / yt_cls_pri + " is less than:" + shaking_pct + " not good for trade.");
                 return false;
             }
             
@@ -207,7 +207,7 @@ public class PriceShakingStockSelector implements IStockSelector {
         {
             log.info("PriceShakingStockSelector found stock:" + s.getID() + ", name:" + s.getName() + " jumped ares " + jump_area_cnt + " times, good for trade.");
             s.setSuggestedBy(this.suggest_by);
-            s.setSuggestedComment("Jump area count:" + jump_area_cnt + " >= MIN_JUMP_TIMES_FOR_GOOD_STOCK: " + MIN_JUMP_TIMES_FOR_GOOD_STOCK);
+            s.setSuggestedComment("Jump area count:" + jump_area_cnt + " >= MIN_JUMP_TIMES_FOR_GOOD_STOCK: " + MIN_JUMP_TIMES_FOR_GOOD_STOCK + " shaking price pct:" + (hst_pri - lst_pri) / yt_cls_pri + " > MIN_SHAKING_PCT:" + MIN_SHAKING_PCT);
             isgood = true;
         }
         return isgood;

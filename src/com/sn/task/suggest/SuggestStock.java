@@ -60,10 +60,45 @@ public class SuggestStock implements Job {
 	 */
 	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock(null, null);
+		SuggestStock fsd = new SuggestStock("2020-05-06", "2020-05-07");
 		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);
+	}
+	
+	public SuggestStock() {
+
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+        
+		try {
+			sql = "select left(max(dl_dt), 10) sd, left(max(dl_dt) + interval 1 day, 10) ed from stkdat2";
+			log.info(sql);
+			stm = con.createStatement();
+			ResultSet rs = stm.executeQuery(sql);
+			
+			rs.next();
+			
+			start_dte = rs.getString("sd");
+			end_dte = rs.getString("ed");
+			
+			rs.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+            log.error(e.getMessage() + " with error code:" + e.getCause()); 
+		}
+        finally {
+			try {
+    			stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+               log.error(e.getMessage() + " with error code:" + e.getErrorCode()); 
+            }
+        }
+	
 	}
 
 	public SuggestStock(String s, String e) {
@@ -419,7 +454,7 @@ public class SuggestStock implements Job {
 			sql = "select max(td_opn_pri) lst_opn_pri, max(yt_cls_pri) lst_cls_pri, max(td_opn_pri) td_opn_pri, max(ft_id) max_ft_id, left(dl_dt, 10) dte "
 			    + "  from stkdat2 "
 			    + " where id = '" + stkid + "' "
-			    + "   and left(dl_dt, 10) >= left(str_to_date('" + start_dte + "', '%Y-%m-%d') - interval 5 day, 10)"
+			    + "   and left(dl_dt, 10) >= left(str_to_date('" + start_dte + "', '%Y-%m-%d') - interval 15 day, 10)"
 			    + "   and left(dl_dt, 10) <= left(str_to_date('" + start_dte + "', '%Y-%m-%d'), 10)"
 			    + " group by left(dl_dt, 10) order by dte desc";
 			
@@ -463,7 +498,7 @@ public class SuggestStock implements Job {
 	  			if (td_opn_pri > yt_opn_pri && td_cls_pri > yt_cls_pri) {
 	  				trend = 1;
 				}
-				else if (td_opn_pri < yt_opn_pri && td_cls_pri < yt_cls_pri) {
+				else if ((td_opn_pri < yt_opn_pri && td_cls_pri < yt_cls_pri) || ((td_cls_pri - yt_cls_pri) / yt_cls_pri < -0.05)) {
 					trend = -1;
 				}
 			}
