@@ -28,7 +28,7 @@ public class PriceShakingStockSelector implements IStockSelector {
     static Logger log = Logger.getLogger(PriceShakingStockSelector.class);
     double line1_pri = 0.0;
     double line2_pri = 0.0;
-    private String start_dte = "", end_dte = "";
+    private String on_dte = "";
     
     int to_lvl1_cnt = 0;
     int to_lvl2_cnt = 0;
@@ -44,9 +44,8 @@ public class PriceShakingStockSelector implements IStockSelector {
     
     private String suggest_by = "PriceShakingStockSelector";
 
-    public PriceShakingStockSelector (String s, String e) {
-    	start_dte = s;
-    	end_dte = e;
+    public PriceShakingStockSelector (String s) {
+    	on_dte = s;
     }
     /**
      * @param args
@@ -78,8 +77,7 @@ public class PriceShakingStockSelector implements IStockSelector {
                        + " min(cur_pri) + 2 / 3.0 * (max(cur_pri) - min(cur_pri)) line2_pri "
                        + "  from stkdat2 "
                        + " where id ='" + s.getID() + "'"
-                       + "   and left(dl_dt, 10) >= '" + start_dte + "'"
-                       + "   and left(dl_dt, 10) < '" + end_dte + "'";
+                       + "   and left(dl_dt, 10) = '" + on_dte + "'";
             log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
             if (rs.next() && rs.getDouble("line1_pri") > 0) {
@@ -113,8 +111,7 @@ public class PriceShakingStockSelector implements IStockSelector {
             sql = "select cur_pri, ft_id, dl_dt"
                    + "  from stkdat2 "
                    + " where id ='" + s.getID() + "'"
-                   + "   and left(dl_dt, 10) >= '" + start_dte + "'"
-                   + "   and left(dl_dt, 10) < '" + end_dte + "'"
+                   + "   and left(dl_dt, 10) = '" + on_dte + "'"
                    + " order by ft_id";
             
             stm = con.createStatement();

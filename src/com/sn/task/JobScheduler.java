@@ -104,13 +104,13 @@ public class JobScheduler {
     	    sched = sf.getScheduler();
     	}
     	
-        String marketRunningTime = "*/10 * 9-15 ? * MON-FRI";
+        String marketRunningTime = "*/40 * 9-15 ? * MON-FRI";
         //String stockParamTrainningTime = "0 35 11 ? * MON-FRI";
         //String stockParamTrainningTime = "0 50 16 ? * MON-SUN";
         String stockSuggestTime = "0 44 11 ? * MON-FRI";
         //String stockSuggestTime = "0 05 11 ? * MON-SUN";
-        String stockSimTime = "0 35 18 ? * MON-FRI";
-        //String stockSimTime = "0 19 0 ? * MON-SUN";
+        ////String stockSimTime = "0 30 15 ? * MON-FRI";
+        String stockSimTime = "0 41 0 ? * MON-SUN";
         String stockSimResCollectorTime = "*/10 * * ? * MON-SUN";
         
         

@@ -20,12 +20,11 @@ public class ClosePriceUpSelector implements IStockSelector {
 
     static Logger log = Logger.getLogger(ClosePriceUpSelector.class);
     
-    private String start_dte = "", end_dte = "";
+    private String on_dte = "";
     private String suggest_by = "ClosePriceUpSelector";
     
-    public ClosePriceUpSelector (String s, String e) {
-    	start_dte = s;
-    	end_dte = e;
+    public ClosePriceUpSelector (String s) {
+    	on_dte = s;
     }
     
     /**
@@ -46,7 +45,7 @@ public class ClosePriceUpSelector implements IStockSelector {
     	
     	try {
     		Statement stm = con.createStatement();
-    		String sql = "select max(ft_id) max_ft_id from stkdat2 s2 where s2.id = '" + s.getID() + "' and left(s2.dl_dt, 10) >= '" + start_dte + "' and left(s2.dl_dt, 10) < '" + end_dte + "'";
+    		String sql = "select max(ft_id) max_ft_id from stkdat2 s2 where s2.id = '" + s.getID() + "' and left(s2.dl_dt, 10) >= '" + on_dte + "' and left(s2.dl_dt, 10) <= '" + on_dte + "'";
     		
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);

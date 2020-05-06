@@ -43,7 +43,6 @@ insert into param values('MAX_GAIN_PCT_FOR_DISABLE_SELL_MODE', 'TRADING', null,0
 
 insert into param values('GZ_STOCK2_QUEUE_SIZE', 'TRADING',360,null , '', '', 'Defined how big the queue size for GZ Stock2 object to calculate statistics, this is critial param, if you fetch every one second, then it stores one minute data.', sysdate(),sysdate());
 insert into param values('ALL_STOCK2_QUEUE_SIZE', 'TRADING',60,null , '', '', 'Defined how big the queue size for ALL Stock2 object to calculate statistics, this is critial param, if you fetch every one second, then it stores one minute data.', sysdate(),sysdate());
-insert into param values('FETCH_EVERY_SECONDS', 'TRADING',10,null , '', '', 'Define how often we fetch stock data for all stocks as well as for gzed stocks.', sysdate(),sysdate());
 
 insert into param values('VOLUME_PLUS_PCT', 'TRADING',null,0.5, '', '', 'Define the last delta trading volume is this above the pct of delta volumes in the queue then it means volume plused.', sysdate(),sysdate());
 insert into param values('BUY_SELL_MAX_DIFF_CNT', 'TRADING', 1,null, '', '', 'Max extra times between buy and sell for same stock, value 2 means allow one additional same direction trade.', sysdate(),sysdate());
@@ -58,6 +57,7 @@ insert into param values('MAX_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',12,null , 
 insert into param values('MAX_SHAKING_PCT', 'SUGGESTER',null,0.1, '', '', 'Stock suggester param to define max percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
 insert into param values('MIN_JUMP_TIMES_FOR_GOOD_STOCK', 'SUGGESTER',9,null , '', '', 'Stock suggester param to define at min how many times the stock should cross price high/low areas for suggestion.', sysdate(),sysdate());
 insert into param values('MIN_SHAKING_PCT', 'SUGGESTER',null,0.05, '', '', 'Stock suggester param to define min percentage the stokc price must be shaking for suggestion.', sysdate(),sysdate());
+insert into param values('MAX_AVGPRC_PCT', 'SUGGESTER',null,0.05, '', '', 'Stock suggester param to define how close the avg price 13, 26, 48 days [min, max] to the percentage of yt_cls_pri.', sysdate(),sysdate());
 
 insert into param values('PCT_BUYSELL_THRESH_DIFF_DISABLE_TRADE', 'SUGGESTER',null,0.04, '', '', 'Do not trading on stock when the buy/sell treshold values are very different.', sysdate(),sysdate());
 insert into param values('MIN_PRICE_FOR_SUGGEST', 'SUGGESTER',null,15, '', '', 'Stock price must bigger than this price for PriceStockSelector to suggest.', sysdate(),sysdate());
@@ -193,6 +193,17 @@ name varchar(20 ) not null,
 py varchar(4 ),
 bu varchar(12 )
 );
+
+create table if not exists stkAvgPri(
+id varchar(6 ) not null,
+add_dt varchar(10) not null,
+avgpri1 decimal(8, 2),
+avgpri2 decimal(8, 2),
+avgpri3 decimal(8, 2),
+mod_dt datetime not null,
+CONSTRAINT stkAvgPri_PK PRIMARY KEY (id, add_dt)
+);
+
 
 /*
 1:86.30 ���տ��̼�

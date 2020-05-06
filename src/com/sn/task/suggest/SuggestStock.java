@@ -24,6 +24,7 @@ import com.sn.mail.RecommandStockObserverable;
 import com.sn.STConstants;
 import com.sn.task.fetcher.StockDataFetcher;
 import com.sn.task.suggest.selector.AvgClsPriStockSelector;
+import com.sn.task.suggest.selector.AvgsBreakingSelector;
 import com.sn.task.suggest.selector.ClosePriceUpSelector;
 import com.sn.task.suggest.selector.DealMountStockSelector;
 import com.sn.task.suggest.selector.DefaultStockSelector;
@@ -50,7 +51,7 @@ public class SuggestStock implements Job {
 	
 	static RecommandStockObserverable rso = new RecommandStockObserverable();
 	
-	static String start_dte="", end_dte = "";
+	static String on_dte="";
 
 	static Logger log = Logger.getLogger(SuggestStock.class);
 
@@ -60,7 +61,7 @@ public class SuggestStock implements Job {
 	 */
 	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock("2020-05-06", "2020-05-07");
+		SuggestStock fsd = new SuggestStock("2020-05-06");
 		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);
@@ -73,15 +74,14 @@ public class SuggestStock implements Job {
 		Statement stm = null;
         
 		try {
-			sql = "select left(max(dl_dt), 10) sd, left(max(dl_dt) + interval 1 day, 10) ed from stkdat2";
+			sql = "select left(max(dl_dt), 10) sd from stkdat2";
 			log.info(sql);
 			stm = con.createStatement();
 			ResultSet rs = stm.executeQuery(sql);
 			
 			rs.next();
 			
-			start_dte = rs.getString("sd");
-			end_dte = rs.getString("ed");
+			on_dte = rs.getString("sd");
 			
 			rs.close();
 			
@@ -101,10 +101,9 @@ public class SuggestStock implements Job {
 	
 	}
 
-	public SuggestStock(String s, String e) {
+	public SuggestStock(String s) {
 
-		start_dte = s;
-		end_dte = e;
+		on_dte = s;
 	}
 	
 	private void initSelector() {
@@ -115,9 +114,9 @@ public class SuggestStock implements Job {
 		selectors.add(new PriceStockSelector());
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
-		selectors.add(new ClosePriceUpSelector(start_dte, end_dte));
-		selectors.add(new PriceShakingStockSelector(start_dte, end_dte));
-//		selectors.add(new ClosePriceTrendStockSelector());
+		selectors.add(new ClosePriceUpSelector(on_dte));
+		selectors.add(new PriceShakingStockSelector(on_dte));
+		selectors.add(new AvgsBreakingSelector(on_dte));
 		//selectors.add(new KeepGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
 	}
@@ -432,6 +431,86 @@ public class SuggestStock implements Job {
 	}
 	
 	/*
+	 * This method return true if the stock was suggested by selector AvgsBreakingSelector, when:
+	 * 1. The close price is < max(3 avg prices: 13, 26, 48 days).
+	 * 2. Yt_cls_pri was > max(3 avg prices: 13, 26, 48 days).
+	 */
+	public static boolean checkClosePriDownThroughAvgs(String stkid)
+	{
+    	
+    	Connection con = DBManager.getConnection();
+    	
+        double avgpri13 = 0.0;
+        double avgpri26 = 0.0;
+        double avgpri48 = 0.0;
+        double cur_pri = 0.0;
+        double yt_cls_pri = 0.0;
+    	try {
+    		
+    		Statement stm = con.createStatement();
+    		ResultSet rs = null;
+    		
+    		String sql = "select * from stkAvgPri where id = '" + stkid + "' and avgpri1 is not null and avgpri2 is not null and avgpri3 is not null and add_dt = '" + on_dte + "'"
+    				    + " and exists (select 'x' from usrstk u where u.id = stkAvgPri.id and u.suggested_by_selector = 'AvgsBreakingSelector')";
+    		log.info(sql);
+    		
+    		stm = con.createStatement();
+    		rs = stm.executeQuery(sql);
+    		
+    		if (rs.next()) {
+                avgpri13 = rs.getDouble("avgpri1");
+                avgpri26 = rs.getDouble("avgpri2");
+                avgpri48 = rs.getDouble("avgpri3");
+    		}
+    		
+    		rs.close();
+    		stm.close();
+    		
+    		//No need to do below if > 0 price is not got.
+    		if (avgpri13 > 0)
+    		{
+                double maxpri = avgpri13 > (avgpri26 > avgpri48 ? avgpri26 : avgpri48) ? avgpri13 : (avgpri26 > avgpri48 ? avgpri26 : avgpri48);
+                double minpri = avgpri13 < (avgpri26 < avgpri48 ? avgpri26 : avgpri48) ? avgpri13 : (avgpri26 < avgpri48 ? avgpri26 : avgpri48);
+                
+                sql = "select cur_pri, yt_cls_pri from stkdat2 where id = '" +stkid + "' and ft_id = (select max(s2.ft_id) from stkdat2 s2 where s2.id = stkdat2.id and left(s2.dl_dt, 10) = '" + on_dte + "')";
+                
+    		    log.info(sql);
+    		    stm = con.createStatement();
+    		    rs = stm.executeQuery(sql);
+    		    
+    		    if (rs.next()) {
+    		    	cur_pri = rs.getDouble("cur_pri");
+    		    	yt_cls_pri = rs.getDouble("yt_cls_pri");
+    		    }
+    		    
+    		    rs.close();
+    		    stm.close();
+    		    
+    		    log.info("Check if stock:" + stkid + " price is breaking down highest avgs, cur_pri < maxpri ?" + cur_pri + " < " + maxpri + "? " + (cur_pri < maxpri) + " && yt_cls_pri > maxpri?" + yt_cls_pri + " > " + maxpri + "?" + (yt_cls_pri > maxpri));
+    		    if (maxpri > minpri && minpri > 0 && cur_pri > 0 && yt_cls_pri > 0)
+    		    {
+    		    	if (cur_pri < maxpri && yt_cls_pri > maxpri) {
+    		    		log.info("Now the stock:" + stkid + " cur_pri is breaking down higest avg price, should exit trade.");
+    		    		return true;
+    		    	}
+    		    }
+    		}
+    	}
+    	catch (Exception e) {
+    		log.error(e.getMessage(), e);
+    	}
+    	finally {
+    		try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
+    	}
+    	return false;
+    }
+	
+	/*
 	 * This method return 3 values to indicate the trend of the stock:
 	 *  1: This means the min/max price of today is both higher than yesterday, up trend.
 	 * -1: This means the min/max price of today is both lower than yesterday, down trend.
@@ -454,8 +533,8 @@ public class SuggestStock implements Job {
 			sql = "select max(td_opn_pri) lst_opn_pri, max(yt_cls_pri) lst_cls_pri, max(td_opn_pri) td_opn_pri, max(ft_id) max_ft_id, left(dl_dt, 10) dte "
 			    + "  from stkdat2 "
 			    + " where id = '" + stkid + "' "
-			    + "   and left(dl_dt, 10) >= left(str_to_date('" + start_dte + "', '%Y-%m-%d') - interval 15 day, 10)"
-			    + "   and left(dl_dt, 10) <= left(str_to_date('" + start_dte + "', '%Y-%m-%d'), 10)"
+			    + "   and left(dl_dt, 10) >= left(str_to_date('" + on_dte + "', '%Y-%m-%d') - interval 15 day, 10)"
+			    + "   and left(dl_dt, 10) <= left(str_to_date('" + on_dte + "', '%Y-%m-%d'), 10)"
 			    + " group by left(dl_dt, 10) order by dte desc";
 			
 			log.info(sql);
@@ -546,6 +625,11 @@ public class SuggestStock implements Job {
 			
 			if (calculateStockTrend(stkid) < 0) {
 				log.info("stock:" + stkid + " trend is going down, put to stop trading.");
+				return true;
+			}
+			
+			if (checkClosePriDownThroughAvgs(stkid)) {
+				log.info("stock:" + stkid + " was suggested by AvgsBreakingSelector, but now the price is breaking avg price, exit trade.");
 				return true;
 			}
             int max_days_without_trade_to_exit = ParamManager.getIntParam("MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE", "TRADING", stkid);
