@@ -213,11 +213,11 @@ public class SuggestStock implements Job {
 		    			suggestStock(s2);
 			    	}
 			    	electStockforTrade();
-			    	/*if (stocksWaitForMail.size() > 0) {
+			    	if (stocksWaitForMail.size() > 0) {
 			    	    rso.addStockToSuggest(stocksWaitForMail);
 			    	    rso.update();
 			    	    stocksWaitForMail.clear();
-			    	}*/
+			    	}
 			    	break;
 			    }
 			    log.info("Now recommand result is not good, adjust criteris to recommand");
