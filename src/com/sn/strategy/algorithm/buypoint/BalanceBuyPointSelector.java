@@ -67,18 +67,19 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                 
                 long hour = t1.getHours();
                 long minutes = t1.getMinutes();
+                long hourt0 = t0.getHours();
                 
                 long millisec = t1.getTime() - t0.getTime();
                 long mins = millisec / (1000*60);
                 
-                log.info("Stock:" + stk.getID() + " sold " + mins + " minutes before");
+                log.info("Stock:" + stk.getID() + " sold at hour:" + hourt0 + " is " + mins + " minutes before");
                 
                 //int queue_size = ParamManager.getIntParam("GZ_STOCK2_QUEUE_SIZE", "TRADING", null);
                 int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", stk.getID());
                 
-                if (hour == 13 && minutes == 0)
+                if (hour == 13 && hourt0 < hour)
                 {
-                    log.info("Market just restarted at 13:00, refresh the timestame for last trade instead of trading.");
+                    log.info("Market just restarted at 13, refresh the timestame for last trade instead of trading.");
                     sbs.dl_dt = stk.getDl_dt();
                     return false;
                 }

@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import com.sn.db.DBManager;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.WorkManager;
 
 import java.io.IOException;
@@ -57,10 +58,12 @@ public class TradeRecord{
 	public double net_pft;
 	public int stock_in_hand;
 	public double stock_inhand_money;
+	public int fake_trade;
 	
 	public static List<TradeRecord> readTradeRecords() {
 		List<TradeRecord> lst = new ArrayList<TradeRecord>();
 		Connection con = DBManager.getConnection();
+		String system_suggester = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 		try {
 			Statement stm = con.createStatement();
 			ResultSet rs = null;
@@ -80,7 +83,8 @@ public class TradeRecord{
 					+ "          t.commission_mny, "
 					+ "          (c.pft_mny - t.commission_mny) net_pft, "
 					+ "          t.in_hand_qty stock_in_hand, "
-					+ "          t.in_hand_stk_mny stock_inhand_money "
+					+ "          t.in_hand_stk_mny stock_inhand_money, "
+					+ "          case when u.suggested_by = '" + system_suggester + "' then  1 else 0 end fake_trade "
 					+ "from cashacnt c "
 					+ "join tradehdr t "
 					+ "  on c.acntid = t.acntid "
@@ -114,6 +118,7 @@ public class TradeRecord{
 				r.net_pft = rs.getDouble("net_pft");
 				r.stock_in_hand = rs.getInt("stock_in_hand");
 				r.stock_inhand_money = rs.getDouble("stock_inhand_money");
+				r.fake_trade = rs.getInt("fake_trade");
 				lst.add(r);
 			}
 			rs.close();
@@ -171,6 +176,7 @@ public class TradeRecord{
 	        		            "<td>Net Profit:" + (tl.net_pft > 0 ? "+" :"") +tl.net_pft + "</td> " +
 	        		            "<td>Stock In Hand:" + tl.stock_in_hand + "</td> " +
 	        		            "<td>Stock InHand Money:" + tl.stock_inhand_money + "</td> " +
+	        		            "<td><font size=\"3\" color=\"" + ((tl.fake_trade>0)? "red":"black") + "\">" + (tl.fake_trade > 0 ? "Granted for Trade: No" : "Granted for Trade: Yes") + "</font></td> " +
 	        		        "</tr>";
 	        	 }
 	            str += "<tr class=\"child_" + tl.stock + "\">" +

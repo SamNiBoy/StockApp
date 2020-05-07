@@ -230,8 +230,14 @@ public class QtySellPointSelector implements ISellPointSelector {
 	public int getSellQty(Stock2 s, ICashAccount ac) {
 		// TODO Auto-generated method stub
         int sellMnt = 0;
-        
-        if (ac != null) {
+        Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
+        StockBuySellEntry sbs = lstTrades.get(s.getID());
+	    if (sbs != null && sbs.is_buy_point)
+	    {
+	    	sellMnt = sbs.quantity;
+	    	log.info("stock:" + s.getID() + " bought qty:" + sbs.quantity + " already, sell same out");
+	    }
+	    else if (ac != null) {
             int sellableAmt = (int) (ac.getMaxMnyForTrade() / s.getCur_pri());
             sellMnt =  sellableAmt - sellableAmt % 100;
             
@@ -253,15 +259,6 @@ public class QtySellPointSelector implements ISellPointSelector {
                   }
              }
              log.info("getSellQty, sellableAmt:" + sellableAmt + " sellMnt:" + sellMnt);
-        }
-        else {
-        	if (s.getCur_pri() <= 10) {
-        		sellMnt = 200;
-        	}
-        	else {
-        		sellMnt = 100;
-        	}
-        	log.info("getSellQty, cur_pri:" + s.getCur_pri() + " sellMnt:" + sellMnt);
         }
 		return sellMnt;
 	}

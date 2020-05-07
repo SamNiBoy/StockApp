@@ -114,9 +114,9 @@ public class SuggestStock implements Job {
 		selectors.add(new PriceStockSelector());
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
-		selectors.add(new ClosePriceUpSelector(on_dte));
+		//selectors.add(new ClosePriceUpSelector(on_dte));
 		selectors.add(new PriceShakingStockSelector(on_dte));
-		selectors.add(new AvgsBreakingSelector(on_dte));
+		//selectors.add(new AvgsBreakingSelector(on_dte));
 		//selectors.add(new KeepGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
 	}
@@ -623,15 +623,15 @@ public class SuggestStock implements Job {
 				return true;
 			}
 			
-			if (calculateStockTrend(stkid) < 0) {
-				log.info("stock:" + stkid + " trend is going down, put to stop trading.");
-				return true;
-			}
-			
-			if (checkClosePriDownThroughAvgs(stkid)) {
-				log.info("stock:" + stkid + " was suggested by AvgsBreakingSelector, but now the price is breaking avg price, exit trade.");
-				return true;
-			}
+//			if (calculateStockTrend(stkid) < 0) {
+//				log.info("stock:" + stkid + " trend is going down, put to stop trading.");
+//				return true;
+//			}
+//			
+//			if (checkClosePriDownThroughAvgs(stkid)) {
+//				log.info("stock:" + stkid + " was suggested by AvgsBreakingSelector, but now the price is breaking avg price, exit trade.");
+//				return true;
+//			}
             int max_days_without_trade_to_exit = ParamManager.getIntParam("MAX_DAYS_WITHOUT_TRADE_BEFORE_EXIT_TRADE", "TRADING", stkid);
 			sql = "select 'x' from dual where exists (select 'x' from tradedtl where stkid = '" + stkid + "'"
 				+ "   and dl_dt >= sysdate() - interval " + max_days_without_trade_to_exit + " day)"

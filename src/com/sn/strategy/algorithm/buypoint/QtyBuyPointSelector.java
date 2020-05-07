@@ -231,21 +231,19 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         int buyMnt = 0;
         int maxMnt = 0;
         
-        if (ac != null) {
+        Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
+        StockBuySellEntry sbs = lstTrades.get(s.getID());
+	    if (sbs != null && !sbs.is_buy_point)
+	    {
+	    	buyMnt = sbs.quantity;
+	    	log.info("stock:" + s.getID() + " with qty:" + sbs.quantity + " already, buy same back");
+	    }
+	    else if (ac != null) {
             useableMny = ac.getMaxMnyForTrade();
             maxMnt = (int)(useableMny/s.getCur_pri()) / 100 * 100;
             
            	buyMnt = maxMnt;
             log.info("getBuyQty, useableMny:" + useableMny + " buyMnt:" + buyMnt + " maxMnt:" + maxMnt);
-        }
-        else {
-        	if (s.getCur_pri() <= 10) {
-        		buyMnt = 200;
-        	}
-        	else {
-        		buyMnt = 100;
-        	}
-        	log.info("getBuyQty, cur_pri:" + s.getCur_pri() + " buyMnt:" + buyMnt);
         }
 		return buyMnt;
 	}

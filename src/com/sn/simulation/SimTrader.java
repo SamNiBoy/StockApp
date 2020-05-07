@@ -144,7 +144,7 @@ public class SimTrader implements Job{
             
         	for (int i=0; i<sim_days; i++) {
         		
-        		int shift_days = (sim_days - i - 1);
+        		int shift_days = (sim_days - i);
         		
         		String sql =  "select left(max(dl_dt) - interval " + shift_days + " day, 10) sd from stkdat2";
         		    
@@ -152,7 +152,7 @@ public class SimTrader implements Job{
         		Statement stm = con.createStatement();
         		ResultSet rs = stm.executeQuery(sql);
         		
-        		if (rs.next() && rs.getString("sd") != null)
+        		if (rs.next() && rs.getString("sd") == null)
         		{
         			String sd = rs.getString("sd");
         			SuggestStock ss = new SuggestStock(sd);
@@ -171,13 +171,13 @@ public class SimTrader implements Job{
         		runSim();
         	}
         	
-        	simOnGzStk = false;
-        	log.info("Start to run SimTrader on all stocks...");
-            resetTest(simOnGzStk);
-        	runSim();
-        	
-            //Send mail to user for top10 best and worst.
-            sto.update();
+//        	simOnGzStk = false;
+//        	log.info("Start to run SimTrader on all stocks...");
+//            resetTest(simOnGzStk);
+//        	runSim();
+//        	
+//            //Send mail to user for top10 best and worst.
+//            sto.update();
         	
             log.info("now to run archive and purge...");
             

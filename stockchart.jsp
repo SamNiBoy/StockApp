@@ -96,8 +96,8 @@ var myTextStyle = {
 
 	    setInterval(drawSimResult, 10000);
 	    
-	    setInterval(drawTradeSummary, 30000);
-	    setInterval(drawTradeRecords, 60000);
+	    setInterval(drawTradeSummary, 10000);
+	    setInterval(drawTradeRecords, 10000);
 	    
 	    listSuggestedStocks();
 	    listTradingStocks();

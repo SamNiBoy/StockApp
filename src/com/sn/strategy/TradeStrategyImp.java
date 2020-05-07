@@ -131,7 +131,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			while(true) {
 			    try {
 			        // Save string like "B600503" to clipboard for buy stock.
-			    	if (!sim_mode) {
+			    	if (!sim_mode && stockGrantForTrade(s)) {
 			            /*String txt = "";
 			            Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			            txt = "B" + s.getID() + qtyToTrade;
@@ -207,7 +207,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			while(true) {
 			    try {
 			        // Save string like "S600503" to clipboard for sell stock.
-			    	if (!sim_mode) {
+			    	if (!sim_mode && stockGrantForTrade(s)) {
 			            /*String txt = "";
 			            Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			            txt = "S" + s.getID() + qtyToTrade;
@@ -259,6 +259,39 @@ public class TradeStrategyImp implements ITradeStrategy {
 		} else {
 			return false;
 		}
+	}
+	
+	public boolean stockGrantForTrade(Stock2 s) {
+		
+		boolean granted = false;
+		Connection con = DBManager.getConnection();
+		try {
+		    String system_trader = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
+			
+			Statement stm = con.createStatement();
+			
+			//only when suggested by these 2 IDs, then it means granted.
+			String sql = "select 'x' from usrStk s where s.suggested_by in ('" + STConstants.openID +"','" + system_trader + "')";
+
+			log.info(sql);
+			ResultSet rs = stm.executeQuery(sql);
+			if (rs.next()) {
+				granted = true;
+			}
+			rs.close();
+			stm.close();
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(),e);
+			}
+		}
+		return granted;
 	}
 
     public boolean calProfit() {
@@ -375,12 +408,12 @@ public class TradeStrategyImp implements ITradeStrategy {
 		String sql;
 		tradeStocks.clear();
 		try {
-		    String system_trader = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
+		    //String system_trader = ParamManager.getStr2Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 			sql = "select s.*, u.* " + "from usrStk s," + "     usr u " + "where s.openID = u.openID "
-					+ "and s.gz_flg = 1 " + "and u.openID = '" + STConstants.openID + "' and length(u.mail) > 1 "
-					+ "and s.suggested_by in ('" + STConstants.openID +"','" + system_trader + "') and u.buy_sell_enabled = 1";
+					+ " and s.gz_flg = 1 " + "and u.openID = '" + STConstants.openID + "' and length(u.mail) > 1 "
+					+ " and u.buy_sell_enabled = 1";
 
 			//log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
