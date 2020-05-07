@@ -131,7 +131,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 				double curPct =(cur_pri - minPri) / yt_cls_pri;
 
 				//boolean qtyPlused = stk.isLstQtyPlused();
-				boolean priceTurnedAround = stk.priceUpAfterSharpedDown(3);
+				boolean priceTurnedAround = stk.priceUpAfterSharpedDown(2);
 				
 				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", priceTurnedAround:" + priceTurnedAround);
 				
@@ -236,16 +236,6 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
             maxMnt = (int)(useableMny/s.getCur_pri()) / 100 * 100;
             
            	buyMnt = maxMnt;
-            
-           	if (!sim_mode)
-           	{
-           	    int sellableAmt = ac.getSellableAmt(s.getID(), null);
-                if (buyMnt > sellableAmt)
-                {
-                    log.info("Tradex sellable amount:" + sellableAmt + " less than calculated amt:" + buyMnt + " use sellabeAmt.");
-                    buyMnt = sellableAmt;
-                }
-           	}
             log.info("getBuyQty, useableMny:" + useableMny + " buyMnt:" + buyMnt + " maxMnt:" + maxMnt);
         }
         else {

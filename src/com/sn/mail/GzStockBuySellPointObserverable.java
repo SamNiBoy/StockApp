@@ -29,6 +29,7 @@ import com.sn.db.DBManager;
 import com.sn.STConstants;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.trader.StockTrader;
 import com.sn.trader.TradexCpp;
 
@@ -139,6 +140,10 @@ public class GzStockBuySellPointObserverable extends Observable {
         boolean usr_need_mail = false;
         boolean generated_mail = false;
         
+		int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
+		
+        String acntId = "";
+        
         for (BuySellInfoSubscriber u : ms) {
         	u.subject = "";
         	u.content = "";
@@ -164,7 +169,14 @@ public class GzStockBuySellPointObserverable extends Observable {
                     "<td> " + (e.is_buy_point ? "B" : "S") + "</td>" +
                     "<td> " + e.dl_dt + "</td></tr></table>");
                     
-                    CashAcnt ac = new CashAcnt(TradexCpp.getTrade_unit());
+                    if (tradeLocal == 1) {
+                    	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", null) + e.id;
+                    }
+                    else {
+                    	acntId = TradexCpp.getTrade_unit();
+                    }
+                    
+                    CashAcnt ac = new CashAcnt(acntId);
                     body.append(ac.reportAcntProfitWeb());
                     usr_need_mail = true;
                     generated_mail = true;

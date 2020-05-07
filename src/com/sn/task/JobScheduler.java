@@ -104,7 +104,8 @@ public class JobScheduler {
     	    sched = sf.getScheduler();
     	}
     	
-        String marketRunningTime = "*/40 * 9-15 ? * MON-FRI";
+        String marketRunningTime = "0 0/1 9-15 ? * MON-FRI";
+        String gzStockFetcherRunningTime = "0 0/1 9-15 ? * MON-FRI";
         //String stockParamTrainningTime = "0 35 11 ? * MON-FRI";
         //String stockParamTrainningTime = "0 50 16 ? * MON-SUN";
         //String stockSuggestTime = "0 44 11 ? * MON-FRI";
@@ -175,7 +176,7 @@ public class JobScheduler {
         JobDetail job_GzStockDataConsumer = newJob(GzStockDataConsumer.class).withIdentity("GzStockDataConsumer", "StockApp").build();
 
         //CronTrigger trigger = newTrigger().withIdentity("CalStkStats", "StockApp").withSchedule(cronSchedule("0 25/5 9-15 ? * MON-FRI")).build();
-        CronTrigger trigger_GzStockDataConsumer = newTrigger().withIdentity("GzStockDataConsumer", "StockApp").withSchedule(cronSchedule(marketRunningTime)).build();
+        CronTrigger trigger_GzStockDataConsumer = newTrigger().withIdentity("GzStockDataConsumer", "StockApp").withSchedule(cronSchedule(gzStockFetcherRunningTime)).build();
         
         ft = sched.scheduleJob(job_GzStockDataConsumer, trigger_GzStockDataConsumer);
         log.info(job_GzStockDataConsumer.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
