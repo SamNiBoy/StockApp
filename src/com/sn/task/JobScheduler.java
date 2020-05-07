@@ -104,6 +104,7 @@ public class JobScheduler {
     	    sched = sf.getScheduler();
     	}
     	
+    	String houseKeepingBeforeMarketOpen = "0 20 9 ? * MON-FRI";
         String marketRunningTime = "0 0/1 9-15 ? * MON-FRI";
         String gzStockFetcherRunningTime = "0 0/1 9-15 ? * MON-FRI";
         //String stockParamTrainningTime = "0 35 11 ? * MON-FRI";
@@ -111,7 +112,7 @@ public class JobScheduler {
         //String stockSuggestTime = "0 44 11 ? * MON-FRI";
         //String stockSuggestTime = "0 05 11 ? * MON-SUN";
         ////String stockSimTime = "0 30 15 ? * MON-FRI";
-        String stockSimTime = "0 16 20 ? * MON-SUN";
+        String stockSimTime = "0 22 21 ? * MON-SUN";
         String stockSimResCollectorTime = "*/10 * * ? * MON-FRI";
         
         
@@ -132,10 +133,17 @@ public class JobScheduler {
 //        log.info(job_SuggestStock.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
 //                 + trigger_SuggestStock.getCronExpression());
         
+        JobDetail job_ResetDataBeforeMarketOpen = newJob(ResetDataBeforeMarketOpen.class).withIdentity("ResetDataBeforeMarketOpen", "StockApp").build();
+        CronTrigger trigger_ResetDataBeforeMarketOpen = newTrigger().withIdentity("ResetDataBeforeMarketOpen", "StockApp").withSchedule(cronSchedule(houseKeepingBeforeMarketOpen)).build();
+        
+        Date ft = sched.scheduleJob(job_ResetDataBeforeMarketOpen, trigger_ResetDataBeforeMarketOpen);
+        log.info(job_ResetDataBeforeMarketOpen.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
+                 + trigger_ResetDataBeforeMarketOpen.getCronExpression());
+        
         JobDetail job_SimCalStkStats = newJob(CalStkStats.class).withIdentity("SimCalStkStats", "StockApp").build();
         CronTrigger trigger_SimCalStkStats = newTrigger().withIdentity("SimCalStkStats", "StockApp").withSchedule(cronSchedule(stockSimTime)).build();
         
-        Date ft = sched.scheduleJob(job_SimCalStkStats, trigger_SimCalStkStats);
+        ft = sched.scheduleJob(job_SimCalStkStats, trigger_SimCalStkStats);
         log.info(job_SimCalStkStats.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
                  + trigger_SimCalStkStats.getCronExpression());
         

@@ -131,7 +131,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			while(true) {
 			    try {
 			        // Save string like "B600503" to clipboard for buy stock.
-			    	if (!sim_mode && stockGrantForTrade(s)) {
+			    	if (!sim_mode && stockGrantForTrade(s.getID())) {
 			            /*String txt = "";
 			            Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			            txt = "B" + s.getID() + qtyToTrade;
@@ -207,7 +207,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			while(true) {
 			    try {
 			        // Save string like "S600503" to clipboard for sell stock.
-			    	if (!sim_mode && stockGrantForTrade(s)) {
+			    	if (!sim_mode && stockGrantForTrade(s.getID())) {
 			            /*String txt = "";
 			            Clipboard cpb = Toolkit.getDefaultToolkit().getSystemClipboard();
 			            txt = "S" + s.getID() + qtyToTrade;
@@ -261,7 +261,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		}
 	}
 	
-	public boolean stockGrantForTrade(Stock2 s) {
+	public boolean stockGrantForTrade(String stkid) {
 		
 		boolean granted = false;
 		Connection con = DBManager.getConnection();
@@ -271,7 +271,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			Statement stm = con.createStatement();
 			
 			//only when suggested by these 2 IDs, then it means granted.
-			String sql = "select 'x' from usrStk s where s.suggested_by in ('" + STConstants.openID +"','" + system_trader + "')";
+			String sql = "select 'x' from usrStk s where s.id = '" + stkid + "' and s.suggested_by in ('" + STConstants.openID +"','" + system_trader + "')";
 
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
@@ -1506,7 +1506,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         	
         	int tradeLocalwithSim = ParamManager.getIntParam("TRADING_AT_LOCAL_WITH_SIM", "TRADING", null);
         	
-        	if (tradeLocalwithSim == 0 && !sim_mode)
+        	if (tradeLocalwithSim == 0 && !sim_mode && stockGrantForTrade(stk))
         	{
         		AcntForStk = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", stk) + stk;
         	}

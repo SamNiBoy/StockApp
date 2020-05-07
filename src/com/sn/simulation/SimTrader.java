@@ -75,7 +75,7 @@ public class SimTrader implements Job{
         //st.run();
     }
 
-	private static void resetTest(boolean simgzstk) {
+	public static void resetTest(boolean simgzstk) {
 		String sql;
 		try {
 			Connection con = DBManager.getConnection();
@@ -152,7 +152,7 @@ public class SimTrader implements Job{
         		Statement stm = con.createStatement();
         		ResultSet rs = stm.executeQuery(sql);
         		
-        		if (rs.next() && rs.getString("sd") == null)
+        		if (rs.next() && rs.getString("sd") != null)
         		{
         			String sd = rs.getString("sd");
         			SuggestStock ss = new SuggestStock(sd);
