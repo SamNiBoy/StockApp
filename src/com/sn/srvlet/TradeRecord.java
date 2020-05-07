@@ -84,7 +84,7 @@ public class TradeRecord{
 					+ "          (c.pft_mny - t.commission_mny) net_pft, "
 					+ "          t.in_hand_qty stock_in_hand, "
 					+ "          t.in_hand_stk_mny stock_inhand_money, "
-					+ "          case when u.suggested_by = '" + system_suggester + "' then  1 else 0 end fake_trade "
+					+ "          case when u.suggested_by = '" + system_suggester + "' then  1 when u.suggested_by is null then 2 else 0 end fake_trade "
 					+ "from cashacnt c "
 					+ "join tradehdr t "
 					+ "  on c.acntid = t.acntid "

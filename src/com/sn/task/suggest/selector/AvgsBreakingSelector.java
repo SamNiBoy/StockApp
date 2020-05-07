@@ -64,6 +64,12 @@ public class AvgsBreakingSelector implements IStockSelector {
     		
             log.info("got stock avg price, avg13:" + avgpri13 + ", avg26:" + avgpri26 + ", avgpri48:" + avgpri48);
             
+            if (!(avgpri13 > avgpri26 && avgpri26 > avgpri48))
+            {
+            	log.info("13, 26, and 48 are not ascending order, return false");
+            	return false;
+            }
+            
             double maxpri = avgpri13 > (avgpri26 > avgpri48 ? avgpri26 : avgpri48) ? avgpri13 : (avgpri26 > avgpri48 ? avgpri26 : avgpri48);
             double minpri = avgpri13 < (avgpri26 < avgpri48 ? avgpri26 : avgpri48) ? avgpri13 : (avgpri26 < avgpri48 ? avgpri26 : avgpri48);
             

@@ -61,7 +61,7 @@ public class SuggestStock implements Job {
 	 */
 	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock("2020-05-06");
+		SuggestStock fsd = new SuggestStock("2020-05-07");
 		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);

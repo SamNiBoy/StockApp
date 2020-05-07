@@ -461,8 +461,8 @@ public class TradeStrategyImp implements ITradeStrategy {
 				overall_risk = true;
 			}*/
 
-			// If recently we lost continuously for the stock, stop trading.
-			if (stopTradeForStock(s)) {
+			// we only in balance then check account lost or not.
+			if (sbs == null && stopTradeForStock(s)) {
 				log.info("Skip trade for stock:" + s.getName() + " after eached it's risk.");
 				return false;
 			}
