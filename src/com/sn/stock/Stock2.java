@@ -197,13 +197,21 @@ public class Stock2 implements Comparable<Stock2>{
         public boolean priceUpAfterSharpedDown(int period) {
             log.info("priceUpAfterSharpedDown: check if price goes up after sharp down during period:" + period);
             int size = cur_pri_lst.size();
-            if (size <= period + 1) {
+            if (size < period + 1) {
                 log.info("priceUpAfterSharpedDown: only has " + size + " data less or equal than " + (1 + period));
                 return false;
             }
+            
+            if (period <= 2) {
+            	
+            	boolean result = cur_pri_lst.get(size - 1) > cur_pri_lst.get(size - 2) && cur_pri_lst.get(size - 2) < cur_pri_lst.get(size - 3);
+            	log.info("check stock:" + this.stkid + " price1:" + cur_pri_lst.get(size - 3) + ", price2:" + cur_pri_lst.get(size - 2) + " price3:" + cur_pri_lst.get(size - 1) + " is up-down-up?" + result);
+            	
+            	return (result);
+            }
             double cur_pri = cur_pri_lst.get(size -1);
             
-            //make sure cur_pri is highest price during the past 2 * periods.
+            //make sure cur_pri is highest price during the past period.
             for (int i=0; i< period; i++) {
                 if (cur_pri_lst.get(size - 1 - i - 1) > cur_pri) {
                 	log.info("last price:" + cur_pri + " is not higest, return fasle.");
@@ -233,10 +241,19 @@ public class Stock2 implements Comparable<Stock2>{
         public boolean priceDownAfterSharpedUp(int period) {
             log.info("priceDownAfterSharpedUp: check if price goes down after sharp up during period:" + period);
             int size = cur_pri_lst.size();
-            if (size <= period + 1) {
+            if (size < period + 1) {
                 log.info("priceDownAfterSharpedUp: only has " + size + " data less or equal than " + (1 + period));
                 return false;
             }
+            
+            if (period <= 2) {
+            	
+            	boolean result = cur_pri_lst.get(size - 1) < cur_pri_lst.get(size - 2) && cur_pri_lst.get(size - 2) > cur_pri_lst.get(size - 3);
+            	log.info("check stock:" + this.stkid + " price1:" + cur_pri_lst.get(size - 3) + ", price2:" + cur_pri_lst.get(size - 2) + " price3:" + cur_pri_lst.get(size - 1) + " is down-up-down?" + result);
+            	
+            	return (result);
+            }
+            
             double cur_pri = cur_pri_lst.get(size -1);
             
             //make sure cur_pri is lowest price during the past period + 1.
