@@ -369,8 +369,6 @@ public class TradeRecord{
 			
 			log.info(sql);
 			stm.execute(sql);
-			
-			StockMarket.addGzStocks(stkid);
 		}
 		catch(Exception e) {
 			log.error(e.getCause(), e);
@@ -396,7 +394,6 @@ public class TradeRecord{
 			
 			log.info(sql);
 			stm.execute(sql);
-			StockMarket.removeGzStocks(stkid);
 		}
 		catch(Exception e) {
 			log.error(e.getCause(), e);

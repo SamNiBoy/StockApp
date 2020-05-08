@@ -1331,9 +1331,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean createBuySellRecord(StockBuySellEntry rc) {
 		String sql;
         
-		if (sim_mode)
+		if (sim_mode || !stockGrantForTrade(rc.id))
 		{
-		     log.info("Simulation mode, do not deal with SellBuyRecord.");
+		     log.info("Simulation mode or stock not granted for real trading, do not deal with SellBuyRecord.");
              return false;
 		}
 		try {
@@ -1361,9 +1361,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean updateBuySellRecord(StockBuySellEntry rc) {
 		String sql;
         
-	    if (sim_mode)
+	    if (sim_mode || !stockGrantForTrade(rc.id))
 	      {
-	           log.info("Simulation mode, do not deal with SellBuyRecord.");
+	           log.info("Simulation mode or stock not granted for real trading, do not deal with SellBuyRecord.");
 	           return false;
 	      }
 	    
@@ -1393,9 +1393,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean removeBuySellRecord(StockBuySellEntry rc) {
 		String sql;
         
-	    if (sim_mode)
+	    if (sim_mode || !stockGrantForTrade(rc.id))
         {
-             log.info("Simulation mode, do not deal with SellBuyRecord.");
+             log.info("Simulation mode or stock not granted for real trading, do not deal with SellBuyRecord.");
              return false;
         }
 	      
