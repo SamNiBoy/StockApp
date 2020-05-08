@@ -125,7 +125,14 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
          
 		if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {
             
+
 			if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
+				
+				// If we sold before with higher price, use it as maxPri.
+				if (sbs != null && !sbs.is_buy_point && sbs.price > maxPri) {
+					log.info("stock:" + sbs.id + " sold with price:" + sbs.price + " which is higher than:" + maxPri + ", use it as maxPri.");
+					maxPri = sbs.price;
+				}
 				
 				double maxPct = (maxPri - minPri) / yt_cls_pri;
 				double curPct =(cur_pri - minPri) / yt_cls_pri;
@@ -143,17 +150,17 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 					stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + margin_pct + " also priceTurnedAround:" + priceTurnedAround);
 					return true;
 				}
-				else {
-		            if (sbs != null && !sbs.is_buy_point) {
-		                curPct = (sbs.price - cur_pri) / yt_cls_pri;
-		                if (curPct >= tradeThresh) {
-		                    log.info("We have sold unbalance, price reached tradeThresh:" + tradeThresh + ", buy it.");
-		                    stk.setTradedBySelector(this.selector_name);
-		                    stk.setTradedBySelectorComment("cur_pri < pre_sold_pri:[" + cur_pri + "," + sbs.price + "], curPct:" + curPct + " > tradeTresh:" + tradeThresh);
-		                    return true;
-		                }
-		            }
-				}
+//				else {
+//		            if (sbs != null && !sbs.is_buy_point) {
+//		                curPct = (sbs.price - cur_pri) / yt_cls_pri;
+//		                if (curPct >= tradeThresh) {
+//		                    log.info("We have sold unbalance, price reached tradeThresh:" + tradeThresh + ", buy it.");
+//		                    stk.setTradedBySelector(this.selector_name);
+//		                    stk.setTradedBySelectorComment("cur_pri < pre_sold_pri:[" + cur_pri + "," + sbs.price + "], curPct:" + curPct + " > tradeTresh:" + tradeThresh);
+//		                    return true;
+//		                }
+//		            }
+//				}
 			} else {
 				log.info("isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
 			}

@@ -123,7 +123,11 @@ public class QtySellPointSelector implements ISellPointSelector {
         double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", stk.getID());
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
-			
+			// If we bought before with lower price, use it as minPri.
+			if (sbs != null && sbs.is_buy_point && sbs.price < minPri) {
+				log.info("stock:" + sbs.id + " bought with price:" + sbs.price + " which is lower than:" + minPri + ", use it as minPri.");
+				minPri = sbs.price;
+			}
 			
 			tradeThresh = getSellThreshValueByDegree(marketDegree, stk);
 			
@@ -143,15 +147,15 @@ public class QtySellPointSelector implements ISellPointSelector {
 				return true;
 			}
             
-			if (sbs != null && sbs.is_buy_point) {
-			    curPct = (cur_pri - sbs.price) / yt_cls_pri;
-			    if (curPct >= tradeThresh) {
-			        log.info("We have bought unbalance, price reached tradeThresh:" + tradeThresh + ", sell it.");
-                    stk.setTradedBySelector(this.selector_name);
-                    stk.setTradedBySelectorComment("cur_pri > pre_buy_pri:[" + cur_pri + "," + sbs.price + "], curPct:" + curPct + " > tradeTresh:" + tradeThresh);
-                    return true;
-			    }
-			}
+//			if (sbs != null && sbs.is_buy_point) {
+//			    curPct = (cur_pri - sbs.price) / yt_cls_pri;
+//			    if (curPct >= tradeThresh) {
+//			        log.info("We have bought unbalance, price reached tradeThresh:" + tradeThresh + ", sell it.");
+//                    stk.setTradedBySelector(this.selector_name);
+//                    stk.setTradedBySelectorComment("cur_pri > pre_buy_pri:[" + cur_pri + "," + sbs.price + "], curPct:" + curPct + " > tradeTresh:" + tradeThresh);
+//                    return true;
+//			    }
+//			}
 			
 		} else {
 			log.info("isGoodSellPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");

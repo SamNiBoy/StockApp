@@ -197,14 +197,14 @@ public class Stock2 implements Comparable<Stock2>{
         public boolean priceUpAfterSharpedDown(int period) {
             log.info("priceUpAfterSharpedDown: check if price goes up after sharp down during period:" + period);
             int size = cur_pri_lst.size();
-            if (size <= 2 * period) {
-                log.info("priceUpAfterSharpedDown: only has " + size + " data less or equal than " + 2 * period);
+            if (size <= period + 1) {
+                log.info("priceUpAfterSharpedDown: only has " + size + " data less or equal than " + (1 + period));
                 return false;
             }
             double cur_pri = cur_pri_lst.get(size -1);
             
             //make sure cur_pri is highest price during the past 2 * periods.
-            for (int i=0; i< 2 * period - 1; i++) {
+            for (int i=0; i< period; i++) {
                 if (cur_pri_lst.get(size - 1 - i - 1) > cur_pri) {
                 	log.info("last price:" + cur_pri + " is not higest, return fasle.");
                 	return false;
@@ -216,7 +216,7 @@ public class Stock2 implements Comparable<Stock2>{
             double avg2 = 0.0;
             for (int i=0; i< period; i++) {
                 avg1 += cur_pri_lst.get(size - 1 - i);
-                avg2 += cur_pri_lst.get(size - 1 - i - period);
+                avg2 += cur_pri_lst.get(size - 1 - i - 1);
             }
             
             avg1 = avg1 / period;
@@ -233,14 +233,14 @@ public class Stock2 implements Comparable<Stock2>{
         public boolean priceDownAfterSharpedUp(int period) {
             log.info("priceDownAfterSharpedUp: check if price goes down after sharp up during period:" + period);
             int size = cur_pri_lst.size();
-            if (size <= 2 * period ) {
-                log.info("priceDownAfterSharpedUp: only has " + size + " data less or equal than " + 2 * period);
+            if (size <= period + 1) {
+                log.info("priceDownAfterSharpedUp: only has " + size + " data less or equal than " + (1 + period));
                 return false;
             }
             double cur_pri = cur_pri_lst.get(size -1);
             
-            //make sure cur_pri is lowest price during the past 2 * periods.
-            for (int i=0; i< 2 * period - 1; i++) {
+            //make sure cur_pri is lowest price during the past period + 1.
+            for (int i=0; i< period; i++) {
                 if (cur_pri_lst.get(size - 1 - i - 1) < cur_pri) {
                 	log.info("last price:" + cur_pri + " is not lowest, return fasle.");
                 	return false;
@@ -252,7 +252,7 @@ public class Stock2 implements Comparable<Stock2>{
             double avg2 = 0.0;
             for (int i=0; i< period; i++) {
                 avg1 += cur_pri_lst.get(size - 1 - i);
-                avg2 += cur_pri_lst.get(size - 1 - i - period);
+                avg2 += cur_pri_lst.get(size - 1 - i - 1);
             }
             
             avg1 = avg1 / period;
