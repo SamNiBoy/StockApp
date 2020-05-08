@@ -29,6 +29,7 @@ import com.sn.db.DBManager;
 import com.sn.STConstants;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.TradeStrategyImp;
 import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.trader.StockTrader;
 import com.sn.trader.TradexCpp;
@@ -170,7 +171,12 @@ public class GzStockBuySellPointObserverable extends Observable {
                     "<td> " + e.dl_dt + "</td></tr></table>");
                     
                     if (tradeLocal == 1) {
-                    	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", null) + e.id;
+                    	if (TradeStrategyImp.stockGrantForTrade(e.id)) {
+                        	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", null) + e.id;
+                    	}
+                    	else {
+                    		acntId = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + e.id;
+                    	}
                     }
                     else {
                     	acntId = TradexCpp.getTrade_unit();

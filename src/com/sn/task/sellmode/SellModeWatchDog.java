@@ -111,7 +111,7 @@ public class SellModeWatchDog implements IWork {
 
 		// TODO Auto-generated method stub
 		try {
-	        Map<String, Stock2> stks = StockMarket.getGzstocks(false);
+	        Map<String, Stock2> stks = StockMarket.getGzstocks();
 	        for (String stk : stks.keySet()) {
 	        	Stock2 s = stks.get(stk);
 	        	

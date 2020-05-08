@@ -356,21 +356,9 @@ public class StockMarket{
     public static String GZ_STOCK_CNT_SELECT = "select count(distinct s.id) TotalCnt "
     		                             + "from stk s, usrStk u "
     		                             + "where s.id = u.id "
-    		                             + "  and u.gz_flg = 1 "
-                                         + "  and u.suggested_by <> '" + ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null) + "'";
+    		                             + "  and u.gz_flg = 1 ";
+                                         //+ "  and u.suggested_by <> '" + ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null) + "'";
     
-    public static String GZ_STOCK_SELECT_2 = "select distinct s.id, s.name, s.area "
-            + "from stk s, usrStk u "
-            + "where s.id = u.id "
-            + "  and u.gz_flg = 1 "
-            + "  and u.stop_trade_mode_flg = 0 "
-            + "order by s.id";
-    public static String GZ_STOCK_CNT_SELECT_2 = "select count(distinct s.id) TotalCnt "
-            + "from stk s, usrStk u "
-            + "where s.id = u.id "
-            + "  and u.gz_flg = 1 "
-            + "  and u.stop_trade_mode_flg = 0";
-
     /**
      * @param args
      */
@@ -439,7 +427,7 @@ public class StockMarket{
         return true;
     }
     
-    static public boolean loadGzStocks(boolean includeSysSuggested) {
+    static public boolean loadGzStocks() {
 
         Connection con = DBManager.getConnection();
         Statement stm = null;
@@ -451,12 +439,7 @@ public class StockMarket{
         int Total = 0;
         String sql = "";
         
-        if (includeSysSuggested) {
-        	sql = GZ_STOCK_CNT_SELECT_2;
-        }
-        else {
-        	sql = GZ_STOCK_CNT_SELECT;
-        }
+        sql = GZ_STOCK_CNT_SELECT;
         
         try {
             stm = con.createStatement();
@@ -470,12 +453,7 @@ public class StockMarket{
             
             int stock2_queue_sz = ParamManager.getIntParam("GZ_STOCK2_QUEUE_SIZE", "TRADING", null);
             
-            if (includeSysSuggested) {
-            	sql = GZ_STOCK_SELECT_2;
-            }
-            else {
-            	sql = GZ_STOCK_SELECT;
-            }
+            sql = GZ_STOCK_SELECT;
             
             String id, name, area;
             stm = con.createStatement();
@@ -588,10 +566,10 @@ public class StockMarket{
         StockMarket.stocks = stocks;
     }
 
-    public static ConcurrentHashMap<String, Stock2> getGzstocks(boolean includeSystemSuggested) {
+    public static ConcurrentHashMap<String, Stock2> getGzstocks() {
         synchronized (gzstocks) {
             if (gzstocks.isEmpty()) {
-                loadGzStocks(includeSystemSuggested);
+                loadGzStocks();
             }
             return gzstocks;
         }
@@ -830,7 +808,7 @@ public class StockMarket{
     
     public static boolean isGzStocksJumpWater(int tailSz, double jumpPct, double stockJumpCntPct) {
     	if (gzstocks.isEmpty()) {
-    		getGzstocks(false);
+    		getGzstocks();
     	}
     	int total = gzstocks.size();
     	if (total == 0) {

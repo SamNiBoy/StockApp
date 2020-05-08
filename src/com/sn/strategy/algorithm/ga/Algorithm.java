@@ -347,7 +347,7 @@ public class Algorithm {
         //get gzed stock, for each do:
         
         log.info("Now start search best param for gz stock");
-        ConcurrentHashMap<String, Stock2> gzstocks = StockMarket.getGzstocks(true);
+        ConcurrentHashMap<String, Stock2> gzstocks = StockMarket.getGzstocks();
         
         StockMarket.clearDegreeMap();
         

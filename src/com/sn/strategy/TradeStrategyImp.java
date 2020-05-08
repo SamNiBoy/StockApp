@@ -261,7 +261,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		}
 	}
 	
-	public boolean stockGrantForTrade(String stkid) {
+	public static boolean stockGrantForTrade(String stkid) {
 		
 		boolean granted = false;
 		Connection con = DBManager.getConnection();
@@ -834,7 +834,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         int sellableAmt = Integer.valueOf(qtyToTrade);
         double soldPrice = s.getCur_pri();
         
-        if (!sim_mode) {
+        if (!sim_mode && tbsr != null) {
             sellableAmt = tbsr.getTrade_quantity();
             soldPrice = tbsr.getTrade_price();
         }
@@ -890,7 +890,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                 + seqnum + ","
                 + soldPrice + ", "
                 + sellableAmt
-                + ", str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s.%f'), 0," + (sim_mode? "null" : tbsr.getOrder_id()) + ",'" + s.getTradedBySelector() + "','" + s.getTradedBySelectorComment() + "','" + this.getTradeStrategyName() + "')";
+                + ", str_to_date('" + s.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s.%f'), 0," + ((sim_mode || tbsr == null) ? "null" : tbsr.getOrder_id()) + ",'" + s.getTradedBySelector() + "','" + s.getTradedBySelectorComment() + "','" + this.getTradeStrategyName() + "')";
             log.info(sql);
             stm.execute(sql);
             stm.close();
@@ -950,7 +950,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		double occupiedMny = buyMnt * s.getCur_pri();
         double buyPrice = s.getCur_pri();
         
-		if (!sim_mode) {
+		if (!sim_mode && tbsr != null) {
 		   buyMnt = tbsr.getTrade_quantity();
 		   occupiedMny = tbsr.getTrade_amount();
            buyPrice = tbsr.getTrade_price();
@@ -1010,7 +1010,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                 + seqnum + ","
                 + buyPrice + ", "
                 + buyMnt
-                + ", str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'), 1," + (sim_mode? "null":tbsr.getOrder_id()) + ",'" + s.getTradedBySelector() + "','" + s.getTradedBySelectorComment() + "','" + this.getTradeStrategyName() + "')";
+                + ", str_to_date('" + s.getDl_dt().toString() + "','%Y-%m-%d %H:%i:%s.%f'), 1," + ((sim_mode || tbsr == null) ? "null":tbsr.getOrder_id()) + ",'" + s.getTradedBySelector() + "','" + s.getTradedBySelectorComment() + "','" + this.getTradeStrategyName() + "')";
             log.info(sql);
             stm.execute(sql);
             stm.close();
