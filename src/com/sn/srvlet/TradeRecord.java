@@ -94,7 +94,7 @@ public class TradeRecord{
 					+ "  on t.stkid = s.id "
 					+ "left join usrstk u "
 					+ "  on s.id = u.id "
-					+ " order by acntid, seqnum desc";
+					+ " order by stkid, acntid, seqnum desc";
 			
 			log.info(sql);
 			rs = stm.executeQuery(sql);

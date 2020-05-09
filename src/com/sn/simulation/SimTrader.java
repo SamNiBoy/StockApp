@@ -133,9 +133,13 @@ public class SimTrader implements Job{
     	log.info("Start to run SimTrader...");
     	
     	Connection con = DBManager.getConnection();
+    	String tradeDate = "";
     	try {
         	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
         	simOnGzStk = true;
+    		Statement stm = null;
+    		ResultSet rs = null;
+    		String sql = "";
         	
             resetTest(simOnGzStk);
             StockMarket.clearSimData();
@@ -146,16 +150,38 @@ public class SimTrader implements Job{
         		
         		int shift_days = (sim_days - i);
         		
-        		String sql =  "select left(max(dl_dt) - interval " + shift_days + " day, 10) sd from stkdat2";
+        		sql =  "select left(max(dl_dt) - interval " + shift_days + " day, 10) sd, left(max(dl_dt) - interval " + (shift_days - 1) + " day, 10) nd from stkdat2";
         		    
         		log.info(sql);
-        		Statement stm = con.createStatement();
-        		ResultSet rs = stm.executeQuery(sql);
+
+        		stm = con.createStatement();
+        		rs = stm.executeQuery(sql);
         		
         		if (rs.next() && rs.getString("sd") != null)
         		{
         			String sd = rs.getString("sd");
-        			SuggestStock ss = new SuggestStock(sd);
+        			tradeDate = rs.getString("nd");
+        			boolean continue_next = false;
+        			
+        			Statement stm2 = con.createStatement();
+        			String sql2 = "select 'x' from stkdat2 where left(dl_dt, 10) = '" + tradeDate + "' limit 1";
+        			
+        			log.info(sql2);
+        			
+        			ResultSet rs2 = stm2.executeQuery(sql2);
+        			if (!rs2.next()) {
+        				log.info("there is no data for date:" + tradeDate + " to simulate, continue next date.");
+        				continue_next = true;
+        			}
+        			
+        			rs2.close();
+        			stm2.close();
+        			
+        			if (continue_next) {
+        				continue;
+        			}
+
+        			SuggestStock ss = new SuggestStock(sd, false);
         			ss.execute(null);
         		}
         		
@@ -168,9 +194,22 @@ public class SimTrader implements Job{
         		log.info(sql);
         		stm.execute(sql);
         		stm.close();
+        		
+        		stm = con.createStatement();
+        		
+        		sql = "update param set str2 = str1, str1 = concat(str1, '" + tradeDate + "_') where name = 'ACNT_SIM_PREFIX'";
+        		log.info(sql);
+        		stm.execute(sql);
+        		stm.close();
         		runSim();
+        		
+        		stm = con.createStatement();
+        		sql = "update param set str1 = str2, str2 = null where name = 'ACNT_SIM_PREFIX'";
+        		log.info(sql);
+        		stm.execute(sql);
+        		stm.close();
         	}
-        	
+    		
 //        	simOnGzStk = false;
 //        	log.info("Start to run SimTrader on all stocks...");
 //            resetTest(simOnGzStk);
@@ -284,6 +323,11 @@ public class SimTrader implements Job{
                     if (total_stock_cnt % stock_cnt_per_thread != 0)
                     {
                         total_batch++;
+                    }
+                    
+                    if (total_stock_cnt == 0) {
+                    	log.info("no valid stocks to simulation, return.");
+                    	return;
                     }
                     
                     log.info("Total " + total_stock_cnt + " stocks to simulate with each batch size:" + stock_cnt_per_thread + " and total:" + total_batch + " batches.");
@@ -418,7 +462,7 @@ public class SimTrader implements Job{
         	 con = DBManager.getConnection();
              String sql = "insert into simresult select tmp.strategy_name, tmp.dl_dt, count(distinct(ac.acntid)) ACNTCNT, " + 
              		"                                   sum(ac.used_mny) totUsedMny," + 
-             		"                                   sum(ac.used_mny * ac.used_mny_hrs) / sum(ac.used_mny) avgUsedMny_Hrs," + 
+             		"                                   sum(ac.used_mny * ac.used_mny_hrs) / case when sum(ac.used_mny)=0 then 1 else sum(ac.used_mny) end avgUsedMny_Hrs," + 
              		"        				           avg(ac.pft_mny) avgPft, " + 
              		"        				           sum(ac.pft_mny) totPft, " + 
              		"                                   sum(h.commission_mny) total_commission_mny," + 

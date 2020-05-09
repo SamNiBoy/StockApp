@@ -167,66 +167,41 @@ public class QtySellPointSelector implements ISellPointSelector {
     	
     	double baseThresh = ParamManager.getFloatParam("SELL_BASE_TRADE_THRESH", "TRADING", stk.getID());
     	
-    	/*Timestamp tm = stk.getDl_dt();
-        String deadline = null;
-        if (tm == null) {
-        	deadline = "sysdate()";
-        }
-        else {
-            //log.info("getBuyThreshValueByDegree: stk.getDl_dt().toString():" +  stk.getDl_dt().toString());
-        	deadline = "str_to_date('" + stk.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s')";
-        }
-        
-    	try {
-    		Connection con = DBManager.getConnection();
-    		Statement stm = con.createStatement();
-    		String sql = "select stddev((cur_pri - yt_cls_pri) / yt_cls_pri) dev "
-    				   + "  from stkdat2 "
-    				   + " where id ='" + stk.getID() + "'"
-    				   + "   and left(dl_dt, 10) = left(" + deadline + ", 10)";
-    		log.info(sql);
-    		ResultSet rs = stm.executeQuery(sql);
-    		if (rs.next()) {
-    			double dev = rs.getDouble("dev");
-    			log.info("dev calculated for stock:" + stk.getID() + " is:" + dev);
-    			if (dev >= 0.01 && dev <= 0.04) {
-    				baseThresh = 0.01 * (dev - 0.01) / (0.04 - 0.01) + baseThresh;
-    			}
-    		}
-    		rs.close();
-    		stm.close();
-    		con.close();
-    	}
-    	catch(Exception e) {
-    		e.printStackTrace();
-    	}
+//    	Timestamp tm = stk.getDl_dt();
+//        String deadline = null;
+//        if (tm == null) {
+//        	deadline = "sysdate()";
+//        }
+//        else {
+//        	deadline = "str_to_date('" + stk.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s') - interval 1 day ";
+//        }
+//        
+//    	try {
+//    		Connection con = DBManager.getConnection();
+//    		Statement stm = con.createStatement();
+//    		String sql = "select (max(td_hst_pri) - min(td_lst_pri)) / max(yt_cls_pri) / 2.0 yt_shk_hlf_pct "
+//    				   + "  from stkdat2 "
+//    				   + " where id ='" + stk.getID() + "'"
+//    				   + "   and left(dl_dt, 10) = left(" + deadline + ", 10)";
+//    		log.info(sql);
+//    		ResultSet rs = stm.executeQuery(sql);
+//    		if (rs.next()) {
+//    			double yt_shk_hlf_pct = rs.getDouble("yt_shk_hlf_pct");
+//    			log.info("yt_shk_hlf_pct calculated for stock:" + stk.getID() + " is:" + yt_shk_hlf_pct + " vs baseThresh:" + baseThresh);
+//    			if (yt_shk_hlf_pct > baseThresh) {
+//    				baseThresh = yt_shk_hlf_pct;
+//    			}
+//    		}
+//    		rs.close();
+//    		stm.close();
+//    		con.close();
+//    	}
+//    	catch(Exception e) {
+//    		e.printStackTrace();
+//    	}
+//    	
+//    	log.info("Calculate buy thresh value with Degree:" + Degree + ", final baseThresh:" + baseThresh);
     	
-
-    	double ratio = 1;
-    	
-    	if (Degree < 0) {
-    		if (Degree >= -10) {
-    			ratio = 1;
-    		}
-    		else if (Degree < -10 && Degree >= -20) {
-    			ratio = 0.5;
-    	    }
-    	    else if (Degree < -20) {
-    	    	ratio = 0.4;
-    	    }
-    	}
-    	else {
-    		if (Degree <= 10) {
-    			ratio = 1;
-    		}
-    		else if (Degree > 10 && Degree <= 20){
-    			ratio = 1.3;
-    		}
-    		else {
-    			ratio = 1.5;
-    		}
-    	}
-    	log.info("Calculate sell thresh value with Degree:" + Degree + ", baseThresh:" + baseThresh + " ratio:" + ratio + " final thresh value:" + ratio * baseThresh);*/
     	return baseThresh;
     }
 

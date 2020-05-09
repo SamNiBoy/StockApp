@@ -68,11 +68,13 @@ public class PriceShakingStockSelector implements IStockSelector {
         
         Connection con = DBManager.getConnection();
         Statement stm = null;
+        boolean continue_next_step = true;
         try {
             stm = con.createStatement();            
             String sql = "select max(cur_pri) hst_pri,"
                        + " min(cur_pri) lst_pri, "
                        + " max(yt_cls_pri) yt_cls_pri, "
+                       + " max(ft_id) max_ft_id, "
                        + " min(cur_pri) + 1 / 3.0 * (max(cur_pri) - min(cur_pri)) line1_pri, "
                        + " min(cur_pri) + 2 / 3.0 * (max(cur_pri) - min(cur_pri)) line2_pri "
                        + "  from stkdat2 "
@@ -86,14 +88,36 @@ public class PriceShakingStockSelector implements IStockSelector {
                  hst_pri = rs.getDouble("hst_pri");
                  lst_pri = rs.getDouble("lst_pri");
                  yt_cls_pri = rs.getDouble("yt_cls_pri");
+                 
+                 long max_ft_id = rs.getLong("max_ft_id");
+                 
+                 sql = "select (td_opn_pri - cur_pri) / yt_cls_pri drop_pct from stkdat2 s where s.id = '" + s.getID() + "' and (td_opn_pri - cur_pri) / yt_cls_pri > 0.03 and ft_id = " + max_ft_id;
+                 
+                 log.info(sql);
+                 
+                 Statement stm2 = con.createStatement();
+                 ResultSet rs2 = stm2.executeQuery(sql);
+                 
+                 if (rs2.next()) {
+                	 
+                	 double drop_pct = rs2.getDouble("drop_pct");
+                	 stm2.close();
+                	 rs2.close();
+                	 log.info("Stock:" + s.getID() + " has long solid price drop:" + drop_pct + ", skip suggest.");
+                	 continue_next_step = false;
+                 }
             }
             else {
                 log.info("Null value found, not good to suggest");
-                return false;
+                continue_next_step = false;
             }
             
             rs.close();
             stm.close();
+            
+            if (!continue_next_step) {
+            	return false;
+            }
             
             log.info("PriceShakingStockSelector start with para:");
             log.info("name:" + s.getName());

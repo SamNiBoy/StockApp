@@ -52,6 +52,7 @@ public class SuggestStock implements Job {
 	static RecommandStockObserverable rso = new RecommandStockObserverable();
 	
 	static String on_dte="";
+	static boolean needMail = true;
 
 	static Logger log = Logger.getLogger(SuggestStock.class);
 
@@ -61,7 +62,7 @@ public class SuggestStock implements Job {
 	 */
 	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock("2020-05-08");
+		SuggestStock fsd = new SuggestStock("2020-05-08", false);
 		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);
@@ -101,9 +102,10 @@ public class SuggestStock implements Job {
 	
 	}
 
-	public SuggestStock(String s) {
+	public SuggestStock(String s, boolean nm) {
 
 		on_dte = s;
+		needMail = nm;
 	}
 	
 	private void initSelector() {
@@ -213,7 +215,7 @@ public class SuggestStock implements Job {
 		    			suggestStock(s2);
 			    	}
 			    	electStockforTrade();
-			    	if (stocksWaitForMail.size() > 0) {
+			    	if (stocksWaitForMail.size() > 0 && needMail) {
 			    	    rso.addStockToSuggest(stocksWaitForMail);
 			    	    rso.update();
 			    	    stocksWaitForMail.clear();
@@ -693,6 +695,8 @@ public class SuggestStock implements Job {
 		Statement stm = null;
         
 		initSelector();
+		
+		stocksWaitForMail.clear();
 		
 	    String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 	      
