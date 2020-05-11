@@ -60,10 +60,9 @@ public class GzStockDataConsumer implements Job {
     
     public void execute(JobExecutionContext context)
             throws JobExecutionException {
-        ConcurrentHashMap<String, Stock2> gzs = StockMarket
-        .getGzstocks();
         
         while (true) {
+            ConcurrentHashMap<String, Stock2> gzs = StockMarket.getGzstocks();
         	log.info("after while, dataqueue.take()...");
         	RawStockData srd = null;
         	try {

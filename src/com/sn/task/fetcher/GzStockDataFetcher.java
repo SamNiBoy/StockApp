@@ -144,7 +144,7 @@ public class GzStockDataFetcher implements Job {
                     
                     if (first_start_flg)
                     {
-                        //skip very first record to avoid alwasy fetching when start program during non-business time.
+                        //skip very first record to avoid always fetching when start program during non-business time.
                         br.close();
                         return;
                     }
@@ -156,11 +156,11 @@ public class GzStockDataFetcher implements Job {
                         log.info("market not open yet. td_opn_pri <= 0 for gzstock:" + srd.id + " can not trade based on it, continue");
                         continue;
                     }
-                    GzStockDataConsumer.getDq().put(srd);
-                    
-                    log.info("GzStockDataFetcher put stock data to queue:" + srd.id + " size is:" + GzStockDataConsumer.getDq().size());
                     
                     synchronized (srd) {
+                    	
+                        GzStockDataConsumer.getDq().put(srd);
+                        log.info("GzStockDataFetcher put stock data to queue:" + srd.id + " size is:" + GzStockDataConsumer.getDq().size());
                         log.info("now wait GzStockDataConsumer consume the srd:" + srd.id);
                         srd.wait();
                     }

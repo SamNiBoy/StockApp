@@ -19,11 +19,13 @@ import com.sn.task.IStockSelector;
 import com.sn.strategy.algorithm.buypoint.BalanceBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.DefaultBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.MacdBuyPointSelector;
+import com.sn.strategy.algorithm.buypoint.PricePlusBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.PriceTurnBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.QtyBuyPointSelector;
 import com.sn.strategy.algorithm.sellpoint.BalanceSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.DefaultSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.MacdSellPointSelector;
+import com.sn.strategy.algorithm.sellpoint.PricePlusSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.PriceTurnSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.QtySellPointSelector;
 import com.sn.task.suggest.selector.DefaultStockSelector;
@@ -35,8 +37,13 @@ public class TradeStrategyGenerator {
         List<IBuyPointSelector> buyPoints = new LinkedList<IBuyPointSelector>();
         List<ISellPointSelector> sellPoints = new LinkedList<ISellPointSelector>();
         
-        IBuyPointSelector bs = new QtyBuyPointSelector(sim_mode);
-        ISellPointSelector ses = new QtySellPointSelector(sim_mode);
+        IBuyPointSelector bs0 = new QtyBuyPointSelector(sim_mode);
+        ISellPointSelector ses0 = new QtySellPointSelector(sim_mode);
+        
+        //IBuyPointSelector bs = new PricePlusBuyPointSelector(sim_mode);
+        //ISellPointSelector ses = new PricePlusSellPointSelector(sim_mode);
+        
+        
 //        IBuyPointSelector bs = new MacdBuyPointSelector();
 //        ISellPointSelector ses = new MacdSellPointSelector();
 //        IBuyPointSelector bs = new PriceTurnBuyPointSelector();
@@ -50,10 +57,12 @@ public class TradeStrategyGenerator {
         ISellPointSelector bes = new BalanceSellPointSelector(sim_mode);
         
         
-        buyPoints.add(bs);
+        buyPoints.add(bs0);
+        //buyPoints.add(bs);
         buyPoints.add(bbs);
         
-        sellPoints.add(ses);
+        sellPoints.add(ses0);
+        //sellPoints.add(ses);
         sellPoints.add(bes);
         
         ITradeStrategy bts = new TradeStrategyImp(buyPoints, sellPoints , null, "QtyTradeStrategy", sim_mode);

@@ -433,15 +433,28 @@ public class StockMarket{
         Statement stm = null;
         ResultSet rs = null;
         
-        gzstocks.clear();
         Stock2 s = null;
         int cnt = 0;
         int Total = 0;
         String sql = "";
         
-        sql = GZ_STOCK_CNT_SELECT;
-        
         try {
+        	
+        	for(String sid : gzstocks.keySet()) {
+        		sql = "select 'x' from usrstk where gz_flg = 1 and id = '" + sid + "'";
+        		log.info(sql);
+        		stm = con.createStatement();
+        		rs = stm.executeQuery(sql);
+        		if (!rs.next()) {
+        			log.info("stock:" + sid + " no longer in gz list, remove it.");
+        			gzstocks.remove(sid);
+        		}
+        		stm.close();
+        		rs.close();
+        	}
+        	
+            sql = GZ_STOCK_CNT_SELECT;
+        	
             stm = con.createStatement();
             log.info(sql);
             rs = stm.executeQuery(sql);
@@ -451,21 +464,28 @@ public class StockMarket{
             rs.close();
             stm.close();
             
-            int stock2_queue_sz = ParamManager.getIntParam("GZ_STOCK2_QUEUE_SIZE", "TRADING", null);
-            
             sql = GZ_STOCK_SELECT;
             
             String id, name, area;
             stm = con.createStatement();
             log.info(sql);
             rs = stm.executeQuery(sql);
+            int stock2_queue_sz = ParamManager.getIntParam("GZ_STOCK2_QUEUE_SIZE", "TRADING", null);
             
             while (rs.next()) {
                 id = rs.getString("id");
+                
+                if (gzstocks.get(id) != null) {
+                	continue;
+                }
+                
                 name = rs.getString("name");
                 area = rs.getString("area");
                 stock2_queue_sz = ParamManager.getIntParam("GZ_STOCK2_QUEUE_SIZE", "TRADING", id);
                 s = new Stock2(id, name, area, stock2_queue_sz);
+                
+                log.info("adding stock:" + id + " name:" + name + " into gz list.");
+                
                 gzstocks.put(id, s);
                 cnt++;
                 log.info("Load GZStocks completed:" + cnt * 1.0 / Total);
@@ -568,9 +588,7 @@ public class StockMarket{
 
     public static ConcurrentHashMap<String, Stock2> getGzstocks() {
         synchronized (gzstocks) {
-            if (gzstocks.isEmpty()) {
-                loadGzStocks();
-            }
+            loadGzStocks();
             return gzstocks;
         }
     }

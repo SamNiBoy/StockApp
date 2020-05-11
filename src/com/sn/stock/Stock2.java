@@ -194,6 +194,52 @@ public class Stock2 implements Comparable<Stock2>{
             return false;
         }
         
+        public boolean priceGoingUp(int period) {
+            log.info("priceGoingUp: check if price goes up for period:" + period);
+            int size = cur_pri_lst.size();
+            if (size < period + 1) {
+                log.info("priceGoingUp: only has " + size + " data less or equal than " + (1 + period));
+                return false;
+            }
+            
+            boolean result = true;
+            for (int i=0; i< period; i++) {
+                if (cur_pri_lst.get(size - 1 - i - 1) >= cur_pri_lst.get(size - 1 - i)) {
+                	result = false;
+                	break;
+                }
+            }
+            
+            if (result) {
+            	price_trend = 1;
+            }
+            
+            return result;
+        }
+        
+        public boolean priceGoingDown(int period) {
+            log.info("priceGoingDown: check if price goes down for period:" + period);
+            int size = cur_pri_lst.size();
+            if (size < period + 1) {
+                log.info("priceGoingDown: only has " + size + " data less or equal than " + (1 + period));
+                return false;
+            }
+            
+            boolean result = true;
+            for (int i=0; i< period; i++) {
+                if (cur_pri_lst.get(size - 1 - i - 1) <= cur_pri_lst.get(size - 1 - i)) {
+                	result = false;
+                	break;
+                }
+            }
+            
+            if (result) {
+            	price_trend = -1;
+            }
+            
+            return result;
+        }
+        
         public boolean priceUpAfterSharpedDown(int period) {
             log.info("priceUpAfterSharpedDown: check if price goes up after sharp down during period:" + period);
             int size = cur_pri_lst.size();
@@ -1444,6 +1490,7 @@ public class Stock2 implements Comparable<Stock2>{
     String suggested_comment;
     String traded_by_selector;
     String traded_by_selector_comment;
+    private int price_trend = 0;
     
     
     public String getSuggestedComment() {
@@ -1824,6 +1871,17 @@ public class Stock2 implements Comparable<Stock2>{
     }
     public boolean priceUpAfterSharpedDown(int period) {
         return sd.priceUpAfterSharpedDown(period);
+    }
+    
+    public boolean priceGoingDown(int period) {
+        return sd.priceGoingDown(period);
+    }
+    public boolean priceGoingUp(int period) {
+        return sd.priceGoingUp(period);
+    }
+    
+    public int getPriceTrend() {
+    	return price_trend;
     }
     public String getID() {
         // TODO Auto-generated method stub
