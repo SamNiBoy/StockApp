@@ -62,7 +62,7 @@ public class SuggestStock implements Job {
 	 */
 	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock("2020-05-08", false);
+		SuggestStock fsd = new SuggestStock("2020-05-11", false);
 		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);
@@ -117,8 +117,8 @@ public class SuggestStock implements Job {
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
 		//selectors.add(new ClosePriceUpSelector(on_dte));
-		selectors.add(new PriceShakingStockSelector(on_dte));
-		//selectors.add(new AvgsBreakingSelector(on_dte));
+		//selectors.add(new PriceShakingStockSelector(on_dte));
+		selectors.add(new AvgsBreakingSelector(on_dte));
 		//selectors.add(new KeepGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
 	}

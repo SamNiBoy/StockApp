@@ -55,6 +55,16 @@ public class AvgsBreakingSelector implements IStockSelector {
     	
     	try {
     		
+    		//first of all, make sure the VOL is plused for the passed 7 days, 6 times bigger than other 6 days.
+    		if (!s.isVOLPlused(7, 6.0/7.0)) {
+    			log.info("Stock:" + s.getID() + "'s VOL is not plused in the passed 7 days, return false");
+    			return false;
+    		}
+    		
+    		avgpri13 = 0.0;
+    		avgpri26 = 0.0;
+    		avgpri48 = 0.0;
+    		
     		if (!getAvgPriceFromDb(s, ac) && !getAvgPriceFromSina(s, ac))
     		{
     			log.info("not able to get average price data for stock:" + s.getID() + " skip suggest it.");
@@ -70,8 +80,8 @@ public class AvgsBreakingSelector implements IStockSelector {
             	return false;
             }
             
-            double maxpri = avgpri13 > (avgpri26 > avgpri48 ? avgpri26 : avgpri48) ? avgpri13 : (avgpri26 > avgpri48 ? avgpri26 : avgpri48);
-            double minpri = avgpri13 < (avgpri26 < avgpri48 ? avgpri26 : avgpri48) ? avgpri13 : (avgpri26 < avgpri48 ? avgpri26 : avgpri48);
+            double maxpri = avgpri13;
+            double minpri = avgpri48;
             
             if (s.getYtClsPri() == null) {
             	s.getSd().LoadData();
@@ -272,12 +282,12 @@ public class AvgsBreakingSelector implements IStockSelector {
 	@Override
 	public boolean isORCriteria() {
 		// TODO Auto-generated method stub
-		return true;
+		return false;
 	}
 	@Override
 	public boolean isMandatoryCriteria() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 	@Override
 	public boolean adjustCriteria(boolean harder) {

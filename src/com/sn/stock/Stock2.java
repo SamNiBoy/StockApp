@@ -194,6 +194,85 @@ public class Stock2 implements Comparable<Stock2>{
             return false;
         }
         
+        public boolean isVOLPlused(int period, double pct) {
+            log.info("isVOLPlused: check if VOL plused for period:" + period + " with pct:" + pct);
+            
+            
+            String sql = "select max(ft_id) max_ft_id, left(dl_dt, 10) dte from stkdat2 where id = '" + stkid + "' group by left(dl_dt, 10) order by dte desc";
+            Connection con = DBManager.getConnection();
+            Statement stm = null;
+            ResultSet rs = null;
+            boolean result = false;
+
+            try {
+            	log.info(sql);
+            	stm = con.createStatement();
+            	rs = stm.executeQuery(sql);
+            	
+            	int cnt = 0;
+            	long lst_vol = 0;
+            	long oth_vol = 0;
+            	int bigCnt = 0;
+            	
+            	while (rs.next() && cnt < period) {
+            		cnt++;
+            		
+            		String sql2 = "select dl_stk_num from stkdat2 s where s.id = '" + stkid + "' and s.ft_id = " + rs.getLong("max_ft_id");
+            		Statement stm2 = con.createStatement();
+            		
+            		log.info(sql2);
+            		ResultSet rs2 = stm2.executeQuery(sql2);
+            		
+            		if (!rs2.next()) {
+                		rs2.close();
+                		stm2.close();
+                		break;
+            		}
+            		if (cnt == 1) {
+            			lst_vol = rs2.getLong("dl_stk_num");
+            			continue;
+            		}
+            		else {
+            			oth_vol = rs2.getLong("dl_stk_num");
+            		}
+            		
+            		rs2.close();
+            		stm2.close();
+            		
+            		if (lst_vol > oth_vol) {
+            			bigCnt++;
+            		}
+            	}
+            	
+            	log.info("Got VOL bigCnt:" + bigCnt + " in past " + period + " days");
+            	
+            	rs.close();
+            	stm.close();
+            	
+            	if (cnt < period) {
+            		log.info("There are only " + cnt + " days data avaialbe which is less then:" + period + " return false");
+            		result = false;
+            	}
+            	else if (bigCnt * 1.0 / period >= pct){
+            		log.info("For stock:" + stkid + ", the trading VOL for last day is " + bigCnt + " times then " + period + " days, which is bigger than pct:" + pct + ", return true");
+            		result = true;
+            	}
+            }
+            catch(Exception e) {
+            	log.error(e.getMessage(), e);
+            }
+            finally {
+            	try {
+            		con.close();
+            	}
+            	catch(Exception e) {
+            		log.error(e.getMessage(), e);
+            	}
+            }
+            
+            return result;
+        }
+        
         public boolean priceGoingUp(int period) {
             log.info("priceGoingUp: check if price goes up for period:" + period);
             int size = cur_pri_lst.size();
@@ -1878,6 +1957,10 @@ public class Stock2 implements Comparable<Stock2>{
     }
     public boolean priceGoingUp(int period) {
         return sd.priceGoingUp(period);
+    }
+    
+    public boolean isVOLPlused(int period, double pct) {
+    	 return sd.isVOLPlused(period, pct);
     }
     
     public int getPriceTrend() {
