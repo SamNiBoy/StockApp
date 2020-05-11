@@ -149,7 +149,7 @@ public class TradexCpp
             }
         }
         
-        return trade_unit;
+        return trade_unit + "_" + ID;
     }
     
     private static void doLoginCheck() throws Exception 
@@ -229,7 +229,7 @@ public class TradexCpp
         }
     }
     
-    public static TradexAccount processLoadAcnt() throws Exception {
+    public static TradexAccount processLoadAcnt(String stkid) throws Exception {
         
         doLoginCheck();
         
@@ -256,13 +256,13 @@ public class TradexCpp
             String res[] = result.split("#");
             String txtmsg = res[1];
             String dtlary[] = txtmsg.split("\\|");
-            int acntID = Integer.valueOf(dtlary[0].split(":")[1]);
+            String acntID = Integer.valueOf(dtlary[0].split(":")[1]) + "_" + stkid;
             double init_mny1 = Double.valueOf(dtlary[1].split(":")[1]);
             double usable_mny1 = Double.valueOf(dtlary[2].split(":")[1]);
             double fetchable_mny1 = Double.valueOf(dtlary[3].split(":")[1]);
             double stock_value1 = Double.valueOf(dtlary[4].split(":")[1]);
             double total_value1 = Double.valueOf(dtlary[5].split(":")[1]);
-            ta = new TradexAccount(String.valueOf(acntID), init_mny1, usable_mny1, fetchable_mny1, stock_value1, total_value1);
+            ta = new TradexAccount(acntID, init_mny1, usable_mny1, fetchable_mny1, stock_value1, total_value1);
             return ta;
         }
     }

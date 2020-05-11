@@ -44,13 +44,13 @@ public class TradexAcnt implements ICashAccount {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
-	    TradexAcnt ac = new TradexAcnt();
-        ac.reportAcntProfitWeb();
+	    //TradexAcnt ac = new TradexAcnt();
+        //ac.reportAcntProfitWeb();
 	}
 
-	public TradexAcnt() {
+	public TradexAcnt(String stkid) {
 
-		loadAcnt();
+		loadAcnt(stkid);
 	}
 
 	public double getMaxMnyForTrade() {
@@ -63,11 +63,11 @@ public class TradexAcnt implements ICashAccount {
 		}
 	}
 
-	public boolean loadAcnt() {
+	public boolean loadAcnt(String stkid) {
 
 		log.info("load TradexAcnt info from Tradex system");
 		try {
-            ta = tc.processLoadAcnt();
+            ta = tc.processLoadAcnt(stkid);
             
             actId = ta.getAcntID();
             initMny = ta.getInit_mny();
@@ -279,7 +279,7 @@ public class TradexAcnt implements ICashAccount {
 	public void printAcntInfo() {
 		DecimalFormat df = new DecimalFormat("##.##");
         
-		loadAcnt();
+		//loadAcnt();
 		
 		log.info("##################################################################################################");
 		log.info("|AccountId|InitMny\t|UseableMny\t|WithdrawableMny|Total Mny\t|Stock Mny\t|MaxMnyPerTrade\t|MaxUsePct\t|");

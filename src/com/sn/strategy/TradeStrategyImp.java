@@ -1542,7 +1542,7 @@ public class TradeStrategyImp implements ITradeStrategy {
             
             if(tradex_acnt == null || !tradex_acnt.getActId().equals(Tradexacnt))
             {
-                tradex_acnt = new TradexAcnt();
+                tradex_acnt = new TradexAcnt(stk);
                 
                 ICashAccount acnt = CashAcntManger.loadAcnt(Tradexacnt);
                 

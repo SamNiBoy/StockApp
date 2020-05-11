@@ -90,6 +90,7 @@ public class TradeRecord{
 					+ "  on c.acntid = t.acntid "
 					+ "join tradedtl d "
 					+ "  on t.acntid = d.acntid "
+					+ " and t.stkid = d.stkid "
 					+ "join stk s "
 					+ "  on t.stkid = s.id "
 					+ "left join usrstk u "
