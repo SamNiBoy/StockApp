@@ -139,10 +139,11 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
 				//boolean qtyPlused = stk.isLstQtyPlused();
 				boolean priceTurnedAround = stk.priceUpAfterSharpedDown(2);
+				boolean con2 = stk.isLstQtyPlused(2);
 				
-				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", priceTurnedAround:" + priceTurnedAround);
+				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", priceTurnedAround:" + priceTurnedAround + ", isLstQtyPlused:" + con2);
 				
-				if (maxPct >= tradeThresh && curPct < maxPct * margin_pct && priceTurnedAround) {
+				if (maxPct >= tradeThresh && curPct < maxPct * margin_pct && priceTurnedAround && con2) {
 					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
 							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " margin_pct:" + margin_pct);
                     

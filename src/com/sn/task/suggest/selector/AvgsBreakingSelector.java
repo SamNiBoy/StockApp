@@ -121,7 +121,7 @@ public class AvgsBreakingSelector implements IStockSelector {
     		Statement stm = con.createStatement();
     		ResultSet rs = null;
     		
-    		String sql = "select 'x' from stkdat2 where id = '" + s.getID() + "' having(left(max(dl_dt), 10)) > '" + on_dte + "'";
+    		String sql = "select 'x' from stkdat2 where id = '" + s.getID() + "' having(left(max(dl_dt) - interval 1 day, 10)) > '" + on_dte + "'";
     		
     		log.info(sql);
     		rs = stm.executeQuery(sql);
@@ -136,7 +136,7 @@ public class AvgsBreakingSelector implements IStockSelector {
     		rs.close();
     		stm.close();
     		
-    	    sql = "select * from stkAvgPri where id = '" + s.getID() + "' and avgpri1 is not null and avgpri2 is not null and avgpri3 is not null and add_dt = '" + on_dte + "'";
+    	    sql = "select * from stkAvgPri where id = '" + s.getID() + "' and avgpri1 is not null and avgpri2 is not null and avgpri3 is not null and add_dt >= '" + on_dte + "' order by add_dt asc";
     		log.info(sql);
     		
     		stm = con.createStatement();

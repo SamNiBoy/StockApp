@@ -117,8 +117,8 @@ public class SuggestStock implements Job {
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
 		//selectors.add(new ClosePriceUpSelector(on_dte));
-		//selectors.add(new PriceShakingStockSelector(on_dte));
-		selectors.add(new AvgsBreakingSelector(on_dte));
+		selectors.add(new PriceShakingStockSelector(on_dte));
+		//selectors.add(new AvgsBreakingSelector(on_dte));
 		//selectors.add(new KeepGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
 	}
@@ -606,6 +606,10 @@ public class SuggestStock implements Job {
 		Statement stm = null;
 		ResultSet rs = null;
 		boolean lost = false;
+		//short cut disable this fun.
+		if (stkid.length() > 0) {
+			return false;
+		}
 		try {
 			sql = "select c.pft_mny from cashacnt c join tradehdr h on c.acntid = h.acntid where h.stkid = '" + stkid + "' and c.pft_mny < 0";
 			log.info(sql);

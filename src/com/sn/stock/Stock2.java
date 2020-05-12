@@ -329,7 +329,7 @@ public class Stock2 implements Comparable<Stock2>{
             
             if (period <= 2) {
             	
-            	boolean result = cur_pri_lst.get(size - 1) > cur_pri_lst.get(size - 2) && cur_pri_lst.get(size - 2) < cur_pri_lst.get(size - 3);
+            	boolean result = (cur_pri_lst.get(size - 1) > cur_pri_lst.get(size - 2)) || ((cur_pri_lst.get(size - 1) + cur_pri_lst.get(size - 2)) / 2.0 > (cur_pri_lst.get(size - 2) + cur_pri_lst.get(size - 3)) / 2.0);
             	log.info("check stock:" + this.stkid + " price1:" + cur_pri_lst.get(size - 3) + ", price2:" + cur_pri_lst.get(size - 2) + " price3:" + cur_pri_lst.get(size - 1) + " is up-down-up?" + result);
             	
             	return (result);
@@ -373,7 +373,7 @@ public class Stock2 implements Comparable<Stock2>{
             
             if (period <= 2) {
             	
-            	boolean result = cur_pri_lst.get(size - 1) < cur_pri_lst.get(size - 2) && cur_pri_lst.get(size - 2) > cur_pri_lst.get(size - 3);
+            	boolean result = (cur_pri_lst.get(size - 1) < cur_pri_lst.get(size - 2)) || ((cur_pri_lst.get(size - 1) + cur_pri_lst.get(size - 2)) / 2.0 < (cur_pri_lst.get(size - 2) + cur_pri_lst.get(size - 3)) / 2.0);
             	log.info("check stock:" + this.stkid + " price1:" + cur_pri_lst.get(size - 3) + ", price2:" + cur_pri_lst.get(size - 2) + " price3:" + cur_pri_lst.get(size - 1) + " is down-up-down?" + result);
             	
             	return (result);
@@ -861,25 +861,34 @@ public class Stock2 implements Comparable<Stock2>{
             dl_dt_lst = dlDtLst;
         }
         
-        public boolean isLstQtyPlused() {
+        public boolean isLstQtyPlused(int period) {
             int sz = dl_stk_num_lst.size();
-            if (sz <= 10) {
+            if (sz < period + 2) {
                 log.info("dl_stk_num_lst has less data, lstQtyPlused is false.");
                 return false;
             }
-            long lstDetQty = dl_stk_num_lst.get(sz - 1) - dl_stk_num_lst.get(sz - 2);
-            log.info("lstDetQty is:" + lstDetQty + " size:" + sz);
+            long DetQty = 0;
+            long maxDetQty = 0;
+            
+            for (int i=0; i<period; i++) {
+            	DetQty = dl_stk_num_lst.get(sz - 1 - i) - dl_stk_num_lst.get(sz - 2 - i);
+            	if (DetQty > maxDetQty) {
+            		maxDetQty = DetQty;
+            	}
+            }
+            
+            log.info("maxDetQty is:" + maxDetQty + " for period:" + period + " with size:" + sz);
             long cnt = 0;
-            for (int i = 1; i<= sz -2; i++) {
-                long preDetQty = dl_stk_num_lst.get(sz - 1 - i) - dl_stk_num_lst.get(sz - 2 - i);
-                if (preDetQty < lstDetQty) {
+            for (int i = 0; i<sz - period - 1; i++) {
+                long preDetQty = dl_stk_num_lst.get(sz - 1 - i - period) - dl_stk_num_lst.get(sz - 2 - i - period);
+                if (preDetQty < maxDetQty) {
                     cnt++;
                 }
             }
             
             double plus_pct = ParamManager.getFloatParam("VOLUME_PLUS_PCT", "TRADING", this.stkid);
             
-            if (cnt * 1.0 / (sz - 1) > plus_pct) {
+            if (cnt * 1.0 / (sz - 1) >= plus_pct) {
                 log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " big than " + plus_pct + ", plused return true.");
                 return true;
             }
@@ -1722,8 +1731,8 @@ public class Stock2 implements Comparable<Stock2>{
     }
     
     //this method tells if the lasted record has dl_stk_num qty plused.
-    public boolean isLstQtyPlused() {
-        return sd.isLstQtyPlused();
+    public boolean isLstQtyPlused(int period) {
+        return sd.isLstQtyPlused(period);
     }
     
     public boolean isStoppingJumpWater() {

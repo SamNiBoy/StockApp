@@ -688,11 +688,11 @@ public class TradeStrategyImp implements ITradeStrategy {
 			ResultSet rs = stm.executeQuery(sql);
 
 			if (rs.next()) {
-				sql = "update usrstk set stop_trade_mode_flg = 1, mod_dt = sysdate() where id = '" + s.getID() + "' and gz_flg = 1";
-				Statement stm2 = con.createStatement();
-				log.info(sql);
-				stm2.execute(sql);
-				stm2.close();
+//				sql = "update usrstk set stop_trade_mode_flg = 1, mod_dt = sysdate() where id = '" + s.getID() + "' and gz_flg = 1";
+//				Statement stm2 = con.createStatement();
+//				log.info(sql);
+//				stm2.execute(sql);
+//				stm2.close();
 				shouldStopTrade = true;
 			}
 			
