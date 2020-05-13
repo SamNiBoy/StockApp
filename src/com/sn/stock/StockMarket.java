@@ -427,6 +427,11 @@ public class StockMarket{
         return true;
     }
     
+    static public void clearGzStocks() {
+    	log.info("Now clear gzstocks...");
+    	gzstocks.clear();
+    }
+    
     static public boolean loadGzStocks() {
 
         Connection con = DBManager.getConnection();
