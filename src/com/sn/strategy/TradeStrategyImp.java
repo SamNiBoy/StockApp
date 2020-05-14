@@ -1331,18 +1331,13 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean createBuySellRecord(StockBuySellEntry rc) {
 		String sql;
         
-		if (sim_mode || !stockGrantForTrade(rc.id))
-		{
-		     log.info("Simulation mode or stock not granted for real trading, do not deal with SellBuyRecord.");
-             return false;
-		}
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 			sql = "insert into SellBuyRecord values ('" + rc.id + "'," + rc.price
 					+ "," + rc.quantity + ","
 					+ rc.is_buy_point
-					+ ",str_to_date('" + rc.dl_dt.toString() + "', '%Y-%m-%d %H:%i:%s.%f'))";
+					+ ",str_to_date('" + rc.dl_dt.toString() + "', '%Y-%m-%d %H:%i:%s.%f')," + ((sim_mode || !stockGrantForTrade(rc.id)) ? "'TEST'" : "'REAL'") + ")";
 			log.info(sql);
 			stm.execute(sql);
 			stm.close();
@@ -1361,12 +1356,6 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean updateBuySellRecord(StockBuySellEntry rc) {
 		String sql;
         
-	    if (sim_mode || !stockGrantForTrade(rc.id))
-	      {
-	           log.info("Simulation mode or stock not granted for real trading, do not deal with SellBuyRecord.");
-	           return false;
-	      }
-	    
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
@@ -1393,12 +1382,6 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean removeBuySellRecord(StockBuySellEntry rc) {
 		String sql;
         
-	    if (sim_mode || !stockGrantForTrade(rc.id))
-        {
-             log.info("Simulation mode or stock not granted for real trading, do not deal with SellBuyRecord.");
-             return false;
-        }
-	      
 		try {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
@@ -1422,10 +1405,10 @@ public class TradeStrategyImp implements ITradeStrategy {
     
 	   public void loadBuySellRecord() {
            
+		   String cls = " crt_by = 'REAL'";
 	        if (sim_mode)
 	        {
-	             log.info("Simulation mode, do not deal with SellBuyRecord.");
-                 return;
+	        	cls = " crt_by = 'TEST'";
 	        }
 	        
 	       synchronized (TradeStrategyImp.class)
@@ -1445,7 +1428,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	           try {
                     stm = con.createStatement();
                     ResultSet rs = null;
-	                sql = "select t1.*, t2.name from SellBuyRecord t1 join stk t2 on t1.stkId = t2.id order by stkId";
+	                sql = "select t1.*, t2.name from SellBuyRecord t1 join stk t2 on t1.stkId = t2.id where " + cls + "order by stkId";
 	                log.info(sql);
 	                rs = stm.executeQuery(sql);
                     

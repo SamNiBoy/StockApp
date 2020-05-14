@@ -535,7 +535,8 @@ stkId varchar(6 ) not null primary key,
 price decimal(8, 2) not null,
 qty int not null,
 buy_flg int not null,
-dl_dt datetime not null
+dl_dt datetime not null,
+crt_by varchar(10) not null
 );
 
 create table if not exists arc_SellBuyRecord(

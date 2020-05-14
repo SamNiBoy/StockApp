@@ -65,6 +65,8 @@ public class SimTrader implements Job{
     
     static Connection con = null;
     SimStockDriver ssd = new SimStockDriver();
+    private ArrayList<String> stks = new ArrayList<String>();
+    private int total_stock_cnt = 0;
 
     public SimTrader() {
 
@@ -79,9 +81,10 @@ public class SimTrader implements Job{
 		String sql;
 		try {
 			Connection con = DBManager.getConnection();
+			Statement stm = null;
             if (simgzstk)
             {
-			    Statement stm = con.createStatement();
+			    stm = con.createStatement();
 			    sql = "delete from tradedtl where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
@@ -102,7 +105,7 @@ public class SimTrader implements Job{
             }
             else 
             {
-			    Statement stm = con.createStatement();
+			    stm = con.createStatement();
 			    sql = "update tradedtl set acntid = concat(acntid, '_GZ') where acntid like '" + ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null) + "%'";
 			    log.info(sql);
 			    stm.execute(sql);
@@ -119,8 +122,14 @@ public class SimTrader implements Job{
 			    log.info(sql);
 			    stm.execute(sql);
 			    stm.close();
-                
             }
+            
+			stm = con.createStatement();
+			sql = "delete from sellbuyrecord where crt_by = 'TEST'";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			
 			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -136,12 +145,13 @@ public class SimTrader implements Job{
     	String tradeDate = "";
     	try {
         	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
-        	simOnGzStk = true;
+        	simOnGzStk = false;
     		Statement stm = null;
     		ResultSet rs = null;
     		String sql = "";
+    		boolean disable_suggest_stock = true;
         	
-            resetTest(simOnGzStk);
+            resetTest(true);
             StockMarket.clearSimData();
             StockMarket.startSim();
     		ParamManager.loadStockParam();
@@ -150,6 +160,8 @@ public class SimTrader implements Job{
         		
         		int shift_days = (sim_days - i);
         		
+        		loadStocksForSim(simOnGzStk, i == 0);
+        		
         		sql =  "select left(max(dl_dt) - interval " + shift_days + " day, 10) sd, left(max(dl_dt) - interval " + (shift_days - 1) + " day, 10) nd from stkdat2";
         		    
         		log.info(sql);
@@ -157,7 +169,7 @@ public class SimTrader implements Job{
         		stm = con.createStatement();
         		rs = stm.executeQuery(sql);
         		
-        		if (rs.next() && rs.getString("sd") != null)
+        		if (rs.next() && rs.getString("sd") != null && !disable_suggest_stock)
         		{
         			String sd = rs.getString("sd");
         			tradeDate = rs.getString("nd");
@@ -195,19 +207,19 @@ public class SimTrader implements Job{
         		stm.execute(sql);
         		stm.close();
         		
-        		stm = con.createStatement();
+//        		stm = con.createStatement();
         		
-        		sql = "update param set str2 = str1, str1 = concat(str1, '" + tradeDate + "_') where name = 'ACNT_SIM_PREFIX'";
-        		log.info(sql);
-        		stm.execute(sql);
-        		stm.close();
+//        		sql = "update param set str2 = str1, str1 = concat(str1, '" + tradeDate + "_') where name = 'ACNT_SIM_PREFIX'";
+//        		log.info(sql);
+//        		stm.execute(sql);
+//        		stm.close();
         		runSim();
         		
-        		stm = con.createStatement();
-        		sql = "update param set str1 = str2, str2 = null where name = 'ACNT_SIM_PREFIX'";
-        		log.info(sql);
-        		stm.execute(sql);
-        		stm.close();
+//        		stm = con.createStatement();
+//        		sql = "update param set str1 = str2, str2 = null where name = 'ACNT_SIM_PREFIX'";
+//        		log.info(sql);
+//        		stm.execute(sql);
+//        		stm.close();
         	}
     		
 //        	simOnGzStk = false;
@@ -241,6 +253,64 @@ public class SimTrader implements Job{
 			}
     	}
     }
+    
+    private void loadStocksForSim(boolean simOnGzStk, boolean reload) {
+    	
+    	String sql = "";
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        ResultSet rs = null;
+        
+        if (!reload && stks.size() > 0) {
+        	log.info("skip loading stock as it's loaded already.");
+        	return;
+        }
+        if (simOnGzStk) {
+            sql = "select distinct id from usrStk where gz_flg = 1 and stop_trade_mode_flg = 0 order by id";
+        }
+        else {
+            //We randomly select 5% data for simulation.
+                sql = "select * from stk " +
+                      " where floor(1+rand()*100) <= 20 " +
+                      "   and id not in (select id from usrStk where gz_flg = 1) " +
+                      "                order by id";
+        }
+        
+        try {
+            log.info(sql);
+            
+            stm = con.createStatement();
+            rs = stm.executeQuery(sql);
+            
+            if (rs.last())
+            {
+                 total_stock_cnt = rs.getRow();
+                 rs.first();
+            }
+            
+            do {
+                stks.add(rs.getString("id"));
+            }
+            while (rs.next());
+            
+            rs.close();
+            stm.close();
+            
+            log.info("Total loaded:" + stks.size() + " stocks for simulation.");
+        }
+        catch (Exception e) {
+        	log.error(e.getMessage(), e);
+        }
+        finally {
+          	try {
+                  con.close();
+          	}
+          	catch(Exception e2) {
+          		log.info(e2.getMessage());
+          	}
+          }
+        
+    }
 	
     public void runSim()
     {
@@ -248,10 +318,7 @@ public class SimTrader implements Job{
         //synchronized(Algorithm.class) {
         
         // SimStockDriver.addStkToSim("000727");
-        Connection con = DBManager.getConnection();
-        Statement stm = null;
-        ResultSet rs = null;
-        String sql = "";
+
         
         ArrayList<ITradeStrategy> slst = new ArrayList<ITradeStrategy>();
         
@@ -282,38 +349,11 @@ public class SimTrader implements Job{
                     
                     strategy.resetStrategyStatus();
                     
-                    if (simOnGzStk) {
-                        sql = "select distinct id from usrStk where gz_flg = 1 and stop_trade_mode_flg = 0 order by id";
-                    }
-                    else {
-                        //We randomly select 50% data for simulation.
-                            sql = "select * from stk " +
-                                  " where floor(1+rand()*100) <= 100 " +
-                                  "   and id not in (select id from usrStk where gz_flg = 1) " +
-                                  "                order by id";
-                    }
-                    
-                    ArrayList<String> stks = new ArrayList<String>();
                     
                     ArrayList<SimWorker> workers = new ArrayList<SimWorker>();
                     
-                    
                     int rowid = 0;
                     int batcnt = 0;
-                    
-                    log.info(sql);
-                    
-                    stm = con.createStatement();
-                    
-                    rs = stm.executeQuery(sql);
-                    
-                    int total_stock_cnt = 0;
-                    
-                    if (rs.last())
-                    {
-                         total_stock_cnt = rs.getRow();
-                         rs.first();
-                    }
                     
                     int stock_cnt_per_thread = ParamManager.getIntParam("SIM_STOCK_COUNT_FOR_EACH_THREAD", "SIMULATION", null);
                     int thread_cnt = ParamManager.getIntParam("SIM_THREADS_COUNT", "SIMULATION", null);
@@ -332,11 +372,13 @@ public class SimTrader implements Job{
                     
                     log.info("Total " + total_stock_cnt + " stocks to simulate with each batch size:" + stock_cnt_per_thread + " and total:" + total_batch + " batches.");
                     
+                    ArrayList<String> batch_stks = new ArrayList<String>();
                     
-                    do {
+                    for (String stk : stks)
+                    {
                         
-                        stks.add(rs.getString("id"));
-                        
+                    	batch_stks.add(stk);
+                    	
                         rowid++;
                         
                         if (rowid % stock_cnt_per_thread == 0) {
@@ -350,9 +392,9 @@ public class SimTrader implements Job{
                             try {
                                 sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch, strategy);
                                 
-                                sw.addStksToWorker(stks);
+                                sw.addStksToWorker(batch_stks);
                                 
-                                stks.clear();
+                                batch_stks.clear();
                                 
                                 workers.add(sw);
                                 
@@ -386,10 +428,9 @@ public class SimTrader implements Job{
                                 }
                             }
                         }
-                    } while (rs.next());
+                    }
                     
-                    rs.close();
-                    stm.close();
+
                     
                     if (rowid % stock_cnt_per_thread != 0) {
                         batcnt++;
@@ -398,8 +439,9 @@ public class SimTrader implements Job{
                         try {
                             sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch, strategy);
                             
-                            sw.addStksToWorker(stks);
+                            sw.addStksToWorker(batch_stks);
                             
+                            batch_stks.clear();
                             workers.add(sw);
                             
                         } catch (Exception e) {
@@ -441,14 +483,7 @@ public class SimTrader implements Job{
               e.printStackTrace();
               log.info("What expection happened:" + e.getMessage());
           }
-          finally {
-          	try {
-                  con.close();
-          	}
-          	catch(Exception e2) {
-          		log.info(e2.getMessage());
-          	}
-          }
+
       //}
        //WorkManager.shutdownWorks();
     }

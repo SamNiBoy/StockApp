@@ -108,6 +108,12 @@ public class SuggestStock implements Job {
 		needMail = nm;
 	}
 	
+	public static void setOnDte(String dte) {
+		
+		log.info("set on_dte with:" + dte);
+		on_dte = dte;
+	}
+	
 	private void initSelector() {
 		selectors.clear();
 		//initDelay = id;
