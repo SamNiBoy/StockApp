@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -73,6 +74,26 @@ public class DaBanBalanceSellPointSelector implements ISellPointSelector {
                 if (hrs <= 12) {
                 	log.info("can not sell stock which is bought at same day, return false.");
                 	return false;
+                }
+                
+                double cur_pri = stk.getCur_pri();
+                double yt_cls_pri = stk.getYtClsPri();
+                
+                //If we have price increased to about 0.1 pct limit, make sure s1_num is always 0, otherwise, it is breaking the limit.
+                if ((cur_pri - yt_cls_pri) / yt_cls_pri > 0.09) {
+                	List<Integer>s1_num_lst = stk.getS1_num_lst();
+                	if (s1_num_lst.size() > 2) {
+                		long pre_s1_num = s1_num_lst.get(s1_num_lst.size() - 2);
+                		long lst_s1_num = s1_num_lst.get(s1_num_lst.size() - 1);
+                		
+                		log.info("check if stock is breaking price top limit 10% by looking at pre_s1_num:" + pre_s1_num + " = 0 and lst_s1_num:" + lst_s1_num + " > 0 ?");
+                		
+                		if (pre_s1_num == 0 && lst_s1_num > 0) {
+                            stk.setTradedBySelector(this.selector_name);
+                            stk.setTradedBySelectorComment("Stock:" + stk.getID() + " upmost price limit is breaking, sell stock.");
+                			return true;
+                		}
+                	}
                 }
                 
                 long hour = t0.getHours();

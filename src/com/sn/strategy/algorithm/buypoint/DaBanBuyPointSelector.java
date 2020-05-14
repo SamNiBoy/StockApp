@@ -32,6 +32,7 @@ public class DaBanBuyPointSelector implements IBuyPointSelector {
     private String selector_name = "DaBanBuyPointSelector";
     private String selector_comment = "";
     private double dbban_pct = 0.09;
+    private double min_pressure_ratio = 5;
     
     
     public DaBanBuyPointSelector(boolean sm)
@@ -55,38 +56,50 @@ public class DaBanBuyPointSelector implements IBuyPointSelector {
         	return false;
         }
         
-        Timestamp t0 = stk.getDl_dt();
+//        Timestamp t0 = stk.getDl_dt();
+//        
+//        long hour = t0.getHours();
+//        long minutes = t0.getMinutes();
+//        
+//        if (!(hour >= 14 && minutes >= 30)) {
+//        	log.info("only daban after 14:30");
+//        	return false;
+//        }
+//        
+//        if ((maxPri - minPri) / yt_cls_pri < 0.05) {
+//        	log.info("Expect min/max price must 0.05 pct covered.");
+//        	return false;
+//        }
         
-        long hour = t0.getHours();
-        long minutes = t0.getMinutes();
+//        SuggestStock.setOnDte(stk.getDl_dt().toString().substring(0, 10));
+//        
+//        if (SuggestStock.calculateStockTrend(stk.getID()) <= 0) {
+//        	log.info("We only look at stock with trend up!");
+//        	return false;
+//        }
         
-        if (!(hour >= 14 && minutes >= 30)) {
-        	log.info("only daban after 14:30");
-        	return false;
-        }
+//        if (!stk.isVOLPlused(7, 6.0/7.0)) {
+//        	log.info("Stock VOL is not plused for the past 7 days, return false");
+//        	return false;
+//        }
         
-        if ((maxPri - minPri) / yt_cls_pri < 0.05) {
-        	log.info("Expect min/max price must 0.05 pct covered.");
-        	return false;
-        }
-        
-        SuggestStock.setOnDte(stk.getDl_dt().toString().substring(0, 10));
-        
-        if (SuggestStock.calculateStockTrend(stk.getID()) <= 0) {
-        	log.info("We only look at stock with trend up!");
-        	return false;
-        }
-        
-        if (!stk.isVOLPlused(7, 6.0/7.0)) {
-        	log.info("Stock VOL is not plused for the past 7 days, return false");
-        	return false;
-        }
         
         double pct = (cur_pri - yt_cls_pri) / yt_cls_pri;
         
         log.info("check stock:" + stk.getID() + " reached daban pct:" + dbban_pct + " >= actual pct:" + pct + "=" + (pct >= dbban_pct));
         if (pct >= dbban_pct && pct < 0.095)
         {
+        	
+            long b1_num = stk.getB1_num();
+            long s1_num = stk.getS1_num();
+        	
+            log.info("b1_num:" + b1_num + " / s1_num:" + s1_num + " < min_pressure_ratio:" + min_pressure_ratio + "?" + (b1_num * 1.0 / s1_num < min_pressure_ratio));
+            //we prefer there are 5 times biggher buy qty comparing to sell qty.
+            if (b1_num * 1.0 / s1_num < min_pressure_ratio) {
+            	log.info("b1_num:" + b1_num + " / s1_num:" + s1_num + " < min_pressure_ratio:" + min_pressure_ratio + " do not buy.");
+            	return false;
+            }
+            
            log.info("Stock:" + stk.getID() + " cur_pri:" + stk.getCur_pri() + " ytClsPri:" + stk.getYtClsPri() +", increase pct:" + pct
                    + " is exceeding dbban_pct:" + dbban_pct + ", return true.");
 			stk.setTradedBySelector(this.selector_name);

@@ -1901,6 +1901,11 @@ public class Stock2 implements Comparable<Stock2>{
     public Integer getB5_num() {
         return sd.getB5_num();
     }
+    
+    public List<Integer> getS1_num_lst() {
+        return sd.getS1_num_lst();
+    }
+    
     public Integer getS1_num() {
         return sd.getS1_num();
     }
