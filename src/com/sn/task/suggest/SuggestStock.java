@@ -123,9 +123,9 @@ public class SuggestStock implements Job {
 		selectors.add(new PriceStockSelector());
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
-		selectors.add(new DaBanStockSelector(on_dte));
+		//selectors.add(new DaBanStockSelector(on_dte));
 		//selectors.add(new ClosePriceUpSelector(on_dte));
-		//selectors.add(new PriceShakingStockSelector(on_dte));
+		selectors.add(new PriceShakingStockSelector(on_dte));
 		//selectors.add(new AvgsBreakingSelector(on_dte));
 		//selectors.add(new KeepGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
@@ -710,10 +710,10 @@ public class SuggestStock implements Job {
 		
 		stocksWaitForMail.clear();
 		
-	    String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
+	    //String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 	      
 		try {
-			sql = "delete from usrStk where suggested_by in ('" + system_role_for_suggest + "') and not exists (select 'x' from tradehdr t where t.stkid = usrStk.id) ";
+			sql = "delete from usrStk where not exists (select 'x' from tradedtl t where t.stkid = usrStk.id and left(t.dl_dt, 10) = '" + on_dte + "') and not exists (select 'x' from sellbuyrecord s where s.stkid = usrStk.id) ";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

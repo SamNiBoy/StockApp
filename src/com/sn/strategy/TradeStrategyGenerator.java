@@ -36,7 +36,7 @@ import com.sn.task.suggest.selector.DefaultStockSelector;
 
 public class TradeStrategyGenerator {
 
-    static public ITradeStrategy generatorStrategy2(boolean sim_mode) {
+    static public ITradeStrategy generatorStrategy(boolean sim_mode) {
         
         List<IBuyPointSelector> buyPoints = new LinkedList<IBuyPointSelector>();
         List<ISellPointSelector> sellPoints = new LinkedList<ISellPointSelector>();
@@ -103,11 +103,12 @@ public class TradeStrategyGenerator {
         
         return bts;
     }
-    static public ITradeStrategy generatorStrategy(boolean sim_mode) {
+    static public ITradeStrategy generatorStrategy2(boolean sim_mode) {
         
         List<IBuyPointSelector> buyPoints = new LinkedList<IBuyPointSelector>();
         List<ISellPointSelector> sellPoints = new LinkedList<ISellPointSelector>();
         
+        //IBuyPointSelector bs = new QtyBuyPointSelector(sim_mode);
         IBuyPointSelector bs = new DaBanBuyPointSelector(sim_mode);
         ISellPointSelector ses = new DaBanSellPointSelector(sim_mode);
 //        IBuyPointSelector bs = new MacdBuyPointSelector();

@@ -70,27 +70,32 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                 long hourt0 = t0.getHours();
                 
                 long millisec = t1.getTime() - t0.getTime();
-                long mins = millisec / (1000*60);
+                long hrs = millisec / (1000*60*60);
                 
-                log.info("Stock:" + stk.getID() + " bought at hour:" + hourt0 + " is " + mins + " minutes before");
+                log.info("Stock:" + stk.getID() + " bought at hour:" + hourt0 + " is " + hrs + " hours before");
+                
+                if (hrs <= 12) {
+                	log.info("can not sell stock which is bought at same day, return false.");
+                	return false;
+                }
                 
                 //int queue_size = ParamManager.getIntParam("GZ_STOCK2_QUEUE_SIZE", "TRADING", null);
                 
-                int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", stk.getID());
-                
-                if (hour == 13 && hourt0 < hour)
-                {
-                    log.info("Market just restarted at 13, refresh the timestame for last trade instead of trading.");
-                    sbs.dl_dt = stk.getDl_dt();
-                    return false;
-                }
-                else if (mins > mins_max)
-                {
-                    log.info("Stock:" + stk.getID() + " bought " + mins + " minutes agao, sold it out");
-                    stk.setTradedBySelector(this.selector_name);
-                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " bought:" + mins + " minutes ago.");
-                    return true;
-                }
+//                int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", stk.getID());
+//                
+//                if (hour == 13 && hourt0 < hour)
+//                {
+//                    log.info("Market just restarted at 13, refresh the timestame for last trade instead of trading.");
+//                    sbs.dl_dt = stk.getDl_dt();
+//                    return false;
+//                }
+//                else if (mins > mins_max)
+//                {
+//                    log.info("Stock:" + stk.getID() + " bought " + mins + " minutes agao, sold it out");
+//                    stk.setTradedBySelector(this.selector_name);
+//                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " bought:" + mins + " minutes ago.");
+//                    return true;
+//                }
 //                else if (stk.priceDownAfterSharpedUp(queue_size / 2))
 //                {
 //                    log.info("Stock:" + stk.getID() + " bought " + mins + " minutes agao, price heading expected direction, sold it out");
@@ -108,7 +113,7 @@ public class BalanceSellPointSelector implements ISellPointSelector {
                 if (hour >= hour_for_balance && minutes >= mins_for_balance)
                 {
                     log.info("Reaching " + hour_for_balance + ":" + mins_for_balance
-                             + ", Stock:" + stk.getID() + " bought " + mins + " minutes agao, sell it out");
+                             + ", Stock:" + stk.getID() + " bought " + hrs + " hours agao, sell it out");
                     stk.setTradedBySelector(this.selector_name);
                     stk.setTradedBySelectorComment("Stock:" + stk.getID() + " keep balance time:" + hour_for_balance + ":" + mins_for_balance);
                     return true;

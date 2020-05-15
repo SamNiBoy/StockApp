@@ -66,7 +66,7 @@ public class SimTrader implements Job{
     SimStockDriver ssd = new SimStockDriver();
     private ArrayList<String> stks = new ArrayList<String>();
     private int total_stock_cnt = 0;
-    private ITradeStrategy strategy = TradeStrategyGenerator.generatorStrategy(true);
+    private ITradeStrategy strategy = null;
 
     public SimTrader() {
 
@@ -159,6 +159,9 @@ public class SimTrader implements Job{
             StockMarket.clearSimData();
             StockMarket.startSim();
     		ParamManager.loadStockParam();
+    		
+    		strategy = TradeStrategyGenerator.generatorStrategy(true);
+    		
     		strategy.resetStrategyStatus();
             
         	for (int i=0; i<sim_days; i++) {
@@ -270,7 +273,7 @@ public class SimTrader implements Job{
         stks.clear();
         
         if (simOnGzStk) {
-            sql = "select distinct id from usrStk where gz_flg = 1 and stop_trade_mode_flg = 0 order by id";
+            sql = "select distinct id from usrStk where gz_flg = 1 and stop_trade_mode_flg = 0 and suggested_by <> 'SYSTEM_SUGGESTER' order by id";
         }
         else {
             //We randomly select 5% data for simulation.

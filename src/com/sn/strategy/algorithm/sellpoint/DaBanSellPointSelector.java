@@ -71,18 +71,18 @@ public class DaBanSellPointSelector implements ISellPointSelector {
         	return false;
         }
         
-		if (opn_pri != null && yt_cls_pri != null && opn_pri < yt_cls_pri) {
-			double lost_pct = (opn_pri - yt_cls_pri) / yt_cls_pri;
-			if (lost_pct < -0.02) {
-			    log.info("today open price is at least -0.02 pct lower than yt_cls_pri, sell it out");
-                stk.setTradedBySelector(this.selector_name);
-                stk.setTradedBySelectorComment("today open price:" + opn_pri + " is lower than yt_cls_pri:" + yt_cls_pri + ", sell it out");
-                return true;
-			}
-			else {
-				log.info("lost pct is:" + lost_pct + " use normal logic to sell.");
-			}
-		}
+//		if (opn_pri != null && yt_cls_pri != null && opn_pri < yt_cls_pri) {
+//			double lost_pct = (opn_pri - yt_cls_pri) / yt_cls_pri;
+//			if (lost_pct < -0.02) {
+//			    log.info("today open price is at least -0.02 pct lower than yt_cls_pri, sell it out");
+//                stk.setTradedBySelector(this.selector_name);
+//                stk.setTradedBySelectorComment("today open price:" + opn_pri + " is lower than yt_cls_pri:" + yt_cls_pri + ", sell it out");
+//                return true;
+//			}
+//			else {
+//				log.info("lost pct is:" + lost_pct + " use normal logic to sell.");
+//			}
+//		}
 		
         double marketDegree = StockMarket.getDegree(stk.getDl_dt());
 
