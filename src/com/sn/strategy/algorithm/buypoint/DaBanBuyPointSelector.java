@@ -2,9 +2,12 @@ package com.sn.strategy.algorithm.buypoint;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -33,6 +36,8 @@ public class DaBanBuyPointSelector implements IBuyPointSelector {
     private String selector_comment = "";
     private double dbban_pct = 0.09;
     private double min_pressure_ratio = 5;
+    static private ConcurrentHashMap<String, Integer> top_stks = new ConcurrentHashMap<String, Integer>();
+    private static int mny_top_n = 200;
     
     
     public DaBanBuyPointSelector(boolean sm)
@@ -43,6 +48,58 @@ public class DaBanBuyPointSelector implements IBuyPointSelector {
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
         
+//		if (top_stks.size() == 0) {
+//		    synchronized (top_stks) {
+//		    	if (top_stks.size() > 0) {
+//		    		log.info("Top expensive stocks loaded, skip reload.");
+//		    	}
+//		    	else {
+//		            Connection con = DBManager.getConnection();
+//		            Statement stm = null;
+//		            ResultSet rs = null;
+//		            try {
+//		                stm = con.createStatement();
+//		                String sql = "select s1.id from stkdat2 s1 "
+//		                		+ " join (select max(ft_id) max_ft_id, id from stkdat2 "
+//		                		+ "  where left(dl_dt, 10) < '" + stk.getDl_dt().toString().substring(0, 10) + "') t"
+//		                	    + "  on s1.id = t.id "
+//		                	    + " and s1.ft_id = t.max_ft_id "
+//		                	    + "  order by s1.dl_mny_num desc ";
+//		                log.info(sql);
+//		                rs = stm.executeQuery(sql);
+//		                log.info("Now load mny_top_n:" + mny_top_n + " stocks.");
+//		                int i = 0;
+//		                while (rs.next() && ++i < mny_top_n) {
+//		                    log.info("Load stock:" + rs.getString("id") + " at top:" + i);
+//		                    top_stks.put(rs.getString("id"), i);
+//		                }
+//		                rs.close();
+//		            }
+//		            catch(SQLException e)
+//		            {
+//		                e.printStackTrace();
+//		            }
+//		            finally {
+//		                try {
+//		                    stm.close();
+//		                    con.close();
+//		                } catch (SQLException e) {
+//		                    // TODO Auto-generated catch block
+//		                    e.printStackTrace();
+//		                    log.info(e.getMessage() + " errored:" + e.getErrorCode());
+//		                }
+//		            }
+//		            log.info("loading mny_top_n " + mny_top_n + " successed!");
+//		    	}
+//		    }
+//		}
+//		else {
+//			if (top_stks.get(stk.getID()) == null) {
+//				log.info("Stock:" + stk.getID() + "is not in top:" + mny_top_n + " list, skip buy it.");
+//				return false;
+//			}
+//		}
+		
         Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
         Double yt_cls_pri = stk.getYtClsPri();
         Double cur_pri = stk.getCur_pri();

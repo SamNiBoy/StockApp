@@ -26,6 +26,7 @@ import com.sn.task.fetcher.StockDataFetcher;
 import com.sn.task.suggest.selector.AvgClsPriStockSelector;
 import com.sn.task.suggest.selector.AvgsBreakingSelector;
 import com.sn.task.suggest.selector.ClosePriceUpSelector;
+import com.sn.task.suggest.selector.DaBanStockSelector;
 import com.sn.task.suggest.selector.DealMountStockSelector;
 import com.sn.task.suggest.selector.DefaultStockSelector;
 import com.sn.task.suggest.selector.KeepGainStockSelector;
@@ -122,8 +123,9 @@ public class SuggestStock implements Job {
 		selectors.add(new PriceStockSelector());
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
+		selectors.add(new DaBanStockSelector(on_dte));
 		//selectors.add(new ClosePriceUpSelector(on_dte));
-		selectors.add(new PriceShakingStockSelector(on_dte));
+		//selectors.add(new PriceShakingStockSelector(on_dte));
 		//selectors.add(new AvgsBreakingSelector(on_dte));
 		//selectors.add(new KeepGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
@@ -211,7 +213,7 @@ public class SuggestStock implements Job {
 			    	log.info("stocksWaitForMail is " + stocksWaitForMail.size() + " less than NumOfStockForTrade:" + NumOfStockForTrade + ", tryHarderCriteria set to false");
 			    	tryHarderCriteria = false;
 			    }
-			    else if (stocksWaitForMail.size() > NumOfStockToSuggest) {
+			    else if (stocksWaitForMail.size() > NumOfStockToSuggest && tryCnt > 0) {
 			    	log.info("stocksWaitForMail has " + stocksWaitForMail.size() + " which is more than " + NumOfStockToSuggest + ", tryHarderCriteria set to true");
 			    	tryHarderCriteria = true;
 			    	stocksWaitForMail.clear();
@@ -711,7 +713,7 @@ public class SuggestStock implements Job {
 	    String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 	      
 		try {
-			sql = "delete from usrStk where suggested_by in ('" + system_role_for_suggest + "')";
+			sql = "delete from usrStk where suggested_by in ('" + system_role_for_suggest + "') and not exists (select 'x' from tradehdr t where t.stkid = usrStk.id) ";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

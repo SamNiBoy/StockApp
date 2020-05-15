@@ -48,8 +48,8 @@ public class DaBanSellPointSelector implements ISellPointSelector {
 		Double minPri = stk.getMinCurPri();
 		Double yt_cls_pri = stk.getYtClsPri();
 		Double cur_pri = stk.getCur_pri();
+		Double opn_pri = stk.getOpen_pri();
         
-		
         Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
         StockBuySellEntry sbs = lstTrades.get(stk.getID());
         
@@ -70,11 +70,26 @@ public class DaBanSellPointSelector implements ISellPointSelector {
         	log.info("can not sell stock which is bought at same day, return false.");
         	return false;
         }
+        
+		if (opn_pri != null && yt_cls_pri != null && opn_pri < yt_cls_pri) {
+			double lost_pct = (opn_pri - yt_cls_pri) / yt_cls_pri;
+			if (lost_pct < -0.02) {
+			    log.info("today open price is at least -0.02 pct lower than yt_cls_pri, sell it out");
+                stk.setTradedBySelector(this.selector_name);
+                stk.setTradedBySelectorComment("today open price:" + opn_pri + " is lower than yt_cls_pri:" + yt_cls_pri + ", sell it out");
+                return true;
+			}
+			else {
+				log.info("lost pct is:" + lost_pct + " use normal logic to sell.");
+			}
+		}
+		
         double marketDegree = StockMarket.getDegree(stk.getDl_dt());
 
 		double tradeThresh = 0;
         double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", stk.getID());
 		if (yt_cls_pri != null && cur_pri != null) {
+			
 
 			// If we bought before with lower price, use it as minPri.
 			if (sbs != null && sbs.is_buy_point && sbs.price < minPri) {

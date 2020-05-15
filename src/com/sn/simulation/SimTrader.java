@@ -63,10 +63,10 @@ public class SimTrader implements Job{
     
     private CountDownLatch threadsCountDown = null;
     
-    static Connection con = null;
     SimStockDriver ssd = new SimStockDriver();
     private ArrayList<String> stks = new ArrayList<String>();
     private int total_stock_cnt = 0;
+    private ITradeStrategy strategy = TradeStrategyGenerator.generatorStrategy(true);
 
     public SimTrader() {
 
@@ -145,22 +145,25 @@ public class SimTrader implements Job{
     	String tradeDate = "";
     	try {
         	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
-        	simOnGzStk = false;
+        	simOnGzStk = true;
     		Statement stm = null;
     		ResultSet rs = null;
     		String sql = "";
-    		boolean disable_suggest_stock = true;
+    		boolean disable_suggest_stock = false;
+    		
+            //ITradeStrategy s1 = TradeStrategyGenerator.generatorStrategy1(true);
+            
+            //slst.add(s1);
         	
             resetTest(true);
             StockMarket.clearSimData();
             StockMarket.startSim();
     		ParamManager.loadStockParam();
+    		strategy.resetStrategyStatus();
             
         	for (int i=0; i<sim_days; i++) {
         		
         		int shift_days = (sim_days - i);
-        		
-        		loadStocksForSim(simOnGzStk, i == 0);
         		
         		sql =  "select left(max(dl_dt) - interval " + shift_days + " day, 10) sd, left(max(dl_dt) - interval " + (shift_days - 1) + " day, 10) nd from stkdat2";
         		    
@@ -197,6 +200,9 @@ public class SimTrader implements Job{
         			ss.execute(null);
         		}
         		
+        		if (!loadStocksForSim(simOnGzStk))
+        			continue;
+        		
         		rs.close();
         		stm.close();
         		
@@ -213,7 +219,7 @@ public class SimTrader implements Job{
 //        		log.info(sql);
 //        		stm.execute(sql);
 //        		stm.close();
-        		runSim();
+        		runSim(strategy);
         		
 //        		stm = con.createStatement();
 //        		sql = "update param set str1 = str2, str2 = null where name = 'ACNT_SIM_PREFIX'";
@@ -234,6 +240,7 @@ public class SimTrader implements Job{
             
             archiveStockData();
             
+            strategy.resetStrategyStatus();
             StockMarket.clearDegreeMap();
             StockMarket.stopSim();
             saveSimResult();
@@ -254,17 +261,14 @@ public class SimTrader implements Job{
     	}
     }
     
-    private void loadStocksForSim(boolean simOnGzStk, boolean reload) {
+    private boolean loadStocksForSim(boolean simOnGzStk) {
     	
     	String sql = "";
-        Connection con = DBManager.getConnection();
         Statement stm = null;
         ResultSet rs = null;
+        Connection con = null;
+        stks.clear();
         
-        if (!reload && stks.size() > 0) {
-        	log.info("skip loading stock as it's loaded already.");
-        	return;
-        }
         if (simOnGzStk) {
             sql = "select distinct id from usrStk where gz_flg = 1 and stop_trade_mode_flg = 0 order by id";
         }
@@ -278,7 +282,7 @@ public class SimTrader implements Job{
         
         try {
             log.info(sql);
-            
+            con = DBManager.getConnection();
             stm = con.createStatement();
             rs = stm.executeQuery(sql);
             
@@ -288,10 +292,12 @@ public class SimTrader implements Job{
                  rs.first();
             }
             
-            do {
-                stks.add(rs.getString("id"));
+            if (total_stock_cnt > 0) {
+                do {
+                    stks.add(rs.getString("id"));
+                }
+                while (rs.next());
             }
-            while (rs.next());
             
             rs.close();
             stm.close();
@@ -309,27 +315,16 @@ public class SimTrader implements Job{
           		log.info(e2.getMessage());
           	}
           }
-        
+        return total_stock_cnt > 0;
     }
 	
-    public void runSim()
+    public void runSim(ITradeStrategy strategy)
     {
         //log.info("Before start simuation, waiting for GA Algorithm task finished."); 	
         //synchronized(Algorithm.class) {
         
         // SimStockDriver.addStkToSim("000727");
 
-        
-        ArrayList<ITradeStrategy> slst = new ArrayList<ITradeStrategy>();
-        
-        ITradeStrategy s = TradeStrategyGenerator.generatorStrategy(true);
-        
-        slst.add(s);
-        
-        //ITradeStrategy s1 = TradeStrategyGenerator.generatorStrategy1(true);
-        
-        //slst.add(s1);
-        
         /*
          * we simulate twice:
          * 1. Simuate gz_flg stocks which should be finished quickly.
@@ -337,18 +332,9 @@ public class SimTrader implements Job{
          */
         
         try {
-        	ITradeStrategy strategy = null;
-        	
-        	for(ITradeStrategy its : slst) {
-        		
-        		strategy = its;
-                
                 StockMarket.clearDegreeMap();
                 
                 for (int i = 0; i < 1; i++) {
-                    
-                    strategy.resetStrategyStatus();
-                    
                     
                     ArrayList<SimWorker> workers = new ArrayList<SimWorker>();
                     
@@ -376,7 +362,6 @@ public class SimTrader implements Job{
                     
                     for (String stk : stks)
                     {
-                        
                     	batch_stks.add(stk);
                     	
                         rowid++;
@@ -474,9 +459,6 @@ public class SimTrader implements Job{
                     }
                     log.info("Now end simulate trading, sending mail...");
                 }
-        	}
-                
-            strategy.resetStrategyStatus();
             log.info("SimTrader end...");
                 
           } catch (Exception e) {

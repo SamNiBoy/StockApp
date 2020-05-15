@@ -15,36 +15,52 @@ import com.sn.task.IStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 
-public class DealMountStockSelector implements IStockSelector {
+public class DaBanStockSelector implements IStockSelector {
 
-    static Logger log = Logger.getLogger(DealMountStockSelector.class);
+    static Logger log = Logger.getLogger(DaBanStockSelector.class);
     int days = 7;
-	long minAvgStkNum = 20000000;
-	double minAvgMnyNum = 500000000;
+	String on_dte = "";
+	double minPct = 0.09;
+    private String suggest_by = "DaBanStockSelector";
+
+	public DaBanStockSelector(String od) {
+		on_dte = od;
+	}
     /**
      * @param args
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
     	boolean isgood = false;
-        long avgStkNum = 0;
-        double avgMnyNum = 0.0;
+        double pct = 0.0;
+        double cur_pri = 0;
+        double td_opn_pri = 0;
+        double yt_cls_pri = 0;
+        double dl_mny_num =0;
  		Connection con = DBManager.getConnection();
    		Statement stm = null;
     	try {
      		stm = con.createStatement();
-    		String sql = "select avg(max_mny_num) avg_mny_num, avg(max_stk_num) avg_stk_num from ("
-    				   + "select max(dl_mny_num) max_mny_num, max(dl_stk_num) max_stk_num, left(dl_dt, 10) atDay "
+    		String sql = "select cur_pri, yt_cls_pri, td_opn_pri, (cur_pri - yt_cls_pri) / yt_cls_pri pct, id, dl_mny_num"
     				   + "  from stkdat2 "
     				   + " where id ='" + s.getID() + "'"
-    				   + "   and left(dl_dt, 10) >= left(sysdate() - interval " + days + " day, 10)"
-    				   + " group by left(dl_dt, 10)) t";
+    				   + "   and ft_id = (select max(ft_id) from stkdat2 s2 where s2.id = '" + s.getID() + "' and left(s2.dl_dt, 10) = '" + on_dte + "')";
     		log.info(sql);
     		ResultSet rs = stm.executeQuery(sql);
     		if (rs.next()) {
-    			 avgStkNum = rs.getLong("avg_stk_num");
-    			 avgMnyNum = rs.getDouble("avg_mny_num");
-    			if (avgStkNum > minAvgStkNum && avgMnyNum > minAvgMnyNum) {
-    				isgood = true;
+    			cur_pri = rs.getDouble("cur_pri");
+    			td_opn_pri = rs.getDouble("td_opn_pri");
+    			yt_cls_pri = rs.getDouble("yt_cls_pri");
+    			dl_mny_num = rs.getDouble("dl_mny_num");
+    			
+    			pct = rs.getDouble("pct");
+    			
+    			log.info("suggest stock:" + s.getID() + "\n td_opn_pri > yt_cls_pri: " + td_opn_pri + " > " + yt_cls_pri + " ? " + (td_opn_pri > yt_cls_pri));
+    			log.info("pct > minPct:" + pct + " > " + minPct + " ? " + (pct > minPct));
+    			
+    			if (td_opn_pri > yt_cls_pri && pct > minPct) {
+    	            s.setSuggestedBy(this.suggest_by);
+    	            s.setSuggestedComment("td_opn_pri > yt_cls_pri: " + td_opn_pri + " > " + yt_cls_pri + " ? " + (td_opn_pri > yt_cls_pri) + " and pct > minPct:" + pct + " > " + minPct + " ? " + (pct > minPct));
+    				return true;
     			}
     		}
             rs.close();
@@ -61,7 +77,6 @@ public class DealMountStockSelector implements IStockSelector {
                 log.info(e.getMessage());
             }
         }
-    	log.info("avgStkNum:" + avgStkNum + ", minAvgStkNum:" + minAvgStkNum + ", avgMnyNum:" + avgMnyNum + ", minAvgMnyNum:" + minAvgMnyNum + " return " + (isgood ? " true":"false"));
         return isgood;
     }
 	@Override
