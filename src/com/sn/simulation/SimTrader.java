@@ -392,7 +392,7 @@ public class SimTrader implements Job{
                                 return;
                             }
                             
-                            if (batcnt % thread_cnt == 0)
+                            if (batcnt % thread_cnt == 0 || (batcnt < thread_cnt && rowid == stks.size()))
                             {
                                 threadsCountDown = new CountDownLatch(workers.size());
                                 
@@ -417,8 +417,6 @@ public class SimTrader implements Job{
                             }
                         }
                     }
-                    
-
                     
                     if (rowid % stock_cnt_per_thread != 0) {
                         batcnt++;

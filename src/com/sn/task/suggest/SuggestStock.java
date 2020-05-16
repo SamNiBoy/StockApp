@@ -261,11 +261,11 @@ public class SuggestStock implements Job {
 				if (rs2.next()) {
 					if (rs2.getLong("gz_flg") == 0) {
 						sql = "update usrStk set gz_flg = 1, stop_trade_mode_flg = 0, suggested_by = '" + system_role_for_suggest + "', mod_dt = sysdate() " + ", suggested_by_selector = '" + s.getSuggestedBy() + "', suggested_comment = '" +
-					s.getSuggestedComment() + "' where openID = '" + openID
+					s.getSuggestedComment() + "', suggested_score = " + s.getSuggestedScore() + " where openID = '" + openID
 								+ "' and id = '" + s.getID() + "'";
 					}
 				} else {
-					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'" + system_role_for_suggest + "','" + s.getSuggestedBy() + "','" + s.getSuggestedComment() + "', sysdate(), sysdate())";
+					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,'" + system_role_for_suggest + "','" + s.getSuggestedBy() + "','" + s.getSuggestedComment() + "'," + s.getSuggestedScore() + ", sysdate(), sysdate())";
 				}
 				rs2.close();
 				stm2.close();
@@ -376,13 +376,14 @@ public class SuggestStock implements Job {
 				+ "where s.gz_flg = 1 "
 				+ "  and s.suggested_by in ('" + system_role_for_suggest + "') "
 				+ "  and s.stop_trade_mode_flg = 0 "
-				+ "  order by case when ss.max_score is null then 0 else ss.max_score end desc, s.suggested_comment desc ";
+				+ "  order by case when ss.max_score is null then 0 else ss.max_score end desc, s.suggested_score asc ";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
 			while (rs.next() && maxCnt-- > 0) {
 				String id = rs.getString("id");
 				sql = "update usrStk set suggested_by = '" + system_role_for_trade + "',  gz_flg = 1, stop_trade_mode_flg = 0, mod_dt = sysdate() where id ='" + id + "'";
+				log.info(sql);
 				Statement stm2 = con.createStatement();
 				stm2.execute(sql);
 				stm2.close();

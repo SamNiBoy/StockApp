@@ -163,6 +163,7 @@ stop_trade_mode_flg int not null,
 suggested_by varchar(100 ) not null,
 suggested_by_selector varchar(100 ) not null,
 suggested_comment varchar(500 ) not null,
+suggested_score decimal(10, 4),
 add_dt datetime not null,
 mod_dt datetime not null,
 CONSTRAINT usrStk_PK PRIMARY KEY (OpenID, id)

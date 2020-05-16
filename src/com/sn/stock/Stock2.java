@@ -1576,6 +1576,7 @@ public class Stock2 implements Comparable<Stock2>{
     StockData sd;
     String suggested_by;
     String suggested_comment;
+    double suggested_score = 0;
     String traded_by_selector;
     String traded_by_selector_comment;
     private int price_trend = 0;
@@ -1587,6 +1588,14 @@ public class Stock2 implements Comparable<Stock2>{
 
     public void setSuggestedComment(String suggested_comment) {
         this.suggested_comment = suggested_comment;
+    }
+    
+    public double getSuggestedScore() {
+        return suggested_score;
+    }
+
+    public void setSuggestedscore(double suggested_score) {
+        this.suggested_score = suggested_score;
     }
 
     public String getTradedBySelectorComment() {

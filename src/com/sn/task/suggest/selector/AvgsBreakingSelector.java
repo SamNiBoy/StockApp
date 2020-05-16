@@ -97,6 +97,7 @@ public class AvgsBreakingSelector implements IStockSelector {
             	{
                     s.setSuggestedBy(this.suggest_by);
                     s.setSuggestedComment("Avg price for 13, 26, and 48 days is " + maxagvprcpct + " pct close to yt_cls_pri, and cur_pri:" + s.getCur_pri() + " is above max_avgpri:" + maxpri + " which is higher than yt_cls_pri:" + s.getYtClsPri());
+                    s.setSuggestedscore((maxpri - minpri) / s.getYtClsPri());
             	    isGoodStock = true;
             	}
             }
