@@ -9,6 +9,7 @@ import org.quartz.SchedulerException;
 
 import com.sn.simulation.SimTrader;
 import com.sn.stock.StockMarket;
+import com.sn.strategy.TradeStrategyImp;
 
 @DisallowConcurrentExecution
 public class ResetDataBeforeMarketOpen implements Job {
@@ -36,6 +37,8 @@ public class ResetDataBeforeMarketOpen implements Job {
         StockMarket.clearDegreeMap();
         StockMarket.clearSimData();
         StockMarket.clearGzStocks();
+        TradeStrategyImp.clearMaps();
+        TradeStrategyImp.loadBuySellRecord();
         log.info("Running ResetDataBeforeMarketOpen task end");
     }
 }

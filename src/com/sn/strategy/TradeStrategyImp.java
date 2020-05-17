@@ -47,7 +47,7 @@ public class TradeStrategyImp implements ITradeStrategy {
     ICashAccount cash_account = null;
     String name = "Default Trade Strategy";
     
-    private boolean sim_mode = false;
+    private static boolean sim_mode = false;
     
     private static TradexAcnt tradex_acnt = null;
     
@@ -468,20 +468,31 @@ public class TradeStrategyImp implements ITradeStrategy {
 			}
 		//}
 
-		int totalCnt = 0;
-		LinkedList<StockBuySellEntry> tmp;
-		for (String id : tradeRecord.keySet()) {
-			tmp = tradeRecord.get(id);
-			totalCnt += tmp.size();
-		}
-
-		log.info("TradeStrategy " + name + " collected total traded " + totalCnt + " times.");
-
-		int max_trades_per_days = ParamManager.getIntParam("MAX_TRADE_TIMES_PER_DAY", "TRADING", s.getID());
-		
-		if (totalCnt >= max_trades_per_days) {
-			log.info("Trade limit for a day is: " + max_trades_per_days + " can not trade today!");
-			return false;
+	    if (is_buy_flg) {
+		    int totalCnt = 0;
+		    LinkedList<StockBuySellEntry> tmp;
+		    String chk_dte = s.getDl_dt().toString().substring(0, 10);
+		    int max_buy_per_days = ParamManager.getIntParam("MAX_BUY_TIMES_PER_DAY", "TRADING", s.getID());
+		    
+    		log.info("Check if stock:" + s.getID() + " can buy on date:" + chk_dte + " with day buy limit:" + max_buy_per_days);
+    		
+		    for (String id : tradeRecord.keySet()) {
+		    	tmp = tradeRecord.get(id);
+		    	for (StockBuySellEntry sb : tmp) {
+		    		String sb_dte = sb.dl_dt.toString().substring(0, 10);
+		    		log.info("Stock:" + sb.id + " is buy:" + sb.is_buy_point + ", trade dte:" + sb_dte);
+		    		if (sb.is_buy_point && sb_dte.equals(chk_dte)) {
+		    			totalCnt++;
+		    		}
+		    	}
+		    }
+            
+		    log.info("TradeStrategy " + name + " collected total bought " + totalCnt + " times.");
+            
+		    if (totalCnt >= max_buy_per_days) {
+		    	log.info("Buy limit for a day is: " + max_buy_per_days + ", can not buy today!");
+		    	return false;
+		    }
 		}
 
 		LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
@@ -1403,7 +1414,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return true;
 	}
     
-	   public void loadBuySellRecord() {
+	   public static void loadBuySellRecord() {
            
 		   String cls = " crt_by = 'REAL'";
 	        if (sim_mode)
@@ -1559,13 +1570,17 @@ public class TradeStrategyImp implements ITradeStrategy {
         // TODO Auto-generated method stub
         return name;
     }
-
-    public void resetStrategyStatus() {
-        // TODO Auto-generated method stub
+    
+    public static void clearMaps() {
        	log.info("reset tradeStocks, tradeRecord, cash_account_map entries...");
         tradeStocks.clear();
         tradeRecord.clear();
         cash_account_map.clear();
+    }
+
+    public void resetStrategyStatus() {
+        // TODO Auto-generated method stub
+    	clearMaps();
     }
     public void resetStrategyStatusForStock(String stk) {
         // TODO Auto-generated method stub
