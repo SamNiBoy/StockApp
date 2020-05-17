@@ -376,7 +376,7 @@ public class SuggestStock implements Job {
 				+ "where s.gz_flg = 1 "
 				+ "  and s.suggested_by in ('" + system_role_for_suggest + "') "
 				+ "  and s.stop_trade_mode_flg = 0 "
-				+ "  order by case when ss.max_score is null then 0 else ss.max_score end desc, s.suggested_score asc ";
+				+ "  order by case when ss.max_score is null then 0 else ss.max_score end desc, s.suggested_score desc ";
 			log.info(sql);
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
@@ -712,9 +712,12 @@ public class SuggestStock implements Job {
 		stocksWaitForMail.clear();
 		
 	    //String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
+		String sim_prefix = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null);
 	      
 		try {
-			sql = "delete from usrStk where not exists (select 'x' from tradedtl t where t.stkid = usrStk.id and left(t.dl_dt, 10) = '" + on_dte + "') and not exists (select 'x' from sellbuyrecord s where s.stkid = usrStk.id) ";
+			sql = "delete from usrStk where not exists (select 'x' from tradedtl t where t.stkid = usrStk.id and left(t.dl_dt, 10) = '" + on_dte
+					+ "') and not exists (select 'x' from sellbuyrecord s where s.stkid = usrStk.id) "
+					+ " and not exists (select 'x' from tradedtl tt where tt.stkid = usrStk.id and tt.acntid not like '" + sim_prefix + "%')";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

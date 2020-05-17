@@ -103,25 +103,55 @@ public class SimWorker implements IWork {
     	Statement stm = null;
     	ResultSet rs = null;
     	String sql = "";
+    	boolean no_enough_date = false;
         
     	//int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
     	int sim_shift_days = ParamManager.getIntParam("SIM_SHIFT_DAYS", "SIMULATION", null);
     	
     	try {
     		con = DBManager.getConnection();
-    		stm = con.createStatement();
-    		sql = "select left(max(dl_dt) - interval " + sim_shift_days + " day, 10) sd, left(max(dl_dt) - interval " + (sim_shift_days - 1) + " day, 10) ed from stkdat2";
+    		sql =  "select left(dl_dt, 10) dte from stkdat2 where id = '000001' group by left(dl_dt, 10) order by dte desc";
+		    
     		log.info(sql);
+
+    		stm = con.createStatement();
     		rs = stm.executeQuery(sql);
-    		rs.next();
-    		start_dt = rs.getString("sd");
-    		end_dt = rs.getString("ed");
+    		
+    		int cnt = sim_shift_days;
+    		
+    		while(cnt > 1) {
+    			if(!rs.next()) {
+    				no_enough_date = true;
+    				break;
+    			}
+    			cnt--;
+    		}
+    		
+    		if (no_enough_date || !rs.next()) {
+    			no_enough_date = true;
+    		}
+    		else {
+    		    end_dt = rs.getString("dte");
+    		}
+    		
+    		if (no_enough_date || !rs.next()) {
+    			no_enough_date = true;
+    		}
+    		else {
+    		    start_dt = rs.getString("dte");
+    		}
+    		
+    		rs.close();
+    		
+    		if (no_enough_date) {
+    			log.info("No enough dates for simulation.");
+    			return;
+    		}
             
     		/*start_dt = "2020-03-29";
     		end_dt = "2020-03-30";*/
             
     		log.info("got start_dt:" + start_dt + " end_dt:" + end_dt);
-    		rs.close();
     	}
     	finally {
     		stm.close();

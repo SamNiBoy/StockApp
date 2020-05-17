@@ -143,6 +143,7 @@ public class SimTrader implements Job{
     	
     	Connection con = DBManager.getConnection();
     	String tradeDate = "";
+    	String preDate = "";
     	try {
         	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
         	simOnGzStk = true;
@@ -150,6 +151,7 @@ public class SimTrader implements Job{
     		ResultSet rs = null;
     		String sql = "";
     		boolean disable_suggest_stock = false;
+    		boolean no_enough_date = false;
     		
             //ITradeStrategy s1 = TradeStrategyGenerator.generatorStrategy1(true);
             
@@ -168,38 +170,50 @@ public class SimTrader implements Job{
         		
         		int shift_days = (sim_days - i);
         		
-        		sql =  "select left(max(dl_dt) - interval " + shift_days + " day, 10) sd, left(max(dl_dt) - interval " + (shift_days - 1) + " day, 10) nd from stkdat2";
+        		no_enough_date = false;
+        		
+        		sql =  "select left(dl_dt, 10) dte from stkdat2 where id = '000001' group by left(dl_dt, 10) order by dte desc";
         		    
         		log.info(sql);
 
         		stm = con.createStatement();
         		rs = stm.executeQuery(sql);
         		
-        		if (rs.next() && rs.getString("sd") != null && !disable_suggest_stock)
+        		int cnt = shift_days;
+        		
+        		while(cnt > 1) {
+        			if (!rs.next()) {
+        				no_enough_date = true;
+        				break;
+        			}
+        			cnt--;
+        		}
+        		
+        		if (no_enough_date || !rs.next()) {
+        			no_enough_date = true;
+        		}
+        		else {
+        			tradeDate = rs.getString("dte");
+        		}
+        		
+        		if (no_enough_date || !rs.next()) {
+        			no_enough_date = true;
+        		}
+        		else {
+        			preDate = rs.getString("dte");
+        		}
+        		
+        		rs.close();
+        		stm.close();
+        		
+        		if (no_enough_date) {
+        			continue;
+        		}
+        		
+        		log.info("Suggest stock on date:" + preDate + " and sim trading on date:" + tradeDate);
+        		if (!disable_suggest_stock)
         		{
-        			String sd = rs.getString("sd");
-        			tradeDate = rs.getString("nd");
-        			boolean continue_next = false;
-        			
-        			Statement stm2 = con.createStatement();
-        			String sql2 = "select 'x' from stkdat2 where left(dl_dt, 10) = '" + tradeDate + "' limit 1";
-        			
-        			log.info(sql2);
-        			
-        			ResultSet rs2 = stm2.executeQuery(sql2);
-        			if (!rs2.next()) {
-        				log.info("there is no data for date:" + tradeDate + " to simulate, continue next date.");
-        				continue_next = true;
-        			}
-        			
-        			rs2.close();
-        			stm2.close();
-        			
-        			if (continue_next) {
-        				continue;
-        			}
-
-        			SuggestStock ss = new SuggestStock(sd, false);
+        			SuggestStock ss = new SuggestStock(preDate, false);
         			ss.execute(null);
         		}
         		
