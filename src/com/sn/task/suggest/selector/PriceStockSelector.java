@@ -25,6 +25,13 @@ public class PriceStockSelector implements IStockSelector {
      */
     public boolean isTargetStock(Stock2 s, ICashAccount ac) {
     	
+    	// skip startup stock which starts with '300'
+    	
+    	if (s.getID().startsWith("300")) {
+    		log.info("skip startup stock:" + s.getID());
+    		return false;
+    	}
+    	
     	Double curpri = s.getCur_pri();
     	
     	if (curpri == null) {

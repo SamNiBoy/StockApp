@@ -76,7 +76,7 @@ public class SuggestStock implements Job {
 		Statement stm = null;
         
 		try {
-			sql = "select left(max(dl_dt), 10) sd from stkdat2";
+			sql = "select left(max(dl_dt), 10) sd from stkdat2 where id = '000001'";
 			log.info(sql);
 			stm = con.createStatement();
 			ResultSet rs = stm.executeQuery(sql);

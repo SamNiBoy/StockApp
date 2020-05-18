@@ -1147,12 +1147,12 @@ public class TradeStrategyImp implements ITradeStrategy {
             
             stm.close();
             
-            int MaxTry = 7;
+            int MaxTry = 15;
             do {
                 
                 if (MaxTry == 0)
                 {
-                    log.info("Attempted 7 times failed, return fail for placeSellTradeToLocal");
+                    log.info("Attempted 15 times failed, return fail for placeSellTradeToLocal");
                     sql = "update pendingTrade set status = 'C' where stock = '" + s.getID() + "' and status = 'N'";
                     log.info(sql);
                     stm = con.createStatement();
@@ -1224,12 +1224,12 @@ public class TradeStrategyImp implements ITradeStrategy {
         
         stm.close();
         
-        int MaxTry = 7;
+        int MaxTry = 15;
         do {
             
             if (MaxTry == 0)
             {
-                log.info("Attempted 7 times failed, return fail for placeBuyTradeToLocal");
+                log.info("Attempted 15 times failed, return fail for placeBuyTradeToLocal");
                 sql = "update pendingTrade set status = 'C' where stock = '" + s.getID() + "' and status = 'N' ";
                 log.info(sql);
                 stm = con.createStatement();
