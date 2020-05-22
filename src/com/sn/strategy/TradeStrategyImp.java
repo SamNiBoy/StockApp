@@ -468,10 +468,11 @@ public class TradeStrategyImp implements ITradeStrategy {
 			}
 		//}
 
+	    String chk_dte = s.getDl_dt().toString().substring(0, 10);
 	    if (is_buy_flg) {
 		    int totalCnt = 0;
 		    LinkedList<StockBuySellEntry> tmp;
-		    String chk_dte = s.getDl_dt().toString().substring(0, 10);
+		    
 		    int max_buy_per_days = ParamManager.getIntParam("MAX_BUY_TIMES_PER_DAY", "TRADING", s.getID());
 		    
     		log.info("Check if stock:" + s.getID() + " can buy on date:" + chk_dte + " with day buy limit:" + max_buy_per_days);
@@ -507,10 +508,14 @@ public class TradeStrategyImp implements ITradeStrategy {
 				int sellCnt = 0;
 				int buyCnt = 0;
 				for (StockBuySellEntry sd : rcds) {
+					
+					String sd_dte = sd.dl_dt.toString().substring(0, 10);
+					
+					log.info("Stock:" + sd.id + " is buy:" + sd.is_buy_point + ", trade dte:" + sd_dte + ", chk_dte:" + chk_dte);
 					if (sd.is_buy_point) {
 						buyCnt++;
 					} else {
-						sellCnt++;
+					    sellCnt++;
 					}
 				}
 				
@@ -1105,7 +1110,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                     log.info("Same direction trade, refresh lstTradeForStocks.");
                     pre.price = (pre.price * pre.quantity + rc.price * rc.quantity) / (pre.quantity + rc.quantity);
                     pre.quantity = (pre.quantity + rc.quantity);
-                    pre.dl_dt = rc.dl_dt;
+                    //pre.dl_dt = rc.dl_dt;
                     lstTradeForStocks.put(pre.id, pre);
                     updateBuySellRecord(pre);
                 }
@@ -1469,6 +1474,15 @@ public class TradeStrategyImp implements ITradeStrategy {
 	                            dt);
                         
                         lstTradeForStocks.put(rs.getString("stkId"), stk);
+                        
+                        LinkedList<StockBuySellEntry> rcds = tradeRecord.get(stk.id);
+                        
+                        if (rcds == null) {
+                            rcds = new LinkedList<StockBuySellEntry>();
+                        }
+                        
+                        rcds.add(stk);
+                        tradeRecord.put(stk.id, rcds);
 	                }
 	                
 	                unbalanced_db_lstTradeForStocks_loaded = true;

@@ -32,3 +32,16 @@ and s2.id = t2.id
 and s2.ft_id = t2.max_ft_id
 where ((s2.cur_pri - s2.yt_cls_pri)/s2.yt_cls_pri > 0.09)) t
 group by case when pct > 0 then 1 when pct < 0 then -1 else 0 end, dte;
+
+
+//find b1_num, s1_num 10 times bigger stock:
+select s1.* from (select k.name, k.id, max(b1_num) mx_b1_num, max(s1_num) mx_s1_num, left(dl_dt, 10) dte1
+from stkdat2 s 
+join stk k
+on s.id = k.id 
+group by k.name, k.id, left(dl_dt, 10)) s1
+join (select max(b1_num) mx_b1_num, max(s1_num) mx_s1_num, id, left(dl_dt, 10) dte2 from stkdat2 group by id, left(dl_dt, 10)) s2
+on s1.id = s2.id
+and s1.dte1 > s2.dte2
+and not exists (select 'x' from (select max(b1_num) mx_b1_num, max(s1_num) mx_s1_num, id, left(dl_dt, 10) dte3 from stkdat2 group by id, left(dl_dt, 10)) s3 where s3.id = s1.id and s3.dte3 < s1.dte1 and s3.dte3 > s2.dte2)
+where s1.mx_b1_num > 10 * s2.mx_b1_num and s1.mx_s1_num > 10 * s2.mx_s1_num;

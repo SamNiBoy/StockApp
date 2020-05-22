@@ -63,7 +63,7 @@ public class SuggestStock implements Job {
 	 */
 	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock("2020-05-11", false);
+		SuggestStock fsd = new SuggestStock("2020-05-21", false);
 		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);
@@ -124,7 +124,7 @@ public class SuggestStock implements Job {
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
 		//selectors.add(new DaBanStockSelector(on_dte));
-		//selectors.add(new ClosePriceUpSelector(on_dte));
+		selectors.add(new ClosePriceUpSelector(on_dte));
 		selectors.add(new PriceShakingStockSelector(on_dte));
 		//selectors.add(new AvgsBreakingSelector(on_dte));
 		//selectors.add(new KeepGainStockSelector());
@@ -715,9 +715,7 @@ public class SuggestStock implements Job {
 		String sim_prefix = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null);
 	      
 		try {
-			sql = "delete from usrStk where not exists (select 'x' from tradedtl t where t.stkid = usrStk.id and left(t.dl_dt, 10) = '" + on_dte
-					+ "') and not exists (select 'x' from sellbuyrecord s where s.stkid = usrStk.id) "
-					+ " and not exists (select 'x' from tradedtl tt where tt.stkid = usrStk.id and tt.acntid not like '" + sim_prefix + "%')";
+			sql = "delete from usrStk where not exists (select 'x' from sellbuyrecord s where s.stkid = usrStk.id) ";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);
