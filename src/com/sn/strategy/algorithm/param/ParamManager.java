@@ -71,39 +71,43 @@ public class ParamManager {
                 String sintv = rs.getString("intval");
                 Integer intv = rs.getInt("intval");
                 
-                if (sintv != null)
+                if (sintv != null && sintv.length() > 0)
                 {
                     log.info("loading param:" + name + ", " + cat + ", with int value:" + intv);
                     Param p = new Param(name, cat, intv, null, null, null, Param.TYPE.INT);
                     pm.getKV().put(PK, p);
+                    continue;
                 }
                 
                 String sfltv = rs.getString("fltval");
                 Double fltv = rs.getDouble("fltval");
                 
-                if (sfltv != null)
+                if (sfltv != null && sfltv.length() > 0)
                 {
                     log.info("loading param:" + name + ", " + cat + ", with float value:" + fltv);
                     Param p = new Param(name, cat, fltv, null, null, null, Param.TYPE.FLOAT);
                     pm.getKV().put(PK, p);
+                    continue;
                 }
                 
                 String str1v = rs.getString("str1");
                 
-                if (str1v != null)
+                if (str1v != null && str1v.length() > 0)
                 {
                     log.info("loading param:" + name + ", " + cat + ", with str1 value:" + str1v);
                     Param p = new Param(name, cat, str1v, null, null, null, Param.TYPE.STR1);
                     pm.getKV().put(PK, p);
+                    continue;
                 }
                 
                 String str2v = rs.getString("str2");
                 
-                if (str2v != null)
+                if (str2v != null  && str2v.length() > 0)
                 {
-                    log.info("loading param:" + name + ", " + cat + ", with str2 value:" + str1v);
+                    log.info("loading param:" + name + ", " + cat + ", with str2 value:" + str2v);
                     Param p = new Param(name, cat, str2v, null, null, null, Param.TYPE.STR2);
                     pm.getKV().put(PK, p);
+                    continue;
                 }
             }
             rs.close();
@@ -132,6 +136,19 @@ public class ParamManager {
         cacheFloatParams.clear();
         cacheStr1Params.clear();
         cacheStr2Params.clear();
+        for (String PK : stock_param.keySet())
+        {
+            log.info("Remove stock:" + PK + " params:");
+            ParamMap pm = stock_param.get(PK);
+            Map<String, Param> kv = pm.getKV();
+            for (String paramPK : kv.keySet())
+            {
+            	kv.remove(paramPK);
+            }
+            stock_param.remove(PK);
+        }
+        log.info("Now reload all stock params:");
+        loadStockParam();
     }
     
     public static void printAllParams()
@@ -363,7 +380,7 @@ public class ParamManager {
                     
                     if (p.get(pk) != null)
                     {
-                        Double v = (Double)p.get(pk).val;
+                        Double v = Double.valueOf(p.get(pk).val.toString());
                         if (v != null)
                         {
                             log.info("get float param from stockParam:" + v);

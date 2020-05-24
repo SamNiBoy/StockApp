@@ -223,6 +223,7 @@ public class SuggestStock implements Job {
 		    			suggestStock(s2);
 			    	}
 			    	electStockforTrade();
+			    	calStockParam();
 			    	if (stocksWaitForMail.size() > 0 && needMail) {
 			    	    rso.addStockToSuggest(stocksWaitForMail);
 			    	    rso.update();
@@ -290,6 +291,70 @@ public class SuggestStock implements Job {
                 log.error(e.getMessage() + " with error code: " + e.getErrorCode());
             }
             
+        }
+	}
+	
+	private static void calStockParam() {
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		ResultSet rs = null;
+		try {
+		    stm = con.createStatement();
+			sql = "delete from stockparam where name in ('BUY_BASE_TRADE_THRESH', 'SELL_BASE_TRADE_THRESH')";
+			log.info(sql);
+			stm.execute(sql);
+			stm.close();
+			
+			sql = "select s.id "
+				+ " from usrStk s "
+				+ " where s.stop_trade_mode_flg = 0"
+				+ " order by id";
+			log.info(sql);
+			stm = con.createStatement();
+			rs = stm.executeQuery(sql);
+			while (rs.next()) {
+				String id = rs.getString("id");
+				sql = "select (max(cur_pri) - min(cur_pri)) / max(yt_cls_pri) pct from stkdat2 where id = '" + id + "' and left(dl_dt, 10) = '" + on_dte + "'";
+				Statement stm2 = con.createStatement();
+				ResultSet rs2 = stm2.executeQuery(sql);
+				if (rs2.next()) {
+					
+					double pct = rs2.getDouble("pct");
+					double threshpct = pct*0.7;
+					
+					log.info("stock:" + id + " has shaking pct:" + pct + ", use threshpct:" + threshpct);
+					
+					if (threshpct > 0.05) {
+						Statement stm3 = null;
+						stm3 = con.createStatement();
+					    sql = "insert into stockParam value('" + id + "','BUY_BASE_TRADE_THRESH','TRADING',null," + threshpct + ",null,null, 'SuggestStock calculated', sysdate(), sysdate())";
+						log.info(sql);
+						stm3.execute(sql);
+						stm3.close();
+						
+						stm3 = con.createStatement();
+						sql = "insert into stockParam value('" + id + "','SELL_BASE_TRADE_THRESH','TRADING',null," + threshpct + ",null,null, 'SuggestStock calculated', sysdate(), sysdate())";
+						log.info(sql);
+						stm3.execute(sql);
+						stm3.close();
+					}
+				}
+				rs2.close();
+				stm2.close();
+			}
+			rs.close();
+ 			stm.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        finally {
+			try {
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.error(e.getMessage() + " with error code: " + e.getErrorCode());
+            }
         }
 	}
 	

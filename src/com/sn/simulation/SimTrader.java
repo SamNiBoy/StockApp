@@ -215,6 +215,7 @@ public class SimTrader implements Job{
         		{
         			SuggestStock ss = new SuggestStock(preDate, false);
         			ss.execute(null);
+        			ParamManager.refreshAllParams();
         		}
         		
         		if (!loadStocksForSim(simOnGzStk))
