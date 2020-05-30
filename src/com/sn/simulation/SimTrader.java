@@ -150,7 +150,7 @@ public class SimTrader implements Job{
     		Statement stm = null;
     		ResultSet rs = null;
     		String sql = "";
-    		boolean disable_suggest_stock = false;
+    		boolean disable_suggest_stock = true;
     		boolean no_enough_date = false;
     		
             //ITradeStrategy s1 = TradeStrategyGenerator.generatorStrategy1(true);
@@ -213,8 +213,10 @@ public class SimTrader implements Job{
         		log.info("Suggest stock on date:" + preDate + " and sim trading on date:" + tradeDate);
         		if (!disable_suggest_stock)
         		{
-        			SuggestStock ss = new SuggestStock(preDate, false);
-        			ss.execute(null);
+        			//SuggestStock ss = new SuggestStock(preDate, false);
+        			//ss.execute(null);
+        			SuggestStock.setOnDte(preDate);
+        			SuggestStock.calStockParam();
         			ParamManager.refreshAllParams();
         		}
         		

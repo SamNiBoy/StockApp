@@ -74,12 +74,79 @@ public class TradeStrategyImp implements ITradeStrategy {
         }
         return lstTradeForStocks;
     }
+    
+    public static LinkedList<StockBuySellEntry> getAllTradeRecordsForStock(String stkid) {
+    	return tradeRecord.get(stkid);
+    }
 
 	public StockBuySellEntry getLstTradeRecord(Stock2 s) {
 		return tradeRecord.get(s.getID()).getLast();
 	}
-
-
+	
+	public static int getSellableMntForStockOnDate(String stkid, Timestamp dte) {
+        LinkedList<StockBuySellEntry> sbr = getAllTradeRecordsForStock(stkid);
+        int sellableAmnt = 0;
+        int netSellableAmnt = 0;
+        int soldAmnt = 0;
+        
+        Timestamp t1 = dte;
+        log.info("Calculate stock:" + stkid + " sellableMnt at time:" + t1.toString());
+        
+        if (sbr != null) {
+            for (StockBuySellEntry sbs : sbr) {
+                Timestamp t0 = sbs.dl_dt;
+            	log.info("BuySellRecord for stock:" + stkid + " traded at:" + t0.toString() + ", is_buy_flg:" + sbs.is_buy_point + ", quantity:" + sbs.quantity + " with price:" + sbs.price);
+            	if (sbs.is_buy_point) {
+                    long millisec = t1.getTime() - t0.getTime();
+                    long hrs = millisec / (1000*60*60);
+                         if (hrs <= 12) {
+                    	log.info("can not account qty as it bought less than 12 hours.");
+                    	continue;
+                    }
+                    sellableAmnt += sbs.quantity;
+            	}
+            	else {
+            		soldAmnt += sbs.quantity;
+            	}
+            }
+        }
+        
+        netSellableAmnt = sellableAmnt - soldAmnt;
+        
+        log.info("Got sellableMnt:" + sellableAmnt + ", soldAmnt:" + soldAmnt + ", net sellableMnt:" + netSellableAmnt);
+        
+		return netSellableAmnt;
+	}
+	
+	//ideally you can buy at any time, this function calculate how many need to buy to keep balance considering what had sold.
+	public static int getBuyableMntForStockOnDate(String stkid, Timestamp dte) {
+        LinkedList<StockBuySellEntry> sbr = getAllTradeRecordsForStock(stkid);
+        int buyableAmnt = 0;
+        int netBuyableAmnt = 0;
+        int boughtAmnt = 0;
+        
+        Timestamp t1 = dte;
+        log.info("Calculate stock:" + stkid + " buyableAmnt at time:" + t1.toString());
+        
+        if (sbr != null) {
+            for (StockBuySellEntry sbs : sbr) {
+                Timestamp t0 = sbs.dl_dt;
+            	log.info("BuySellRecord for stock:" + stkid + " traded at:" + t0.toString() + ", is_buy_flg:" + sbs.is_buy_point + ", quantity:" + sbs.quantity + " with price:" + sbs.price);
+            	if (!sbs.is_buy_point) {
+            		buyableAmnt += sbs.quantity;
+            	}
+            	else {
+            		boughtAmnt += sbs.quantity;
+            	}
+            }
+        }
+        
+        netBuyableAmnt = buyableAmnt - boughtAmnt;
+        
+        log.info("Got buyableAmnt:" + buyableAmnt + ", boughtAmnt:" + boughtAmnt + ", net netBuyableAmnt:" + netBuyableAmnt);
+        
+		return netBuyableAmnt;
+	}
     
     public TradeStrategyImp(List<IBuyPointSelector> bs,
                             List<ISellPointSelector> ses,
@@ -462,10 +529,10 @@ public class TradeStrategyImp implements ITradeStrategy {
 			}*/
 
 			// we only in balance then check account lost or not.
-			if (sbs == null && stopTradeForStock(s)) {
-				log.info("Skip trade for stock:" + s.getName() + " after eached it's risk.");
-				return false;
-			}
+//			if (sbs == null && stopTradeForStock(s)) {
+//				log.info("Skip trade for stock:" + s.getName() + " after eached it's risk.");
+//				return false;
+//			}
 		//}
 
 	    String chk_dte = s.getDl_dt().toString().substring(0, 10);
@@ -512,10 +579,12 @@ public class TradeStrategyImp implements ITradeStrategy {
 					String sd_dte = sd.dl_dt.toString().substring(0, 10);
 					
 					log.info("Stock:" + sd.id + " is buy:" + sd.is_buy_point + ", trade dte:" + sd_dte + ", chk_dte:" + chk_dte);
-					if (sd.is_buy_point) {
-						buyCnt++;
-					} else {
-					    sellCnt++;
+					if (sd_dte.equals(chk_dte)) {
+					    if (sd.is_buy_point) {
+					    	buyCnt++;
+					    } else {
+					        sellCnt++;
+					    }
 					}
 				}
 				
@@ -1089,7 +1158,7 @@ public class TradeStrategyImp implements ITradeStrategy {
             if (pre == null)
             {
                 log.info("Stock " + rc.id + " did new trade, add to lstTradeForStocks.");
-                lstTradeForStocks.put(rc.id, rc);
+                lstTradeForStocks.put(rc.id, rc.clone());
                 createBuySellRecord(rc);
             }
             else {
@@ -1473,7 +1542,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	                            buy_flg,
 	                            dt);
                         
-                        lstTradeForStocks.put(rs.getString("stkId"), stk);
+                        lstTradeForStocks.put(rs.getString("stkId"), stk.clone());
                         
                         LinkedList<StockBuySellEntry> rcds = tradeRecord.get(stk.id);
                         

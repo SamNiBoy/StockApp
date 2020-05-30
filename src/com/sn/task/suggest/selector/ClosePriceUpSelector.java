@@ -34,7 +34,7 @@ public class ClosePriceUpSelector implements IStockSelector {
     	
     	//first of all, let's make sure the trend of the stock is going up.
     	
-    	if (!(SuggestStock.calculateStockTrend(s.getID()) > 0))
+    	if (SuggestStock.calculateStockTrend(s.getID()) < 0)
     	{
     		log.info("skip stock:" + s.getID() + "/" + s.getName() + " as trend is not going up.");
     		return false;

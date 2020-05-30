@@ -42,6 +42,10 @@ public class StockBuySellEntry{
         is_buy_point = ibp;
         dl_dt = tm;
     }
+    
+    public StockBuySellEntry clone() {
+    	return new StockBuySellEntry(this.id, this.name, this.price, this.quantity, this.is_buy_point, this.dl_dt);
+    }
 
     public void printStockInfo() {
         log.info("========================================\n");

@@ -39,14 +39,9 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
     
 	@Override
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
-	    Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
-        StockBuySellEntry sbs = null;
-	    if (lstTrades != null)
-	    {
-	        sbs = lstTrades.get(stk.getID());
-	    }
+	    int buyableAmnt = TradeStrategyImp.getBuyableMntForStockOnDate(stk.getID(), stk.getDl_dt());
         
-	    if (sbs == null || sbs.is_buy_point)
+	    if (buyableAmnt <= 0)
 	    {
 	        log.info("Stock:" + stk.getID() + " did not trade yet or brought already, return false from BlanaceBuyPointSelector.");
             return false;
@@ -62,42 +57,10 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                 return true;
 	        }
 	        else {
-	            Timestamp t0 = sbs.dl_dt;
 	            Timestamp t1 = stk.getDl_dt();
                 
                 long hour = t1.getHours();
                 long minutes = t1.getMinutes();
-                long hourt0 = t0.getHours();
-                
-                long millisec = t1.getTime() - t0.getTime();
-                long mins = millisec / (1000*60);
-                
-                log.info("Stock:" + stk.getID() + " sold at hour:" + hourt0 + " is " + mins + " minutes before");
-                
-                //int queue_size = ParamManager.getIntParam("GZ_STOCK2_QUEUE_SIZE", "TRADING", null);
-                int mins_max = ParamManager.getIntParam("MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE", "TRADING", stk.getID());
-                
-                if (hour == 13 && hourt0 < hour)
-                {
-                    log.info("Market just restarted at 13, refresh the timestame for last trade instead of trading.");
-                    sbs.dl_dt = stk.getDl_dt();
-                    return false;
-                }
-                else if (mins > mins_max)
-	            {
-                    log.info("Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
-                    stk.setTradedBySelector(this.selector_name);
-                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " sold:" + mins + " minutes ago.");
-                    return true;
-	            }
-//                else if (stk.priceUpAfterSharpedDown(queue_size / 2))
-//                {
-//                    log.info("Stock:" + stk.getID() + " sold " + mins + " minutes agao, price heading expected direction, buy it back");
-//                    stk.setTradedBySelector(this.selector_name);
-//                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " sold:" + mins + " minutes ago with heading unexpected direction.");
-//                    return true;
-//                }
-                
                 
                 int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING", stk.getID());
                 int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING", stk.getID());
@@ -106,7 +69,7 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                 {
                     log.info("Hour:" + hour + ", Minute:" + minutes);
                     log.info("Reaching " + hour_for_balance + ":" + mins_for_balance
-                             + ", Stock:" + stk.getID() + " sold " + mins + " minutes agao, buy it back");
+                             + ", Stock:" + stk.getID() + " sold buyableAmnt:" + buyableAmnt + " minutes agao, buy it back");
                     stk.setTradedBySelector(this.selector_name);
                     stk.setTradedBySelectorComment("Stock:" + stk.getID() + " keep balance time:" + hour_for_balance + ":" + mins_for_balance);
                     return true;
@@ -118,9 +81,7 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
 	
 	@Override
 	public int getBuyQty(Stock2 s, ICashAccount ac) {
-        Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
-        StockBuySellEntry sbs = lstTrades.get(s.getID());
-	    return (sbs == null ? 0 : sbs.quantity);
+	    return TradeStrategyImp.getBuyableMntForStockOnDate(s.getID(), s.getDl_dt());
 	}
 
     public boolean isSimMode() {

@@ -14,6 +14,7 @@ import com.sn.db.DBManager;
 import com.sn.strategy.TradeStrategyImp;
 import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.IStockSelector;
+import com.sn.task.suggest.SuggestStock;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 
@@ -65,6 +66,12 @@ public class PriceShakingStockSelector implements IStockSelector {
         int cur_area_id = 0;
         
         int jump_area_cnt = 0;
+        
+    	if (SuggestStock.calculateStockTrend(s.getID()) < 0)
+    	{
+    		log.info("skip stock:" + s.getID() + "/" + s.getName() + " as trend is going down.");
+    		return false;
+    	}
         
         Connection con = DBManager.getConnection();
         Statement stm = null;

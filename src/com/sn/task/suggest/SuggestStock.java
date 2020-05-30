@@ -25,11 +25,13 @@ import com.sn.STConstants;
 import com.sn.task.fetcher.StockDataFetcher;
 import com.sn.task.suggest.selector.AvgClsPriStockSelector;
 import com.sn.task.suggest.selector.AvgsBreakingSelector;
+import com.sn.task.suggest.selector.BottomHammerSelector;
 import com.sn.task.suggest.selector.ClosePriceUpSelector;
 import com.sn.task.suggest.selector.DaBanStockSelector;
 import com.sn.task.suggest.selector.DealMountStockSelector;
 import com.sn.task.suggest.selector.DefaultStockSelector;
 import com.sn.task.suggest.selector.KeepGainStockSelector;
+import com.sn.task.suggest.selector.PriceRecentlyRaisedSelector;
 import com.sn.task.suggest.selector.PriceShakingStockSelector;
 import com.sn.task.suggest.selector.PriceStockSelector;
 import com.sn.task.suggest.selector.StddevStockSelector;
@@ -63,7 +65,7 @@ public class SuggestStock implements Job {
 	 */
 	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock("2020-05-21", false);
+		SuggestStock fsd = new SuggestStock("2020-05-29", false);
 		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);
@@ -124,9 +126,10 @@ public class SuggestStock implements Job {
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
 		//selectors.add(new DaBanStockSelector(on_dte));
-		selectors.add(new ClosePriceUpSelector(on_dte));
+		selectors.add(new PriceRecentlyRaisedSelector(on_dte));
 		selectors.add(new PriceShakingStockSelector(on_dte));
 		//selectors.add(new AvgsBreakingSelector(on_dte));
+		//selectors.add(new BottomHammerSelector(on_dte));
 		//selectors.add(new KeepGainStockSelector());
 //		selectors.add(new KeepLostStockSelector());
 	}
@@ -152,6 +155,10 @@ public class SuggestStock implements Job {
         
 
 		resetSuggestion();
+		
+		if (checkIndexDropForSkippingSuggest()) {
+			return;
+		}
 		
 		try {
 			Map<String, Stock2> stks = StockMarket.getStocks();
@@ -241,6 +248,50 @@ public class SuggestStock implements Job {
 		}
 		log.info("SuggestStock Now exit!!!");
 	}
+    
+    private boolean checkIndexDropForSkippingSuggest()
+    {
+		String sql = "select distinct s.indexval, delindex, deltapct, delamt, delmny" + 
+				"    	from stockindex s " + 
+				"    	join (select indexid, max(id) max_id, left(add_dt, 10) dte from stockindex group by indexid, left(add_dt, 10)) t" + 
+				"    	  on s.indexid = t.indexid " + 
+				"    	 and s.id = t.max_id " + 
+				"    	order by dte desc;";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		ResultSet rs = null;
+		boolean indexDroppedTwice = false;
+		try {
+			log.info(sql);
+			stm = con.createStatement();
+			rs = stm.executeQuery(sql);
+			if (rs.next()) {
+				double pct1 = rs.getDouble("deltapct");
+				if (rs.next()) {
+					double pct2 = rs.getDouble("deltapct");
+					log.info("Index pct1:" + pct1 + ", pct2:" + pct2);
+					if (pct1 < 0 && pct2 < 0)
+					{
+						log.info("Index pct1:" + pct1 + ", pct2:" + pct2 + " dropped twice, skip suggest any stock.");
+						indexDroppedTwice = true;
+					}
+				}
+			}
+			rs.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        finally {
+			try {
+     			stm.close();
+                con.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                log.error(e.getMessage() + " with error code: " + e.getErrorCode());
+            }
+        }
+		return indexDroppedTwice;
+    }
 
 	private void suggestStock(Stock2 s) {
 		String sql = "";
@@ -294,7 +345,7 @@ public class SuggestStock implements Job {
         }
 	}
 	
-	private static void calStockParam() {
+	public static void calStockParam() {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
@@ -602,11 +653,15 @@ public class SuggestStock implements Job {
 		double yt_cls_pri = 0.0;
 		double td_opn_pri = 0.0;
 		double td_cls_pri = 0.0;
+		double yt_hst_pri = 0.0;
+		double yt_lst_pri = 0.0;
+		double td_hst_pri = 0.0;
+		double td_lst_pri = 0.0;
 		long max_td_ft_id = 0;
 		int trend = 0;
 		
 		try {
-			sql = "select max(td_opn_pri) lst_opn_pri, max(yt_cls_pri) lst_cls_pri, max(td_opn_pri) td_opn_pri, max(ft_id) max_ft_id, left(dl_dt, 10) dte "
+			sql = "select max(td_opn_pri) lst_opn_pri, max(yt_cls_pri) lst_cls_pri, max(td_opn_pri) td_opn_pri, max(cur_pri) max_cur_pri, min(cur_pri) min_cur_pri, max(ft_id) max_ft_id, left(dl_dt, 10) dte "
 			    + "  from stkdat2 "
 			    + " where id = '" + stkid + "' "
 			    + "   and left(dl_dt, 10) >= left(str_to_date('" + on_dte + "', '%Y-%m-%d') - interval 15 day, 10)"
@@ -621,11 +676,15 @@ public class SuggestStock implements Job {
 			if (rs.next() && rs.getDouble("td_opn_pri") > 0) {
 				td_opn_pri = rs.getDouble("td_opn_pri");
 				yt_cls_pri = rs.getDouble("lst_cls_pri");
+				td_hst_pri = rs.getDouble("max_cur_pri");
+				td_lst_pri = rs.getDouble("min_cur_pri");
 				max_td_ft_id = rs.getLong("max_ft_id");
 			}
 			
 			if (rs.next() && rs.getDouble("td_opn_pri") > 0) {
 				yt_opn_pri = rs.getDouble("td_opn_pri");
+				yt_hst_pri = rs.getDouble("max_cur_pri");
+				yt_lst_pri = rs.getDouble("min_cur_pri");
 			}
 			
 			rs.close();
@@ -656,6 +715,12 @@ public class SuggestStock implements Job {
 				else if ((td_opn_pri < yt_opn_pri && td_cls_pri < yt_cls_pri) || ((td_cls_pri - yt_cls_pri) / yt_cls_pri < -0.05)) {
 					trend = -1;
 				}
+			}
+			//we do not want stock with price 10% increased without any price shaking.
+			if (td_hst_pri == td_lst_pri || yt_hst_pri == yt_lst_pri) {
+				log.info("td_hst_pri = td_lst_pri:" + td_hst_pri + " = " + td_lst_pri + " return " + (td_hst_pri == td_lst_pri));
+				log.info("yt_hst_pri = yt_lst_pri:" + yt_hst_pri + " = " + yt_lst_pri + " return " + (yt_hst_pri == yt_lst_pri));
+				trend = -1;
 			}
 		}
 		catch(Exception e) {

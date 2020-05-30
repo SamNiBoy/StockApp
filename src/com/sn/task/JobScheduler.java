@@ -109,10 +109,10 @@ public class JobScheduler {
         String gzStockFetcherRunningTime = "0 0/1 9-15 ? * MON-FRI";
         //String stockParamTrainningTime = "0 35 11 ? * MON-FRI";
         //String stockParamTrainningTime = "0 50 16 ? * MON-SUN";
-        String stockSuggestTime = "0 30 16 ? * MON-SUN";
+        String stockSuggestTime = "0 05 19 ? * MON-SUN";
         //String stockSuggestTime = "0 05 11 ? * MON-SUN";
         //String stockSimTime = "0 30 15 ? * MON-FRI";
-        String stockSimTime = "0 15 22 ? * FRI-SUN";
+        String stockSimTime = "0 45 15 ? * MON-SUN";
         String stockSimResCollectorTime = "*/10 * * ? * MON-SUN";
         
         

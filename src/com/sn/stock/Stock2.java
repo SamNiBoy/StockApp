@@ -319,6 +319,46 @@ public class Stock2 implements Comparable<Stock2>{
             return result;
         }
         
+        public boolean priceBreakingBoxUpEdge(int period) {
+            log.info("priceBreakingBoxUpEdge: check if price breaking box up edge for period:" + period);
+            int size = cur_pri_lst.size();
+            if (size < period + 1) {
+                log.info("priceBreakingBoxUpEdge: only has " + size + " data less or equal than " + (1 + period));
+                return false;
+            }
+            
+            boolean result = true;
+            double lst_cur_pri = cur_pri_lst.get(size - 1);
+            for (int i=0; i< period; i++) {
+                if (cur_pri_lst.get(size - 1 - i - 1) >= lst_cur_pri) {
+                	result = false;
+                	break;
+                }
+            }
+            
+            return result;
+        }
+        
+        public boolean priceBreakingBoxBtnEdge(int period) {
+            log.info("priceBreakingBoxBtnEdge: check if price breaking box bottom edge for period:" + period);
+            int size = cur_pri_lst.size();
+            if (size < period + 1) {
+                log.info("priceBreakingBoxBtnEdge: only has " + size + " data less or equal than " + (1 + period));
+                return false;
+            }
+            
+            boolean result = true;
+            double lst_cur_pri = cur_pri_lst.get(size - 1);
+            for (int i=0; i< period; i++) {
+                if (cur_pri_lst.get(size - 1 - i - 1) <= lst_cur_pri) {
+                	result = false;
+                	break;
+                }
+            }
+            
+            return result;
+        }
+        
         public boolean priceUpAfterSharpedDown(int period) {
             log.info("priceUpAfterSharpedDown: check if price goes up after sharp down during period:" + period);
             int size = cur_pri_lst.size();
@@ -1980,6 +2020,13 @@ public class Stock2 implements Comparable<Stock2>{
     }
     public boolean priceGoingUp(int period) {
         return sd.priceGoingUp(period);
+    }
+    
+    public boolean priceBreakingBoxUpEdge(int period) {
+        return sd.priceBreakingBoxUpEdge(period);
+    }
+    public boolean priceBreakingBoxBtnEdge(int period) {
+        return sd.priceBreakingBoxBtnEdge(period);
     }
     
     public boolean isVOLPlused(int period, double pct) {
