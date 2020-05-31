@@ -22,6 +22,8 @@ import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 import com.sn.stock.indicator.MACD;
 import com.sn.trader.StockTrader;
+import com.sn.util.StockDataProcess;
+import com.sn.util.VOLPRICEHISTRO;
 
 public class QtyBuyPointSelector implements IBuyPointSelector {
 
@@ -48,6 +50,14 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         
         StockBuySellEntry sbs = lstTrades.get(stk.getID());
 		double marketDegree = StockMarket.getDegree(stk.getDl_dt());
+		
+//		VOLPRICEHISTRO v1 = StockDataProcess.getPriceVolHistro(stk, "", 1, 5, 0);
+//		
+//		if (v1.min_pri > cur_pri) {
+//			log.info("skip buy as cur_pri:" + cur_pri + " is less then min_pri of thick line1:" + v1.min_pri);
+//			return false;
+//		}
+		
 //		double baseThresh = ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING", stk.getID());
 //		
 //		if (sbs != null && !sbs.is_buy_point) {
@@ -75,6 +85,8 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 //			log.info("MarketDegree is -1% decrease, no buy.");
 //			return false;
 //		}
+		
+
 
         Timestamp t1 = stk.getDl_dt();
         
@@ -209,6 +221,41 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 //    	log.info("Calculate buy thresh value with Degree:" + Degree + ", final baseThresh:" + baseThresh);
 
     	return baseThresh;
+    }
+    
+    public boolean isPriceBreakingYtMinPri(Stock2 stk, double cur_pri, double yt_cls_pri) {
+		double yt_opn_pri = 0;
+		double yt_min_pri = 0;
+    	try {
+		    Connection con = DBManager.getConnection();
+		    Statement stm = con.createStatement();
+		    String sql = "select s1.td_opn_pri from stkdat2 s1 join (select max(ft_id) max_ft_id, id"
+		    		   + "  from stkdat2 "
+		    		   + " where id ='" + stk.getID() + "'"
+		    		   + "   and left(dl_dt, 10) < '" + stk.getDl_dt().toString().substring(0, 10) + "') s2 on s1.id = s2.id and s1.ft_id = s2.max_ft_id ";
+		    log.info(sql);
+		    ResultSet rs = stm.executeQuery(sql);
+		    if (rs.next()) {
+		    	yt_opn_pri = rs.getDouble("td_opn_pri");
+		    	yt_min_pri = yt_opn_pri;
+		    	log.info("yt_opn_pri calculated for stock:" + stk.getID() + " is:" + yt_opn_pri + " vs yt_cls_pri:" + yt_cls_pri);
+		    	if (yt_opn_pri > yt_cls_pri) {
+		    		yt_min_pri = yt_cls_pri;
+		    	}
+		    }
+		    rs.close();
+		    stm.close();
+		    con.close();
+	    }
+	    catch(Exception e) {
+	    	e.printStackTrace();
+	    }
+    	
+    	if (cur_pri < yt_min_pri && yt_opn_pri > yt_cls_pri) {
+			log.info("skip buy as cur_pri:" + cur_pri + " is less than yt_min_pri:" + yt_min_pri);
+			return true;
+    	}
+    	return false;
     }
 
 	@Override

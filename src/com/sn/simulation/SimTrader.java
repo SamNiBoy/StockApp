@@ -146,7 +146,7 @@ public class SimTrader implements Job{
     	String preDate = "";
     	try {
         	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
-        	simOnGzStk = true;
+        	simOnGzStk = false;
     		Statement stm = null;
     		ResultSet rs = null;
     		String sql = "";

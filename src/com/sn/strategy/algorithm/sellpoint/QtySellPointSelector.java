@@ -24,6 +24,8 @@ import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
 import com.sn.stock.indicator.MACD;
 import com.sn.trader.StockTrader;
+import com.sn.util.StockDataProcess;
+import com.sn.util.VOLPRICEHISTRO;
 
 public class QtySellPointSelector implements ISellPointSelector {
 
@@ -50,6 +52,12 @@ public class QtySellPointSelector implements ISellPointSelector {
 		Double yt_cls_pri = stk.getYtClsPri();
 		Double cur_pri = stk.getCur_pri();
         
+//		VOLPRICEHISTRO v1 = StockDataProcess.getPriceVolHistro(stk, "", 1, 5, 0);
+//		
+//		if (v1.max_pri < cur_pri) {
+//			log.info("skip sell as cur_pri:" + cur_pri + " is great than max_pri of thick line1:" + v1.max_pri);
+//			return false;
+//		}
 		
         Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
         StockBuySellEntry sbs = lstTrades.get(stk.getID());

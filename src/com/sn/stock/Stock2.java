@@ -1455,16 +1455,32 @@ public class Stock2 implements Comparable<Stock2>{
             }
         }
 
+        //We skip top 1 biggest value as max to remove exceptional data.
 		public Double getMaxCurPri() {
 			// TODO Auto-generated method stub
 			int sz = cur_pri_lst.size();
 			double maxPri = 0;
+			int idx = -1;
 			if (sz > 0) {
 			    for (int i = 0; i < sz; i++) {
 			    	if (maxPri < cur_pri_lst.get(i)) {
 			    		maxPri = cur_pri_lst.get(i);
+			    		idx = i;
 			    	}
 			    }
+			    
+			    maxPri = 0;
+			    for (int i = 0; i < sz; i++) {
+			    	
+			    	if (i == idx) {
+			    		continue;
+			    	}
+			    	
+			    	if (maxPri < cur_pri_lst.get(i)) {
+			    		maxPri = cur_pri_lst.get(i);
+			    	}
+			    }
+			    
 			}
 			log.info("got max pri for stock:" + id + ":" + maxPri);
 			if (maxPri > 0) {
@@ -1473,16 +1489,31 @@ public class Stock2 implements Comparable<Stock2>{
 			return null;
 		}
 		
+		//We skip top 1 smallest value as min to remove exceptional data.
 		public Double getMinCurPri() {
 			// TODO Auto-generated method stub
 			int sz = cur_pri_lst.size();
 			double minPri = 100000;
+			int idx = -1;
 			if (sz > 0) {
 			    for (int i = 0; i < sz; i++) {
 			    	if (minPri > cur_pri_lst.get(i) && cur_pri_lst.get(i) > 0) {
 			    		minPri = cur_pri_lst.get(i);
+			    		idx = i;
 			    	}
 			    }
+			    
+			    minPri = 100000;
+			    for (int i = 0; i < sz; i++) {
+			    	
+			    	if (i == idx) {
+			    		continue;
+			    	}
+			    	if (minPri > cur_pri_lst.get(i) && cur_pri_lst.get(i) > 0) {
+			    		minPri = cur_pri_lst.get(i);
+			    	}
+			    }
+			    
 			}
 			log.info("got min pri for stock:" + id + ":" + minPri);
 			if (minPri > 0) {
