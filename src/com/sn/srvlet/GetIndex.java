@@ -100,6 +100,19 @@ public class GetIndex extends HttpServlet {
         	out.write(finalStr);
         	
         }
+        else if ("listTopNMnyStocks".equals(typ))
+        {
+        	String fordate = request.getParameter("fordate");
+        	int topn = Integer.valueOf(request.getParameter("topn"));
+        	out.write(TradeRecord.getTopNMnyStocksAsTableString(fordate, topn));
+        }
+        else if ("buyStock".equals(typ))
+        {
+        	String id = request.getParameter("id");
+        	
+        	log.info("from web buy Stock:" + id);
+        	out.write(TradeRecord.buyStock(id));
+        }
         out.flush();
         out.close();
     }

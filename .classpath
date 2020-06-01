@@ -7,12 +7,42 @@
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/json.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/javax.mail.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/91moca/3rdparty/quartz/quartz-2.2.1.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/quartz-2.3.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/quartz-jobs-2.3.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/slf4j-api-1.7.7.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/slf4j-log4j12-1.7.7.jar"/>
 	<classpathentry kind="lib" path="D:/tomcat9034/lib/servlet-api.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/mysql-connector-java-5.1.48.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/annotations-api.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/catalina.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/catalina-ant.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/catalina-ha.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/catalina-ssi.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/catalina-storeconfig.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/catalina-tribes.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/ecj-4.15.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/el-api.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/jasper.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/jasper-el.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/jaspic-api.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/jsp-api.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-api.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-coyote.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-dbcp.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-i18n-cs.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-i18n-de.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-i18n-es.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-i18n-fr.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-i18n-ja.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-i18n-ko.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-i18n-pt-BR.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-i18n-ru.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-i18n-zh-CN.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-jdbc.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-jni.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-util.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-util-scan.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/tomcat-websocket.jar"/>
+	<classpathentry kind="lib" path="D:/tomcat9034/lib/websocket-api.jar"/>
 	<classpathentry kind="output" path="WEB-INF/classes"/>
 </classpath>

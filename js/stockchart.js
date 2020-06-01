@@ -603,7 +603,7 @@ function drawTradeSummary() {
              
         	 listSuggestedStocks();
         	 listTradingStocks();
-             
+        	 listTopNMnyStocks();
         },
         error:function (err) {
             //alert("系统错误-TRADERECORD.jsp-ajax");
@@ -704,5 +704,124 @@ function listTradingStocks() {
         error:function (err) {
             //alert("系统错误-TRADERECORD.jsp-ajax");
         }
+    });
+}
+
+function listTopNMnyStocks() {
+	if (refresh_flg == false)
+		return;
+	var fordate = $("#fordate").val();
+	var topn = $("#topn").val();
+	
+	if (topn === "") {
+		topn = 5;
+	}
+        $.ajax({
+            type:"GET",
+            url:"/StockApp/GetIndex",
+             data:{
+                 type: "listTopNMnyStocks",
+                 fordate: fordate,
+                 topn: topn
+             },
+            success:function (result) {
+        
+                 $("#topNmnystocks").replaceWith(result);
+                 $("#topNmnystocks tbody>tr:odd").addClass("odd");
+                 $("#topNmnystocks tbody>tr:even").addClass("even");
+                 $("#topNmnystocks thead").addClass("thead");
+                 
+                 $("#topNmnystocks tbody>tr").click(function (){
+                	 $(this).toggleClass('selected')
+                	 .siblings().removeClass('selected');
+                 });
+            },
+            error:function (err) {
+                //alert("系统错误-TRADERECORD.jsp-ajax");
+            }
+        });
+}
+
+function buy() {
+	//alert(' has selected');
+	var has_success=false;
+	$("#topNmnystocks tbody>tr").each(function(){
+		if ($(this).hasClass('selected'))
+		{
+			//alert($(this).attr('id') + ' has selected');
+			
+			var stkid_timestamp = $(this).attr('id');
+			var stkid = stkid_timestamp.substring(0, stkid_timestamp.indexOf("_"));
+			
+			var ret = confirm("购买:" + stkid + "?");
+			
+			if (ret == true) {
+	            $.ajax({
+                type:"GET",
+                url:"/StockApp/GetIndex",
+                 data:{
+                     type: "buyStock",
+                     id: stkid
+                 },
+                success:function (result) {
+                	 
+                	 if (result == "buysuccess")
+                	 {
+                		 alert('成功下单 ' + stkid);
+                	 }
+                	 else {
+                		 alert('下单 ' + stkid + ' 失败!');
+                	 }
+                	 has_success = true;
+                },
+                error:function (err) {
+                    //alert("系统错误-TRADERECORD.jsp-ajax");
+                }
+            });
+			}
+			
+		    
+//			$.confirm({
+//				title: '购买确认',
+//		        content:  '确认买' + stkid + "?",
+//		        useBootstrap: false,
+//		        width:
+//			    buttons: {
+//		            ok: {
+//		                text: '买',
+//		                theme: 'modern',
+//		                btnClass: 'btn btn-primary btn-block example-pc-1',
+//		                action: function() {
+//	                        $.ajax({
+//	                            type:"GET",
+//	                            url:"/StockApp/GetIndex",
+//	                             data:{
+//	                                 type: "buyStock",
+//	                                 id: stkid
+//	                             },
+//	                            success:function (result) {
+//	                            	 
+//	                            	 if (result == "buysuccess")
+//	                            	 {
+//	                            		    $.alert({
+//	                            		        title: '结果确认!',
+//	                            		        content: '买 stock' + stkid + '成功!',
+//	                            		    });
+//	                            	 }
+//	                            	 has_success = true;
+//	                            },
+//	                            error:function (err) {
+//	                                //alert("系统错误-TRADERECORD.jsp-ajax");
+//	                            }
+//	                        });
+//		                }
+//		            },
+//		            cancel: {
+//		                text: '取消',
+//		                btnClass: 'btn-primary'
+//		            }
+//		        }
+//			});
+		}
     });
 }

@@ -492,4 +492,146 @@ public class TradeRecord{
 		}
 	    return str;
 	}
+	
+	public static String getTopNMnyStocksAsTableString(String fordate, int topn) {
+		
+		String str = "<div id=\"topNmnystocks\"> <table border=\"0\" style=\"margin: auto; width: 100%; height:100%;\">" +
+		"<thead> " +
+	    "<tr>                                      " +
+	    "    <td>Time</td>                     " +
+	    "    <td>No.</td>                     " +
+	    "    <td>Stock ID</td>                     " +
+	    "    <td>Name</td>                         " +
+	    "    <td>Price</td>                " +
+	    "    <td>Percent</td>              " +
+	    "    <td>Money</td>              " +
+	    "    <td>Stocks Dealed</td>              " +
+	    "</tr>                                     " +
+	    "</thead>";
+
+	    str += "<tbody> ";
+	    
+		Connection con = DBManager.getConnection();
+		
+		String timeCls = "";
+		
+		if (fordate == null || fordate.length() <= 0) {
+			timeCls = " (select left(max(dl_dt), 10) from stkdat2) ";
+		}
+		else {
+			timeCls = "'" + fordate + "'";
+		}
+		try {
+			Statement stm = con.createStatement();
+			ResultSet rs = null;
+			String sql = "select distinct left(s1.dl_dt, 16) mytimestamp, s1.cur_pri, s1.dl_mny_num, s1.dl_stk_num, (s1.cur_pri - s1.yt_cls_pri)/s1.yt_cls_pri  pct, s2.name, s2.id from stkdat2 s1 join stk s2 on s1.id = s2.id " + 
+					" where left(s1.dl_dt,10) = " + timeCls +
+					" order by mytimestamp desc, dl_mny_num desc";
+			
+			log.info(sql);
+			rs = stm.executeQuery(sql);
+			
+			int i = 0;
+			DecimalFormat df = new DecimalFormat("##.##");
+			String pre_timestamp = "", cur_timestamp = "";
+			double cur_pri = 0.0;
+			double pct = 0.0;
+			
+			while(rs.next()) {
+				   i++;
+				   
+				   cur_timestamp = rs.getString("mytimestamp");
+				   
+				   if (i > topn && cur_timestamp.equals(pre_timestamp)) {
+					   continue;
+				   }
+				   else if(i > topn) {
+					   i = 1;
+				   }
+				   
+				   pre_timestamp = cur_timestamp;
+				   
+				   cur_pri = rs.getDouble("cur_pri");
+				   pct = rs.getDouble("pct");
+			       str += "<tr id=\"" + rs.getString("id") + "_" + cur_timestamp + "\"" + (i == 1? "class = \"firstRecord\"" : "") + ">" +
+			       "<td>" + cur_timestamp + "</td> " +
+			       "<td>" + i + "</td> " +
+			       "<td>" + rs.getString("id") + "</td> " +
+			       "<td>" + rs.getString("name") + "</td> " +
+			       "<td>" + cur_pri + "</td> " +
+			       "<td><font size=\"3\" color=\"" + ((pct>0)? "red":"green") + "\">" + df.format(pct * 100) + "%</font></td> " +
+			       "<td>" + rs.getString("dl_mny_num") + "</td> " +
+			       "<td>" + rs.getString("dl_stk_num") + "</td> " +
+			       "</tr>";
+			}
+			
+			rs.close();
+			stm.close();
+			
+		    str += "</tbody></table></div>";
+		}
+		catch(Exception e) {
+			log.error(e.getCause(), e);
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getCause(), e);
+			}
+		}
+	    return str;
+	}
+	
+	public static String buyStock(String stkid) {
+		
+		Connection con = DBManager.getConnection();
+		String str = "";
+		try {
+			Statement stm = con.createStatement();
+			ResultSet rs = null;
+			double maxMnyPerTrade = ParamManager.getFloatParam("DFT_MAX_MNY_PER_TRADE", "ACCOUNT", null);
+			
+			
+			
+			String sql = "select cur_pri from stkdat2 s1 where ft_id = (select max(ft_id) from stkdat2 s2 where s2.id = '" + stkid + "')"; 
+			
+			log.info(sql);
+			rs = stm.executeQuery(sql);
+			
+			rs.next();
+			
+			double cur_pri = rs.getDouble("cur_pri");
+			
+			rs.close();
+			stm.close();
+			
+			int maxMnt = (int)(maxMnyPerTrade/cur_pri) / 100 * 100;
+			
+			if (maxMnt > 0)
+			{
+			    sql = "insert into pendingTrade select '" + stkid + "', case when max(id) is null then 0 else max(id) + 1 end, " + maxMnt + ", " + cur_pri + ", 0, 0.0, 'N', null, 1, sysdate(), sysdate() from pendingTrade where stock = '" + stkid + "'";
+			    log.info(sql);
+			    stm = con.createStatement();
+			    stm.execute(sql);
+			    stm.close();
+			    str = "buysuccess";
+			}
+		}
+		catch(Exception e) {
+			log.error(e.getCause(), e);
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getCause(), e);
+			}
+		}
+	    return str;
+	}
 }

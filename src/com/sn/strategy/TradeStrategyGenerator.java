@@ -26,6 +26,7 @@ import com.sn.strategy.algorithm.buypoint.PriceBoxBrkUpBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.PricePlusBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.PriceTurnBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.QtyBuyPointSelector;
+import com.sn.strategy.algorithm.buypoint.TopNMnyBuyPointSelector;
 import com.sn.strategy.algorithm.sellpoint.BalanceSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.BottomHammerSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.DaBanBalanceSellPointSelector;
@@ -36,6 +37,7 @@ import com.sn.strategy.algorithm.sellpoint.PriceBoxBrkBtnSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.PricePlusSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.PriceTurnSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.QtySellPointSelector;
+import com.sn.strategy.algorithm.sellpoint.TopNMnySellPointSelector;
 import com.sn.task.suggest.selector.DefaultStockSelector;
 
 public class TradeStrategyGenerator {
@@ -151,6 +153,42 @@ public class TradeStrategyGenerator {
         return bts;
     }
     
+    static public ITradeStrategy generatorStrategy44(boolean sim_mode) {
+        
+        List<IBuyPointSelector> buyPoints = new LinkedList<IBuyPointSelector>();
+        List<ISellPointSelector> sellPoints = new LinkedList<ISellPointSelector>();
+        
+        IBuyPointSelector bs0 = new TopNMnyBuyPointSelector(sim_mode);
+        ISellPointSelector ses0 = new TopNMnySellPointSelector(sim_mode);
+        
+        //IBuyPointSelector bs = new PricePlusBuyPointSelector(sim_mode);
+        //ISellPointSelector ses = new PricePlusSellPointSelector(sim_mode);
+        
+        
+//        IBuyPointSelector bs = new MacdBuyPointSelector();
+//        ISellPointSelector ses = new MacdSellPointSelector();
+//        IBuyPointSelector bs = new PriceTurnBuyPointSelector();
+//        ISellPointSelector ses = new PriceTurnSellPointSelector();
+//        IBuyPointSelector bs = new DefaultBuyPointSelector();
+//        ISellPointSelector ses = new DefaultSellPointSelector();
+        //ICashAccount ca = null;
+        //CashAcntManger.getDftAcnt();
+        //ca.initAccount();
+        IBuyPointSelector bbs = new BalanceBuyPointSelector(sim_mode);
+        ISellPointSelector bes = new BalanceSellPointSelector(sim_mode);
+        
+        
+        buyPoints.add(bs0);
+        //buyPoints.add(bs);
+        buyPoints.add(bbs);
+        
+        sellPoints.add(ses0);
+        sellPoints.add(bes);
+        
+        ITradeStrategy bts = new TradeStrategyImp(buyPoints, sellPoints , null, "TopNMnyTradeStrategy", sim_mode);
+        
+        return bts;
+    }
     static public ITradeStrategy generatorStrategy1(boolean sim_mode) {
         
         List<IBuyPointSelector> buyPoints = new LinkedList<IBuyPointSelector>();

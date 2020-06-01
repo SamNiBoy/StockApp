@@ -5,12 +5,15 @@ import="java.io.*,java.util.*,java.sql.*,javax.servlet.http.*,com.sn.db.DBManage
 <html>
 <head>
 <title>股市监控</title>
+
+<link rel="stylesheet" type="text/css" href="css/common.css" />
+<link rel="stylesheet" href="css/jquery-confirm.min.css" media="screen">
+
 <!-- 引入ECharts文件 -->
 <script type="text/javascript" src="./js/echarts.min.js" ></script>
 <script type="text/javascript" src="./js/jquery-3.5.0.min.js" ></script>
+<script type="text/javascript" src="./js/jquery-confirm.min.js" ></script>
 <script type="text/javascript" src="./js/stockchart.js" ></script>
-
-<link rel="stylesheet" type="text/css" href="css/common.css" />
  
 <script type="text/javascript">
 var myTextStyle = {
@@ -59,7 +62,17 @@ var myTextStyle = {
 	    <panel id="right">交易中的股票
 	    		<div id="tradingStocks"></div>
 	    </panel>
+
 	    </div>
+	    
+	    <panel class="bottom">金额最大股票
+	    <input id="fordate" style="width:150px;height:30px;">日期</input>
+	    <input id="topn" style="width:150px;height:30px;">TopN</input>
+	    <button id="buy" onclick="buy()" style="width:150px;height:40px;">买入</button>
+		<div id="topNmnystocks"></div>
+        </panel>
+        
+        
 	
 		<script type="text/javascript">
 
@@ -101,6 +114,7 @@ var myTextStyle = {
 	    
 	    listSuggestedStocks();
 	    listTradingStocks();
+	    listTopNMnyStocks();
 		
         </script>
 	</center>

@@ -112,7 +112,7 @@ public class JobScheduler {
         String stockSuggestTime = "0 05 19 ? * MON-SUN";
         //String stockSuggestTime = "0 05 11 ? * MON-SUN";
         //String stockSimTime = "0 30 15 ? * MON-FRI";
-        String stockSimTime = "0 25 23 ? * MON-SUN";
+        String stockSimTime = "0 52 22 ? * MON-SUN";
         String stockSimResCollectorTime = "*/10 * * ? * MON-SUN";
         
         
@@ -126,17 +126,17 @@ public class JobScheduler {
 //                 + trigger_StockParamSearch.getCronExpression());
         
         
-        JobDetail job_SuggestStock = newJob(SuggestStock.class).withIdentity("SuggestStock", "StockApp").build();
-        CronTrigger trigger_SuggestStock = newTrigger().withIdentity("SuggestStock", "StockApp").withSchedule(cronSchedule(stockSuggestTime)).build();
-        
-        Date ft = sched.scheduleJob(job_SuggestStock, trigger_SuggestStock);
-        log.info(job_SuggestStock.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
-                 + trigger_SuggestStock.getCronExpression());
+//        JobDetail job_SuggestStock = newJob(SuggestStock.class).withIdentity("SuggestStock", "StockApp").build();
+//        CronTrigger trigger_SuggestStock = newTrigger().withIdentity("SuggestStock", "StockApp").withSchedule(cronSchedule(stockSuggestTime)).build();
+//        
+//        Date ft = sched.scheduleJob(job_SuggestStock, trigger_SuggestStock);
+//        log.info(job_SuggestStock.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
+//                 + trigger_SuggestStock.getCronExpression());
         
         JobDetail job_ResetDataBeforeMarketOpen = newJob(ResetDataBeforeMarketOpen.class).withIdentity("ResetDataBeforeMarketOpen", "StockApp").build();
         CronTrigger trigger_ResetDataBeforeMarketOpen = newTrigger().withIdentity("ResetDataBeforeMarketOpen", "StockApp").withSchedule(cronSchedule(houseKeepingBeforeMarketOpen)).build();
         
-        ft = sched.scheduleJob(job_ResetDataBeforeMarketOpen, trigger_ResetDataBeforeMarketOpen);
+        Date ft = sched.scheduleJob(job_ResetDataBeforeMarketOpen, trigger_ResetDataBeforeMarketOpen);
         log.info(job_ResetDataBeforeMarketOpen.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
                  + trigger_ResetDataBeforeMarketOpen.getCronExpression());
         
