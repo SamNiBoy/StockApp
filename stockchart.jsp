@@ -58,6 +58,8 @@ var myTextStyle = {
 	    <panel id="middle">
 	        <button class="actinbtn" id="addToTrade" onclick="addToTrade()" style="width:150px;height:60px;">添加到交易池-></button>
 	        <button class="actinbtn" id="removeFromTrade" onclick="removeFromTrade()" style="width:150px;height:60px;">移动到推荐池<-</button>
+	        <button class="actinbtn" id="addNewToTrade" onclick="addNewToTrade()" style="width:150px;height:60px;">添加到交易池</button>
+	        <input id="stockToAdd" style="width:150px;height:40px;"></input>
 	    </panel>
 	    <panel id="right">交易中的股票
 	    		<div id="tradingStocks"></div>
@@ -111,6 +113,7 @@ var myTextStyle = {
 	    
 	    setInterval(drawTradeSummary, 10000);
 	    setInterval(drawTradeRecords, 10000);
+	    setInterval(listTopNMnyStocks, 300000);
 	    
 	    listSuggestedStocks();
 	    listTradingStocks();

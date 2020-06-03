@@ -1205,7 +1205,7 @@ public class Stock2 implements Comparable<Stock2>{
             return true;
         }
         
-        boolean LoadData(String stat_dte, String end_dte) {
+        public boolean LoadData(String stat_dte, String end_dte) {
             int lst_ft_id = 0;
             if (!ft_id_lst.isEmpty()) {
                 lst_ft_id = ft_id_lst.get(ft_id_lst.size() - 1);
@@ -1658,7 +1658,17 @@ public class Stock2 implements Comparable<Stock2>{
     }
 
     public void setSuggestedComment(String suggested_comment) {
-        this.suggested_comment = suggested_comment;
+    	
+    	if (this.suggested_comment != null && this.suggested_comment.length() > 0) {
+    		if (this.suggested_comment.indexOf(suggested_comment) >= 0) {
+        		log.info("Stock:" + id + " already suggested with comment:" + suggested_by + ", skip adding duplicate comment.");
+        		return;
+        	}
+            this.suggested_comment += "|" + suggested_comment;
+    	}
+    	else {
+            this.suggested_comment = suggested_comment;
+    	}
     }
     
     public double getSuggestedScore() {
@@ -1682,7 +1692,18 @@ public class Stock2 implements Comparable<Stock2>{
     }
 
     public void setSuggestedBy(String suggested_by) {
-        this.suggested_by = suggested_by;
+    	
+    	
+    	if (this.suggested_by != null && this.suggested_by.length() > 0) {
+    		if (this.suggested_by.indexOf(suggested_by) >= 0) {
+        		log.info("Stock:" + id + " already suggested by:" + suggested_by + ", skip add deuplicate suggestor.");
+        		return;
+        	}
+            this.suggested_by += "|" + suggested_by;
+    	}
+    	else {
+    		this.suggested_by = suggested_by;
+    	}
     }
 
     public String getTradedBySelector() {

@@ -96,12 +96,12 @@ public class LoadStk {
                         log.info("Whats wrong here!");
                     }
                     
-                    String sql = "insert into stk (id, area, name, py, bu) values('"
+                    String sql = "insert into stk (id, area, name, py, bu, avgpri1, avgpri2, avgpri3, add_dt, mod_dt) values('"
                             + stkID + "', '"
                             + area + "', '"
                             + stkName + "', '"
                             + "py" + "', '"
-                            + "NoDef" + "')";
+                            + "NoDef" + "', null, null, null, sysdate(), sysdate())";
                     log.info(sql);
                     stm.executeUpdate(sql);
                     loadedCnt++;
@@ -141,12 +141,12 @@ public class LoadStk {
                     
                     String stkName = str.substring(21, idx);
                     
-                    String sql = "insert into stk (id, area, name, py, bu) values('"
+                    String sql = "insert into stk (id, area, name, py, bu, avgpri1, avgpri2, avgpri3, add_dt, mod_dt) values('"
                             + stkID + "', '"
                             + area + "', '"
                             + stkName + "', '"
                             + "py" + "', '"
-                            + "NoDef" + "')";
+                            + "NoDef" + "', null, null, null, sysdate(), sysdate())";
                     log.info(sql);
                     stm.executeUpdate(sql);
                     loadedCnt++;
@@ -186,12 +186,12 @@ public class LoadStk {
                     
                     String stkName = str.substring(21, idx);
                     
-                    String sql = "insert into stk (id, area, name, py, bu) values('"
+                    String sql = "insert into stk (id, area, name, py, bu, avgpri1, avgpri2, avgpri3, add_dt, mod_dt) values('"
                             + stkID + "', '"
                             + area + "', '"
                             + stkName + "', '"
                             + "py" + "', '"
-                            + "NoDef" + "')";
+                            + "NoDef" + "', null, null, null, sysdate(), sysdate())";
                     log.info(sql);
                     stm.executeUpdate(sql);
                     loadedCnt++;
@@ -220,7 +220,7 @@ public class LoadStk {
 
         String values[] = stk.split(",");
 
-        String sql = "insert into stk (id, area, name, py, bu) values('"
+        String sql = "insert into stk (id, area, name, py, bu, avgpri1, avgpri2, avgpri3, add_dt, mod_dt) values('"
                 + values[1] + "', '"
                 + values[0] + "', '"
                 + values[2] + "', '"

@@ -67,11 +67,11 @@ public class PriceShakingStockSelector implements IStockSelector {
         
         int jump_area_cnt = 0;
         
-    	if (SuggestStock.calculateStockTrend(s.getID()) < 0)
-    	{
-    		log.info("skip stock:" + s.getID() + "/" + s.getName() + " as trend is going down.");
-    		return false;
-    	}
+//    	if (SuggestStock.calculateStockTrend(s.getID()) <= 0)
+//    	{
+//    		log.info("skip stock:" + s.getID() + "/" + s.getName() + " as trend is going down.");
+//    		return false;
+//    	}
         
         Connection con = DBManager.getConnection();
         Statement stm = null;

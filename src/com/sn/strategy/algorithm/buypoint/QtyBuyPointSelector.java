@@ -151,7 +151,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 
 				//boolean qtyPlused = stk.isLstQtyPlused();
 				boolean priceTurnedAround = stk.priceUpAfterSharpedDown(2);
-				boolean con2 = stk.isLstQtyPlused(2);
+				boolean con2 = stk.isLstQtyPlused(2) || (hour == 9 && minutes <= 30);
 				
 				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", priceTurnedAround:" + priceTurnedAround + ", isLstQtyPlused:" + con2);
 				

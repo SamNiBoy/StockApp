@@ -23,6 +23,9 @@ insert into param values('SIM_DAYS', 'SIMULATION', 5,null, '', '', 'How many day
 insert into param values('SIM_SHIFT_DAYS', 'SIMULATION', 1,null, '', '', 'How many days shift data for simulation, 1 means simulating on last - 1 day.', sysdate(),sysdate());
 insert into param values('SIM_THREADS_COUNT', 'SIMULATION', 2,null, '', '', 'How many thread in parallel to run the simulation.', sysdate(),sysdate());
 insert into param values('SIM_STOCK_COUNT_FOR_EACH_THREAD', 'SIMULATION', 10,null, '', '', 'How many stocks to be run simulation per thread at one time.', sysdate(),sysdate());
+insert into param values('SIM_ON_GZ_STOCK_ONLY', 'SIMULATION', 1,null, '', '', 'Simulation only for gzed stocks.', sysdate(),sysdate());
+insert into param values('RESUGGEST_STOCK_BEFORE_SIM', 'SIMULATION', 1,null, '', '', 'Before simulation for each day, re-suggest stocks into trading pool.', sysdate(),sysdate());
+
 
 insert into param values('ARCHIVE_DAYS_OLD', 'ARCHIVE', 15,null, '', '', 'How many days stock data to keep in prod db.', sysdate(),sysdate());
 insert into param values('PURGE_DAYS_OLD', 'ARCHIVE', 30,null, '', '', 'How many days stock data to keep in archive db.', sysdate(),sysdate());
@@ -68,6 +71,7 @@ insert into param values('TRADING_AT_LOCAL', 'TRADING',1,null, '', '', 'Do tradi
 insert into param values('TRADING_AT_LOCAL_WITH_SIM', 'TRADING',1,null, '', '', 'Do trading at local with in simulation mode, other then send to Tradex trading system or with GF trader.', sysdate(),sysdate());
 
 insert into param values('NUM_STOCK_IN_TRADE', 'TRADING',10,null, '', '', 'Do you want how many stocks in trading for suggest stock job to maintain.', sysdate(),sysdate());
+insert into param values('CAN_SELL_SAME_DAY', 'TRADING',1,null, '', '', 'Can we sell stock bought same day? otherwise only can sell at next day.', sysdate(),sysdate());
 
 insert into param values('GENERATION_SIZE', 'GAPARAM',20,null, '', '', 'How many entities per generation for GA algorithm.', sysdate(),sysdate());
 insert into param values('MAX_TRAIN_LOOP', 'GAPARAM',5,null, '', '', 'How many iterations to train the GA parameters.', sysdate(),sysdate());

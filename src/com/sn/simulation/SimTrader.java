@@ -146,11 +146,11 @@ public class SimTrader implements Job{
     	String preDate = "";
     	try {
         	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
-        	simOnGzStk = false;
+        	simOnGzStk = (ParamManager.getIntParam("SIM_ON_GZ_STOCK_ONLY", "SIMULATION", null) == 1);
     		Statement stm = null;
     		ResultSet rs = null;
     		String sql = "";
-    		boolean disable_suggest_stock = true;
+    		boolean disable_suggest_stock = (ParamManager.getIntParam("RESUGGEST_STOCK_BEFORE_SIM", "SIMULATION", null) == 0);
     		boolean no_enough_date = false;
     		
             //ITradeStrategy s1 = TradeStrategyGenerator.generatorStrategy1(true);
@@ -213,11 +213,11 @@ public class SimTrader implements Job{
         		log.info("Suggest stock on date:" + preDate + " and sim trading on date:" + tradeDate);
         		if (!disable_suggest_stock)
         		{
-        			//SuggestStock ss = new SuggestStock(preDate, false);
-        			//ss.execute(null);
-        			SuggestStock.setOnDte(preDate);
-        			SuggestStock.calStockParam();
-        			ParamManager.refreshAllParams();
+        			SuggestStock ss = new SuggestStock(preDate, false);
+        			ss.execute(null);
+//        			SuggestStock.setOnDte(preDate);
+//        			SuggestStock.calStockParam();
+//        			ParamManager.refreshAllParams();
         		}
         		
         		if (!loadStocksForSim(simOnGzStk))
@@ -290,13 +290,13 @@ public class SimTrader implements Job{
         stks.clear();
         
         if (simOnGzStk) {
-            sql = "select distinct id from usrStk where gz_flg = 1 and stop_trade_mode_flg = 0 and suggested_by <> 'SYSTEM_SUGGESTER' order by id";
+            sql = "select distinct id from usrStk where stop_trade_mode_flg = 0 order by id";
         }
         else {
             //We randomly select 5% data for simulation.
                 sql = "select * from stk " +
                       " where floor(1+rand()*100) <= 100 " +
-                      "   and id not in (select id from usrStk where gz_flg = 1) " +
+                      "   and id not in (select id from usrStk where stop_trade_mode_flg = 0) " +
                       "                order by id";
         }
         

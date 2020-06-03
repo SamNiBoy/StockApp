@@ -45,3 +45,16 @@ on s1.id = s2.id
 and s1.dte1 > s2.dte2
 and not exists (select 'x' from (select max(b1_num) mx_b1_num, max(s1_num) mx_s1_num, id, left(dl_dt, 10) dte3 from stkdat2 group by id, left(dl_dt, 10)) s3 where s3.id = s1.id and s3.dte3 < s1.dte1 and s3.dte3 > s2.dte2)
 where s1.mx_b1_num > 10 * s2.mx_b1_num and s1.mx_s1_num > 10 * s2.mx_s1_num;
+
+//Find stock raised most from stkdat2 table:
+
+select stk.id, stk.name, (s1.cur_pri - s2.cur_pri) / s2.yt_cls_pri pct 
+from stkdat2 s1
+join (select id, max(ft_id) mx_ft_id, min(ft_id) mn_ft_id from stkdat2 group by id) t2
+on s1.id = t2.id
+and s1.ft_id = t2.mx_ft_id
+join stkdat2 s2
+on s2.id = t2.id
+and s2.ft_id = t2.mn_ft_id
+join stk on s1.id = stk.id
+order by pct desc;

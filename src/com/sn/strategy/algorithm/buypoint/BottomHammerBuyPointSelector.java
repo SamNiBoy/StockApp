@@ -51,6 +51,14 @@ public class BottomHammerBuyPointSelector implements IBuyPointSelector {
         	return false;
         }
         
+		Double yt_cls_pri = stk.getYtClsPri();
+		Double cur_pri = stk.getCur_pri();
+		
+		if ((yt_cls_pri - cur_pri) / yt_cls_pri > 0.01) {
+			log.info("skip buy as we got price lost today...");
+			return false;
+		}
+		
         Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
         
         StockBuySellEntry sbs = lstTrades.get(stk.getID());
@@ -60,7 +68,8 @@ public class BottomHammerBuyPointSelector implements IBuyPointSelector {
         	return false;
         }
         
-        BottomHammerSelector bhs = new BottomHammerSelector(stk.getDl_dt().toString().substring(0, 10));
+        BottomHammerSelector bhs = new BottomHammerSelector(t1.toString().substring(0, 10));
+        bhs.setMinValues(0.8, 7);
         
         if (bhs.isTargetStock(stk, ac)) {
         	log.info("but stock:" + stk.getID() + " as it matched bottom hammer shape.");

@@ -99,7 +99,10 @@ public class TradeStrategyImp implements ITradeStrategy {
             	if (sbs.is_buy_point) {
                     long millisec = t1.getTime() - t0.getTime();
                     long hrs = millisec / (1000*60*60);
-                         if (hrs <= 12) {
+                    
+                    int can_sell_same_day = ParamManager.getIntParam("CAN_SELL_SAME_DAY", "TRADING", null);
+                    
+                    if (hrs <= 12 && can_sell_same_day != 1) {
                     	log.info("can not account qty as it bought less than 12 hours.");
                     	continue;
                     }

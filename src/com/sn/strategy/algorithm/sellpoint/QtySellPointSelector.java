@@ -75,8 +75,9 @@ public class QtySellPointSelector implements ISellPointSelector {
         
         long millisec = t1.getTime() - t0.getTime();
         long hrs = millisec / (1000*60*60);
+        int can_sell_same_day = ParamManager.getIntParam("CAN_SELL_SAME_DAY", "TRADING", stk.getID());
         
-        if (hrs <= 12) {
+        if (hrs <= 12 && can_sell_same_day != 1) {
         	log.info("can not sell stock which is bought at same day, return false.");
         	return false;
         }
@@ -133,7 +134,7 @@ public class QtySellPointSelector implements ISellPointSelector {
 			double curPct = (cur_pri - minPri) / yt_cls_pri;
 			
 			boolean con1 = maxPct > tradeThresh && curPct > maxPct * (1 - margin_pct);
-			boolean con2 = stk.isLstQtyPlused(2);
+			boolean con2 = stk.isLstQtyPlused(2) || (hour == 9 && minutes <= 30);
 			boolean priceTurnedAround = stk.priceDownAfterSharpedUp(2);
 			
 			log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + "yt_cls_pri:" + yt_cls_pri + " maxPri:" + maxPri + " minPri:"
@@ -144,17 +145,6 @@ public class QtySellPointSelector implements ISellPointSelector {
                 stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + (1 - margin_pct) + " also priceTurnedAround:" + priceTurnedAround);
 				return true;
 			}
-            
-//			if (sbs != null && sbs.is_buy_point) {
-//			    curPct = (cur_pri - sbs.price) / yt_cls_pri;
-//			    if (curPct >= tradeThresh) {
-//			        log.info("We have bought unbalance, price reached tradeThresh:" + tradeThresh + ", sell it.");
-//                    stk.setTradedBySelector(this.selector_name);
-//                    stk.setTradedBySelectorComment("cur_pri > pre_buy_pri:[" + cur_pri + "," + sbs.price + "], curPct:" + curPct + " > tradeTresh:" + tradeThresh);
-//                    return true;
-//			    }
-//			}
-			
 		} else {
 			log.info("isGoodSellPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
 		}
@@ -207,29 +197,29 @@ public class QtySellPointSelector implements ISellPointSelector {
 	public int getSellQty(Stock2 s, ICashAccount ac) {
 		// TODO Auto-generated method stub
         int sellMnt = 0;
-//        if (ac != null) {
-//            int sellableAmt = (int) (ac.getMaxMnyForTrade() / s.getCur_pri());
-//            sellMnt =  sellableAmt - sellableAmt % 100;
-//            
-//            if (!sim_mode)
-//            {
-//                  int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
-//                  if (tradeLocal == 1)
-//                  {
-//                      log.info("Trade at local sellable amount is zero, user max mny per trade to get the qty:" + sellMnt);
-//                  }
-//                  else
-//                  {
-//                       sellableAmt = ac.getSellableAmt(s.getID(), null);
-//                       if (sellMnt > sellableAmt)
-//                       {
-//                            log.info("Tradex sellable amount:" + sellableAmt + " less than calculated amt:" + sellMnt + " use sellabeAmt.");
-//                            sellMnt = sellableAmt;
-//                       }
-//                  }
-//             }
-//             log.info("getSellQty, sellableAmt:" + sellableAmt + " sellMnt:" + sellMnt);
-//        }
+        if (ac != null) {
+            int sellableAmt = (int) (ac.getMaxMnyForTrade() / s.getCur_pri());
+            sellMnt =  sellableAmt - sellableAmt % 100;
+            
+            if (!sim_mode)
+            {
+                  int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
+                  if (tradeLocal == 1)
+                  {
+                      log.info("Trade at local sellable amount is zero, user max mny per trade to get the qty:" + sellMnt);
+                  }
+                  else
+                  {
+                       sellableAmt = ac.getSellableAmt(s.getID(), null);
+                       if (sellMnt > sellableAmt)
+                       {
+                            log.info("Tradex sellable amount:" + sellableAmt + " less than calculated amt:" + sellMnt + " use sellabeAmt.");
+                            sellMnt = sellableAmt;
+                       }
+                  }
+             }
+             log.info("getSellQty, sellableAmt:" + sellableAmt + " sellMnt:" + sellMnt);
+        }
         
         int sellableAmnt = TradeStrategyImp.getSellableMntForStockOnDate(s.getID(), s.getDl_dt());
         

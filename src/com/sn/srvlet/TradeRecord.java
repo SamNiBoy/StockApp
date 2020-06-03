@@ -366,10 +366,31 @@ public class TradeRecord{
 		Connection con = DBManager.getConnection();
 		try {
 			Statement stm = con.createStatement();
-			String sql = "update usrstk set suggested_by = 'SYSTEM_GRANTED_TRADER', stop_trade_mode_flg = 0, mod_dt = sysdate() where id = '" + stkid + "'";
+			String sql = "select case when u.id is null then 0 else 1 end has_usrstk_flg from stk s left join usrstk u on s.id = u.id where s.id = '" + stkid + "'";
 			
-			log.info(sql);
-			stm.execute(sql);
+			ResultSet rs = stm.executeQuery(sql);
+			if (rs.next()) {
+				int hasusrstkflg = rs.getInt("has_usrstk_flg");
+				
+				if (hasusrstkflg == 1) {
+			        sql = "update usrstk set suggested_by = 'SYSTEM_GRANTED_TRADER', stop_trade_mode_flg = 0, mod_dt = sysdate() where id = '" + stkid + "'";
+			    }
+			    else {
+			    	sql = "insert into usrStk values ('osCWfs-ZVQZfrjRK0ml-eEpzeop0','" + stkid + "',1,0,'SYSTEM_GRANTED_TRADER','Manual','User manual suggested', 0,sysdate(), sysdate())";
+			    }
+				
+				rs.close();
+				stm.close();
+				
+				stm = con.createStatement();
+				log.info(sql);
+				stm.execute(sql);
+			}
+			else {
+				log.info("does not exists stock:" + stkid + " can not add.");
+				rs.close();
+				stm.close();
+			}
 		}
 		catch(Exception e) {
 			log.error(e.getCause(), e);
@@ -524,8 +545,9 @@ public class TradeRecord{
 		try {
 			Statement stm = con.createStatement();
 			ResultSet rs = null;
-			String sql = "select distinct left(s1.dl_dt, 16) mytimestamp, s1.cur_pri, s1.dl_mny_num, s1.dl_stk_num, (s1.cur_pri - s1.yt_cls_pri)/s1.yt_cls_pri  pct, s2.name, s2.id from stkdat2 s1 join stk s2 on s1.id = s2.id " + 
+			String sql = "select max(dl_dt) mx_dl_dt, left(s1.dl_dt, 16) mytimestamp, s1.cur_pri, s1.dl_mny_num, s1.dl_stk_num, (s1.cur_pri - s1.yt_cls_pri)/s1.yt_cls_pri  pct, s2.name, s2.id from stkdat2 s1 join stk s2 on s1.id = s2.id " + 
 					" where left(s1.dl_dt,10) = " + timeCls +
+					" group by left(s1.dl_dt, 16), s1.cur_pri, s1.dl_mny_num, s1.dl_stk_num, s1.yt_cls_pri, s2.name, s2.id " +
 					" order by mytimestamp desc, dl_mny_num desc";
 			
 			log.info(sql);
@@ -534,13 +556,29 @@ public class TradeRecord{
 			int i = 0;
 			DecimalFormat df = new DecimalFormat("##.##");
 			String pre_timestamp = "", cur_timestamp = "";
+			String cur_id = "", pre_id = "";
 			double cur_pri = 0.0;
 			double pct = 0.0;
+			Timestamp pre_ts = null, cur_ts = null;
 			
 			while(rs.next()) {
 				   i++;
 				   
 				   cur_timestamp = rs.getString("mytimestamp");
+				   cur_id = rs.getString("id");
+				   cur_ts = rs.getTimestamp("mx_dl_dt");
+				   
+				   if (pre_ts != null && !cur_timestamp.equals(pre_timestamp)) {
+					   long ms = pre_ts.getTime()- cur_ts.getTime();
+					   //log.info("pre_ts:" + pre_ts.toString() + ", cur_ts:" + cur_ts.toString() + ", passed:" + (ms / (1000 * 60)) + " minutes.");
+					   if (ms / (1000 * 60) < 10) {
+						   continue;
+					   }
+				   }
+				   
+				   if (cur_id.equals(pre_id)) {
+					   continue;
+				   }
 				   
 				   if (i > topn && cur_timestamp.equals(pre_timestamp)) {
 					   continue;
@@ -549,9 +587,13 @@ public class TradeRecord{
 					   i = 1;
 				   }
 				   
-				   pre_timestamp = cur_timestamp;
-				   
+				   if (!cur_timestamp.equals(pre_timestamp)) {
+				       pre_timestamp = cur_timestamp;
+				       pre_ts = cur_ts;
+				   }
+				   pre_id = cur_id;
 				   cur_pri = rs.getDouble("cur_pri");
+				   
 				   pct = rs.getDouble("pct");
 			       str += "<tr id=\"" + rs.getString("id") + "_" + cur_timestamp + "\"" + (i == 1? "class = \"firstRecord\"" : "") + ">" +
 			       "<td>" + cur_timestamp + "</td> " +

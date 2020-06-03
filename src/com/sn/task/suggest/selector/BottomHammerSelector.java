@@ -29,7 +29,7 @@ import com.sn.stock.StockMarket;
  */
 public class BottomHammerSelector implements IStockSelector {
 
-    static Logger log = Logger.getLogger(ClosePriceUpSelector.class);
+    static Logger log = Logger.getLogger(BottomHammerSelector.class);
     
     double topPct = 0.8;
     int minDays = 15;
@@ -38,6 +38,11 @@ public class BottomHammerSelector implements IStockSelector {
     
     public BottomHammerSelector (String s) {
     	on_dte = s;
+    }
+    
+    public void setMinValues(double minpct, int mindys) {
+    	topPct = minpct;
+    	minDays = mindys;
     }
     
     /**
@@ -81,25 +86,30 @@ public class BottomHammerSelector implements IStockSelector {
 			rs.close();
 			stm.close();
 			
-			stm = con.createStatement();
+			if (max_td_ft_id > 0) {
+			    sql = "select cur_pri td_cls_pri from stkdat2 "
+			        + " where id = '" + s.getID() + "'"
+			        + "   and ft_id = " + max_td_ft_id;
+			    
+			    log.info(sql);
+			    
+				stm = con.createStatement();
+			    rs = stm.executeQuery(sql);
+			    
+			    rs.next();
+			    td_cls_pri = rs.getDouble("td_cls_pri");
+			    
+			    rs.close();
+			    stm.close();
+			}
+			else {
+				log.info("No data stock:" + s.getID() + "on date:" + on_dte);
+				return false;
+			}
 			
-			sql = "select cur_pri td_cls_pri from stkdat2 "
-			    + " where id = '" + s.getID() + "'"
-			    + "   and ft_id = " + max_td_ft_id;
-			
-			log.info(sql);
-			
-			rs = stm.executeQuery(sql);
-			
-			rs.next();
-			td_cls_pri = rs.getDouble("td_cls_pri");
-			
-			rs.close();
-			stm.close();
-			
-			log.info("Got min/max price for stock:" + s.getID() + " td_hst_pri/td_lst_pri: [" + td_hst_pri + "," + td_lst_pri + "]" + " td_opn_pri/td_cls_pri: [" + td_opn_pri + "," + td_cls_pri + "]");
+			log.info("Got min/max price for stock:" + s.getID() + " td_hst_pri/td_lst_pri: [" + td_hst_pri + "," + td_lst_pri + "]" + " td_opn_pri/td_cls_pri: [" + td_opn_pri + "," + td_cls_pri + "], shaking pct:" + (td_hst_pri - td_lst_pri) / td_cls_pri);
             
-            if(td_cls_pri > td_opn_pri && td_opn_pri >= (td_lst_pri + topPct * (td_hst_pri - td_lst_pri))) {
+            if(td_cls_pri > td_opn_pri && td_opn_pri >= (td_lst_pri + topPct * (td_hst_pri - td_lst_pri)) && (td_hst_pri - td_lst_pri) / td_cls_pri > 0.04) {
             	
     			stm = con.createStatement();
     			
@@ -122,7 +132,7 @@ public class BottomHammerSelector implements IStockSelector {
     			
     			log.info("td_lst_pri" + td_lst_pri + " close to min_cur_pri:" + min_cur_pri + " for past:" + minDays + " days, max_cur_pri:" + max_cur_pri);
             	
-            	if (td_lst_pri <= min_cur_pri + 0.1 && (max_cur_pri - min_cur_pri) / td_cls_pri > 0.3)
+            	if (Math.abs((td_lst_pri - min_cur_pri) / td_cls_pri) < 0.01 && (max_cur_pri - min_cur_pri) / td_cls_pri > 0.3)
             	{
                     s.setSuggestedBy(this.suggest_by);
                     s.setSuggestedComment("td_cls_pri:" + td_cls_pri + " is higher than td_opn_pri:" + td_opn_pri + " and formed a bottom hammer shape.");
@@ -170,6 +180,10 @@ public class BottomHammerSelector implements IStockSelector {
 		else {
 			topPct -= 0.02;
 			minDays--;
+		}
+		
+		if (minDays < 7) {
+			minDays = 7;
 		}
 		
 		if (topPct <= 0.7) {

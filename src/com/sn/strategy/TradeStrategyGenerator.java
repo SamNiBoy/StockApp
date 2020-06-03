@@ -42,7 +42,7 @@ import com.sn.task.suggest.selector.DefaultStockSelector;
 
 public class TradeStrategyGenerator {
 
-    static public ITradeStrategy generatorStrategyyyy(boolean sim_mode) {
+    static public ITradeStrategy generatorStrategyxxx(boolean sim_mode) {
         
         List<IBuyPointSelector> buyPoints = new LinkedList<IBuyPointSelector>();
         List<ISellPointSelector> sellPoints = new LinkedList<ISellPointSelector>();
@@ -74,7 +74,7 @@ public class TradeStrategyGenerator {
         sellPoints.add(ses0);
 //        sellPoints.add(bes);
         
-        ITradeStrategy bts = new TradeStrategyImp(buyPoints, sellPoints , null, "QtyTradeStrategy", sim_mode);
+        ITradeStrategy bts = new TradeStrategyImp(buyPoints, sellPoints , null, "BottomHammerTradeStrategy", sim_mode);
         
         return bts;
     }

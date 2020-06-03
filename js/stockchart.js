@@ -48,6 +48,38 @@ function switchRefresh() {
             });
         }
         
+        function addNewToTrade() {
+        	//alert(' has selected');
+        	var has_success=false;
+        			//alert($(this).attr('id') + ' has selected');
+        			
+        	var stkid = $("#stockToAdd").val();
+        	if (stkid !== "") {
+                    $.ajax({
+                        type:"GET",
+                        url:"/StockApp/GetIndex",
+                         data:{
+                             type: "putStockToTrading",
+                             id: stkid
+                         },
+                        success:function (result) {
+                        	 
+                        	 if (result == "success")
+                        	 {
+                        		 //alert('put stock ' + $(this).attr('id') + ' into trade success');
+                        	 }
+                        	 
+                        	 has_success = true;
+                        	 listSuggestedStocks();
+                        	 listTradingStocks();
+                        },
+                        error:function (err) {
+                            //alert("系统错误-TRADERECORD.jsp-ajax");
+                        }
+                    });
+        	   }
+        }
+        
         function removeFromTrade() {
         	
         	var has_success=false;
@@ -603,7 +635,6 @@ function drawTradeSummary() {
              
         	 listSuggestedStocks();
         	 listTradingStocks();
-        	 listTopNMnyStocks();
         },
         error:function (err) {
             //alert("系统错误-TRADERECORD.jsp-ajax");
@@ -708,6 +739,7 @@ function listTradingStocks() {
 }
 
 function listTopNMnyStocks() {
+	
 	if (refresh_flg == false)
 		return;
 	var fordate = $("#fordate").val();

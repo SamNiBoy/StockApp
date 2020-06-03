@@ -65,7 +65,7 @@ public class SuggestStock implements Job {
 	 */
 	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock("2020-05-29", false);
+		SuggestStock fsd = new SuggestStock("2020-06-03", false);
 		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);
@@ -122,7 +122,7 @@ public class SuggestStock implements Job {
 		//initDelay = id;
 		//delayBeforNxtStart = dbn;
 		//selectors.add(new DefaultStockSelector());
-		selectors.add(new PriceStockSelector());
+		selectors.add(new PriceStockSelector(on_dte));
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
 		//selectors.add(new DaBanStockSelector(on_dte));
@@ -169,6 +169,8 @@ public class SuggestStock implements Job {
 			while(tryCnt-- > 0) {
 			    for (String stk : stks.keySet()) {
 			    	Stock2 s = stks.get(stk);
+			    	s.setSuggestedBy("");
+			    	s.setSuggestedComment("");
                     
 			    	/*if (!s.getID().equals("002349") && !s.getID().equals("603200") && !s.getID().equals("600882"))
 			    	{
@@ -216,7 +218,7 @@ public class SuggestStock implements Job {
 			    	}
 			    	loop_nxt_stock = false;
 			    }
-			    if (stocksWaitForMail.size() < NumOfStockForTrade && tryCnt > 0) {
+			    if (stocksWaitForMail.size() < NumOfStockForTrade / 2 && tryCnt > 0) {
 			    	log.info("stocksWaitForMail is " + stocksWaitForMail.size() + " less than NumOfStockForTrade:" + NumOfStockForTrade + ", tryHarderCriteria set to false");
 			    	tryHarderCriteria = false;
 			    }
@@ -230,7 +232,7 @@ public class SuggestStock implements Job {
 		    			suggestStock(s2);
 			    	}
 			    	electStockforTrade();
-			    	calStockParam();
+			    	//calStockParam();
 			    	if (stocksWaitForMail.size() > 0 && needMail) {
 			    	    rso.addStockToSuggest(stocksWaitForMail);
 			    	    rso.update();
@@ -533,7 +535,7 @@ public class SuggestStock implements Job {
 		log.info("Total granted:" + grantCnt + " stocks for trading.");
 	}
 	
-	private static void putStockToStopTradeMode(String stkid) {
+	public static void putStockToStopTradeMode(String stkid) {
 		String sql = "";
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
@@ -690,26 +692,32 @@ public class SuggestStock implements Job {
 			rs.close();
 			stm.close();
 			
-			stm = con.createStatement();
-			
-			sql = "select cur_pri td_cls_pri from stkdat2 "
-			    + " where id = '" + stkid + "'"
-			    + "   and ft_id = " + max_td_ft_id;
-			
-			log.info(sql);
-			
-			rs = stm.executeQuery(sql);
-			
-			rs.next();
-			td_cls_pri = rs.getDouble("td_cls_pri");
-			
-			rs.close();
-			stm.close();
+			if (max_td_ft_id > 0) {
+			    sql = "select cur_pri td_cls_pri from stkdat2 "
+			        + " where id = '" + stkid + "'"
+			        + "   and ft_id = " + max_td_ft_id;
+			    
+			    log.info(sql);
+			    
+			    stm = con.createStatement();
+			    rs = stm.executeQuery(sql);
+			    
+			    rs.next();
+			    td_cls_pri = rs.getDouble("td_cls_pri");
+			    
+			    rs.close();
+			    stm.close();
+			}
+			else {
+				log.info("not able to calculate trend as no data.");
+				return trend;
+			}
 			
 			log.info("Got min/max price for stock:" + stkid + " yt_opn_pri/yt_cls_pri: [" + yt_opn_pri + "," + yt_cls_pri + "]" + " td_opn_pri/td_cls_pri: [" + td_opn_pri + "," + td_cls_pri + "]");
+			log.info("Got min/max price for stock:" + stkid + " td_hst_pri/td_lst_pri: [" + td_hst_pri + "," + td_lst_pri + "]" + " td_cls_pri >= td_hst_pri: " + (td_cls_pri >= td_hst_pri) + ", body pct:" + (td_cls_pri - td_opn_pri) / (td_hst_pri - td_lst_pri));
 			if (yt_opn_pri > 0 && td_opn_pri > 0 && yt_cls_pri > 0 && td_cls_pri > 0) 
 			{
-	  			if (td_opn_pri > yt_opn_pri && td_cls_pri > yt_cls_pri) {
+	  			if (td_opn_pri > yt_opn_pri && td_cls_pri > yt_cls_pri && (td_cls_pri >= td_hst_pri) && (td_cls_pri - td_opn_pri) / (td_hst_pri - td_lst_pri) >= 0.5) {
 	  				trend = 1;
 				}
 				else if ((td_opn_pri < yt_opn_pri && td_cls_pri < yt_cls_pri) || ((td_cls_pri - yt_cls_pri) / yt_cls_pri < -0.05)) {
@@ -842,10 +850,8 @@ public class SuggestStock implements Job {
 		stocksWaitForMail.clear();
 		
 	    //String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
-		String sim_prefix = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null);
-	      
 		try {
-			sql = "delete from usrStk where not exists (select 'x' from sellbuyrecord s where s.stkid = usrStk.id) ";
+			sql = "delete from usrStk where not exists (select 'x' from sellbuyrecord s where s.stkid = usrStk.id)";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);
