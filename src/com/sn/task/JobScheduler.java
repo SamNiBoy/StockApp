@@ -21,6 +21,7 @@ import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 import com.sn.task.calstkstats.CalStkStats;
+import com.sn.task.calstkstats.CalStkTopnVOL;
 import com.sn.task.ga.StockParamSearch;
 import com.sn.task.fetcher.StockDataFetcher;
 import com.sn.task.fetcher.GzStockDataFetcher;
@@ -109,11 +110,12 @@ public class JobScheduler {
         String gzStockFetcherRunningTime = "0 0/1 9-15 ? * MON-FRI";
         //String stockParamTrainningTime = "0 35 11 ? * MON-FRI";
         //String stockParamTrainningTime = "0 50 16 ? * MON-SUN";
-        String stockSuggestTime = "0 0 12,16 ? * MON-FRI";
-        //String stockSuggestTime = "0 46 15 ? * MON-SUN";
+        //String stockSuggestTime = "0 0 12,16 ? * MON-FRI";
+        String stockSuggestTime = "0 10 20 ? * MON-FRI";
         //String stockSimTime = "0 30 15 ? * MON-FRI";
-        String stockSimTime = "0 26 19 ? * MON-SUN";
+        String stockSimTime = "0 4 23 ? * FRI-SUN";
         String stockSimResCollectorTime = "*/10 * * ? * MON-SUN";
+        String calstktopnvolTime = "0 0 19 ? * MON-FRI";
         
        // JobDetail job_StockParamSearch = newJob(StockParamSearch.class).withIdentity("StockParamSearch", "StockApp").build();
 
@@ -207,6 +209,14 @@ public class JobScheduler {
         ft = sched.scheduleJob(job_CalStkStats, trigger_CalStkStats);
         log.info(job_CalStkStats.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
                  + trigger_CalStkStats.getCronExpression());
+        
+        
+        JobDetail job_CalStkTopnVOL = newJob(CalStkTopnVOL.class).withIdentity("CalStkTopnVOL", "StockApp").build();
+        CronTrigger trigger_CalStkTopnVOL = newTrigger().withIdentity("CalStkTopnVOL", "StockApp").withSchedule(cronSchedule(calstktopnvolTime)).build();
+        
+        ft = sched.scheduleJob(job_CalStkTopnVOL, trigger_CalStkTopnVOL);
+        log.info(job_CalStkTopnVOL.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
+                 + trigger_CalStkTopnVOL.getCronExpression());
         
         sched.start();
         

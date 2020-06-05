@@ -27,6 +27,7 @@ import com.sn.strategy.algorithm.buypoint.PricePlusBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.PriceTurnBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.QtyBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.TopNMnyBuyPointSelector;
+import com.sn.strategy.algorithm.buypoint.VOLBuyPointSelector;
 import com.sn.strategy.algorithm.sellpoint.BalanceSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.BottomHammerSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.DaBanBalanceSellPointSelector;
@@ -38,6 +39,7 @@ import com.sn.strategy.algorithm.sellpoint.PricePlusSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.PriceTurnSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.QtySellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.TopNMnySellPointSelector;
+import com.sn.strategy.algorithm.sellpoint.VOLSellPointSelector;
 import com.sn.task.suggest.selector.DefaultStockSelector;
 
 public class TradeStrategyGenerator {

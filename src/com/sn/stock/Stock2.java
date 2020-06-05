@@ -367,12 +367,23 @@ public class Stock2 implements Comparable<Stock2>{
                 return false;
             }
             
+            boolean result = false;
             if (period <= 2) {
             	
-            	boolean result = (cur_pri_lst.get(size - 1) > cur_pri_lst.get(size - 2)) || ((cur_pri_lst.get(size - 1) + cur_pri_lst.get(size - 2)) / 2.0 > (cur_pri_lst.get(size - 2) + cur_pri_lst.get(size - 3)) / 2.0);
+            	result = (cur_pri_lst.get(size - 1) > cur_pri_lst.get(size - 2)) || ((cur_pri_lst.get(size - 1) + cur_pri_lst.get(size - 2)) / 2.0 > (cur_pri_lst.get(size - 2) + cur_pri_lst.get(size - 3)) / 2.0);
             	log.info("check stock:" + this.stkid + " price1:" + cur_pri_lst.get(size - 3) + ", price2:" + cur_pri_lst.get(size - 2) + " price3:" + cur_pri_lst.get(size - 1) + " is up-down-up?" + result);
             	
+            	
             	return (result);
+            }
+            else if (period == 4) {
+        		double p1 = cur_pri_lst.get(size - 4);
+        		double p2 = cur_pri_lst.get(size - 3);
+        		double p3 = cur_pri_lst.get(size - 2);
+        		double p4 = cur_pri_lst.get(size - 1);
+        		result = (p4 >= p3 && p3 <= p2 && p2 >= p1 && p3 > p1);
+        		log.info("for period 4, check stock:" + this.stkid + " price1:" + cur_pri_lst.get(size - 4) + " price2:" + cur_pri_lst.get(size - 3) + ", price3:" + cur_pri_lst.get(size - 2) + " price4:" + cur_pri_lst.get(size - 1) + " is down-up-(small down)-up?" + result);
+        	    return result;
             }
             double cur_pri = cur_pri_lst.get(size -1);
             
@@ -411,14 +422,23 @@ public class Stock2 implements Comparable<Stock2>{
                 return false;
             }
             
+            boolean result = false;
             if (period <= 2) {
             	
-            	boolean result = (cur_pri_lst.get(size - 1) < cur_pri_lst.get(size - 2)) || ((cur_pri_lst.get(size - 1) + cur_pri_lst.get(size - 2)) / 2.0 < (cur_pri_lst.get(size - 2) + cur_pri_lst.get(size - 3)) / 2.0);
+            	result = (cur_pri_lst.get(size - 1) < cur_pri_lst.get(size - 2)) || ((cur_pri_lst.get(size - 1) + cur_pri_lst.get(size - 2)) / 2.0 < (cur_pri_lst.get(size - 2) + cur_pri_lst.get(size - 3)) / 2.0);
             	log.info("check stock:" + this.stkid + " price1:" + cur_pri_lst.get(size - 3) + ", price2:" + cur_pri_lst.get(size - 2) + " price3:" + cur_pri_lst.get(size - 1) + " is down-up-down?" + result);
             	
             	return (result);
             }
-            
+            else if (period == 4) {
+        		double p1 = cur_pri_lst.get(size - 4);
+        		double p2 = cur_pri_lst.get(size - 3);
+        		double p3 = cur_pri_lst.get(size - 2);
+        		double p4 = cur_pri_lst.get(size - 1);
+        		result = (p4 <= p3 && p3 >= p2 && p2 <= p1 && p3 < p1);
+        		log.info("for period 4, check stock:" + this.stkid + " price1:" + cur_pri_lst.get(size - 4) + " price2:" + cur_pri_lst.get(size - 3) + ", price3:" + cur_pri_lst.get(size - 2) + " price4:" + cur_pri_lst.get(size - 1) + " is up-down-(small up)-down?" + result);
+        	    return result;
+            }
             double cur_pri = cur_pri_lst.get(size -1);
             
             //make sure cur_pri is lowest price during the past period + 1.
@@ -936,6 +956,93 @@ public class Stock2 implements Comparable<Stock2>{
                 log.info("cnt is:" + cnt + " cnt/(sz-1):" + cnt * 1.0 / (sz-1) + " less than " + plus_pct + ", plused return false.");
                 return false;
             }
+        }
+        
+        Map<String, Integer> delta_vol_mp = new HashMap<String, Integer>();
+        public boolean isLstQtyOnTopN() {
+        	
+        	
+        	int sz =getDl_dt_lst().size();
+        	String dte = getDl_dt_lst().get(sz - 1).toString().substring(0, 10);
+        	
+        	String PK = id + "_" + dte;
+        	
+        	Integer del_thresh = delta_vol_mp.get(PK);
+        	
+        	if (del_thresh != null) {
+                int delVol = dl_stk_num_lst.get(sz - 1) - dl_stk_num_lst.get(sz - 2);
+        		log.info("read from delta_vol_mp, for stock:" + id + ", last vol:" + dl_stk_num_lst.get(sz - 1) + ", last 2 vol:" + dl_stk_num_lst.get(sz - 2) + ", delta:" + delVol + " >= vol_thresh:" + del_thresh + "? " + (delVol > del_thresh));
+        		
+        		return (delVol > del_thresh);
+        	}
+        	
+        	Connection con = DBManager.getConnection();
+        	try {
+        		String sql = "select delta_stk_num from stocktopnvol where id = '" + id + "' and before_dt = '" + dte + "'";
+        		Statement stm = con.createStatement();
+        		ResultSet rs = stm.executeQuery(sql);
+        		
+        		if (rs.next()) {
+        		int vol_thresh = rs.getInt("delta_stk_num");
+        		
+        		delta_vol_mp.put(PK, vol_thresh);
+        		
+        		int delVol = dl_stk_num_lst.get(sz - 1) - dl_stk_num_lst.get(sz - 2);
+        		
+        		log.info("for stock:" + id + ", last vol:" + dl_stk_num_lst.get(sz - 1) + ", last 2 vol:" + dl_stk_num_lst.get(sz - 2) + ", delta:" + delVol + " >= vol_thresh:" + vol_thresh + "? " + (delVol > vol_thresh));
+        		
+        		rs.close();
+        		stm.close();
+        		return (delVol >= vol_thresh);
+        		
+        		}
+        		else {
+        			log.info("No stocktopnvol information, return false.");
+            		rs.close();
+            		stm.close();
+        			return false;
+        		}
+        	}
+        	catch(Exception e) {
+        		log.error(e.getMessage(), e);
+        	}
+        	finally {
+        		try {
+					con.close();
+				} catch (SQLException e2) {
+					// TODO Auto-generated catch block
+					log.error(e2.getMessage(), e2);
+				}
+        	}
+        	return false;
+        }
+        
+        
+        
+        
+        public boolean isLstPriceGoUp() {
+        	if (cur_pri_lst.size() < 2) {
+        		log.info("cur_pri_lst size is: " + cur_pri_lst.size() + " is small than 2, not able to determine price trend return false.");
+        		return false;
+        	}
+        	int idx = cur_pri_lst.size();
+        	
+        	double lstpri = cur_pri_lst.get(idx - 1);
+        	double lstpri2 = cur_pri_lst.get(idx - 2);
+        	log.info("lst price:" + lstpri + ", lst 2 price:" + lstpri2 + ", isLstPriceGoUp:" + (lstpri > lstpri2));
+        	return (lstpri > lstpri2);
+        }
+        public boolean isLstPriceGoDown() {
+        	if (cur_pri_lst.size() < 2) {
+        		log.info("cur_pri_lst size is: " + cur_pri_lst.size() + " is small than 2, not able to determine price trend return false.");
+        		return false;
+        	}
+        	int idx = cur_pri_lst.size();
+        	
+        	double lstpri = cur_pri_lst.get(idx - 1);
+        	double lstpri2 = cur_pri_lst.get(idx - 2);
+        	log.info("lst price:" + lstpri + ", lst 2 price:" + lstpri2 + ", isLstPriceGoDown:" + (lstpri < lstpri2));
+        	return (lstpri < lstpri2);
         }
         
         //Check if cur price is jumping water, tailSz tells how many recent records should be check, and pct tells
@@ -1821,6 +1928,14 @@ public class Stock2 implements Comparable<Stock2>{
     	return sd.getYtClsPri();
     }
     
+    public boolean isLstPriceGoDown() {
+    	return sd.isLstPriceGoDown();
+    }
+    
+    public boolean isLstPriceGoUp() {
+    	return sd.isLstPriceGoUp();
+    }
+    
     public boolean isJumpWater(int tailSz, double pct) {
     	if (sd.isJumpWater(tailSz, pct)) {
     		//sd.PrintStockData();
@@ -1834,6 +1949,10 @@ public class Stock2 implements Comparable<Stock2>{
     //this method tells if the lasted record has dl_stk_num qty plused.
     public boolean isLstQtyPlused(int period) {
         return sd.isLstQtyPlused(period);
+    }
+    
+    public boolean isLstQtyOnTopN() {
+        return sd.isLstQtyOnTopN();
     }
     
     public boolean isStoppingJumpWater() {

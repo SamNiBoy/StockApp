@@ -554,11 +554,11 @@ dl_dt datetime not null
 
 create table if not exists SimResult(
 strategy_name varchar(50) not null,
-dl_dt datetime not null,
-acnt_traded int not null,
 totUsedMny decimal(10, 2) not null,
 totUsedMny_Hrs decimal(8, 2) not null,
 avgPft decimal(8, 2) not null,
+dl_dt datetime not null,
+acnt_traded int not null,
 totPft decimal(8, 2) not null,
 tot_commission_mny decimal(8, 2) not null,
 netPft decimal(8, 2) not null,
@@ -568,6 +568,17 @@ sellCnt int not null,
 add_dt datetime not null,
 CONSTRAINT CashAcnt_PK PRIMARY KEY (strategy_name, dl_dt, add_dt)
 );
+
+create table if not exists StockTopNVOL(
+id varchar(6 ) not null,
+before_dt varchar(10) not null,
+topn int not null,
+delta_stk_num int not null,
+s2_ft_id int not null,
+add_dt datetime not null,
+CONSTRAINT StockTopNVOL_PK PRIMARY KEY (id, before_dt, topn)
+);
+
 
 create index stkdat2_id_dldt_idx on stkDat2 (id, ft_id, dl_dt);
 create index stkdat2_idx3 on stkDat2 (id, ft_id, cur_pri, yt_cls_pri,dl_stk_num);

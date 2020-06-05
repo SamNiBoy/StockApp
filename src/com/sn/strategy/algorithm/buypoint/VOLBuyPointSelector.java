@@ -25,16 +25,16 @@ import com.sn.trader.StockTrader;
 import com.sn.util.StockDataProcess;
 import com.sn.util.VOLPRICEHISTRO;
 
-public class QtyBuyPointSelector implements IBuyPointSelector {
+public class VOLBuyPointSelector implements IBuyPointSelector {
 
-	static Logger log = Logger.getLogger(QtyBuyPointSelector.class);
+	static Logger log = Logger.getLogger(VOLBuyPointSelector.class);
 	
     private boolean sim_mode;
-    private String selector_name = "QtyBuyPointSelector";
+    private String selector_name = "VOLBuyPointSelector";
     private String selector_comment = "";
     
     
-    public QtyBuyPointSelector(boolean sm)
+    public VOLBuyPointSelector(boolean sm)
     {
         sim_mode = sm;
     }
@@ -106,20 +106,10 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
                 return false;
             }
         }
-        
-        double pct = (cur_pri - yt_cls_pri) / yt_cls_pri;
-        
-        double stop_trade_for_max_pct = ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", stk.getID());
-        
-        log.info("check stock:" + stk.getID() + " reached no trading margin:" + stop_trade_for_max_pct + " with actual pct:" + pct);
-        if (Math.abs(pct) >= stop_trade_for_max_pct && (sbs == null || sbs.is_buy_point))
-        //if (Math.abs(pct) >= stop_trade_for_max_pct)
-        {
-           log.info("Stock:" + stk.getID() + " cur_pri:" + stk.getCur_pri() + " ytClsPri:" + stk.getYtClsPri() +", increase pct:" + pct
-                   + " is exceeding " + stop_trade_for_max_pct + " stop trading to increase unbalance.");
-            return false;
+        else if (hour == 9 && minutes < 40) {
+        	log.info("do not buy before 9:40");
+        	return false;
         }
-        
         
         boolean csd = SellModeWatchDog.isStockInStopTradeMode(stk);
         
@@ -130,11 +120,8 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         }
     
 
-		double tradeThresh = 0;
 		double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", stk.getID());
 
-     	tradeThresh = getBuyThreshValueByDegree(marketDegree, stk);
-         
 		if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {
             
 
@@ -149,30 +136,24 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 				double maxPct = (maxPri - minPri) / yt_cls_pri;
 				double curPct =(cur_pri - minPri) / yt_cls_pri;
 
-				boolean priceTurnedAround = stk.priceUpAfterSharpedDown(4);
-				boolean con2 = stk.isLstQtyPlused(2) || (hour == 9 && minutes <= 30);
+				//boolean qtyPlused = stk.isLstQtyPlused();
+				boolean con2 = stk.isLstQtyOnTopN();
 				
-				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", priceTurnedAround:" + priceTurnedAround + ", isLstQtyPlused:" + con2);
+				log.info("maxPct:" + maxPct + ", curPct:" + curPct + ", isLstQtyOnTopN:" + con2);
 				
-				if (maxPct >= tradeThresh && curPct < maxPct * margin_pct && priceTurnedAround && con2) {
-					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
-							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " margin_pct:" + margin_pct);
+				if (curPct < maxPct * margin_pct && con2) {
+					log.info("VOL is on topN list, and price is on bottom margin.");
                     
 					stk.setTradedBySelector(this.selector_name);
-					stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + margin_pct + " also priceTurnedAround:" + priceTurnedAround);
+					stk.setTradedBySelectorComment("VOL is on topN list, and price is on bottom margin.");
 					return true;
 				}
-//				else {
-//		            if (sbs != null && !sbs.is_buy_point) {
-//		                curPct = (sbs.price - cur_pri) / yt_cls_pri;
-//		                if (curPct >= tradeThresh) {
-//		                    log.info("We have sold unbalance, price reached tradeThresh:" + tradeThresh + ", buy it.");
-//		                    stk.setTradedBySelector(this.selector_name);
-//		                    stk.setTradedBySelectorComment("cur_pri < pre_sold_pri:[" + cur_pri + "," + sbs.price + "], curPct:" + curPct + " > tradeTresh:" + tradeThresh);
-//		                    return true;
-//		                }
-//		            }
-//				}
+				else if (stk.isLstPriceGoUp() && con2) {
+
+					log.info("VOL is on topN list, and price is going up.");
+					stk.setTradedBySelector(this.selector_name);
+					stk.setTradedBySelectorComment("VOL is on topN list, and price is going up.");
+				}
 			} else {
 				log.info("isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
 			}
@@ -180,83 +161,6 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 		return false;
 	}
 	
-    public double getBuyThreshValueByDegree(double Degree, Stock2 stk) {
-    	
-    	double baseThresh = ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING", stk.getID());
-    	
-//    	Timestamp tm = stk.getDl_dt();
-//        String deadline = null;
-//        if (tm == null) {
-//        	deadline = "sysdate()";
-//        }
-//        else {
-//        	deadline = "str_to_date('" + stk.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s') - interval 1 day ";
-//        }
-//        
-//    	try {
-//    		Connection con = DBManager.getConnection();
-//    		Statement stm = con.createStatement();
-//    		String sql = "select (max(td_hst_pri) - min(td_lst_pri)) / max(yt_cls_pri) / 2.0 yt_shk_hlf_pct "
-//    				   + "  from stkdat2 "
-//    				   + " where id ='" + stk.getID() + "'"
-//    				   + "   and left(dl_dt, 10) = left(" + deadline + ", 10)";
-//    		log.info(sql);
-//    		ResultSet rs = stm.executeQuery(sql);
-//    		if (rs.next()) {
-//    			double yt_shk_hlf_pct = rs.getDouble("yt_shk_hlf_pct");
-//    			log.info("yt_shk_hlf_pct calculated for stock:" + stk.getID() + " is:" + yt_shk_hlf_pct + " vs baseThresh:" + baseThresh);
-//    			if (yt_shk_hlf_pct > baseThresh) {
-//    				baseThresh = yt_shk_hlf_pct;
-//    			}
-//    		}
-//    		rs.close();
-//    		stm.close();
-//    		con.close();
-//    	}
-//    	catch(Exception e) {
-//    		e.printStackTrace();
-//    	}
-//    	
-//    	log.info("Calculate buy thresh value with Degree:" + Degree + ", final baseThresh:" + baseThresh);
-
-    	return baseThresh;
-    }
-    
-    public boolean isPriceBreakingYtMinPri(Stock2 stk, double cur_pri, double yt_cls_pri) {
-		double yt_opn_pri = 0;
-		double yt_min_pri = 0;
-    	try {
-		    Connection con = DBManager.getConnection();
-		    Statement stm = con.createStatement();
-		    String sql = "select s1.td_opn_pri from stkdat2 s1 join (select max(ft_id) max_ft_id, id"
-		    		   + "  from stkdat2 "
-		    		   + " where id ='" + stk.getID() + "'"
-		    		   + "   and left(dl_dt, 10) < '" + stk.getDl_dt().toString().substring(0, 10) + "') s2 on s1.id = s2.id and s1.ft_id = s2.max_ft_id ";
-		    log.info(sql);
-		    ResultSet rs = stm.executeQuery(sql);
-		    if (rs.next()) {
-		    	yt_opn_pri = rs.getDouble("td_opn_pri");
-		    	yt_min_pri = yt_opn_pri;
-		    	log.info("yt_opn_pri calculated for stock:" + stk.getID() + " is:" + yt_opn_pri + " vs yt_cls_pri:" + yt_cls_pri);
-		    	if (yt_opn_pri > yt_cls_pri) {
-		    		yt_min_pri = yt_cls_pri;
-		    	}
-		    }
-		    rs.close();
-		    stm.close();
-		    con.close();
-	    }
-	    catch(Exception e) {
-	    	e.printStackTrace();
-	    }
-    	
-    	if (cur_pri < yt_min_pri && yt_opn_pri > yt_cls_pri) {
-			log.info("skip buy as cur_pri:" + cur_pri + " is less than yt_min_pri:" + yt_min_pri);
-			return true;
-    	}
-    	return false;
-    }
-
 	@Override
 	public int getBuyQty(Stock2 s, ICashAccount ac) {
 		// TODO Auto-generated method stub

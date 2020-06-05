@@ -40,6 +40,7 @@ import com.sn.stock.StockMarket;
 import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.IStockSelector;
 import com.sn.task.WorkManager;
+import com.sn.task.calstkstats.CalStkTopnVOL;
 import com.sn.task.IWork;
 
 public class SuggestStock implements Job {
@@ -233,6 +234,8 @@ public class SuggestStock implements Job {
 			    	}
 			    	electStockforTrade();
 			    	//calStockParam();
+			    	CalStkTopnVOL fsd = new CalStkTopnVOL();
+			        fsd.execute(null);
 			    	if (stocksWaitForMail.size() > 0 && needMail) {
 			    	    rso.addStockToSuggest(stocksWaitForMail);
 			    	    rso.update();
