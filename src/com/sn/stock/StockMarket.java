@@ -445,6 +445,21 @@ public class StockMarket{
         
         try {
         	
+            sql = GZ_STOCK_CNT_SELECT;
+            stm = con.createStatement();
+            log.info(sql);
+            rs = stm.executeQuery(sql);
+            rs.next();
+            Total = rs.getInt("TotalCnt");
+            log.info("Now load Gzed total:" + Total + " stocks.");
+            rs.close();
+            stm.close();
+            
+            if (Total == gzstocks.size()) {
+            	log.info("gzstocks size same as db, skip reload.");
+            	return true;
+            }
+            
         	for(String sid : gzstocks.keySet()) {
         		sql = "select 'x' from usrstk where gz_flg = 1 and id = '" + sid + "'";
         		log.info(sql);
@@ -458,17 +473,6 @@ public class StockMarket{
         		rs.close();
         	}
         	
-            sql = GZ_STOCK_CNT_SELECT;
-        	
-            stm = con.createStatement();
-            log.info(sql);
-            rs = stm.executeQuery(sql);
-            rs.next();
-            Total = rs.getInt("TotalCnt");
-            log.info("Now load Gzed total:" + Total + " stocks.");
-            rs.close();
-            stm.close();
-            
             sql = GZ_STOCK_SELECT;
             
             String id, name, area;

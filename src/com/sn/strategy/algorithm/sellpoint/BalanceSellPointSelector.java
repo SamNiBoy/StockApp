@@ -61,7 +61,12 @@ public class BalanceSellPointSelector implements ISellPointSelector {
             }
             else {
                 Timestamp t1 = stk.getDl_dt();
-                
+                		
+//                if (t1.getDay() != 5)
+//                {
+//                    log.info("only clear stock on friday, today is " + t1.getDay());
+//                    return false;
+//                }
                 long hour = t1.getHours();
                 long minutes = t1.getMinutes();
                 

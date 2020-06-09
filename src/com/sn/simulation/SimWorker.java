@@ -55,7 +55,7 @@ public class SimWorker implements IWork {
 
     private StockTrader st = StockTrader.getSimTrader();
     
-    SimStockDriver ssd = new SimStockDriver();
+    SimStockDriver ssd = null;//new SimStockDriver();
 
     public String resMsg = "Initial msg for work SimWorker.";
     
@@ -97,6 +97,7 @@ public class SimWorker implements IWork {
 
     public void startSim() throws Exception {
         // SimStockDriver.addStkToSim("000727");
+    	ssd = new SimStockDriver();
     	String start_dt = "";
     	String end_dt = "";
     	Connection con = null;

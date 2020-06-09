@@ -25,7 +25,7 @@ public class PriceRecentlyRaisedSelector implements IStockSelector {
     private String suggest_by = "PriceRecentlyRaisedSelector";
     private ArrayList<String> topNStocks = new ArrayList<String>();
     private ArrayList<Double> topNPcts = new ArrayList<Double>();
-    int topN = 100;
+    int topN = 200;
     double pct = 0.5;
     
     public PriceRecentlyRaisedSelector (String s) {
@@ -132,8 +132,8 @@ public class PriceRecentlyRaisedSelector implements IStockSelector {
 			pct -= 0.1;
 		}
 		
-		if (pct < 0.3) {
-			pct = 0.3;
+		if (pct < 0.1) {
+			pct = 0.1;
 		}
 		log.info("try harder:" + harder + ", pct:" + pct + ", topN:" + topN);
 		return true;

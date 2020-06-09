@@ -102,7 +102,7 @@ public class SimStockDriver {
         	}
         }*/
         
-        StockMarket.buildDegreeMapForSim(s, e);
+        //StockMarket.buildDegreeMapForSim(s, e);
         return true;
     }
     
@@ -123,7 +123,7 @@ public class SimStockDriver {
         Stock2 s = null;
         int cnt = 0;
         int stock2_queue_sz = 0;
-        
+        Connection con = DBManager.getConnection();
         try {
             if (stk_list.isEmpty()) {
                 stm = con.createStatement();
@@ -171,7 +171,15 @@ public class SimStockDriver {
         }
         catch(SQLException e)
         {
-            e.printStackTrace();
+        	log.error(e.getMessage(), e);
+        }
+        finally {
+        	try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
         }
         
         log.info("SimStockDriver loadStock successed!");

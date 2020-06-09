@@ -144,18 +144,18 @@ public class DaBanBuyPointSelector implements IBuyPointSelector {
         double pct = (cur_pri - yt_cls_pri) / yt_cls_pri;
         
         log.info("check stock:" + stk.getID() + " reached daban pct:" + dbban_pct + " >= actual pct:" + pct + "=" + (pct >= dbban_pct));
-        if (pct >= dbban_pct && pct < 0.095)
+        if (pct >= dbban_pct && pct < 0.098)
         {
         	
-            long b1_num = stk.getB1_num();
-            long s1_num = stk.getS1_num();
-        	
-            log.info("b1_num:" + b1_num + " / s1_num:" + s1_num + " < min_pressure_ratio:" + min_pressure_ratio + "?" + (b1_num * 1.0 / s1_num < min_pressure_ratio));
-            //we prefer there are 5 times biggher buy qty comparing to sell qty.
-            if (b1_num * 1.0 / s1_num < min_pressure_ratio) {
-            	log.info("b1_num:" + b1_num + " / s1_num:" + s1_num + " < min_pressure_ratio:" + min_pressure_ratio + " do not buy.");
-            	return false;
-            }
+//            long b1_num = stk.getB1_num();
+//            long s1_num = stk.getS1_num();
+//        	
+//            log.info("b1_num:" + b1_num + " / s1_num:" + s1_num + " < min_pressure_ratio:" + min_pressure_ratio + "?" + (b1_num * 1.0 / s1_num < min_pressure_ratio));
+//            //we prefer there are 5 times bigger buy qty comparing to sell qty.
+//            if (b1_num * 1.0 / s1_num < min_pressure_ratio) {
+//            	log.info("b1_num:" + b1_num + " / s1_num:" + s1_num + " < min_pressure_ratio:" + min_pressure_ratio + " do not buy.");
+//            	return false;
+//            }
             
            log.info("Stock:" + stk.getID() + " cur_pri:" + stk.getCur_pri() + " ytClsPri:" + stk.getYtClsPri() +", increase pct:" + pct
                    + " is exceeding dbban_pct:" + dbban_pct + ", return true.");

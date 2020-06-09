@@ -273,6 +273,36 @@ public class Stock2 implements Comparable<Stock2>{
             return result;
         }
         
+        public double getB1S1Ratio() {
+            int size = b1_num_lst.size();
+            if (size < 1) {
+                log.info("getB1S1Ratio: no data.");
+                return 0;
+            }
+            
+            int b1_num = b1_num_lst.get(size - 1);
+            int s1_num = s1_num_lst.get(size - 1);
+            
+            double rt = s1_num > 0 ? b1_num * 1.0 / s1_num : 0;
+            log.info("b1_num:" + b1_num + ", s1_num:" + s1_num + ", b1/s1 = ratio:" + rt);
+            return rt;
+        }
+        
+        public double getS1B1Ratio() {
+            int size = b1_num_lst.size();
+            if (size < 1) {
+                log.info("getS1B1Ratio: no data.");
+                return 0;
+            }
+            
+            int b1_num = b1_num_lst.get(size - 1);
+            int s1_num = s1_num_lst.get(size - 1);
+            
+            double rt = b1_num > 0 ? s1_num * 1.0 / b1_num : 0;
+            log.info("s1_num:" + b1_num + ", b1_num:" + s1_num + ", s1/b1 = ratio:" + rt);
+            return rt;
+        }
+        
         public boolean priceGoingUp(int period) {
             log.info("priceGoingUp: check if price goes up for period:" + period);
             int size = cur_pri_lst.size();
@@ -381,7 +411,7 @@ public class Stock2 implements Comparable<Stock2>{
         		double p2 = cur_pri_lst.get(size - 3);
         		double p3 = cur_pri_lst.get(size - 2);
         		double p4 = cur_pri_lst.get(size - 1);
-        		result = (p4 >= p3 && p3 <= p2 && p2 >= p1 && p3 > p1);
+        		result = (p4 >= p3 && p3 <= p2 && p2 >= p1 && p3 > (p1 + 0.01));
         		log.info("for period 4, check stock:" + this.stkid + " price1:" + cur_pri_lst.get(size - 4) + " price2:" + cur_pri_lst.get(size - 3) + ", price3:" + cur_pri_lst.get(size - 2) + " price4:" + cur_pri_lst.get(size - 1) + " is down-up-(small down)-up?" + result);
         	    return result;
             }
@@ -435,7 +465,7 @@ public class Stock2 implements Comparable<Stock2>{
         		double p2 = cur_pri_lst.get(size - 3);
         		double p3 = cur_pri_lst.get(size - 2);
         		double p4 = cur_pri_lst.get(size - 1);
-        		result = (p4 <= p3 && p3 >= p2 && p2 <= p1 && p3 < p1);
+        		result = (p4 <= p3 && p3 >= p2 && p2 <= p1 && (p3 + 0.01) < p1);
         		log.info("for period 4, check stock:" + this.stkid + " price1:" + cur_pri_lst.get(size - 4) + " price2:" + cur_pri_lst.get(size - 3) + ", price3:" + cur_pri_lst.get(size - 2) + " price4:" + cur_pri_lst.get(size - 1) + " is up-down-(small up)-down?" + result);
         	    return result;
             }
@@ -1079,6 +1109,32 @@ public class Stock2 implements Comparable<Stock2>{
                 tailSz_jumpping_water = tailSz;
                 pct_jumpping_water = pct;
         		is_jumpping_water = false;
+        	}
+        	return false;
+        }
+        
+        public boolean isJumpAir(int tailSz, double pct) {
+        	if (tailSz >= cur_pri_lst.size()) {
+        		log.info("cur_pri_lst size is: " + cur_pri_lst.size() + " is small than tailSz/pct:" + tailSz + "/" + pct + " return false.");
+        		return false;
+        	}
+        	int idx = cur_pri_lst.size() - 1;
+        	double yt_cls_pri = this.getYtClsPri();
+        	double detPri = 0;
+        	int ts = tailSz;
+        	while (ts > 0) {
+        		if (cur_pri_lst.get(idx) > cur_pri_lst.get(idx - 1)) {
+        			detPri += cur_pri_lst.get(idx) - cur_pri_lst.get(idx - 1);
+        		}
+        		idx--;
+        		ts--;
+        	}
+        	
+        	log.info("check isJumpAir, cur_pri_lst.size: " + cur_pri_lst.size() + " TailSz:" + tailSz + " yt_cls_pri:" + yt_cls_pri
+        			+ " detPri:" + detPri + ", detPri/yt_cls_pri pct:" + detPri * 1.0 / yt_cls_pri + " passed pct:" + pct);
+        	if (detPri * 1.0 / yt_cls_pri >= pct) {
+        		log.info("jump air return true");
+        		return true;
         	}
         	return false;
         }
@@ -1732,6 +1788,19 @@ public class Stock2 implements Comparable<Stock2>{
 			}
 			return null;
 		}
+		
+		public Double getDltDl_mny_num() {
+			// TODO Auto-generated method stub
+			int sz = dl_mny_num_lst.size();
+			
+			if (sz > 1) {
+				log.info("last dl_mny_num for stock:" + id + " is:" +dl_mny_num_lst.get(sz - 1) + ", pre dl_mny_num:" + dl_mny_num_lst.get(sz - 2) + ", delta:" + (dl_mny_num_lst.get(sz - 1) - dl_mny_num_lst.get(sz - 2)));
+				return (dl_mny_num_lst.get(sz - 1) - dl_mny_num_lst.get(sz - 2));
+			}
+			return 0.0;
+		}
+		
+		
 		public Integer getDl_stk_num() {
 			// TODO Auto-generated method stub
 			int sz = dl_stk_num_lst.size();
@@ -1741,6 +1810,16 @@ public class Stock2 implements Comparable<Stock2>{
 				return dl_stk_num_lst.get(sz - 1);
 			}
 			return null;
+		}
+		public Integer getDltDl_stk_num() {
+			// TODO Auto-generated method stub
+			int sz = dl_stk_num_lst.size();
+			
+			if (sz > 1) {
+				log.info("last dl_stk_num_lst for stock:" + id + " is:" +dl_stk_num_lst.get(sz - 1) + ", pre dl_stk_num_lst:" + dl_stk_num_lst.get(sz - 2) + ", delta:" + (dl_stk_num_lst.get(sz - 1) - dl_stk_num_lst.get(sz - 2)));
+				return (dl_stk_num_lst.get(sz - 1) - dl_stk_num_lst.get(sz - 2));
+			}
+			return 0;
 		}
     }
     
@@ -1946,6 +2025,16 @@ public class Stock2 implements Comparable<Stock2>{
     	}
     }
     
+    public boolean isJumpAir(int tailSz, double pct) {
+    	if (sd.isJumpAir(tailSz, pct)) {
+    		//sd.PrintStockData();
+    		return true;
+    	}
+    	else {
+    		return false;
+    	}
+    }
+    
     //this method tells if the lasted record has dl_stk_num qty plused.
     public boolean isLstQtyPlused(int period) {
         return sd.isLstQtyPlused(period);
@@ -2101,9 +2190,17 @@ public class Stock2 implements Comparable<Stock2>{
     public Double getDl_mny_num() {
         return sd.getDl_mny_num();
     }
+    
+    public Double getDltDl_mny_num() {
+        return sd.getDltDl_mny_num();
+    }
 
     public Integer getDl_stk_num() {
         return sd.getDl_stk_num();
+    }
+    
+    public Integer getDltDl_stk_num() {
+        return sd.getDltDl_stk_num();
     }
     
     public Integer getB1_num() {
@@ -2198,6 +2295,14 @@ public class Stock2 implements Comparable<Stock2>{
     }
     public boolean priceBreakingBoxBtnEdge(int period) {
         return sd.priceBreakingBoxBtnEdge(period);
+    }
+    
+    public double getB1S1Ratio() {
+        return sd.getB1S1Ratio();
+    }
+    
+    public double getS1B1Ratio() {
+        return sd.getS1B1Ratio();
     }
     
     public boolean isVOLPlused(int period, double pct) {

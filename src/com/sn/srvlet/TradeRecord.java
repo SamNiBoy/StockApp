@@ -207,6 +207,11 @@ public class TradeRecord{
 		"<thead> " +
 	    "<tr>    " +
 	    "    <td>Account Count</td> " +
+	    "    <td>Win Count</td> " +
+	    "    <td>Avg Win Profit</td> " +
+	    "    <td>Lost Count</td> " +
+	    "    <td>Avg Lost Profit</td> " +
+	    "    <td>Win Percent</td> " +
 	    "    <td>Profit</td>    " +
 	    "    <td>Commission</td>   " +
 	    "    <td>Net Profit</td>    " +
@@ -228,6 +233,11 @@ public class TradeRecord{
 			DecimalFormat df = new DecimalFormat("##.##");
 			
 			sql = "select count(distinct c.acntid) acntcnt, "
+					+ "   sum(case when c.pft_mny > 0 then 1 else 0 end) wincnt,"
+					+ "   sum(case when c.pft_mny > 0 then pft_mny else 0 end) / sum(case when c.pft_mny > 0 then 1 else 0 end) avgwinpft,"
+					+ "   sum(case when c.pft_mny <= 0 then 1 else 0 end) lostcnt,"
+					+ "   sum(case when c.pft_mny <= 0 then pft_mny else 0 end) / sum(case when c.pft_mny <= 0 then 1 else 0 end) avglstpft,"
+					+ "   sum(case when c.pft_mny > 0 then 1 else 0 end) / (sum(case when c.pft_mny <= 0 then 1 else 0 end) + sum(case when c.pft_mny > 0 then 1 else 0 end)) winpct,"
 					+ "   sum(c.pft_mny) total_pft_mny, "
 					+ "   sum(t.commission_mny) total_commission_mny, "
 					+ "   sum(c.pft_mny) - sum(t.commission_mny) total_net_pft, "
@@ -250,6 +260,11 @@ public class TradeRecord{
 			
 	            str += "<tr>" +
 	            "<td>" + rs.getInt("acntcnt") + "</td> " +
+	            "<td>" + rs.getInt("wincnt") + "</td> " +
+	            "<td>" + rs.getInt("avgwinpft") + "</td> " +
+	            "<td>" + rs.getInt("lostcnt") + "</td> " +
+	            "<td>" + rs.getInt("avglstpft") + "</td> " +
+	            "<td>" + df.format(rs.getDouble("winpct")) + "</td> " +
 	            "<td>" + rs.getDouble("total_pft_mny") + "</td> " +
 	            "<td>" + rs.getDouble("total_commission_mny") + "</td> " +
 	            "<td>" + rs.getDouble("total_net_pft") + "</td> " +

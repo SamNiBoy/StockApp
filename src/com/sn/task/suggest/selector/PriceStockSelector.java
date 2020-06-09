@@ -40,6 +40,11 @@ public class PriceStockSelector implements IStockSelector {
     		return false;
     	}
     	
+    	if (s.getName().indexOf("ST") >= 0) {
+    		log.info("skip ST stock:" + s.getID());
+    		return false;
+    	}
+    	
 //    	if (SuggestStock.calculateStockTrend(s.getID()) <= 0)
 //    	{
 //    		log.info("skip stock:" + s.getID() + "/" + s.getName() + " as trend is going down.");

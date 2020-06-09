@@ -221,7 +221,7 @@ public class TradeStrategyGenerator {
         
         return bts;
     }
-    static public ITradeStrategy generatorStrategy2(boolean sim_mode) {
+    static public ITradeStrategy generatorStrategygg(boolean sim_mode) {
         
         List<IBuyPointSelector> buyPoints = new LinkedList<IBuyPointSelector>();
         List<ISellPointSelector> sellPoints = new LinkedList<ISellPointSelector>();

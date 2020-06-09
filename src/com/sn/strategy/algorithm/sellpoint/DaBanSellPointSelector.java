@@ -71,6 +71,19 @@ public class DaBanSellPointSelector implements ISellPointSelector {
         	return false;
         }
         
+        long hour = t0.getHours();
+        long minute = t0.getMinutes();
+        if ((cur_pri - yt_cls_pri) / yt_cls_pri <= -0.09) {
+        	log.info("bad, already lost 9 pct, let it go.");
+        }
+        else if (hour == 9 && minute >= 30)
+        {
+            stk.setTradedBySelector(this.selector_name);
+            stk.setTradedBySelectorComment("sell stock at 930.");
+			return true;
+		}
+        	
+        
 //		if (opn_pri != null && yt_cls_pri != null && opn_pri < yt_cls_pri) {
 //			double lost_pct = (opn_pri - yt_cls_pri) / yt_cls_pri;
 //			if (lost_pct < -0.02) {
@@ -89,8 +102,6 @@ public class DaBanSellPointSelector implements ISellPointSelector {
 		double tradeThresh = 0;
         double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", stk.getID());
 		if (yt_cls_pri != null && cur_pri != null) {
-			
-
 			// If we bought before with lower price, use it as minPri.
 			if (sbs != null && sbs.is_buy_point && sbs.price < minPri) {
 				log.info("stock:" + sbs.id + " bought with price:" + sbs.price + " which is lower than:" + minPri + ", use it as minPri.");
@@ -164,16 +175,11 @@ public class DaBanSellPointSelector implements ISellPointSelector {
 	public int getSellQty(Stock2 s, ICashAccount ac) {
 		// TODO Auto-generated method stub
         int sellMnt = 0;
-        Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
-        StockBuySellEntry sbs = lstTrades.get(s.getID());
-	    if (sbs != null && sbs.is_buy_point)
+        int sellableAmnt = TradeStrategyImp.getSellableMntForStockOnDate(s.getID(), s.getDl_dt());
+        
+	    if (sellableAmnt > 0)
 	    {
-	    	sellMnt = sbs.quantity;
-	    	log.info("stock:" + s.getID() + " bought qty:" + sbs.quantity + " already, sell same out");
-	    }
-	    else {
-	    	//DaBan only sell what had bought, so give 0 if no bought.
-	    	sellMnt = 0;
+	   	    sellMnt = sellableAmnt;
 	    }
 		return sellMnt;
 	}

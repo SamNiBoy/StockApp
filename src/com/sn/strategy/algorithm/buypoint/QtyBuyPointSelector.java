@@ -32,7 +32,9 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
     private boolean sim_mode;
     private String selector_name = "QtyBuyPointSelector";
     private String selector_comment = "";
-    
+    private double maxAllowPct = 0.1;
+    private double maxrt = 0;
+    private String pre_dte = "";
     
     public QtyBuyPointSelector(boolean sm)
     {
@@ -47,10 +49,16 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
         Double minPri = stk.getMinCurPri();
         Double yt_cls_pri = stk.getYtClsPri();
         Double cur_pri = stk.getCur_pri();
+        Double td_opn_pri = stk.getOpen_pri();
+        int s1_num = stk.getS1_num();
         
         StockBuySellEntry sbs = lstTrades.get(stk.getID());
 		double marketDegree = StockMarket.getDegree(stk.getDl_dt());
 		
+        if (sbs != null && sbs.is_buy_point) {
+        	log.info("stock already bought, skip check buy again");
+			return false;
+        }
 //		VOLPRICEHISTRO v1 = StockDataProcess.getPriceVolHistro(stk, "", 1, 5, 0);
 //		
 //		if (v1.min_pri > cur_pri) {
@@ -86,13 +94,32 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 //			return false;
 //		}
 		
-
-
         Timestamp t1 = stk.getDl_dt();
         
         long hour = t1.getHours();
         long minutes = t1.getMinutes();
         
+        if (!(hour == 9 && minutes < 30)) {
+        	log.info("we only deal before 9:30");
+        	return false;
+        }
+        
+        double bsr = stk.getB1S1Ratio();
+        
+//        if (pre_dte.length() == 0 || !pre_dte.equals(stk.getDl_dt().toString().substring(0, 10))) {
+//        	maxrt = getMaxB1S1RationForPastDays(5, stk);
+//        }
+        boolean rtmax = (bsr >= 1);
+        
+        log.info("B1S1 Num ration:" + bsr + " > 100 ? " + rtmax + ", and s1_num > 10000?" + (s1_num > 3000));
+        if (rtmax && s1_num > 10000) {
+			stk.setTradedBySelector(this.selector_name);
+			stk.setTradedBySelectorComment("B1S1 Num ration:" + bsr + " > 1 and s1_num > 10000, val:" + s1_num);
+			return true;
+        }
+        else if (!rtmax){
+        	return false;
+        }
         
         int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING", stk.getID());
         int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING", stk.getID());
@@ -133,7 +160,7 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 		double tradeThresh = 0;
 		double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", stk.getID());
 
-     	tradeThresh = getBuyThreshValueByDegree(marketDegree, stk);
+     	tradeThresh = 0.05;//getBuyThreshValueByDegree(marketDegree, stk);
          
 		if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {
             
@@ -148,11 +175,13 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 				
 				double maxPct = (maxPri - minPri) / yt_cls_pri;
 				double curPct =(cur_pri - minPri) / yt_cls_pri;
+				
+				double bottomLostPct = (minPri - yt_cls_pri) / yt_cls_pri;
 
 				boolean priceTurnedAround = stk.priceUpAfterSharpedDown(4);
-				boolean con2 = stk.isLstQtyPlused(2) || (hour == 9 && minutes <= 30);
+				boolean con2 = stk.isLstQtyPlused(4) || (hour == 9 && minutes <= 30);
 				
-				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", priceTurnedAround:" + priceTurnedAround + ", isLstQtyPlused:" + con2);
+				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", priceTurnedAround:" + priceTurnedAround + ", isLstQtyPlused:" + con2 + ", maxAllowPct:" + maxAllowPct + ", bottomLostPct(not < -0.05):" + bottomLostPct);
 				
 				if (maxPct >= tradeThresh && curPct < maxPct * margin_pct && priceTurnedAround && con2) {
 					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
@@ -162,17 +191,6 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 					stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + margin_pct + " also priceTurnedAround:" + priceTurnedAround);
 					return true;
 				}
-//				else {
-//		            if (sbs != null && !sbs.is_buy_point) {
-//		                curPct = (sbs.price - cur_pri) / yt_cls_pri;
-//		                if (curPct >= tradeThresh) {
-//		                    log.info("We have sold unbalance, price reached tradeThresh:" + tradeThresh + ", buy it.");
-//		                    stk.setTradedBySelector(this.selector_name);
-//		                    stk.setTradedBySelectorComment("cur_pri < pre_sold_pri:[" + cur_pri + "," + sbs.price + "], curPct:" + curPct + " > tradeTresh:" + tradeThresh);
-//		                    return true;
-//		                }
-//		            }
-//				}
 			} else {
 				log.info("isGoodBuyPoint says either maxPri, minPri, yt_cls_pri or cur_pri is null, return false");
 			}
@@ -180,46 +198,58 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 		return false;
 	}
 	
-    public double getBuyThreshValueByDegree(double Degree, Stock2 stk) {
+    public double getMaxB1S1RationForPastDays(int days_to_check, Stock2 stk) {
     	
-    	double baseThresh = ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING", stk.getID());
+    	//double baseThresh = ParamManager.getFloatParam("BUY_BASE_TRADE_THRESH", "TRADING", stk.getID());
     	
-//    	Timestamp tm = stk.getDl_dt();
-//        String deadline = null;
-//        if (tm == null) {
-//        	deadline = "sysdate()";
-//        }
-//        else {
-//        	deadline = "str_to_date('" + stk.getDl_dt().toString() + "', '%Y-%m-%d %H:%i:%s') - interval 1 day ";
-//        }
-//        
-//    	try {
-//    		Connection con = DBManager.getConnection();
-//    		Statement stm = con.createStatement();
-//    		String sql = "select (max(td_hst_pri) - min(td_lst_pri)) / max(yt_cls_pri) / 2.0 yt_shk_hlf_pct "
-//    				   + "  from stkdat2 "
-//    				   + " where id ='" + stk.getID() + "'"
-//    				   + "   and left(dl_dt, 10) = left(" + deadline + ", 10)";
-//    		log.info(sql);
-//    		ResultSet rs = stm.executeQuery(sql);
-//    		if (rs.next()) {
-//    			double yt_shk_hlf_pct = rs.getDouble("yt_shk_hlf_pct");
-//    			log.info("yt_shk_hlf_pct calculated for stock:" + stk.getID() + " is:" + yt_shk_hlf_pct + " vs baseThresh:" + baseThresh);
-//    			if (yt_shk_hlf_pct > baseThresh) {
-//    				baseThresh = yt_shk_hlf_pct;
-//    			}
-//    		}
-//    		rs.close();
-//    		stm.close();
-//    		con.close();
-//    	}
-//    	catch(Exception e) {
-//    		e.printStackTrace();
-//    	}
-//    	
-//    	log.info("Calculate buy thresh value with Degree:" + Degree + ", final baseThresh:" + baseThresh);
-
-    	return baseThresh;
+        Connection con = DBManager.getConnection();
+        Statement stm = null;
+        ResultSet rs = null;
+        
+        int i = 0;
+        try {
+            stm = con.createStatement();
+            String sql = "select max(b1_num / s1_num) max_rt, left(s1.dl_dt, 10) dte from stkdat2 s1 "
+            		+ "  where left(s1.dl_dt, 10) < '" + stk.getDl_dt().toString().substring(0, 10) + "'"
+            		+ "    and s1.id = '" + stk.getID() + "'"
+            		+ "  group by left(s1.dl_dt, 1) "
+            		+ "  order by dte";
+            log.info(sql);
+            rs = stm.executeQuery(sql);
+            
+            double currt = 0;
+            while (rs.next() && i < days_to_check) {
+            	i++;
+                log.info("get ratio:" + rs.getDouble("max_rt") + " at date:" + rs.getString("dte"));
+                currt = rs.getDouble("max_rt");
+                if (currt > maxrt) {
+                	maxrt = currt;
+                }
+            }
+            rs.close();
+            stm.close();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                con.close();
+            } catch (Exception e1) {
+                log.error(e1.getMessage(), e1);
+            }
+        }
+        
+        if (i == days_to_check) {
+        	log.info("got max ration:" + maxrt + " for past " + days_to_check + " days");
+        	pre_dte = stk.getDl_dt().toString().substring(0, 10);
+        }
+        else if (maxrt < 20000){
+        	log.info("only has:" + i + " days data to check, use default 10000.");
+        	maxrt = 20000;
+        }
+    	return maxrt;
     }
     
     public boolean isPriceBreakingYtMinPri(Stock2 stk, double cur_pri, double yt_cls_pri) {

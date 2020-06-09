@@ -119,9 +119,15 @@ public class DaBanBalanceSellPointSelector implements ISellPointSelector {
 	
 	@Override
 	public int getSellQty(Stock2 s, ICashAccount ac) {
-        Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
-        StockBuySellEntry sbs = lstTrades.get(s.getID());
-	    return (sbs == null ? 0 : sbs.quantity);
+		// TODO Auto-generated method stub
+        int sellMnt = 0;
+        int sellableAmnt = TradeStrategyImp.getSellableMntForStockOnDate(s.getID(), s.getDl_dt());
+        
+	    if (sellableAmnt > 0)
+	    {
+	   	    sellMnt = sellableAmnt;
+	    }
+		return sellMnt;
 	}
 
     public boolean isSimMode() {

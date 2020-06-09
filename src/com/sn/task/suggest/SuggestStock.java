@@ -27,9 +27,11 @@ import com.sn.task.suggest.selector.AvgClsPriStockSelector;
 import com.sn.task.suggest.selector.AvgsBreakingSelector;
 import com.sn.task.suggest.selector.BottomHammerSelector;
 import com.sn.task.suggest.selector.ClosePriceUpSelector;
+import com.sn.task.suggest.selector.CollectionPricingStockSelector;
 import com.sn.task.suggest.selector.DaBanStockSelector;
 import com.sn.task.suggest.selector.DealMountStockSelector;
 import com.sn.task.suggest.selector.DefaultStockSelector;
+import com.sn.task.suggest.selector.KShapeFilterSelector;
 import com.sn.task.suggest.selector.KeepGainStockSelector;
 import com.sn.task.suggest.selector.PriceRecentlyRaisedSelector;
 import com.sn.task.suggest.selector.PriceShakingStockSelector;
@@ -66,7 +68,7 @@ public class SuggestStock implements Job {
 	 */
 	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock("2020-06-03", false);
+		SuggestStock fsd = new SuggestStock("2020-05-11", false);
 		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);
@@ -127,12 +129,13 @@ public class SuggestStock implements Job {
 		//selectors.add(new StddevStockSelector());
 		//selectors.add(new DealMountStockSelector());
 		//selectors.add(new DaBanStockSelector(on_dte));
-		selectors.add(new PriceRecentlyRaisedSelector(on_dte));
-		selectors.add(new PriceShakingStockSelector(on_dte));
+		//selectors.add(new PriceRecentlyRaisedSelector(on_dte));
+		//selectors.add(new KShapeFilterSelector(on_dte));
+		selectors.add(new CollectionPricingStockSelector(on_dte));
+		//selectors.add(new PriceShakingStockSelector(on_dte));
 		//selectors.add(new AvgsBreakingSelector(on_dte));
 		//selectors.add(new BottomHammerSelector(on_dte));
 		//selectors.add(new KeepGainStockSelector());
-//		selectors.add(new KeepLostStockSelector());
 	}
 
     public void execute(JobExecutionContext context)
@@ -157,7 +160,7 @@ public class SuggestStock implements Job {
 
 		resetSuggestion();
 		
-		if (checkIndexDropForSkippingSuggest()) {
+		if (checkSkippingSuggest()) {
 			return;
 		}
 		
@@ -234,8 +237,8 @@ public class SuggestStock implements Job {
 			    	}
 			    	electStockforTrade();
 			    	//calStockParam();
-			    	CalStkTopnVOL fsd = new CalStkTopnVOL();
-			        fsd.execute(null);
+			    	//CalStkTopnVOL fsd = new CalStkTopnVOL();
+			        //fsd.execute(null);
 			    	if (stocksWaitForMail.size() > 0 && needMail) {
 			    	    rso.addStockToSuggest(stocksWaitForMail);
 			    	    rso.update();
@@ -254,7 +257,7 @@ public class SuggestStock implements Job {
 		log.info("SuggestStock Now exit!!!");
 	}
     
-    private boolean checkIndexDropForSkippingSuggest()
+    private boolean checkSkippingSuggest()
     {
 		String sql = "select distinct s.indexval, delindex, deltapct, delamt, delmny" + 
 				"    	from stockindex s " + 
@@ -265,7 +268,7 @@ public class SuggestStock implements Job {
 		Connection con = DBManager.getConnection();
 		Statement stm = null;
 		ResultSet rs = null;
-		boolean indexDroppedTwice = false;
+		boolean skipSuggest = false;
 		try {
 			log.info(sql);
 			stm = con.createStatement();
@@ -278,24 +281,43 @@ public class SuggestStock implements Job {
 					if (pct1 < 0 && pct2 < 0)
 					{
 						log.info("Index pct1:" + pct1 + ", pct2:" + pct2 + " dropped twice, skip suggest any stock.");
-						indexDroppedTwice = true;
+						skipSuggest = true;
 					}
 				}
 			}
 			rs.close();
+			stm.close();
+			
+			if (!skipSuggest) {
+			    int NumOfStockToSuggest = ParamManager.getIntParam("NUM_STOCK_TO_SUGGEST", "SUGGESTER", null);
+			    
+			    sql = "select count(*) cnt from usrstk";
+			    stm = con.createStatement();
+			    
+			    log.info(sql);
+			    rs = stm.executeQuery(sql);
+			    
+			    int cnt = rs.getInt("cnt");
+			    
+			    if (cnt >= NumOfStockToSuggest) {
+			    	log.info("skip suggest more stocks as already:" + cnt + " stocks");
+			    	skipSuggest = true;
+			    }
+			    rs.close();
+			    stm.close();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
         finally {
 			try {
-     			stm.close();
                 con.close();
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
                 log.error(e.getMessage() + " with error code: " + e.getErrorCode());
             }
         }
-		return indexDroppedTwice;
+		return skipSuggest;
     }
 
 	private void suggestStock(Stock2 s) {
@@ -752,7 +774,7 @@ public class SuggestStock implements Job {
 	
 	public static boolean shouldStockExitTrade(String stkid) {
 		String sql = "";
-		Connection con = DBManager.getConnection();
+		Connection con = null;
 		Statement stm = null;
 		ResultSet rs = null;
 		boolean lost = false;
@@ -761,6 +783,7 @@ public class SuggestStock implements Job {
 			return false;
 		}
 		try {
+			con = DBManager.getConnection();
 			sql = "select c.pft_mny from cashacnt c join tradehdr h on c.acntid = h.acntid where h.stkid = '" + stkid + "' and c.pft_mny < 0";
 			log.info(sql);
 			stm = con.createStatement();
@@ -854,7 +877,8 @@ public class SuggestStock implements Job {
 		
 	    //String system_role_for_suggest = ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null);
 		try {
-			sql = "delete from usrStk where not exists (select 'x' from sellbuyrecord s where s.stkid = usrStk.id)";
+			sql = "delete from usrStk where not exists (select 'x' from sellbuyrecord s where s.stkid = usrStk.id)" +
+		          " and not exists (select 'x' from cashacnt c where c.acntId like concat('%', usrStk.id) and c.pft_mny > 0)";
 			log.info(sql);
 			stm = con.createStatement();
 			stm.execute(sql);

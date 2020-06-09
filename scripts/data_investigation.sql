@@ -58,3 +58,89 @@ on s2.id = t2.id
 and s2.ft_id = t2.mn_ft_id
 join stk on s1.id = stk.id
 order by pct desc;
+
+//3 days up, then
+select count(1) cnt,
+cat,
+avg(pct) from (
+select s4.id,
+	s.name,
+       case when s4.cur_pri > s4.yt_cls_pri then 1 else -1 end cat,
+	   (s4.cur_pri - s4.yt_cls_pri) / s4.yt_cls_pri pct,
+       left(s4.dl_dt, 10) s4dte
+from stkdat2 s1
+join (select max(ft_id) mx_ft_id, id, left(dl_dt, 10) dt from stkdat2 group by id, left(dl_dt, 10)) t1
+  on s1.id = t1.id
+ and left(s1.dl_dt, 10) = t1.dt
+ and s1.ft_id = t1.mx_ft_id
+join stkdat2 s2
+on s1.id = s2.id
+and left(s1.dl_dt + interval 1 day, 10) = left(s2.dl_dt, 10)
+ join (select max(ft_id) mx_ft_id, id, left(dl_dt, 10) dt from stkdat2 group by id, left(dl_dt, 10)) t2
+  on s2.id = t2.id
+  and left(s2.dl_dt, 10) = t2.dt
+  and s2.ft_id = t2.mx_ft_id
+join stkdat2 s3
+on s1.id = s3.id
+and left(s2.dl_dt + interval 1 day, 10) = left(s3.dl_dt, 10)
+join (select max(ft_id) mx_ft_id, id, left(dl_dt, 10) dt from stkdat2 group by id, left(dl_dt, 10)) t3
+ on s3.id = t3.id
+ and left(s3.dl_dt, 10) = t3.dt
+  and s3.ft_id = t3.mx_ft_id
+join stkdat2 s4
+on s1.id =s4.id
+and left(s3.dl_dt + interval 1 day, 10) = left(s4.dl_dt, 10)
+join (select max(ft_id) mx_ft_id, id, left(dl_dt, 10) dt from stkdat2 group by id, left(dl_dt, 10)) t4
+ on s4.id = t4.id
+ and left(s4.dl_dt, 10) = t4.dt
+  and s4.ft_id = t4.mx_ft_id
+join stk s
+on s1.id = s.id
+where s1.cur_pri > s1.td_opn_pri
+  and s2.cur_pri > s2.td_opn_pri
+  and s3.cur_pri > s3.td_opn_pri)t
+  group by cat;
+
+
+//golden sql, it return p1, first day increase pct, p2, next day increase pct relationship.
+select count(1) cnt,
+cat,
+round(pct1, 2) p1,
+round(pct2, 2) p2 from (
+select s2.id,
+	s.name,
+       case when s1.td_opn_pri > s1.yt_cls_pri then 1 else -1 end cat,
+	   (s1.td_opn_pri - s1.yt_cls_pri) / s1.yt_cls_pri pct1,
+       (s2.td_opn_pri - s2.yt_cls_pri) / s2.yt_cls_pri pct2,
+       left(s2.dl_dt, 10) s2dte
+from stkdat2 s1
+join (select max(ft_id) mx_ft_id, id, left(dl_dt, 10) dt from stkdat2 group by id, left(dl_dt, 10)) t1
+  on s1.id = t1.id
+ and left(s1.dl_dt, 10) = t1.dt
+ and s1.ft_id = t1.mx_ft_id
+-- and exists (select 'x' from stkdat2 tmp where tmp.id =s1.id and left(s1.dl_dt, 10) = left(tmp.dl_dt, 10) and (tmp.cur_pri - tmp.yt_cls_pri) / tmp.yt_cls_pri >= 0.08 and (tmp.cur_pri - tmp.yt_cls_pri) / tmp.yt_cls_pri < 0.09)
+join stkdat2 s2
+on s1.id = s2.id
+and left(s1.dl_dt + interval 1 day, 10) = left(s2.dl_dt, 10)
+ join (select max(ft_id) mx_ft_id, id, left(dl_dt, 10) dt from stkdat2 group by id, left(dl_dt, 10)) t2
+  on s2.id = t2.id
+  and left(s2.dl_dt, 10) = t2.dt
+  and s2.ft_id = t2.mx_ft_id
+join stk s
+on s1.id = s.id) t
+  group by cat, round(pct1, 2), round(pct2, 2)
+  order by cat, p1, p2;
+
+//investigate 09:25
+select distinct s1.dl_dt, s1.b1_num, s1.s1_num, s1.b1_num/s1.s1_num rt, (s2.cur_pri - s2.td_opn_pri) / s2.yt_cls_pri pct, s1.b1_pri, s1.s1_pri, s1.cur_pri, s2.cur_pri
+from stkdat2 s1
+join stkdat2 s2
+  on s1.id = s2.id
+and right(left(s1.dl_dt, 16), 5) = '09:25'
+and left(s1.dl_dt, 10) = left(s2.dl_dt, 10)
+join (select max(ft_id) max_ft_id, id, left(dl_dt, 10) dte from stkdat2 where id = '002400' group by left(dl_dt, 10), id ) t
+  on s2.id = t.id
+and left(s2.dl_dt, 10) = t.dte
+and s2.ft_id = t.max_ft_id
+ where s1.id = '002400'
+ order by dl_dt;
