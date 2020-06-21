@@ -132,15 +132,52 @@ on s1.id = s.id) t
   order by cat, p1, p2;
 
 //investigate 09:25
-select distinct s1.dl_dt, s1.b1_num, s1.s1_num, s1.b1_num/s1.s1_num rt, (s2.cur_pri - s2.td_opn_pri) / s2.yt_cls_pri pct, s1.b1_pri, s1.s1_pri, s1.cur_pri, s2.cur_pri
+select distinct left(s1.dl_dt, 16) dl_dt, s1.b1_num, s1.s1_num, s1.b1_num/s1.s1_num rt, (s2.cur_pri - s2.td_opn_pri) / s2.yt_cls_pri pct, s1.b1_pri, s1.s1_pri,  s2.cur_pri
 from stkdat2 s1
 join stkdat2 s2
   on s1.id = s2.id
-and right(left(s1.dl_dt, 16), 5) = '09:25'
+ and right(left(s1.dl_dt, 16), 5) = '09:25'
 and left(s1.dl_dt, 10) = left(s2.dl_dt, 10)
-join (select max(ft_id) max_ft_id, id, left(dl_dt, 10) dte from stkdat2 where id = '002400' group by left(dl_dt, 10), id ) t
+join (select max(ft_id) max_ft_id, id, left(dl_dt, 10) dte from stkdat2 where id = '603439' group by left(dl_dt, 10), id ) t
   on s2.id = t.id
 and left(s2.dl_dt, 10) = t.dte
 and s2.ft_id = t.max_ft_id
- where s1.id = '002400'
- order by dl_dt;
+ where s1.id = '603439'
+  -- and left(s1.dl_dt, 10) = '2020-06-10'
+ order by dl_dt desc;
+
+//daily detail.
+select s1.dl_dt, s1.b1_num, s1.s1_num, s1.b1_pri, s1.s1_pri, s1.cur_pri, (s1.cur_pri - s1.td_opn_pri) /s1.td_opn_pri pct_td_opn_pri, (s1.cur_pri - s1.yt_cls_pri) /s1.yt_cls_pri pct_yt_cls_pri, s2.dl_stk_num - s1.dl_stk_num dtl_stk_num,
+s2.dl_mny_num - s1.dl_mny_num dlt_mny_num
+from stkdat2 s1
+join stkdat2 s2
+  on s1.id = s2.id
+and left(s1.dl_dt, 10) = left(s2.dl_dt, 10)
+and s2.ft_id = (select min(ft_id) from stkdat2 s3 where s3.id = s1.id and left(s3.dl_dt, 10) = left(s1.dl_dt, 10) and s3.ft_id > s1.ft_id)
+where s1.id = '002400'
+and left(s1.dl_dt, 10) = '2020-06-04'
+order by dl_dt;
+
+//find most deal stocks right now.
+select s1.dl_dt, k.name, s1.b1_num, s1.s1_num, s1.b1_pri, s1.s1_pri, s1.cur_pri, (s1.cur_pri - s1.td_opn_pri) /s1.td_opn_pri pct_td_opn_pri, (s1.cur_pri - s1.yt_cls_pri) /s1.yt_cls_pri pct_yt_cls_pri
+from stkdat2 s1
+join (select id, max(ft_id) max_ft_id from stkdat2 group by id) t
+  on s1.id = t.id
+  and s1.ft_id = t.max_ft_id
+join stk k
+on k.id = s1.id
+where left(s1.dl_dt, 10) = '2020-06-10'
+  and s1_num > 10000
+order by b1_num / s1_num desc,
+ dl_dt desc;
+//find dl_stk_mny 10 times bigger than yesterday stock.
+  select k.name, k.id, s1.dl_mny_num, s2.dl_mny_num, s2.dl_dt from stkdat2 s1
+  join stkdat2 s2
+    on s1.id = s2.id
+  and left(s2.dl_dt, 10) = left(s1.dl_dt + interval 1 day, 10)
+  and right(left(s1.dl_dt, 16), 5) = '15:00'
+  and right(left(s2.dl_dt, 16), 5) = '15:00'
+  join stk k
+    on s1.id = k.id
+  where left(s2.dl_dt, 10) = '2020-06-10'
+  and s2.dl_mny_num / s1.dl_mny_num > 10;

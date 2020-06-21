@@ -26,7 +26,7 @@ public class CollectionPricingStockSelector implements IStockSelector {
     static Logger log = Logger.getLogger(CollectionPricingStockSelector.class);
     private String on_dte = "";
     
-    private double min_winpct = 0.7;
+    private double min_winpct = 0.05;
     private String suggest_by = "CollectionPricingStockSelector";
 
     public CollectionPricingStockSelector (String s) {
@@ -39,6 +39,10 @@ public class CollectionPricingStockSelector implements IStockSelector {
         
         boolean isgood = false;
         double winpct = 0.0;
+        int wincnt = 0;
+        int lstcnt = 0;
+        double gainPct = 0;
+        double lostPct = 0;
         
         Connection con = DBManager.getConnection();
         Statement stm = null;
@@ -57,29 +61,30 @@ public class CollectionPricingStockSelector implements IStockSelector {
             		   + "    on s1.id = s2.id "
             		   + "   and s2.ft_id = t.max_ft_id "
                        + " where s1.id ='" + s.getID() + "'"
-                       + "   and left(s1.dl_dt, 10) = '" + on_dte + "'"
+                       + "   and left(s1.dl_dt, 10) <= '" + on_dte + "'"
                        + "   and right(left(s1.dl_dt, 16), 5) = '09:25'"
-                       + "   and s1.s1_num >= 10000 "
+                      // + "   and s1.s1_num >= 10000 "
                        + "   and s1.b1_num / s1.s1_num > 1"
                        + "  order by dte";
             log.info(sql);
             ResultSet rs = stm.executeQuery(sql);
-            int wincnt = 0;
-            int lstcnt = 0;
+
             while (rs.next()) {
             	double pct = rs.getDouble("pct");
             	String dte = rs.getString("dte");
             	log.info("got pct:" + pct + " for date:" + dte);
-            	if (pct > 0.001) {
+            	if (pct > 0.01) {
             		wincnt++;
+            		gainPct += pct;
             	}
             	else {
             		lstcnt++;
+            		lostPct += Math.abs(pct);
             	}
             }
             
-            winpct = wincnt * 1.0 / (wincnt + lstcnt);
-            log.info("wincnt:" + wincnt + ", lstcnt:" + lstcnt + ", winpct:" + winpct);
+            winpct = (gainPct - lostPct) * 1.0 / (wincnt + lstcnt);
+            log.info("stock:" + s.getID() + " wincnt:" + wincnt + ", lstcnt:" + lstcnt + "total gainPct:" + gainPct + ", total lostPct:" + lostPct + ", avg Gain pct:" + winpct);
             rs.close();
             stm.close();
         }
@@ -95,7 +100,7 @@ public class CollectionPricingStockSelector implements IStockSelector {
             }
         }
         
-        if (winpct > min_winpct)
+        if (winpct > min_winpct && (wincnt + lstcnt) >= 4)
         {
             log.info("CollectionPricingStockSelector found stock:" + s.getID() + ", name:" + s.getName() + " good for trade, winpct:" + winpct);
             s.setSuggestedBy(this.suggest_by);
@@ -119,16 +124,16 @@ public class CollectionPricingStockSelector implements IStockSelector {
 	public boolean adjustCriteria(boolean harder) {
 		// TODO Auto-generated method stub
         if (harder) {
-        	min_winpct+= 0.02;
+        	min_winpct+= 0.01;
         }
         else {
-        	min_winpct-= 0.02;
+        	min_winpct-= 0.01;
         }
         
-        if (min_winpct < 0.5)
+        if (min_winpct < 0.03)
         {
-        	log.info("min_winpct can not less than 0.5, use 0.5");
-        	min_winpct = 0.5;
+        	log.info("min_winpct can not less than 0.3, use 0.3");
+        	min_winpct = 0.03;
         }
         log.info("try harder:" + harder);
         log.info("new min_winpct:" + min_winpct);

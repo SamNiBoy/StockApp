@@ -24,19 +24,19 @@ import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 
 /*
- * This selector used to find stock which has price on the bottom with minDays,
- * and has a long bottom thin foot line.
+ * This selector used to find stock which has increased a lot but step back
+ * on average line.
  */
-public class BottomHammerSelector implements IStockSelector {
+public class StepBackSelector implements IStockSelector {
 
-    static Logger log = Logger.getLogger(BottomHammerSelector.class);
+    static Logger log = Logger.getLogger(StepBackSelector.class);
     
-    double topPct = 0.8;
-    int minDays = 15;
+    double topPct = 0.2;
+    int minDays = 5;
     String on_dte = "";
-    String suggest_by = "BottomHammerSelector";
+    String suggest_by = "StepBackSelector";
     
-    public BottomHammerSelector (String s) {
+    public StepBackSelector (String s) {
     	on_dte = s;
     }
     
@@ -55,31 +55,27 @@ public class BottomHammerSelector implements IStockSelector {
     	Connection con = DBManager.getConnection();
     	Statement stm = null;
     	ResultSet rs = null;
-    	double td_opn_pri = 0.0;
-    	double td_hst_pri = 0.0;
-    	double td_lst_pri = 0.0;
+    	double avgytclspri = 0.0;
     	double td_cls_pri = 0.0;
-    	double min_cur_pri = 0.0;
-    	double max_cur_pri = 0.0;
+    	double pct = 0.0;
     	long max_td_ft_id = 0;
     	
     	
     	try {
-			sql = "select max(yt_cls_pri) lst_cls_pri, max(td_opn_pri) td_opn_pri, max(cur_pri) max_cur_pri, min(cur_pri) min_cur_pri, max(ft_id) max_ft_id, left(dl_dt, 10) dte "
+			sql = "select avg(yt_cls_pri) avg_yt_cls_pri, (max(yt_cls_pri) - min(yt_cls_pri)) / min(yt_cls_pri) pct, max(ft_id) max_ft_id "
 			    + "  from stkdat2 "
 			    + " where id = '" + s.getID() + "' "
-			    + "   and left(dl_dt, 10) = left(str_to_date('" + on_dte + "', '%Y-%m-%d'), 10)"
-			    + " group by left(dl_dt, 10)";
+			    + "   and left(dl_dt, 10) <= left(str_to_date('" + on_dte + "', '%Y-%m-%d'), 10)"
+			    + "   and left(dl_dt + interval " + minDays + " day, 10) > left(str_to_date('" + on_dte + "', '%Y-%m-%d'), 10)";
 			
 			log.info(sql);
 			
 			stm = con.createStatement();
 			rs = stm.executeQuery(sql);
 			
-			if (rs.next() && rs.getDouble("td_opn_pri") > 0) {
-				td_opn_pri = rs.getDouble("td_opn_pri");
-				td_hst_pri = rs.getDouble("max_cur_pri");
-				td_lst_pri = rs.getDouble("min_cur_pri");
+			if (rs.next() && rs.getDouble("avg_yt_cls_pri") > 0) {
+				avgytclspri = rs.getDouble("avg_yt_cls_pri");
+				pct = rs.getDouble("pct");
 				max_td_ft_id = rs.getLong("max_ft_id");
 			}
 			
@@ -107,38 +103,13 @@ public class BottomHammerSelector implements IStockSelector {
 				return false;
 			}
 			
-			log.info("Got min/max price for stock:" + s.getID() + " td_hst_pri/td_lst_pri: [" + td_hst_pri + "," + td_lst_pri + "]" + " td_opn_pri/td_cls_pri: [" + td_opn_pri + "," + td_cls_pri + "], shaking pct:" + (td_hst_pri - td_lst_pri) / td_cls_pri);
+			log.info("Got min/max price for stock:" + s.getID() + " td_cls_pri: [" + td_cls_pri + "], avgytclspri:" + avgytclspri + ", pct:" + pct);
             
-            if(td_cls_pri > td_opn_pri && td_opn_pri >= (td_lst_pri + topPct * (td_hst_pri - td_lst_pri)) && (td_hst_pri - td_lst_pri) / td_cls_pri > 0.02) {
-            	
-    			stm = con.createStatement();
-    			
-    			sql = "select min(cur_pri) min_cur_pri, max(cur_pri) max_cur_pri "
-    				    + "  from stkdat2 "
-    				    + " where id = '" + s.getID() + "' "
-    				    + "   and left(dl_dt, 10) >= left(str_to_date('" + on_dte + "', '%Y-%m-%d') - interval " + minDays + " day, 10)"
-    				    + "   and left(dl_dt, 10) <= left(str_to_date('" + on_dte + "', '%Y-%m-%d'), 10)";
-    			
-    			log.info(sql);
-    			
-    			rs = stm.executeQuery(sql);
-    			
-    			rs.next();
-    			min_cur_pri = rs.getDouble("min_cur_pri");
-    			max_cur_pri = rs.getDouble("max_cur_pri");
-    			
-    			rs.close();
-    			stm.close();
-    			
-    			log.info("td_lst_pri" + td_lst_pri + " close to min_cur_pri:" + min_cur_pri + " for past:" + minDays + " days, max_cur_pri:" + max_cur_pri);
-            	
-            	if (Math.abs((td_lst_pri - min_cur_pri) / td_cls_pri) < 0.01 && (max_cur_pri - min_cur_pri) / td_cls_pri > 0.1)
-            	{
+            if(pct >= topPct && td_cls_pri > avgytclspri && (td_cls_pri - avgytclspri) / avgytclspri < 0.01) {
                     s.setSuggestedBy(this.suggest_by);
-                    s.setSuggestedComment("td_cls_pri:" + td_cls_pri + " is higher than td_opn_pri:" + td_opn_pri + " and formed a bottom hammer shape.");
+                    s.setSuggestedComment("td_cls_pri:" + td_cls_pri + " is close to avgytclspri:" + avgytclspri + " at 1%, and shaking pct:" + pct);
                     s.setSuggestedscore(topPct);
             	    isGoodStock = true;
-            	}
             }
     	}
     	catch (Exception e) {
@@ -154,7 +125,7 @@ public class BottomHammerSelector implements IStockSelector {
 			}
     	}
         
-    	log.info("for stock:" + s.getID() + ", calculated isGoodStock:" + isGoodStock);
+    	log.info("for stock:" + s.getID() + ",StepBackSelector calculated isGoodStock:" + isGoodStock);
     	
         return isGoodStock;
     }
@@ -175,26 +146,27 @@ public class BottomHammerSelector implements IStockSelector {
 		// TODO Auto-generated method stub
 		if (harder) {
 			topPct += 0.02;
+			minDays--;
 			minDays++;
 		}
 		else {
 			topPct -= 0.02;
-			minDays--;
+			
 		}
 		
-		if (minDays < 7) {
-			minDays = 7;
+		if (minDays < 3) {
+			minDays = 3;
 		}
 		
-		if (topPct <= 0.7) {
-			log.info("topPct reached 0.7, use 0.7");
-			topPct = 0.7;
+		if (topPct <= 0.2) {
+			log.info("topPct reached 0.2, use 0.2");
+			topPct = 0.2;
 		}
 		else if (topPct > 1.0) {
 			log.info("topPct reached 1, use 0.9:" + 0.9);
 			topPct = 0.9;
 		}
-		log.info("BottomHammerSelector is mandatory criteria, adjusted to topPct:" + topPct + ", minDays:" + minDays + " with harder:" + harder);
+		log.info("StepBackSelector is mandatory criteria, adjusted to topPct:" + topPct + ", minDays:" + minDays + " with harder:" + harder);
 		return true;
 	}
 }

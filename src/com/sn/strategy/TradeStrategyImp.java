@@ -651,6 +651,27 @@ public class TradeStrategyImp implements ITradeStrategy {
     	return true;
 	}
 	
+	public static int getBuySellCount(String id, String on_dte, boolean get_buy_cnt) {
+		LinkedList<StockBuySellEntry> tmp = tradeRecord.get(id);
+		int cnt = 0;
+		if (tmp != null) {
+    	for (StockBuySellEntry sb : tmp) {
+    		String sb_dte = sb.dl_dt.toString().substring(0, 10);
+    		
+    		if (sb_dte.equals(on_dte)) {
+    			if (sb.is_buy_point && get_buy_cnt) {
+    				cnt++;
+    			}
+    			else if (!sb.is_buy_point && !get_buy_cnt) {
+    				cnt++;
+    			}
+    		}
+    	}
+		}
+    	log.info("Stock:" + id + " get_buy_cnt:" + get_buy_cnt + ", on dte:" + on_dte + ", cnt:" + cnt);
+    	return cnt;
+	}
+	
 	private boolean stopTradeForPeriod(Stock2 s, int days) {
 		String sql;
 		boolean shouldStopTrade = false;

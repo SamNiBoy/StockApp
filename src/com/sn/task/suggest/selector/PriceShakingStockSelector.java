@@ -113,6 +113,22 @@ public class PriceShakingStockSelector implements IStockSelector {
 //                 }
 //            	 stm2.close();
 //            	 rs2.close();
+    		    Statement stm2 = con.createStatement();
+    		    String sql2 = "select avg(yt_cls_pri) avgpri "
+    		    		   + " from (select yt_cls_pri from (select distinct yt_cls_pri, left(dl_dt, 10) dte from stkdat2 s"
+    		    		   + " where id = '" + s.getID() + "'"
+    		    		   + "   and left(dl_dt, 10) <= '" + on_dte + "' order by dte desc) t limit " + 5 + ") t2";
+    		    log.info(sql2);
+    		    ResultSet rs2 = stm.executeQuery(sql2);
+    		    if (rs2.next()) {
+    		    	double avgytclspri = rs2.getDouble("avgpri");
+    		    	log.info("avgytclspri calculated for stock:" + s.getID() + " is:" + avgytclspri + " vs yt_cls_pri:" + yt_cls_pri + ", skip if yt_cls_pri < avgytclspri? " + (yt_cls_pri < avgytclspri));
+    		    	if (yt_cls_pri < avgytclspri) {
+    		    		continue_next_step = false;
+    		    	}
+    		    }
+    		    rs2.close();
+    		    stm2.close();
             }
             else {
                 log.info("Null value found, not good to suggest");

@@ -22,6 +22,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 import com.sn.task.calstkstats.CalStkStats;
 import com.sn.task.calstkstats.CalStkTopnVOL;
+import com.sn.task.calstkstats.GetStockAvgPri;
 import com.sn.task.ga.StockParamSearch;
 import com.sn.task.fetcher.StockDataFetcher;
 import com.sn.task.fetcher.GzStockDataFetcher;
@@ -111,11 +112,11 @@ public class JobScheduler {
         //String stockParamTrainningTime = "0 35 11 ? * MON-FRI";
         //String stockParamTrainningTime = "0 50 16 ? * MON-SUN";
         //String stockSuggestTime = "0 0 12,16 ? * MON-FRI";
-        String stockSuggestTime = "0 10 20 ? * MON-FRI";
+        String stockSuggestTime = "0 30 23 ? * MON-FRI";
         //String stockSimTime = "0 30 15 ? * MON-FIR";
-        String stockSimTime = "0 47 21 ? * MON-FRI";
+        String stockSimTime = "0 46 11 ? * MON-SUN";
         String stockSimResCollectorTime = "*/10 * * ? * MON-SUN";
-        String calstktopnvolTime = "0 0 19 ? * MON-FRI";
+        String getStockAvgPriTime = "0 35 19 ? * MON-SUN";
         
        // JobDetail job_StockParamSearch = newJob(StockParamSearch.class).withIdentity("StockParamSearch", "StockApp").build();
 
@@ -211,12 +212,12 @@ public class JobScheduler {
                  + trigger_CalStkStats.getCronExpression());
         
         
-        JobDetail job_CalStkTopnVOL = newJob(CalStkTopnVOL.class).withIdentity("CalStkTopnVOL", "StockApp").build();
-        CronTrigger trigger_CalStkTopnVOL = newTrigger().withIdentity("CalStkTopnVOL", "StockApp").withSchedule(cronSchedule(calstktopnvolTime)).build();
+        JobDetail job_GetStockAvgPri = newJob(GetStockAvgPri.class).withIdentity("GetStockAvgPri", "StockApp").build();
+        CronTrigger trigger_GetStockAvgPri = newTrigger().withIdentity("GetStockAvgPri", "StockApp").withSchedule(cronSchedule(getStockAvgPriTime)).build();
         
-        ft = sched.scheduleJob(job_CalStkTopnVOL, trigger_CalStkTopnVOL);
-        log.info(job_CalStkTopnVOL.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
-                 + trigger_CalStkTopnVOL.getCronExpression());
+        ft = sched.scheduleJob(job_GetStockAvgPri, trigger_GetStockAvgPri);
+        log.info(job_GetStockAvgPri.getKey() + " has been scheduled to run at: " + ft + " and repeat based on expression: "
+                 + trigger_GetStockAvgPri.getCronExpression());
         
         sched.start();
         

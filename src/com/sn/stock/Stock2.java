@@ -951,6 +951,58 @@ public class Stock2 implements Comparable<Stock2>{
             dl_dt_lst = dlDtLst;
         }
         
+        public boolean isLstQtyPlusedByRatio(int ratio) {
+            int sz = dl_stk_num_lst.size();
+            
+            if (sz < 30) {
+            	log.info("very less data, return false");
+            	return false;
+            }
+            
+            int delVol = dl_stk_num_lst.get(sz - 1) - dl_stk_num_lst.get(sz - 2);
+            int avgdlstknum = 0;
+            if (sz < 30) {
+                log.info("data less than 30 periods, use average data.");
+            	Connection con = DBManager.getConnection();
+            	String dte = getDl_dt_lst().get(sz - 1).toString().substring(0, 10);
+            	try {
+            		String sql = "select max(dl_stk_num) / count(*) avgdlstknum"
+            				   + " from stkdat2 s1"
+            				   + "where s1.id = '" + id + "' and left(s1.dl_dt , 10) = '" + dte + "' and left(s1.dl_dt, 10) = (select max(left(dl_dt, 10)) from stkdat2 s2 where s2.id = s1.id and left(s2.dl_dt, 10) < '" + dte + "')";
+            		Statement stm = con.createStatement();
+            		ResultSet rs = stm.executeQuery(sql);
+            		
+            		if (rs.next()) {
+            		    avgdlstknum = rs.getInt("avgdlstknum");
+            		    log.info("for stock:" + id + ", last vol:" + dl_stk_num_lst.get(sz - 1) + ", last 2 vol:" + dl_stk_num_lst.get(sz - 2) + ", delta:" + delVol + " >= avgdlstknum * ratio:" + avgdlstknum * ratio + "? " + (delVol > avgdlstknum * ratio));
+            		}
+            		else {
+            			log.info("No avgdlstknum information, return false.");
+            		}
+            		rs.close();
+            		stm.close();
+            	}
+            	catch(Exception e) {
+            		log.error(e.getMessage(), e);
+            	}
+            	finally {
+            		try {
+    					con.close();
+    				} catch (SQLException e2) {
+    					// TODO Auto-generated catch block
+    					log.error(e2.getMessage(), e2);
+    				}
+            	}
+            }
+            else {
+            	avgdlstknum = dl_stk_num_lst.get(sz - 2) / (sz - 1);
+            }
+            
+            double actual_ratio = delVol * 1.0 / avgdlstknum;
+            log.info("avgdlstknum is:" + avgdlstknum + ", delVol:" + delVol + " with actual ratio:" + actual_ratio);
+            return (actual_ratio >= ratio);
+        }
+        
         public boolean isLstQtyPlused(int period) {
             int sz = dl_stk_num_lst.size();
             if (sz < period + 2) {
@@ -1837,6 +1889,66 @@ public class Stock2 implements Comparable<Stock2>{
     String traded_by_selector;
     String traded_by_selector_comment;
     private int price_trend = 0;
+    private String pre_dte = "";
+    private boolean isGoldenCrossMnted = false;
+    
+    public boolean isGoldenCrossMaintained(int short_days, int long_days, String on_dte) {
+    	
+    	if (pre_dte.equals(on_dte)) {
+    		log.info("return pre calcualted isGoldenCrossMnted:" + isGoldenCrossMnted);
+    		return isGoldenCrossMnted;
+    	}
+    	try {
+    		double shrt_avgytclspri = 0.0;
+    		double lng_avgytclspri = 0.0;
+		    Connection con = DBManager.getConnection();
+		    Statement stm = con.createStatement();
+		    String sql = "select avg(yt_cls_pri) avgpri, (max(yt_cls_pri) - min(yt_cls_pri)) / min(yt_cls_pri) detpri "
+		    		   + " from (select yt_cls_pri from (select distinct yt_cls_pri, left(dl_dt, 10) dte from stkdat2 s"
+		    		   + " where id = '" + id + "'"
+		    		   + "   and left(dl_dt, 10) <= '" + getDl_dt().toString().substring(0, 10) + "' order by dte desc) t limit " + short_days + ") t2";
+		    log.info(sql);
+		    ResultSet rs = stm.executeQuery(sql);
+		    if (rs.next()) {
+		    	shrt_avgytclspri = rs.getDouble("avgpri");
+		    	double detpri = rs.getDouble("detpri");
+		    	
+		    	if (detpri > 0.05) {
+		    		isGoldenCrossMnted = false;
+		    		log.info("short avgpri is shaking more then 13%, skip gloden cross check.");
+		    	}
+		    	else {
+		    		Statement stm2 = con.createStatement();
+				    String sql2 = "select avg(yt_cls_pri) avgpri, (max(yt_cls_pri) - min(yt_cls_pri)) / min(yt_cls_pri) detpri, min(yt_cls_pri) min_yt_cls_pri "
+				    		   + " from (select yt_cls_pri from (select distinct yt_cls_pri, left(dl_dt, 10) dte from stkdat2 s"
+				    		   + " where id = '" + id + "'"
+				    		   + "   and left(dl_dt, 10) <= '" + getDl_dt().toString().substring(0, 10) + "' order by dte desc) t limit " + long_days + ") t2";
+				    log.info(sql2);
+				    ResultSet rs2 = stm2.executeQuery(sql2);
+				    if (rs2.next()) {
+				    	lng_avgytclspri = rs2.getDouble("avgpri");
+				    }
+				    
+				    rs2.close();
+				    stm2.close();
+				    
+				    log.info("calculated for stock:" + id + " shrt_avgytclspri is:" + shrt_avgytclspri + " vs lng_avgytclspri:" + lng_avgytclspri + ", (shrt_avgytclspri - lng_avgytclspri) / lng_avgytclspri:" + (shrt_avgytclspri - lng_avgytclspri) / lng_avgytclspri);
+				    if (shrt_avgytclspri >= lng_avgytclspri && (shrt_avgytclspri - lng_avgytclspri) / lng_avgytclspri <= 0.02) {
+				    	isGoldenCrossMnted = true;
+				    }
+		    	}
+		    }
+		    rs.close();
+		    stm.close();
+		    con.close();
+		    
+		    pre_dte = on_dte;
+	    }
+	    catch(Exception e) {
+	    	e.printStackTrace();
+	    }
+    	return isGoldenCrossMnted;
+    }
     
     
     public String getSuggestedComment() {
@@ -2038,6 +2150,10 @@ public class Stock2 implements Comparable<Stock2>{
     //this method tells if the lasted record has dl_stk_num qty plused.
     public boolean isLstQtyPlused(int period) {
         return sd.isLstQtyPlused(period);
+    }
+    
+    public boolean isLstQtyPlusedByRatio(int ratio) {
+        return sd.isLstQtyPlusedByRatio(ratio);
     }
     
     public boolean isLstQtyOnTopN() {

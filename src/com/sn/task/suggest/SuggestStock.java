@@ -26,17 +26,20 @@ import com.sn.task.fetcher.StockDataFetcher;
 import com.sn.task.suggest.selector.AvgClsPriStockSelector;
 import com.sn.task.suggest.selector.AvgsBreakingSelector;
 import com.sn.task.suggest.selector.BottomHammerSelector;
+import com.sn.task.suggest.selector.BottomJumpperSelector;
 import com.sn.task.suggest.selector.ClosePriceUpSelector;
 import com.sn.task.suggest.selector.CollectionPricingStockSelector;
 import com.sn.task.suggest.selector.DaBanStockSelector;
 import com.sn.task.suggest.selector.DealMountStockSelector;
 import com.sn.task.suggest.selector.DefaultStockSelector;
+import com.sn.task.suggest.selector.DragonBackSelector;
 import com.sn.task.suggest.selector.KShapeFilterSelector;
 import com.sn.task.suggest.selector.KeepGainStockSelector;
 import com.sn.task.suggest.selector.PriceRecentlyRaisedSelector;
 import com.sn.task.suggest.selector.PriceShakingStockSelector;
 import com.sn.task.suggest.selector.PriceStockSelector;
 import com.sn.task.suggest.selector.StddevStockSelector;
+import com.sn.task.suggest.selector.StepBackSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockMarket;
 import com.sn.strategy.algorithm.param.ParamManager;
@@ -68,7 +71,7 @@ public class SuggestStock implements Job {
 	 */
 	public static void main(String[] args) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		SuggestStock fsd = new SuggestStock("2020-05-11", false);
+		SuggestStock fsd = new SuggestStock("2020-06-11", false);
 		fsd.execute(null);
 		log.info("Main exit");
 		//WorkManager.submitWork(fsd);
@@ -127,15 +130,17 @@ public class SuggestStock implements Job {
 		//selectors.add(new DefaultStockSelector());
 		selectors.add(new PriceStockSelector(on_dte));
 		//selectors.add(new StddevStockSelector());
-		//selectors.add(new DealMountStockSelector());
+		
 		//selectors.add(new DaBanStockSelector(on_dte));
 		//selectors.add(new PriceRecentlyRaisedSelector(on_dte));
 		//selectors.add(new KShapeFilterSelector(on_dte));
-		selectors.add(new CollectionPricingStockSelector(on_dte));
+		//selectors.add(new CollectionPricingStockSelector(on_dte));
 		//selectors.add(new PriceShakingStockSelector(on_dte));
-		//selectors.add(new AvgsBreakingSelector(on_dte));
-		//selectors.add(new BottomHammerSelector(on_dte));
-		//selectors.add(new KeepGainStockSelector());
+		selectors.add(new DragonBackSelector(on_dte));
+//		selectors.add(new AvgsBreakingSelector(on_dte));
+//	    selectors.add(new BottomHammerSelector(on_dte));
+//		selectors.add(new StepBackSelector(on_dte));
+//		selectors.add(new BottomJumpperSelector(on_dte));
 	}
 
     public void execute(JobExecutionContext context)
@@ -160,9 +165,9 @@ public class SuggestStock implements Job {
 
 		resetSuggestion();
 		
-		if (checkSkippingSuggest()) {
-			return;
-		}
+//		if (checkSkippingSuggest()) {
+//			return;
+//		}
 		
 		try {
 			Map<String, Stock2> stks = StockMarket.getStocks();

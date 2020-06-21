@@ -53,13 +53,6 @@ public class QtySellPointSelector implements ISellPointSelector {
 		Double yt_cls_pri = stk.getYtClsPri();
 		Double cur_pri = stk.getCur_pri();
         
-//		VOLPRICEHISTRO v1 = StockDataProcess.getPriceVolHistro(stk, "", 1, 5, 0);
-//		
-//		if (v1.max_pri < cur_pri) {
-//			log.info("skip sell as cur_pri:" + cur_pri + " is great than max_pri of thick line1:" + v1.max_pri);
-//			return false;
-//		}
-		
         Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
         StockBuySellEntry sbs = lstTrades.get(stk.getID());
         double marketDegree = StockMarket.getDegree(stk.getDl_dt());
@@ -68,6 +61,7 @@ public class QtySellPointSelector implements ISellPointSelector {
         	log.info("only sell stock which was bought yesterday.");
         	return false;
         }
+
         
         Timestamp t1 = stk.getDl_dt();
         Timestamp t0 = sbs.dl_dt;
@@ -83,37 +77,19 @@ public class QtySellPointSelector implements ISellPointSelector {
         	return false;
         }
         
-//        double sbr = stk.getS1B1Ratio();
-//        
-//        if (pre_dte.length() == 0 || !pre_dte.equals(stk.getDl_dt().toString().substring(0, 10))) {
-//            maxrt = getMaxS1B1RationForPastDays(5, stk);
-//        }
-//        
-//        boolean rtmax = (sbr >= maxrt);
-//        
-//        log.info("S1B1 Num ration:" + sbr + " > 5 days max B1S1 Num Ratio:" + maxrt + "? " + rtmax);
-//        if (rtmax) {
-//			stk.setTradedBySelector(this.selector_name);
-//			stk.setTradedBySelectorComment("S1B1 Num ration:" + sbr + " > 5 days max B1S1 Num Ratio:" + maxrt + " is " + rtmax);
-//			return true;
-//        }
-//        else if (!rtmax){
-//        	return false;
-//        }
-
         long hour = t1.getHours();
         long minutes = t1.getMinutes();
         
         double pct = (cur_pri - yt_cls_pri) / yt_cls_pri;
-        
-        if (hour == 14 && minutes >= 58) {
-        	log.info("sell time check: cur_pri:" + cur_pri + ", yt_cls_pri:" + yt_cls_pri);
-        	if (pct < -0.01) {
-				stk.setTradedBySelector(this.selector_name);
-				stk.setTradedBySelectorComment("sell time check: cur_pri:" + cur_pri + ", yt_cls_pri:" + yt_cls_pri + " passed, pct=" + pct);
-				return true;
-        	}
-        }
+//        
+//        if (hour == 14 && minutes >= 58) {
+//        	log.info("sell time check: cur_pri:" + cur_pri + ", yt_cls_pri:" + yt_cls_pri);
+//        	if (pct < -0.01) {
+//				stk.setTradedBySelector(this.selector_name);
+//				stk.setTradedBySelectorComment("sell time check: cur_pri:" + cur_pri + ", yt_cls_pri:" + yt_cls_pri + " passed, pct=" + pct);
+//				return true;
+//        	}
+//        }
         
         
         int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING", stk.getID());
@@ -151,9 +127,17 @@ public class QtySellPointSelector implements ISellPointSelector {
 		
 		double tradeThresh = 0;
         double margin_pct = ParamManager.getFloatParam("MARGIN_PCT_TO_TRADE_THRESH", "TRADING", stk.getID());
+        
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
-			// If we bought before with lower price, use it as minPri.
+//			if (stk.isLstQtyPlusedByRatio(5) && stk.priceGoingDown(1)) {
+//			    stk.setTradedBySelector(this.selector_name);
+//			    stk.setTradedBySelectorComment("LstQtyPlusedByRatio 5 and price going down.");
+//			    return true;
+//			}
+//			else if (tradeThresh > 0)
+//			return false; 
+				
 			if (sbs != null && sbs.is_buy_point && sbs.price < minPri) {
 				log.info("stock:" + sbs.id + " bought with price:" + sbs.price + " which is lower than:" + minPri + ", use it as minPri.");
 				minPri = sbs.price;
@@ -161,12 +145,18 @@ public class QtySellPointSelector implements ISellPointSelector {
 			
 			tradeThresh = getSellThreshValueByDegree(marketDegree, stk);
 			
+	        if ((cur_pri - sbs.price) / yt_cls_pri < -1.5 * tradeThresh) {
+	            stk.setTradedBySelector(this.selector_name);
+	            stk.setTradedBySelectorComment("cut lost pct, (cur_pri - sbs.price) / yt_cls_pri < -0.05:" + ((cur_pri - sbs.price) / yt_cls_pri < -0.05));
+				return true;
+	        }
+			
 			double maxPct = (maxPri - minPri) / yt_cls_pri;
 			double curPct = (cur_pri - minPri) / yt_cls_pri;
 			
 			boolean con1 = maxPct > tradeThresh && curPct > maxPct * (1 - margin_pct);
 			
-			boolean con2 = stk.isLstQtyPlused(4) || (hour == 9 && minutes <= 30);
+			boolean con2 = stk.isLstQtyPlused(4);
 			boolean priceTurnedAround = stk.priceDownAfterSharpedUp(4);
 			
 			log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + "yt_cls_pri:" + yt_cls_pri + " maxPri:" + maxPri + " minPri:"
@@ -182,6 +172,58 @@ public class QtySellPointSelector implements ISellPointSelector {
 		}
 		return false;
 	}
+	
+	
+    public double getAvgYtClsPri(Stock2 stk, int days) {
+		double avgytclspri = 0;
+    	try {
+		    Connection con = DBManager.getConnection();
+		    Statement stm = con.createStatement();
+		    String sql = "select avg(yt_cls_pri) avgpri, (max(yt_cls_pri) - min(yt_cls_pri)) / min(yt_cls_pri) detpri "
+		    		   + " from (select yt_cls_pri from (select distinct yt_cls_pri, left(dl_dt, 10) dte from stkdat2 s"
+		    		   + " where id = '" + stk.getID() + "'"
+		    		   + "   and left(dl_dt, 10) <= '" + stk.getDl_dt().toString().substring(0, 10) + "' order by dte desc) t limit " + days + ") t2";
+		    log.info(sql);
+		    ResultSet rs = stm.executeQuery(sql);
+		    if (rs.next()) {
+		    	avgytclspri = rs.getDouble("avgpri");
+		    	
+		    	log.info("avgytclspri calculated for stock:" + stk.getID() + " is:" + avgytclspri);
+		    }
+		    rs.close();
+		    stm.close();
+		    con.close();
+	    }
+	    catch(Exception e) {
+	    	e.printStackTrace();
+	    }
+		return avgytclspri;
+    }
+    
+    public double getAvgHeight(Stock2 stk, int days) {
+		double avg_detpri = 0;
+    	try {
+		    Connection con = DBManager.getConnection();
+		    Statement stm = con.createStatement();
+		    String sql = "select avg(max_detpri) avg_detpri "
+		    		   + " from (select max_detpri from (select max(td_hst_pri - td_lst_pri) max_detpri, left(dl_dt, 10) dte from stkdat2 s"
+		    		   + " where id = '" + stk.getID() + "'"
+		    		   + "   and left(dl_dt, 10) <= '" + stk.getDl_dt().toString().substring(0, 10) + "' order by dte desc) t limit " + days + ") t2";
+		    log.info(sql);
+		    ResultSet rs = stm.executeQuery(sql);
+		    if (rs.next()) {
+		    	avg_detpri = rs.getDouble("avg_detpri");
+		    	log.info("avg_detpri calculated for stock:" + stk.getID() + " is:" + avg_detpri);
+		    }
+		    rs.close();
+		    stm.close();
+		    con.close();
+	    }
+	    catch(Exception e) {
+	    	e.printStackTrace();
+	    }
+		return avg_detpri;
+    }
 	
     public double getMaxS1B1RationForPastDays(int days_to_check, Stock2 stk) {
     	
@@ -282,7 +324,12 @@ public class QtySellPointSelector implements ISellPointSelector {
 		// TODO Auto-generated method stub
         int sellMnt = 0;
         if (ac != null) {
-            int sellableAmt = (int) (ac.getMaxMnyForTrade() / s.getCur_pri());
+        	
+	    	int cnt = TradeStrategyImp.getBuySellCount(s.getID(), s.getDl_dt().toString().substring(0, 10), false);
+	    	
+	    	cnt++;
+	    	
+            int sellableAmt = (int) (ac.getMaxMnyForTrade() * cnt/ s.getCur_pri());
             sellMnt =  sellableAmt - sellableAmt % 100;
             
             if (!sim_mode)
@@ -307,7 +354,7 @@ public class QtySellPointSelector implements ISellPointSelector {
         
         int sellableAmnt = TradeStrategyImp.getSellableMntForStockOnDate(s.getID(), s.getDl_dt());
         
-	    if (sellableAmnt > 0)
+	    if (sellMnt > sellableAmnt)
 	    {
 	   	    sellMnt = sellableAmnt;
 	    }
