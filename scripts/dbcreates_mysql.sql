@@ -100,6 +100,7 @@ price decimal(10, 4),
 success_qty int,
 success_price decimal(10, 4),
 status varchar(10) not null, //N: New, C: Cancelled, S:Success, P:Partial 
+type varchar(10) not null, // W: win sell, B: buy now, L: lost sell
 order_id varchar(20), 
 is_buy_flg int,
 add_dt datetime not null,

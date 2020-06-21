@@ -669,7 +669,7 @@ public class TradeRecord{
 			
 			if (maxMnt > 0)
 			{
-			    sql = "insert into pendingTrade select '" + stkid + "', case when max(id) is null then 0 else max(id) + 1 end, " + maxMnt + ", " + cur_pri + ", 0, 0.0, 'N', null, 1, sysdate(), sysdate() from pendingTrade where stock = '" + stkid + "'";
+			    sql = "insert into pendingTrade select '" + stkid + "', case when max(id) is null then 0 else max(id) + 1 end, " + maxMnt + ", " + cur_pri + ", 0, 0.0, 'N','B', null, 1, sysdate(), sysdate() from pendingTrade where stock = '" + stkid + "'";
 			    log.info(sql);
 			    stm = con.createStatement();
 			    stm.execute(sql);

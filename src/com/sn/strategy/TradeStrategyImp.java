@@ -1238,7 +1238,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         try {
             TradexBuySellResult tbsr = null;
             
-            String sql = "insert into pendingTrade select '" + s.getID() + "', case when max(id) is null then 0 else max(id) + 1 end, " + qtyToTrade + ", " + price + ", 0, 0.0, 'N', null, 0, sysdate(), sysdate() from pendingTrade where stock = '" + s.getID() + "'";
+            String sql = "insert into pendingTrade select '" + s.getID() + "', case when max(id) is null then 0 else max(id) + 1 end, " + qtyToTrade + ", " + price + ", 0, 0.0, 'N','B', null, 0, sysdate(), sysdate() from pendingTrade where stock = '" + s.getID() + "'";
             log.info(sql);
             stm = con.createStatement();
             stm.execute(sql);
@@ -1315,7 +1315,7 @@ public class TradeStrategyImp implements ITradeStrategy {
     try {
         TradexBuySellResult tbsr = null;
         
-        String sql = "insert into pendingTrade select '" + s.getID() + "', case when max(id) is null then 0 else max(id) + 1 end, " + qtyToTrade + ", " + price + ", 0, 0.0, 'N', null, 1, sysdate(), sysdate() from pendingTrade where stock = '" + s.getID() + "'";
+        String sql = "insert into pendingTrade select '" + s.getID() + "', case when max(id) is null then 0 else max(id) + 1 end, " + qtyToTrade + ", " + price + ", 0, 0.0, 'N','B', null, 1, sysdate(), sysdate() from pendingTrade where stock = '" + s.getID() + "'";
         log.info(sql);
         stm = con.createStatement();
         stm.execute(sql);
