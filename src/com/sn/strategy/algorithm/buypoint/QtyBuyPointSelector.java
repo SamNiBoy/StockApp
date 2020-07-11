@@ -44,20 +44,26 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
 	public boolean isGoodBuyPoint(Stock2 stk, ICashAccount ac) {
         
         Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
-        Double maxPri = stk.getMaxCurPri();
-        Double minPri = stk.getMinCurPri();
+        Double maxPri = 0.0;//stk.getMaxCurPri();
+        Double minPri = 0.0;//stk.getMinCurPri();
         Double yt_cls_pri = stk.getYtClsPri();
         Double cur_pri = stk.getCur_pri();
-        Double td_hst_pri = stk.getMaxTd_hst_pri();
+        //Double td_hst_pri = stk.getMaxTd_hst_pri();
+        Double avg_pri = stk.getDl_mny_num() / stk.getDl_stk_num();
+        
+        
+        if (avg_pri > cur_pri) {
+        	maxPri = avg_pri;
+        	minPri = cur_pri;
+        }
+        else {
+        	maxPri = cur_pri;
+        	minPri = avg_pri;
+        }
+        
+        log.info("cur_pri:" + cur_pri + ", maxPri:" + maxPri + ", minPri:" + minPri);
         
         StockBuySellEntry sbs = lstTrades.get(stk.getID());
-		double marketDegree = StockMarket.getDegree(stk.getDl_dt());
-		
-//        if (sbs != null && sbs.is_buy_point) {
-//        	log.info("stock already bought, skip check buy again");
-//			return false;
-//        }
-		
         Timestamp t1 = stk.getDl_dt();
         
         long hour = t1.getHours();
@@ -104,33 +110,27 @@ public class QtyBuyPointSelector implements IBuyPointSelector {
          
 		if ((ac != null && !ac.hasStockInHand(stk)) || ac == null) {
             
-//			if (stk.isLstQtyPlusedByRatio(5) && stk.priceGoingUp(1)) {
-//			    stk.setTradedBySelector(this.selector_name);
-//			    stk.setTradedBySelectorComment("LstQtyPlusedByRatio 5 and price going up.");
-//			    return true;
-//			}
-//			else if (tradeThresh > 0)
-//				return false;
-			
 				if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 				
-				// If we sold before with higher price, use it as maxPri.
-				if (sbs != null && !sbs.is_buy_point && sbs.price > maxPri) {
-					log.info("stock:" + sbs.id + " sold with price:" + sbs.price + " which is higher than:" + maxPri + ", use it as maxPri.");
+				if (sbs != null && sbs.price > cur_pri) {
+					log.info("stock:" + sbs.id + " previous trade with price:" + sbs.price + " which is higher than:" + maxPri + ", use it as maxPri.");
 					maxPri = sbs.price;
+				}
+				else if (sbs != null){
+					log.info("previous trade with pri:" + sbs.price + ", skip trade again.");
+					return false;
 				}
 				
 				double maxPct = (maxPri - minPri) / yt_cls_pri;
 				double curPct =(cur_pri - minPri) / yt_cls_pri;
 				
-				boolean priceTurnedAround = stk.priceUpAfterSharpedDown(4);
-				boolean con2 = stk.isLstQtyPlused(4);
+				boolean priceTurnedAround = stk.priceUpAfterSharpedDown(2);
+				boolean con2 = stk.isLstQtyPlused(2);
 				
-				double ytPct = Math.abs((cur_pri - yt_cls_pri)) / yt_cls_pri;
 				
-				log.info("maxPct:" + maxPct + ", ytPct:" + ytPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", priceTurnedAround:" + priceTurnedAround + ", isLstQtyPlused:" + con2);
+				log.info("maxPct:" + maxPct + ", tradeThresh:" + tradeThresh + ", curPct:" + curPct + ", priceTurnedAround:" + priceTurnedAround + ", isLstQtyPlused:" + con2);
 				
-				if (maxPct >= tradeThresh && curPct < maxPct * margin_pct && priceTurnedAround && con2) {
+				if (maxPct >= tradeThresh && curPct < maxPct * margin_pct && priceTurnedAround) {
 					log.info("isGoodBuyPoint true says Check Buy:" + stk.getDl_dt() + " stock:" + stk.getID()
 							+ " maxPri:" + maxPri + " minPri:" + minPri + " maxPct:" + maxPct + " curPri:" + cur_pri + " margin_pct:" + margin_pct);
 					    stk.setTradedBySelector(this.selector_name);

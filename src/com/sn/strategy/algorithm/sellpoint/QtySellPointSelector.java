@@ -48,10 +48,22 @@ public class QtySellPointSelector implements ISellPointSelector {
 	 */
 	public boolean isGoodSellPoint(Stock2 stk, ICashAccount ac) {
 
-		Double maxPri = stk.getMaxCurPri();
-		Double minPri = stk.getMinCurPri();
+		Double maxPri = 0.0;//stk.getMaxCurPri();
+		Double minPri = 0.0;//stk.getMinCurPri();
 		Double yt_cls_pri = stk.getYtClsPri();
 		Double cur_pri = stk.getCur_pri();
+        Double avg_pri = stk.getDl_mny_num() / stk.getDl_stk_num();
+        
+        if (avg_pri > cur_pri) {
+        	maxPri = avg_pri;
+        	minPri = cur_pri;
+        }
+        else {
+        	maxPri = cur_pri;
+        	minPri = avg_pri;
+        }
+        
+        log.info("cur_pri:" + cur_pri + ", maxPri:" + maxPri + ", minPri:" + minPri);
         
         Map<String, StockBuySellEntry> lstTrades = TradeStrategyImp.getLstTradeForStocks();
         StockBuySellEntry sbs = lstTrades.get(stk.getID());
@@ -81,16 +93,6 @@ public class QtySellPointSelector implements ISellPointSelector {
         long minutes = t1.getMinutes();
         
         double pct = (cur_pri - yt_cls_pri) / yt_cls_pri;
-//        
-//        if (hour == 14 && minutes >= 58) {
-//        	log.info("sell time check: cur_pri:" + cur_pri + ", yt_cls_pri:" + yt_cls_pri);
-//        	if (pct < -0.01) {
-//				stk.setTradedBySelector(this.selector_name);
-//				stk.setTradedBySelectorComment("sell time check: cur_pri:" + cur_pri + ", yt_cls_pri:" + yt_cls_pri + " passed, pct=" + pct);
-//				return true;
-//        	}
-//        }
-        
         
         int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING", stk.getID());
         int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING", stk.getID());
@@ -103,8 +105,6 @@ public class QtySellPointSelector implements ISellPointSelector {
                 return false;
             }
         }
-        
-
         
         double stop_trade_for_max_pct = ParamManager.getFloatParam("STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT", "TRADING", stk.getID());
         
@@ -130,39 +130,29 @@ public class QtySellPointSelector implements ISellPointSelector {
         
 		if (maxPri != null && minPri != null && yt_cls_pri != null && cur_pri != null) {
 
-//			if (stk.isLstQtyPlusedByRatio(5) && stk.priceGoingDown(1)) {
-//			    stk.setTradedBySelector(this.selector_name);
-//			    stk.setTradedBySelectorComment("LstQtyPlusedByRatio 5 and price going down.");
-//			    return true;
-//			}
-//			else if (tradeThresh > 0)
-//			return false; 
-				
-			if (sbs != null && sbs.is_buy_point && sbs.price < minPri) {
-				log.info("stock:" + sbs.id + " bought with price:" + sbs.price + " which is lower than:" + minPri + ", use it as minPri.");
+			if (sbs != null && sbs.price < cur_pri) {
+				log.info("stock:" + sbs.id + " previous trade with price:" + sbs.price + " which is lower than:" + cur_pri + ", use it as minPri.");
 				minPri = sbs.price;
+			}
+			else if (sbs != null){
+				log.info("previous trade with pri:" + sbs.price + ", skip trade again.");
+				return false;
 			}
 			
 			tradeThresh = getSellThreshValueByDegree(marketDegree, stk);
-			
-	        if ((cur_pri - sbs.price) / yt_cls_pri < -1.5 * tradeThresh) {
-	            stk.setTradedBySelector(this.selector_name);
-	            stk.setTradedBySelectorComment("cut lost pct, (cur_pri - sbs.price) / yt_cls_pri < -0.05:" + ((cur_pri - sbs.price) / yt_cls_pri < -0.05));
-				return true;
-	        }
 			
 			double maxPct = (maxPri - minPri) / yt_cls_pri;
 			double curPct = (cur_pri - minPri) / yt_cls_pri;
 			
 			boolean con1 = maxPct > tradeThresh && curPct > maxPct * (1 - margin_pct);
 			
-			boolean con2 = stk.isLstQtyPlused(4);
-			boolean priceTurnedAround = stk.priceDownAfterSharpedUp(4);
+			boolean con2 = stk.isLstQtyPlused(2);
+			boolean priceTurnedAround = stk.priceDownAfterSharpedUp(2);
 			
 			log.info("Check Sell:" + stk.getDl_dt() + " stock:" + stk.getID() + "yt_cls_pri:" + yt_cls_pri + " maxPri:" + maxPri + " minPri:"
 					+ minPri + " maxPct:" + maxPct + " curPct:" + curPct + " curPri:" + cur_pri + " tradeThresh:" + tradeThresh + " marginPct:" + (1-margin_pct));
 			log.info("price is reaching top margin:" + con1 + " priceTurnedAround is:" + priceTurnedAround + " isLstQtyPlused:" + con2);
-			if (con1 && con2 && priceTurnedAround) {
+			if (con1 && priceTurnedAround) {
                 stk.setTradedBySelector(this.selector_name);
                 stk.setTradedBySelectorComment("Price range:[" + minPri + ", " + maxPri + "] /" + yt_cls_pri + " > tradeThresh:" + tradeThresh + " and in margin pct:" + (1 - margin_pct) + " also priceTurnedAround:" + priceTurnedAround);
 				return true;

@@ -258,7 +258,7 @@ public class SimTrader implements Job{
         	
             log.info("now to run archive and purge...");
             
-            archiveStockData();
+            //archiveStockData();
             
             strategy.resetStrategyStatus();
             StockMarket.clearDegreeMap();
