@@ -1873,6 +1873,17 @@ public class Stock2 implements Comparable<Stock2>{
 			}
 			return 0;
 		}
+		
+		public Double getDltCurPri() {
+			// TODO Auto-generated method stub
+			int sz = cur_pri_lst.size();
+			
+			if (sz > 1) {
+				log.info("last cur_pri_lst for stock:" + id + " is:" +cur_pri_lst.get(sz - 1) + ", pre cur_pri_lst:" + cur_pri_lst.get(sz - 2) + ", delta:" + (cur_pri_lst.get(sz - 1) - cur_pri_lst.get(sz - 2)));
+				return (cur_pri_lst.get(sz - 1) - cur_pri_lst.get(sz - 2));
+			}
+			return 0.0;
+		}
     }
     
     static Logger log = Logger.getLogger(Stock2.class);
@@ -2317,6 +2328,10 @@ public class Stock2 implements Comparable<Stock2>{
     
     public Integer getDltDl_stk_num() {
         return sd.getDltDl_stk_num();
+    }
+    
+    public Double getDltCurPri() {
+        return sd.getDltCurPri();
     }
     
     public Integer getB1_num() {

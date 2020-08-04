@@ -214,7 +214,7 @@ public class SimStockDriver {
         
         log.info("got idClause: " + idClause);
         String sql = "select * from stkdat2 where left(dl_dt, 10) > '" + start_dt + 
-        "'"+ " and left(dl_dt, 10) <= '" + end_dt + "'" + idClause + " order by id, ft_id";
+        "'"+ " and left(dl_dt, 10) <= '" + end_dt + "' and right(left(dl_dt, 16), 5) = '09:30' " + idClause + " order by id, ft_id";
         log.info(sql);
         try {
             SimStm = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -289,15 +289,14 @@ public class SimStockDriver {
                     initWithTodayData(stkId);
                 }
                 int pt = 0;
-                DtRs.first();
+                
+                if (!DtRs.first()) {
+                    log.info("There is no data to simTrader for:" + stkId + " continue...");
+                    continue;
+                }
                 
                 if (pointer.containsKey(stkId)) {
                     pt = pointer.get(stkId);
-                }
-                
-                if (!DtRs.next()) {
-                    log.info("There is no data to simTrader for:" + stkId + " continue...");
-                    continue;
                 }
                 
                 String sid = DtRs.getString("id");

@@ -203,6 +203,7 @@ bu varchar(12 )
 create table if not exists stkAvgPri(
 id varchar(6 ) not null,
 add_dt varchar(10) not null,
+yt_cls_pri decimal(8, 2),
 avgpri1 decimal(8, 2),
 avgpri2 decimal(8, 2),
 avgpri3 decimal(8, 2),

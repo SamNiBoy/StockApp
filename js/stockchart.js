@@ -189,7 +189,7 @@ function drawIndex1(subtitle, pct)
         {
     	    var idx2_opt = {
     	    		title : {
-    	        text: '股票实时温度',
+    	        text: '股票实时涨跌',
     	        subtext:'',
     	        backgroundColor: '#ABABAB',
     	        subtextStyle: myTextStyle
@@ -209,9 +209,8 @@ function drawIndex1(subtitle, pct)
     	                name: '上证指数',
     	                type: 'gauge',
     	                z: 3,
-    	                min: -100,
-    	                max: 100,
-    	         
+    	                min: -10,
+    	                max: 10,
     	                splitNumber: 20,
     	                radius: '50%',
     	                axisLine: {            // 坐标轴线
@@ -246,7 +245,7 @@ function drawIndex1(subtitle, pct)
     	                        fontSize: 36
     	                    }
     	                },
-    	                data:[{value: deg, name: '\n\n  \n'}]
+    	                data:[{value: degree, name: '\n\n  \n'}]
     	            }
     	        ]
     	    };

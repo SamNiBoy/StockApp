@@ -427,6 +427,22 @@ public class StockMarket{
         return true;
     }
     
+    public static double calAvgPriSpeed() {
+    	ConcurrentHashMap<String, Stock2> stocks = getStocks();
+    	
+    	int stock_cnt = stocks.size();
+    	
+    	double total_dlt_pri_pct = 0.0;
+    	
+    	for(Stock2 s : stocks.values()) {
+    		if (s.getDltCurPri() != null && s.getYtClsPri() != null)
+    		    total_dlt_pri_pct += s.getDltCurPri() / s.getYtClsPri();
+    	}
+    	log.info("Total stock:" + stock_cnt + ", with avg cur_pri delta pct:" + total_dlt_pri_pct / stock_cnt);
+    	
+    	return Math.round(total_dlt_pri_pct / stock_cnt * 1000000) / 1000.0;
+    }
+    
     static public void clearGzStocks() {
     	log.info("Now clear gzstocks...");
     	gzstocks.clear();

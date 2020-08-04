@@ -582,13 +582,13 @@ public class TradeStrategyImp implements ITradeStrategy {
 					String sd_dte = sd.dl_dt.toString().substring(0, 10);
 					
 					log.info("Stock:" + sd.id + " is buy:" + sd.is_buy_point + ", trade dte:" + sd_dte + ", chk_dte:" + chk_dte);
-					if (sd_dte.equals(chk_dte)) {
+					//if (sd_dte.equals(chk_dte)) {
 					    if (sd.is_buy_point) {
 					    	buyCnt++;
 					    } else {
 					        sellCnt++;
 					    }
-					}
+					//}
 				}
 				
 				int max_trades_buy_or_sell_per_stock = ParamManager.getIntParam("MAX_TRADE_TIMES_BUY_OR_SELL_PER_STOCK", "TRADING", s.getID());

@@ -36,9 +36,10 @@ public class AvgsBreakingSelector implements IStockSelector {
     private String urllnk = "http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=sz002095&scale=60&ma=no&datalen=1023";
     double MAX_AVGPRC_PCT = ParamManager.getFloatParam("MAX_AVGPRC_PCT", "SUGGESTER", null);
     double maxagvprcpct = MAX_AVGPRC_PCT;
-    double avgpri13 = 0.0;
-    double avgpri26 = 0.0;
-    double avgpri48 = 0.0;
+    double avgpri5 = 0.0;
+    double avgpri10 = 0.0;
+    double avgpri30 = 0.0;
+    double yt_cls_pri = 0.0;
     String on_dte = "";
     boolean isCheckHistoryData = false;
     
@@ -61,9 +62,9 @@ public class AvgsBreakingSelector implements IStockSelector {
     			return false;
     		}
     		
-    		avgpri13 = 0.0;
-    		avgpri26 = 0.0;
-    		avgpri48 = 0.0;
+    		avgpri5 = 0.0;
+    		avgpri10 = 0.0;
+    		avgpri30 = 0.0;
     		
     		if (!getAvgPriceFromDb(s, ac) && !getAvgPriceFromSina(s, ac))
     		{
@@ -72,16 +73,16 @@ public class AvgsBreakingSelector implements IStockSelector {
     		}
 
     		
-            log.info("got stock avg price, avg13:" + avgpri13 + ", avg26:" + avgpri26 + ", avgpri48:" + avgpri48);
+            log.info("got stock avg price, avg5:" + avgpri5 + ", avg10:" + avgpri10 + ", avgpri30:" + avgpri30);
             
-            if (!(avgpri13 > avgpri26 && avgpri26 > avgpri48))
+            if (!(avgpri5 > avgpri10 && avgpri10 > avgpri30))
             {
-            	log.info("13, 26, and 48 are not ascending order, return false");
+            	log.info("5, 10, and 30 are not ascending order, return false");
             	return false;
             }
             
-            double maxpri = avgpri13;
-            double minpri = avgpri48;
+            double maxpri = avgpri5;
+            double minpri = avgpri30;
             
             if (s.getYtClsPri() == null) {
             	s.getSd().LoadData();
@@ -144,9 +145,9 @@ public class AvgsBreakingSelector implements IStockSelector {
     		rs = stm.executeQuery(sql);
     		
     		if (rs.next()) {
-                avgpri13 = rs.getDouble("avgpri1");
-                avgpri26 = rs.getDouble("avgpri2");
-                avgpri48 = rs.getDouble("avgpri3");
+                avgpri5 = rs.getDouble("avgpri1");
+                avgpri10 = rs.getDouble("avgpri2");
+                avgpri30 = rs.getDouble("avgpri3");
                 gotDataSuccess = true;
     		}
     		
@@ -174,7 +175,7 @@ public class AvgsBreakingSelector implements IStockSelector {
     	
     	boolean saveDataSuccess = false;
     	try {
-    		String sql = "insert into stkAvgPri values ('" + s.getID() + "', '" + for_dte + "', round(" + avgpri13 + ", 2), round(" + avgpri26 + ", 2), round(" + avgpri48 + ", 2), sysdate())";
+    		String sql = "insert into stkAvgPri values ('" + s.getID() + "', '" + for_dte + "', round(" + yt_cls_pri + ", 2), round(" + avgpri5 + ", 2), round(" + avgpri10 + ", 2), round(" + avgpri30 + ", 2), sysdate())";
     		log.info(sql);
     		
     		Statement stm = con.createStatement();
@@ -241,34 +242,35 @@ public class AvgsBreakingSelector implements IStockSelector {
             	
             	if (k == 1) {
             		lst_dte = sda.getJSONObject(i).getString("day").substring(0, 10);
+            		yt_cls_pri = sda.getJSONObject(i).getDouble("close");
             	}
             	
-            	if (k <= 13) {
-            	    avgpri13 += sda.getJSONObject(i).getDouble("close");
-                	if (k == 13)
+            	if (k <= 5) {
+            	    avgpri5 += sda.getJSONObject(i).getDouble("close");
+                	if (k == 5)
                 	{
-                		avgpri13 /= 13;
+                		avgpri5 /= 5;
                 	}
             	}
             	
-            	if (k <= 26) {
-            	    avgpri26 += sda.getJSONObject(i).getDouble("close");
-                	if (k == 26)
+            	if (k <= 10) {
+            	    avgpri10 += sda.getJSONObject(i).getDouble("close");
+                	if (k == 10)
                 	{
-                		avgpri26 /= 26;
+                		avgpri10 /= 10;
                 	}
             	}
             	
-            	if (k <= 48) {
-            	    avgpri48 += sda.getJSONObject(i).getDouble("close");
-                	if (k == 48)
+            	if (k <= 30) {
+            	    avgpri30 += sda.getJSONObject(i).getDouble("close");
+                	if (k == 30)
                 	{
-                		avgpri48 /= 48;
+                		avgpri30 /= 30;
                 	}
             	}
             }
             
-            if (avgpri13 > 0 && avgpri26 > 0 && avgpri48 > 0)
+            if (avgpri5 > 0 && avgpri10 > 0 && avgpri30 > 0)
             {
             	gotDataSuccess = true;
         		saveAvgPriceToDb(s, lst_dte);

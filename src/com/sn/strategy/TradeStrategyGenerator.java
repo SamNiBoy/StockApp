@@ -16,6 +16,7 @@ import com.sn.strategy.ITradeStrategy;
 import com.sn.strategy.algorithm.IBuyPointSelector;
 import com.sn.strategy.algorithm.ISellPointSelector;
 import com.sn.task.IStockSelector;
+import com.sn.strategy.algorithm.buypoint.AvgPriceBrkBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.BalanceBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.BottomHammerBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.DaBanBalanceBuyPointSelector;
@@ -28,6 +29,7 @@ import com.sn.strategy.algorithm.buypoint.PriceTurnBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.QtyBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.TopNMnyBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.VOLBuyPointSelector;
+import com.sn.strategy.algorithm.sellpoint.AvgPriceBrkSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.BalanceSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.BottomHammerSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.DaBanBalanceSellPointSelector;
@@ -123,11 +125,11 @@ public class TradeStrategyGenerator {
         List<IBuyPointSelector> buyPoints = new LinkedList<IBuyPointSelector>();
         List<ISellPointSelector> sellPoints = new LinkedList<ISellPointSelector>();
         
-        IBuyPointSelector bs0 = new QtyBuyPointSelector(sim_mode);
-        ISellPointSelector ses0 = new QtySellPointSelector(sim_mode);
+//        IBuyPointSelector bs0 = new QtyBuyPointSelector(sim_mode);
+//        ISellPointSelector ses0 = new QtySellPointSelector(sim_mode);
         
-        //IBuyPointSelector bs = new PricePlusBuyPointSelector(sim_mode);
-        //ISellPointSelector ses = new PricePlusSellPointSelector(sim_mode);
+        IBuyPointSelector bs0 = new AvgPriceBrkBuyPointSelector(sim_mode);
+        ISellPointSelector ses0 = new AvgPriceBrkSellPointSelector(sim_mode);
         
         
 //        IBuyPointSelector bs = new MacdBuyPointSelector();
@@ -139,16 +141,16 @@ public class TradeStrategyGenerator {
         //ICashAccount ca = null;
         //CashAcntManger.getDftAcnt();
         //ca.initAccount();
-        IBuyPointSelector bbs = new BalanceBuyPointSelector(sim_mode);
-        ISellPointSelector bes = new BalanceSellPointSelector(sim_mode);
+//        IBuyPointSelector bbs = new BalanceBuyPointSelector(sim_mode);
+//        ISellPointSelector bes = new BalanceSellPointSelector(sim_mode);
         
         
         buyPoints.add(bs0);
         //buyPoints.add(bs);
-        buyPoints.add(bbs);
+        //buyPoints.add(bbs);
         
         sellPoints.add(ses0);
-        sellPoints.add(bes);
+        //sellPoints.add(bes);
         
         ITradeStrategy bts = new TradeStrategyImp(buyPoints, sellPoints , null, "QtyTradeStrategy", sim_mode);
         

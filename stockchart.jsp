@@ -83,7 +83,7 @@ var myTextStyle = {
         var idx1 = echarts.init(document.getElementById('idx1'));
 		var idx1_opt = drawIndex1(subtitle, pct);
 		
-		var deg = <%=sm.getDegree(null)%>;
+		var deg = <%=sm.calAvgPriSpeed()%>;
  	    var idx2 = echarts.init(document.getElementById('idx2'));
 		var idx2_opt = drawIndex2(deg);
 		
@@ -97,8 +97,8 @@ var myTextStyle = {
 	    var EqlCnt = <%=sm.getTotEql()%>;
 	    var idx4 = echarts.init(document.getElementById('idx4'));
 	    var idx4_opt = drawIndex4(IncCnt, DecCnt, EqlCnt);
-	    //fresh above sub charts every 30 seconds.
-	    setInterval(drawIndexCharts, 30000);
+	    //fresh above sub charts every 5 seconds.
+	    setInterval(drawIndexCharts, 5000);
 	    
 	    
 	    var xdata = eval(<%=sm.getSimTSLst()%>);

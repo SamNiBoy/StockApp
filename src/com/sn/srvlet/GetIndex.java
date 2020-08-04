@@ -49,7 +49,7 @@ public class GetIndex extends HttpServlet {
         }
         else if ("DEGREE".equals(typ))
         {
-        	out.write("" + StockMarket.getDegree(null));
+        	out.write("" + StockMarket.calAvgPriSpeed());
         }
         else if ("DELTALST".equals(typ))
         {

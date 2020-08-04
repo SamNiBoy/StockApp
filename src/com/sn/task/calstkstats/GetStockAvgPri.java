@@ -38,9 +38,10 @@ public class GetStockAvgPri implements Job {
     static Logger log = Logger.getLogger(GetStockAvgPri.class);
 
     private String urllnk = "http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=sz002095&scale=60&ma=no&datalen=1023";
-    double avgpri13 = 0.0;
-    double avgpri26 = 0.0;
-    double avgpri48 = 0.0;
+    double avgpri5 = 0.0;
+    double avgpri10 = 0.0;
+    double avgpri30 = 0.0;
+    double yt_cls_pri = 0.0;
     /**
      * @param args
      * @throws JobExecutionException 
@@ -115,34 +116,35 @@ public class GetStockAvgPri implements Job {
                 	
                 	if (k == 1) {
                 		lst_dte = sda.getJSONObject(i).getString("day").substring(0, 10);
+                		yt_cls_pri = avgpri5 += sda.getJSONObject(i).getDouble("close");
                 	}
                 	
-                	if (k <= 13) {
-                	    avgpri13 += sda.getJSONObject(i).getDouble("close");
-                    	if (k == 13)
+                	if (k <= 5) {
+                		avgpri5 += sda.getJSONObject(i).getDouble("close");
+                    	if (k == 5)
                     	{
-                    		avgpri13 /= 13;
+                    		avgpri5 /= 5;
                     	}
                 	}
                 	
-                	if (k <= 26) {
-                	    avgpri26 += sda.getJSONObject(i).getDouble("close");
-                    	if (k == 26)
+                	if (k <= 10) {
+                		avgpri10 += sda.getJSONObject(i).getDouble("close");
+                    	if (k == 10)
                     	{
-                    		avgpri26 /= 26;
+                    		avgpri10 /= 10;
                     	}
                 	}
                 	
-                	if (k <= 48) {
-                	    avgpri48 += sda.getJSONObject(i).getDouble("close");
-                    	if (k == 48)
+                	if (k <= 30) {
+                		avgpri30 += sda.getJSONObject(i).getDouble("close");
+                    	if (k == 30)
                     	{
-                    		avgpri48 /= 48;
+                    		avgpri30 /= 30;
                     	}
                 	}
                 }
                 
-                if (avgpri13 > 0 && avgpri26 > 0 && avgpri48 > 0)
+                if (avgpri5 > 0 && avgpri10 > 0 && avgpri30 > 0)
                 {
         	    	saveAvgPriceToDb(stockID, lst_dte);
                 }
@@ -172,7 +174,7 @@ public class GetStockAvgPri implements Job {
     	
     	boolean saveDataSuccess = false;
     	try {
-    		String sql = "insert into stkAvgPri values ('" + id + "', '" + for_dte + "', round(" + avgpri13 + ", 2), round(" + avgpri26 + ", 2), round(" + avgpri48 + ", 2), sysdate())";
+    		String sql = "insert into stkAvgPri values ('" + id + "', '" + for_dte + "', round(" + yt_cls_pri + ", 2), round(" + avgpri5 + ", 2),  round(" + avgpri10 + ", 2), round(" + avgpri30 + ", 2), sysdate())";
     		log.info(sql);
     		
     		Statement stm = con.createStatement();
