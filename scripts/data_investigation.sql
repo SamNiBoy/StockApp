@@ -181,3 +181,7 @@ order by b1_num / s1_num desc,
     on s1.id = k.id
   where left(s2.dl_dt, 10) = '2020-06-10'
   and s2.dl_mny_num / s1.dl_mny_num > 10;
+  
+  
+  // create data for simulation.
+  insert into stkdat2_sim select * from stkdat2 where dl_dt like '% 09:30%';

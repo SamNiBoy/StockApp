@@ -41,7 +41,10 @@ public class GetStockAvgPri implements Job {
     double avgpri5 = 0.0;
     double avgpri10 = 0.0;
     double avgpri30 = 0.0;
-    double yt_cls_pri = 0.0;
+    double td_open_pri = 0.0;
+    double td_cls_pri = 0.0;
+    double td_high = 0.0;
+    double td_low = 0.0;
     /**
      * @param args
      * @throws JobExecutionException 
@@ -66,7 +69,7 @@ public class GetStockAvgPri implements Job {
     	try {
     		con = DBManager.getConnection();
     		Statement stm = con.createStatement();
-    		String sql = "select id, area from stk where not exists (select 'x' from stkavgpri where stk.id = stkavgpri.id and stkavgpri.add_dt = (select left(max(dl_dt), 10) from stkdat2 where id = '000001')) order by id";
+    		String sql = "select id, area from stk order by id desc";
     		
     		log.info(sql);
     		
@@ -107,48 +110,98 @@ public class GetStockAvgPri implements Job {
                  *  {"day":"2020-02-25 15:00:00","open":"23.170","high":"23.400","low":"23.110","close":"23.130","volume":"1984741"}...]
                  */
                 
-                
-                int k = 0;
-                String lst_dte = "";
-                for (int i = sda.length() - 1; i >= 0; i -= 4)
-                {
-                	k++;
-                	
-                	if (k == 1) {
-                		lst_dte = sda.getJSONObject(i).getString("day").substring(0, 10);
-                		yt_cls_pri = avgpri5 += sda.getJSONObject(i).getDouble("close");
-                	}
-                	
-                	if (k <= 5) {
-                		avgpri5 += sda.getJSONObject(i).getDouble("close");
-                    	if (k == 5)
-                    	{
-                    		avgpri5 /= 5;
-                    	}
-                	}
-                	
-                	if (k <= 10) {
-                		avgpri10 += sda.getJSONObject(i).getDouble("close");
-                    	if (k == 10)
-                    	{
-                    		avgpri10 /= 10;
-                    	}
-                	}
-                	
-                	if (k <= 30) {
-                		avgpri30 += sda.getJSONObject(i).getDouble("close");
-                    	if (k == 30)
-                    	{
-                    		avgpri30 /= 30;
-                    	}
-                	}
-                }
-                
-                if (avgpri5 > 0 && avgpri10 > 0 && avgpri30 > 0)
-                {
-        	    	saveAvgPriceToDb(stockID, lst_dte);
-                }
-        	    Thread.sleep(3000);
+                    for(int j = 0; j<75; j++) {
+                        int k = 0;
+                        String lst_dte = "";
+                        
+                        avgpri5 = 0.0;
+                        avgpri10 = 0.0;
+                        avgpri30 = 0.0;
+                        td_open_pri = 0.0;
+                        td_cls_pri = 0.0;
+                        td_high = 0.0;
+                        td_low = 0.0;
+                        
+                        for (int i = sda.length() - 1 - j * 4; i >= 0; i -= 4)
+                        {
+                        	if (i < 0)
+                        		break;
+                        	k++;
+                        	
+                        	if (k == 1) {
+                        		lst_dte = sda.getJSONObject(i).getString("day").substring(0, 10);
+                        		td_open_pri = sda.getJSONObject(i).getDouble("open");
+                        		td_high = sda.getJSONObject(i).getDouble("high");
+                        		td_low = sda.getJSONObject(i).getDouble("low");
+                        		td_cls_pri = sda.getJSONObject(i).getDouble("close");
+                        		
+                        		while (!sda.getJSONObject(i).getString("day").substring(11, 16).equals("15:00")){
+                        			log.info("time incorrect, shifting record:" + sda.getJSONObject(i).getString("day").substring(11, 16));
+                        			i--;
+                            		lst_dte = sda.getJSONObject(i).getString("day").substring(0, 10);
+                            		td_high = sda.getJSONObject(i).getDouble("high");
+                            		td_low = sda.getJSONObject(i).getDouble("low");
+                            		td_cls_pri = sda.getJSONObject(i).getDouble("close");
+                            		log.info("lst_dte:" + lst_dte + ", td_cls_pri:" + td_cls_pri);
+                        		}
+                        		
+                        		i--;
+                        		if (i<0)
+                        			break;
+                        		td_high = sda.getJSONObject(i).getDouble("high") > td_high ? sda.getJSONObject(i).getDouble("high") : td_high;
+                        		td_low = sda.getJSONObject(i).getDouble("low") < td_low ? sda.getJSONObject(i).getDouble("low") : td_low;
+                        		
+                        		i--;
+                        		if (i<0)
+                        			break;
+                        		td_high = sda.getJSONObject(i).getDouble("high") > td_high ? sda.getJSONObject(i).getDouble("high") : td_high;
+                        		td_low = sda.getJSONObject(i).getDouble("low") < td_low ? sda.getJSONObject(i).getDouble("low") : td_low;
+                        		
+                        		i--;
+                        		if (i<0)
+                        			break;
+                        		td_open_pri = sda.getJSONObject(i).getDouble("open");
+                        		td_high = sda.getJSONObject(i).getDouble("high") > td_high ? sda.getJSONObject(i).getDouble("high") : td_high;
+                        		td_low = sda.getJSONObject(i).getDouble("low") < td_low ? sda.getJSONObject(i).getDouble("low") : td_low;
+                        		
+                        		i+=3;
+                        	}
+                        	
+                        	if (k <= 5) {
+                        		avgpri5 += sda.getJSONObject(i).getDouble("close");
+                            	if (k == 5)
+                            	{
+                            		avgpri5 /= 5;
+                            	}
+                        	}
+                        	
+                        	if (k <= 10) {
+                        		avgpri10 += sda.getJSONObject(i).getDouble("close");
+                            	if (k == 10)
+                            	{
+                            		avgpri10 /= 10;
+                            	}
+                        	}
+                        	
+                        	if (k <= 30) {
+                        		avgpri30 += sda.getJSONObject(i).getDouble("close");
+                            	if (k == 30)
+                            	{
+                            		avgpri30 /= 30;
+                            	}
+                        	}
+                        }
+                        
+                        if (k < 30) {
+                        	break;
+                        }
+                        
+                        if (avgpri5 > 0 && avgpri10 > 0 && avgpri30 > 0)
+                        {
+        	            	saveAvgPriceToDb(stockID, lst_dte);
+                        }
+                    }
+                    Thread.sleep(2000);
                 }
     		}
     		rs.close();
@@ -174,14 +227,26 @@ public class GetStockAvgPri implements Job {
     	
     	boolean saveDataSuccess = false;
     	try {
-    		String sql = "insert into stkAvgPri values ('" + id + "', '" + for_dte + "', round(" + yt_cls_pri + ", 2), round(" + avgpri5 + ", 2),  round(" + avgpri10 + ", 2), round(" + avgpri30 + ", 2), sysdate())";
+    		
+    		String sql = "select 'x' from stkAvgPri where id = '" + id + "' and add_dt = '" + for_dte + "'";
     		log.info(sql);
     		
     		Statement stm = con.createStatement();
-    		stm.execute(sql);
-    		stm.close();
+    		ResultSet rs = stm.executeQuery(sql);
     		
-    		saveDataSuccess = true;
+    		if (!rs.next()) {
+    			rs.close();
+    			stm.close();
+    			
+    		    sql = "insert into stkAvgPri values ('" + id + "', '" + for_dte + "',  round(" + td_open_pri + ", 2), round(" + td_high + ", 2), round(" + td_low + ", 2), round(" + td_cls_pri + ", 2), round(" + avgpri5 + ", 2),  round(" + avgpri10 + ", 2), round(" + avgpri30 + ", 2), sysdate())";
+    		    log.info(sql);
+    		    
+    		    stm = con.createStatement();
+    		    stm.execute(sql);
+    		    stm.close();
+    		    
+    		    saveDataSuccess = true;
+    		}
     	}
     	catch (Exception e) {
     		log.error(e.getMessage(), e);

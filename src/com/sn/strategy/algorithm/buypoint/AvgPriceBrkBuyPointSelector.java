@@ -38,12 +38,14 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
     private boolean sim_mode;
     private String selector_name = "AvgPriceBrkBuyPointSelector";
     private String selector_comment = "";
-    private String urllnk = "http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=sz002095&scale=60&ma=no&datalen=1023";
     
-    double avgpri5 = 0.0;
-    double avgpri10 = 0.0;
-    double avgpri30 = 0.0;
-    double lst_yt_cls_pri = 0.0;
+    private ThreadLocal<Double> avgpri5 = new ThreadLocal<Double>();
+    private ThreadLocal<Double> avgpri10 = new ThreadLocal<Double>();
+    private ThreadLocal<Double> avgpri30 = new ThreadLocal<Double>();
+    private ThreadLocal<Double> td_open_pri = new ThreadLocal<Double>();
+    private ThreadLocal<Double> td_cls_pri = new ThreadLocal<Double>();
+    private ThreadLocal<Double> td_high = new ThreadLocal<Double>();
+    private ThreadLocal<Double> td_low = new ThreadLocal<Double>();
     
     public AvgPriceBrkBuyPointSelector(boolean sm)
     {
@@ -60,11 +62,6 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
         
         long hour = t1.getHours();
         long minutes = t1.getMinutes();
-        
-        if (hour != 9 || minutes != 30) {
-        	log.info("only deal at 9:30");
-        	return false;
-        }
         
 //        int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING", stk.getID());
 //        int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING", stk.getID());
@@ -87,10 +84,12 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
             return false;
         }
         
-        boolean con1 = getAvgPriceFromSina(stk, ac, 0) && (lst_yt_cls_pri > avgpri5);
-        boolean con2 = getAvgPriceFromSina(stk, ac, 1) && (lst_yt_cls_pri < avgpri5);
-        boolean con3 = getAvgPriceFromSina(stk, ac, 2) && (lst_yt_cls_pri < avgpri5);
-        boolean con4 = getAvgPriceFromSina(stk, ac, 3) && (lst_yt_cls_pri < avgpri5);
+        double threshPct = 0.01;
+        
+        boolean con1 = getAvgPriceFromSina(stk, ac, 0) && ((td_cls_pri.get() - avgpri5.get()) / td_cls_pri.get() > threshPct) && avgpri5.get() > avgpri10.get() && avgpri10.get() > avgpri30.get();
+        boolean con2 = getAvgPriceFromSina(stk, ac, 1) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
+        boolean con3 = getAvgPriceFromSina(stk, ac, 2) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
+        boolean con4 = getAvgPriceFromSina(stk, ac, 3) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
         
         if (con1 && con2 && con3 && con4)
         {
@@ -104,141 +103,23 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
 	
     private boolean getAvgPriceFromSina(Stock2 s, ICashAccount ac, int shftDays) {
     	
-    	urllnk = urllnk.replaceFirst("symbol=.*?&", "symbol=" + s.getArea() + s.getID() + "&");
-    	
     	boolean gotDataSuccess = false;
     	
     	try {
     		
     		if (!getAvgPriceFromDb(s, shftDays))
     		{
-                log.info("Fetching..." + urllnk);
-                URL url = new URL(urllnk);
-                InputStream is = url.openStream();
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader br = new BufferedReader(isr);
-                String lines;
-                StringBuffer sb = new StringBuffer("");
-                while ((lines = br.readLine()) != null) {
-                    lines = new String(lines.getBytes(), "utf-8");
-                    sb.append(lines);
-                }
-                
-                JSONArray sda = new JSONArray(sb.toString());
-                
-                //sda should has length of 48 days data like(total 192 objects):
-                /*
-                 * [{"day":"2020-02-25 10:30:00","open":"23.270","high":"23.270","low":"22.850","close":"23.050","volume":"4487022"},
-                 *  {"day":"2020-02-25 11:30:00","open":"23.040","high":"23.100","low":"22.000","close":"22.480","volume":"3658192"},
-                 *  {"day":"2020-02-25 14:00:00","open":"22.480","high":"23.190","low":"22.460","close":"23.170","volume":"2074860"},
-                 *  {"day":"2020-02-25 15:00:00","open":"23.170","high":"23.400","low":"23.110","close":"23.130","volume":"1984741"}...]
-                 */
-                
-                avgpri5 = 0.0;
-                avgpri10 = 0.0;
-                avgpri30 = 0.0;
-                lst_yt_cls_pri = 0.0;
-                int k = 0;
-                String lst_dte = "";
-                int step = 4;
-                int sdays = shftDays;
-                for (int i = (sda.length() - 1); i >= 0; i -= step)
-                {
-                	k++;
-                	
-                	if (k == 1) {
-                		lst_dte = sda.getJSONObject(i).getString("day").substring(0, 10);
-                		lst_yt_cls_pri = sda.getJSONObject(i).getDouble("close");
-                		if (s.getDl_dt().toString().substring(0, 10).compareTo(lst_dte) <= 0) {
-                			step = 1;
-                			k = 0;
-                			continue;
-                		}
-                		else {
-                			if (sdays > 0) {
-                			    i = i - (sdays - 1) * 4;
-                			    step = 4;
-                			    k = 0;
-                			    sdays = 0;
-                			    continue;
-                			}
-                			step = 4;
-                		}
-                	}
-                	
-                	if (k <= 5) {
-                	    avgpri5 += sda.getJSONObject(i).getDouble("close");
-                    	if (k == 5)
-                    	{
-                    		avgpri5 /= 5;
-                    	}
-                	}
-                	
-                	if (k <= 10) {
-                	    avgpri10 += sda.getJSONObject(i).getDouble("close");
-                    	if (k == 10)
-                    	{
-                    		avgpri10 /= 10;
-                    	}
-                	}
-                	
-                	if (k <= 30) {
-                	    avgpri30 += sda.getJSONObject(i).getDouble("close");
-                    	if (k == 30)
-                    	{
-                    		avgpri30 /= 30;
-                    	}
-                	}
-                }
-                log.info("lst_dte:" + lst_dte + ", s.getDl_dt().toString().substring(0, 10):" + s.getDl_dt().toString().substring(0, 10));
-                
-                if (avgpri5 > 0 && avgpri10 > 0 && avgpri30 > 0)
-                {
-                	gotDataSuccess = true;
-        	    	saveAvgPriceToDb(s, lst_dte);
-                	Thread.sleep(3000);
-                }
+    			gotDataSuccess = false;
     		}
     		else {
     			gotDataSuccess = true;
     		}
-            log.info("stock:" + s.getID() + " got avgpri5:" + avgpri5 + ", avgpri10:" + avgpri10 + ", avgpri30:" + avgpri30 + ", lst_yt_cls_pri:" + lst_yt_cls_pri + " with shftDays:" + shftDays);
+            log.info("stock:" + s.getID() + " got avgpri5:" + avgpri5.get() + ", avgpri10:" + avgpri10.get() + ", avgpri30:" + avgpri30.get() + ", td_cls_pri:" + td_cls_pri.get() + " with shftDays:" + shftDays);
     	}
     	catch (Exception e) {
     		log.error(e.getMessage(), e);
     	}
         return gotDataSuccess;
-    }
-    
-    private boolean saveAvgPriceToDb(Stock2 s, String for_dte) {
-    	
-    	Connection con = DBManager.getConnection();
-    	
-    	boolean saveDataSuccess = false;
-    	try {
-    		String sql = "insert into stkAvgPri values ('" + s.getID() + "', '" + for_dte + "', round(" + lst_yt_cls_pri + ", 2), round(" + avgpri5 + ", 2), round(" + avgpri10 + ", 2), round(" + avgpri30 + ", 2), sysdate())";
-    		log.info(sql);
-    		
-    		Statement stm = con.createStatement();
-    		stm.execute(sql);
-    		stm.close();
-    		
-    		saveDataSuccess = true;
-    	}
-    	catch (Exception e) {
-    		log.error(e.getMessage(), e);
-    		saveDataSuccess = false;
-    	}
-    	finally {
-    		try {
-				con.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				log.error(e.getMessage(), e);
-				saveDataSuccess = false;
-			}
-    	}
-    	return saveDataSuccess;
     }
     
     private boolean getAvgPriceFromDb(Stock2 s, int shftDays) {
@@ -251,7 +132,8 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
     		Statement stm = con.createStatement();
     		ResultSet rs = null;
     		
-    	    String sql = "select * from stkAvgPri where id = '" + s.getID() + "' and avgpri1 is not null and avgpri2 is not null and avgpri3 is not null and add_dt < '" + s.getDl_dt().toString().substring(0, 10) + "' order by add_dt desc";
+    	    String sql = "select * from stkAvgPri where id = '" + s.getID() + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10)
+    	    		+ "' order by add_dt desc";
     		log.info(sql);
     		
     		stm = con.createStatement();
@@ -265,10 +147,10 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
     		}
     		
     		if (rs.next()) {
-                avgpri5 = rs.getDouble("avgpri1");
-                avgpri10 = rs.getDouble("avgpri2");
-                avgpri30 = rs.getDouble("avgpri3");
-                lst_yt_cls_pri = rs.getDouble("yt_cls_pri");
+                avgpri5.set(rs.getDouble("avgpri1"));
+                avgpri10.set(rs.getDouble("avgpri2"));
+                avgpri30.set(rs.getDouble("avgpri3"));
+                td_cls_pri.set(rs.getDouble("close"));
                 gotDataSuccess = true;
     		}
     		

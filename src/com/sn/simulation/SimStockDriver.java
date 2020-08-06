@@ -213,8 +213,8 @@ public class SimStockDriver {
         }
         
         log.info("got idClause: " + idClause);
-        String sql = "select * from stkdat2 where left(dl_dt, 10) > '" + start_dt + 
-        "'"+ " and left(dl_dt, 10) <= '" + end_dt + "' and right(left(dl_dt, 16), 5) = '09:30' " + idClause + " order by id, ft_id";
+        String sql = "select * from stkdat2_sim where left(dl_dt, 10) > '" + start_dt + 
+        "'"+ " and left(dl_dt, 10) <= '" + end_dt + "' and right(left(dl_dt, 15), 4) = '09:3' " + idClause + " order by id, ft_id";
         log.info(sql);
         try {
             SimStm = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);

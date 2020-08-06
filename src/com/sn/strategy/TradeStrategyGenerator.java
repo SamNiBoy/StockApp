@@ -104,16 +104,15 @@ public class TradeStrategyGenerator {
         //ICashAccount ca = null;
         //CashAcntManger.getDftAcnt();
         //ca.initAccount();
-        //IBuyPointSelector bbs = new BalanceBuyPointSelector(sim_mode);
-        //ISellPointSelector bes = new BalanceSellPointSelector(sim_mode);
+        IBuyPointSelector bbs = new BalanceBuyPointSelector(sim_mode);
+        ISellPointSelector bes = new BalanceSellPointSelector(sim_mode);
         
         
         buyPoints.add(bs0);
-        //buyPoints.add(bs);
-        //buyPoints.add(bbs);
+        buyPoints.add(bbs);
         
         sellPoints.add(ses0);
-        //sellPoints.add(bes);
+        sellPoints.add(bes);
         
         ITradeStrategy bts = new TradeStrategyImp(buyPoints, sellPoints , null, "PriceBoxBrkTradeStrategy", sim_mode);
         
@@ -141,16 +140,15 @@ public class TradeStrategyGenerator {
         //ICashAccount ca = null;
         //CashAcntManger.getDftAcnt();
         //ca.initAccount();
-//        IBuyPointSelector bbs = new BalanceBuyPointSelector(sim_mode);
-//        ISellPointSelector bes = new BalanceSellPointSelector(sim_mode);
+        IBuyPointSelector bbs = new BalanceBuyPointSelector(sim_mode);
+        ISellPointSelector bes = new BalanceSellPointSelector(sim_mode);
         
         
         buyPoints.add(bs0);
-        //buyPoints.add(bs);
-        //buyPoints.add(bbs);
+        buyPoints.add(bbs);
         
         sellPoints.add(ses0);
-        //sellPoints.add(bes);
+        sellPoints.add(bes);
         
         ITradeStrategy bts = new TradeStrategyImp(buyPoints, sellPoints , null, "QtyTradeStrategy", sim_mode);
         

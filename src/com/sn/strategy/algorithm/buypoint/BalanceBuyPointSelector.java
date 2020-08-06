@@ -2,6 +2,7 @@ package com.sn.strategy.algorithm.buypoint;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Map;
@@ -31,10 +32,44 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
     private String selector_comment = "";
 
 	private boolean sim_mode = false;
+	private String lst_dte_for_sim = "";
     
 	public BalanceBuyPointSelector(boolean sm)
 	{
 	    sim_mode = sm;
+    	Connection con = DBManager.getConnection();
+    	
+    	if (sim_mode) {
+    	    try {
+    	    	
+    	    	Statement stm = null;
+    	    	ResultSet rs = null;
+    	    	
+    	        String sql = "select left(max(dl_dt), 10) lst_dte from stkdat2_sim s2 where s2.id = '000001'";
+    	    	log.info(sql);
+    	    	
+    	    	stm = con.createStatement();
+    	    	rs = stm.executeQuery(sql);
+    	    	
+    	    	if (rs.next()) {
+    	    		lst_dte_for_sim = rs.getString("lst_dte");
+    	    		log.info("setup lst_dte_for_sim:" + lst_dte_for_sim);
+    	    	}
+    	    	rs.close();
+    	    	stm.close();
+    	    }
+    	    catch (Exception e) {
+    	    	log.error(e.getMessage(), e);
+    	    }
+    	    finally {
+    	    	try {
+		    		con.close();
+		    	} catch (SQLException e) {
+		    		// TODO Auto-generated catch block
+		    		log.error(e.getMessage(), e);
+		    	}
+    	    }
+    	}
 	}
     
 	@Override
@@ -72,6 +107,13 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
                              + ", Stock:" + stk.getID() + " sold buyableAmnt:" + buyableAmnt + " minutes agao, buy it back");
                     stk.setTradedBySelector(this.selector_name);
                     stk.setTradedBySelectorComment("Stock:" + stk.getID() + " keep balance time:" + hour_for_balance + ":" + mins_for_balance);
+                    return true;
+                }
+                
+                if (lst_dte_for_sim.length() > 0 && lst_dte_for_sim.equals(stk.getDl_dt().toString().substring(0, 10))) {
+                	log.info("reached last simulation date:" + lst_dte_for_sim);
+                    stk.setTradedBySelector(this.selector_name);
+                    stk.setTradedBySelectorComment("Stock:" + stk.getID() + " keep balance at date:" + lst_dte_for_sim);
                     return true;
                 }
 	        }

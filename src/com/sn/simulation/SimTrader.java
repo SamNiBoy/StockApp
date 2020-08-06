@@ -172,7 +172,7 @@ public class SimTrader implements Job{
         		
         		no_enough_date = false;
         		
-        		sql =  "select left(dl_dt, 10) dte from stkdat2 where id = '000001' group by left(dl_dt, 10) order by dte desc";
+        		sql =  "select left(dl_dt, 10) dte from stkdat2_sim where id = '000001' group by left(dl_dt, 10) order by dte desc";
         		    
         		log.info(sql);
 
@@ -262,6 +262,7 @@ public class SimTrader implements Job{
             
             strategy.resetStrategyStatus();
             StockMarket.clearDegreeMap();
+            Thread.sleep(3000);
             StockMarket.stopSim();
             saveSimResult();
 

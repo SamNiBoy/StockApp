@@ -111,7 +111,7 @@ public class SimWorker implements IWork {
     	
     	try {
     		con = DBManager.getConnection();
-    		sql =  "select left(dl_dt, 10) dte from stkdat2 where id = '000001' group by left(dl_dt, 10) order by dte desc";
+    		sql =  "select left(dl_dt, 10) dte from stkdat2_sim where id = '000001' group by left(dl_dt, 10) order by dte desc";
 		    
     		log.info(sql);
 

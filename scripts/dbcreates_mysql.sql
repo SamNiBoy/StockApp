@@ -203,7 +203,10 @@ bu varchar(12 )
 create table if not exists stkAvgPri(
 id varchar(6 ) not null,
 add_dt varchar(10) not null,
-yt_cls_pri decimal(8, 2),
+open decimal(8, 2),
+high decimal(8, 2),
+low decimal(8, 2),
+close decimal(8, 2),
 avgpri1 decimal(8, 2),
 avgpri2 decimal(8, 2),
 avgpri3 decimal(8, 2),
@@ -359,6 +362,41 @@ dl_dt datetime not null
 
 /* stkDat2 stores data converted from stkdat by removing duplicates*/
 create table if not exists arc_stkDat2(
+ft_id int not null primary key,
+id varchar(6 ) not null,
+td_opn_pri decimal(8, 2) not null,
+yt_cls_pri decimal(8, 2) not null,
+cur_pri decimal(8, 2) not null,
+td_hst_pri decimal(8, 2) not null,
+td_lst_pri decimal(8, 2) not null,
+b1_bst_pri decimal(8, 2) not null,
+s1_bst_pri decimal(8, 2) not null,
+dl_stk_num bigint not null,
+dl_mny_num decimal(20, 2) not null,
+b1_num int not null,
+b1_pri decimal(8, 2) not null,
+b2_num int not null,
+b2_pri decimal(8, 2) not null,
+b3_num int not null,
+b3_pri decimal(8, 2) not null,
+b4_num int not null,
+b4_pri decimal(8, 2) not null,
+b5_num int not null,
+b5_pri decimal(8, 2) not null,
+s1_num int not null,
+s1_pri decimal(8, 2) not null,
+s2_num int not null,
+s2_pri decimal(8, 2) not null,
+s3_num int not null,
+s3_pri decimal(8, 2) not null,
+s4_num int not null,
+s4_pri decimal(8, 2) not null,
+s5_num int not null,
+s5_pri decimal(8, 2) not null,
+dl_dt datetime not null
+);
+
+create table if not exists stkDat2_sim(
 ft_id int not null primary key,
 id varchar(6 ) not null,
 td_opn_pri decimal(8, 2) not null,
