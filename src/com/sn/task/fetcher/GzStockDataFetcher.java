@@ -39,6 +39,8 @@ public class GzStockDataFetcher implements Job {
     public static void main(String[] args) throws Exception {
         // TODO Auto-generated method stub
         GzStockDataFetcher fsd = new GzStockDataFetcher();
+        fsd.execute(null);
+        fsd.execute(null);
         //cnsmr = new GzStockDataConsumer();
         //WorkManager.submitWork(fsd);
         //WorkManager.submitWork(cnsmr);
@@ -109,7 +111,7 @@ public class GzStockDataFetcher implements Job {
         log.info("GzStockDataFetcher started!!!");
         
         try {
-            String fs [] = getFetchLst().split("#"), cs;
+            String fs [] = getFetchLst().split("#");
             RawStockData srd = null;
             boolean first_start_flg = false; 
             String stkSql = "http://hq.sinajs.cn/list=";
@@ -142,18 +144,18 @@ public class GzStockDataFetcher implements Job {
                     
                     j++;
                     
-                    if (first_start_flg)
-                    {
-                        //skip very first record to avoid always fetching when start program during non-business time.
-                        br.close();
-                        return;
-                    }
+//                    if (first_start_flg)
+//                    {
+//                        //skip very first record to avoid always fetching when start program during non-business time.
+//                        br.close();
+//                        return;
+//                    }
                 
                     //log.info(str);
                     srd = RawStockData.createStockData(str);
 
-                    if (srd.td_opn_pri <= 0) {
-                        log.info("market not open yet. td_opn_pri <= 0 for gzstock:" + srd.id + " can not trade based on it, continue");
+                    if (srd == null || srd.td_opn_pri <= 0) {
+                        log.info("market not open yet. td_opn_pri <= 0 for gzstock:" + (srd == null ? null : srd.id) + " can not trade based on it, continue");
                         continue;
                     }
                     

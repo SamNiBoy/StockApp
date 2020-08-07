@@ -599,4 +599,63 @@ public class CashAcnt implements ICashAccount {
         // TODO Auto-generated method stub
         return usedMny_Hrs;
     }
+
+	@Override
+	public boolean refreshProfitWithCurPri(Stock2 s) {
+		// TODO Auto-generated method stub
+		log.info("refresh stock " + s.getName() + " profit with latest price, CashAcount: " + actId);
+		
+		if (s.getCur_pri() == null) {
+			log.info("skip refresh as cur_pri is null.");
+			return false;
+		}
+
+		Connection con = DBManager.getConnection();
+		try {
+			
+			String sql = "select 'x' from tradehdr where acntId = '" + actId + "'";
+			
+			Statement stm = con.createStatement();
+			
+			log.info(sql);
+			ResultSet rs = stm.executeQuery(sql);
+			
+			if (rs.next()) {
+				rs.close();
+				stm.close();
+				
+			    sql = "update tradehdr set in_hand_stk_price = " + s.getCur_pri() + ", in_hand_stk_mny = in_hand_qty * " + s.getCur_pri()
+			               + "  where acntId = '" + actId + "'";
+                
+			    log.info(sql);
+			    stm = con.createStatement();
+			    stm.execute(sql);
+			    stm.close();
+			    
+			    log.info("now recalculate profit after update cur_pri...");
+			    calProfit();
+			    log.info("after calProfit call in refreshProfitWithCurPri.");
+			}
+			else {
+				log.info("No tradehdr record, no need to refresh profit.");
+				rs.close();
+				stm.close();
+				return false;
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			log.info("exception happened here?");
+			log.error(e.getMessage(), e);
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getCause(), e);
+			}
+		}
+		return true;
+	}
 }

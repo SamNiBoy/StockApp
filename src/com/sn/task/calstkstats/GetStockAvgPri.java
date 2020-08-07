@@ -201,11 +201,18 @@ public class GetStockAvgPri implements Job {
         	            	saveAvgPriceToDb(stockID, lst_dte);
                         }
                     }
+                    genSimDataForStock(stockID);
                     Thread.sleep(2000);
                 }
     		}
     		rs.close();
     		stm.close();
+    		
+//    		sql = "insert into stkdat2_sim select * from stkdat2 where dl_dt like '% 09:30%' and not exists (select 'x' from stkdat2_sim where stkdat2_sim.ft_id = stkdat2.ft_id)";
+//    		log.info("now copy 09:30 data to stkdat2_sim table");
+//    		stm = con.createStatement();
+//    		stm.execute(sql);
+//    		stm.close();
     	}
     	catch (Exception e) {
     		log.error(e.getMessage(), e);
@@ -221,6 +228,138 @@ public class GetStockAvgPri implements Job {
         log.info("Running GetStockAvgPri task end");
     }
     
+    private boolean genSimDataForStock(String stkID) {
+    	
+    	Connection con = DBManager.getConnection();
+    	
+    	boolean genDataSuccess = false;
+    	try {
+    		
+    		String sql = "select * from stkAvgPri where id = '" + stkID + "' order by add_dt";
+    		log.info(sql);
+    		
+    		Statement stm = con.createStatement();
+    		ResultSet rs = stm.executeQuery(sql);
+    		
+    		while (rs.next()) {
+    			
+    			String add_dt = rs.getString("add_dt");
+    			double open = rs.getDouble("open");
+    			double high = rs.getDouble("high");
+    			double low = rs.getDouble("low");
+    			double close = rs.getDouble("close");
+    			
+    			boolean skip_flg = false;
+    			
+    			Statement stm0 = con.createStatement();
+    			ResultSet rs0 = null;
+    			
+    			sql = "select 'x' from stkdat2_sim s where s.id = '" + stkID + "' and left(dl_dt, 10) = '" + add_dt + "'";
+    			
+    			rs0 = stm0.executeQuery(sql);
+    			
+    			if (rs0.next()) {
+    				skip_flg = true;
+    			}
+    			
+    			rs0.close();
+    			stm0.close();
+    			
+    			if (skip_flg) {
+    				log.info("stock:" + stkID + " data for date:" + add_dt + " already available, skip creation.");
+    				continue;
+    			}
+    		    sql = "insert into stkdat2_sim (ft_id,"
+    		            + " id,"
+    		            + " td_opn_pri,"
+    		            + " yt_cls_pri,"
+    		            + " cur_pri,"
+    		            + " td_hst_pri,"
+    		            + " td_lst_pri,"
+    		            + " b1_bst_pri,"
+    		            + " s1_bst_pri,"
+    		            + " dl_stk_num,"
+    		            + " dl_mny_num,"
+    		            + " b1_num,"
+    		            + " b1_pri,"
+    		            + " b2_num,"
+    		            + " b2_pri,"
+    		            + " b3_num,"
+    		            + " b3_pri,"
+    		            + " b4_num,"
+    		            + " b4_pri,"
+    		            + " b5_num,"
+    		            + " b5_pri,"
+    		            + " s1_num,"
+    		            + " s1_pri,"
+    		            + " s2_num,"
+    		            + " s2_pri,"
+    		            + " s3_num,"
+    		            + " s3_pri,"
+    		            + " s4_num,"
+    		            + " s4_pri,"
+    		            + " s5_num,"
+    		            + " s5_pri,"
+    		            + " dl_dt)"
+    		            + " select case when max(ft_id) is null then 0 else max(ft_id) end + 1," +
+    		            "'" + stkID + "',"
+    		                + open + ","
+    		                + close + ","
+    		                + open + ","
+    		                + high + ","
+    		                + low + ","
+    		                + open + ","
+    		                + open + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ","
+    		                + 10000 + ", "
+    		                + 10000 + ","
+    		            + "str_to_date('" + add_dt +" 09:30:00" + "', '%Y-%m-%d %H:%i:%s') from stkdat2_sim";
+    		    		log.info(sql);
+    		    
+    		    Statement stm1 = con.createStatement();
+    		    stm1.execute(sql);
+    		    stm1.close();
+    		    
+    		    genDataSuccess = true;
+    		}
+    		
+    		rs.close();
+    		stm.close();
+    	}
+    	catch (Exception e) {
+    		log.error(e.getMessage(), e);
+    		genDataSuccess = false;
+    	}
+    	finally {
+    		try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+				genDataSuccess = false;
+			}
+    	}
+    	return genDataSuccess;
+    }
     private boolean saveAvgPriceToDb(String id, String for_dte) {
     	
     	Connection con = DBManager.getConnection();

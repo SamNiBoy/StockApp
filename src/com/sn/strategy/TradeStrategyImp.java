@@ -182,7 +182,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean buyStock(Stock2 s, IBuyPointSelector buypoint_selector) {
 		// TODO Auto-generated method stub
 		loadStocksForTrade();
-		ICashAccount ac = getCashAcntForStock(s.getID());
+		ICashAccount ac = getCashAcntForStock(s.getID(), true);
 		int qtb = 0;
 		
 		qtb = buypoint_selector.getBuyQty(s, ac);
@@ -258,7 +258,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	public boolean sellStock(Stock2 s, ISellPointSelector sellpoint_selector) {
 		// TODO Auto-generated method stub
 		loadStocksForTrade();
-		ICashAccount ac = getCashAcntForStock(s.getID());
+		ICashAccount ac = getCashAcntForStock(s.getID(), true);
 		int qtb = 0;
 		
 		qtb = sellpoint_selector.getSellQty(s, ac);
@@ -435,6 +435,12 @@ public class TradeStrategyImp implements ITradeStrategy {
                 	rc.printStockInfo();
                 	result = true;
                 }
+		        
+		        ICashAccount ac = getCashAcntForStock(s.getID(), false);
+		        
+		        if (ac != null) {
+		        	ac.refreshProfitWithCurPri(s);
+		        }
                 if (result)
                 {
                     break;
@@ -1597,7 +1603,7 @@ public class TradeStrategyImp implements ITradeStrategy {
             }
 	    }
 	
-	public ICashAccount getCashAcntForStock(String stk) {
+	public ICashAccount getCashAcntForStock(String stk, boolean crtIfNotExists) {
         
     	int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
     	
@@ -1615,7 +1621,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         	synchronized (cash_account_map)
         	{
                 ICashAccount acnt = cash_account_map.get(AcntForStk);
-                if (acnt == null) {
+                if (acnt == null && crtIfNotExists) {
                 	log.info("No cashAccount for stock:" + stk + " in memory, load from db.");
                     acnt = CashAcntManger.loadAcnt(AcntForStk);
                     

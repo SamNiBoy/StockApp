@@ -213,7 +213,7 @@ public class AvgPriceBrkSellPointSelector implements ISellPointSelector {
         
         int sellableAmnt = TradeStrategyImp.getSellableMntForStockOnDate(s.getID(), s.getDl_dt());
         
-	    if (sellMnt > sellableAmnt && sellableAmnt > 0)
+	    if (sellableAmnt > 0)
 	    {
 	   	    sellMnt = sellableAmnt;
 	    }

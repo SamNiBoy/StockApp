@@ -516,4 +516,33 @@ public class TradexAcnt implements ICashAccount {
         // TODO Auto-generated method stub
         return usedMny_Hrs;
     }
+    
+	@Override
+	public boolean refreshProfitWithCurPri(Stock2 s) {
+		// TODO Auto-generated method stub
+		log.info("refresh stock " + s.getName() + " profit with latest price, CashAcount: " + actId);
+
+		Connection con = DBManager.getConnection();
+		try {
+			String sql = "update tradehdr set in_hand_stk_price = " + s.getCur_pri() + ", in_hand_stk_mny = in_hand_qty * " + s.getCur_pri()
+			           + "  where acntId = '" + actId + "'";
+
+			log.info(sql);
+			Statement stm = con.createStatement();
+			stm.executeQuery(sql);
+			stm.close();
+			calProfit();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getCause(), e);
+			}
+		}
+		return false;
+	}
 }

@@ -98,7 +98,7 @@ var myTextStyle = {
 	    var idx4 = echarts.init(document.getElementById('idx4'));
 	    var idx4_opt = drawIndex4(IncCnt, DecCnt, EqlCnt);
 	    //fresh above sub charts every 5 seconds.
-	    setInterval(drawIndexCharts, 5000);
+	    setInterval(drawIndexCharts, 50000);
 	    
 	    
 	    var xdata = eval(<%=sm.getSimTSLst()%>);

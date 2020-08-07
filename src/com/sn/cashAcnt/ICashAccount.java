@@ -33,6 +33,7 @@ public interface ICashAccount {
     public int getSellableAmt(String stkId, String sellDt);
     public int getUnSellableAmt(String stkId, String sellDt);
     public boolean calProfit();
+    public boolean refreshProfitWithCurPri(Stock2 s);
     public boolean initAccount();
     public boolean hasStockInHand(Stock2 s);
     public double getInHandStockCostPrice(Stock2 s);

@@ -136,11 +136,11 @@ public class SuggestStock implements Job {
 		//selectors.add(new KShapeFilterSelector(on_dte));
 		//selectors.add(new CollectionPricingStockSelector(on_dte));
 		//selectors.add(new PriceShakingStockSelector(on_dte));
-		selectors.add(new DragonBackSelector(on_dte));
-		selectors.add(new AvgsBreakingSelector(on_dte));
-	    selectors.add(new BottomHammerSelector(on_dte));
-		selectors.add(new StepBackSelector(on_dte));
-		selectors.add(new BottomJumpperSelector(on_dte));
+//		selectors.add(new DragonBackSelector(on_dte));
+//		selectors.add(new AvgsBreakingSelector(on_dte));
+//	    selectors.add(new BottomHammerSelector(on_dte));
+//		selectors.add(new StepBackSelector(on_dte));
+//		selectors.add(new BottomJumpperSelector(on_dte));
 	}
 
     public void execute(JobExecutionContext context)
