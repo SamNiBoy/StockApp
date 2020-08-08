@@ -101,17 +101,18 @@ public class AvgPriceBrkSellPointSelector implements ISellPointSelector {
 		    return true;
         }
         
-        double threshPct = 0.01;
+        double threshPct = 0.1;
         boolean con1 = getAvgPriceFromSina(stk, ac, 0);
         boolean con2 = ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
 //        boolean con3 = avgpri5.get() < avgpri10.get();
-//        boolean con4 = (td_cls_pri.get() - td_open_pri.get()) / td_open_pri.get() <= - 0.035;
+        boolean con4 = (td_cls_pri.get() - td_open_pri.get()) / td_open_pri.get() <= - 0.08;
+        boolean con5 = (td_cls_pri.get() - sbs.price) / sbs.price <= - 0.05;
         
         if (con1) {
             if (con2)
             {
     		    stk.setTradedBySelector(this.selector_name);
-    		    stk.setTradedBySelectorComment("yt_cls_pri lower than 5 days avgpri, sell!");
+    		    stk.setTradedBySelectorComment("yt_cls_pri 10 pct lower than 5 days avgpri, sell!");
     		    return true;
             }
 //            else if (con3) {
@@ -119,11 +120,16 @@ public class AvgPriceBrkSellPointSelector implements ISellPointSelector {
 //    		    stk.setTradedBySelectorComment("5 days avgpri lower than 10 days avg pri, sell!");
 //    		    return true;
 //            }
-//            else if (con4) {
-//    		    stk.setTradedBySelector(this.selector_name);
-//    		    stk.setTradedBySelectorComment("at least 5 pct lost, sell!");
-//    		    return true;
-//            }
+            else if (con4) {
+    		    stk.setTradedBySelector(this.selector_name);
+    		    stk.setTradedBySelectorComment("at least 8 pct drop, sell!");
+    		    return true;
+            }
+          else if (con5) {
+  		    stk.setTradedBySelector(this.selector_name);
+  		    stk.setTradedBySelectorComment("cut 5% lost, sell!");
+  		    return true;
+          }
         }
 		return false;
 	}

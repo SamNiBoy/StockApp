@@ -298,30 +298,30 @@ public class StockMarket{
                 DeltaTSLst.add(ts);
                 DeltaShIdxLst.add(DeltaShIndex);
                 
-                Connection con = DBManager.getConnection();
-                Statement stm = null;
-                
-                try {
-                    stm = con.createStatement();
-                    String sql = "insert into stockIndex select 's_sh000001', case when max(id) is null then 0 else max(id) + 1 end, "
-                    		+ ShIndex + "," + DeltaShIndex + "," +  DeltaShIndexPct + ", " + ShDelAmt + ", " + shDelMny + ", sysdate() from stockIndex where indexid = 's_sh000001'";
-                    log.info(sql);
-                    stm.execute(sql);
-                }
-                catch(SQLException e)
-                {
-                    e.printStackTrace();
-                    log.info(e.getMessage() + " errored:" + e.getErrorCode());
-                }
-                finally {
-                    try {
-                        stm.close();
-                        con.close();
-                    } catch (SQLException e) {
-                        // TODO Auto-generated catch block
-                        log.info(e.getMessage() + " errored:" + e.getErrorCode());
-                    }
-                }
+//                Connection con = DBManager.getConnection();
+//                Statement stm = null;
+//                
+//                try {
+//                    stm = con.createStatement();
+//                    String sql = "insert into stockIndex select 's_sh000001', case when max(id) is null then 0 else max(id) + 1 end, "
+//                    		+ ShIndex + "," + DeltaShIndex + "," +  DeltaShIndexPct + ", " + ShDelAmt + ", " + shDelMny + ", sysdate() from stockIndex where indexid = 's_sh000001'";
+//                    log.info(sql);
+//                    stm.execute(sql);
+//                }
+//                catch(SQLException e)
+//                {
+//                    e.printStackTrace();
+//                    log.info(e.getMessage() + " errored:" + e.getErrorCode());
+//                }
+//                finally {
+//                    try {
+//                        stm.close();
+//                        con.close();
+//                    } catch (SQLException e) {
+//                        // TODO Auto-generated catch block
+//                        log.info(e.getMessage() + " errored:" + e.getErrorCode());
+//                    }
+//                }
                 
                 log.info("Got SH index ShIndex:" + ShIndex + ", DeltaShIndex:" + DeltaShIndex + ", DeltaShIndexPct:" + DeltaShIndexPct + ", ShDelAmt:" + ShDelAmt + ", shDelMny:" + shDelMny);
             }

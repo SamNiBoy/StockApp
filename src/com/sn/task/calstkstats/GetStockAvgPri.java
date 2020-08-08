@@ -9,6 +9,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
@@ -52,7 +53,7 @@ public class GetStockAvgPri implements Job {
     public static void main(String[] args) throws JobExecutionException {
         // TODO Auto-generated method stub
     	GetStockAvgPri fsd = new GetStockAvgPri();
-        fsd.execute(null);
+        fsd.genShIndex();
     }
 
     public GetStockAvgPri() {
@@ -208,6 +209,7 @@ public class GetStockAvgPri implements Job {
     		rs.close();
     		stm.close();
     		
+    		genShIndex();
 //    		sql = "insert into stkdat2_sim select * from stkdat2 where dl_dt like '% 09:30%' and not exists (select 'x' from stkdat2_sim where stkdat2_sim.ft_id = stkdat2.ft_id)";
 //    		log.info("now copy 09:30 data to stkdat2_sim table");
 //    		stm = con.createStatement();
@@ -360,6 +362,82 @@ public class GetStockAvgPri implements Job {
     	}
     	return genDataSuccess;
     }
+    
+    public static boolean genShIndex()
+    {
+    	try {
+            String str = "";
+            String stkSql = "http://hq.sinajs.cn/list=s_sh000001";
+            log.info("Fetching..." + stkSql);
+            URL url = new URL(stkSql);
+            InputStream is = url.openStream();
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            if ((str = br.readLine()) != null) {
+                
+                str = str.replaceAll("\"", "");
+                str = str.replaceAll(";", "");
+                String subs = str.substring(str.indexOf(",") + 1);
+                String sary[] = subs.split(",");
+                
+                double ShIndex  = Double.valueOf(sary[0]);
+                double DeltaShIndex  = Double.valueOf(sary[1]);
+                double DeltaShIndexPct  = Double.valueOf(sary[2]);
+                double ShDelAmt  = Integer.valueOf(sary[3]);
+                double shDelMny  = Double.valueOf(sary[4]);
+                
+                
+                Connection con = DBManager.getConnection();
+                Statement stm = null;
+                
+                try {
+                    stm = con.createStatement();
+                    
+                    String sql = "select 'x' from stockIndex where left(add_dt, 10) = left(sysdate(), 10)";
+                    log.info(sql);
+                    
+                    ResultSet rs = stm.executeQuery(sql);
+                    
+                    if (!rs.next())
+                    {
+                    	rs.close();
+                    	stm.close();
+                    	stm = con.createStatement();
+                        sql = "insert into stockIndex select 's_sh000001', case when max(id) is null then 0 else max(id) + 1 end, "
+                        		+ ShIndex + "," + DeltaShIndex + "," +  DeltaShIndexPct + ", " + ShDelAmt + ", " + shDelMny + ", sysdate() from stockIndex where indexid = 's_sh000001'";
+                        log.info(sql);
+                        stm.execute(sql);
+                    }
+                    else {
+                    	log.info("stockIndex for today is already got, skip...");
+                    	rs.close();
+                    }
+                }
+                catch(SQLException e)
+                {
+                    e.printStackTrace();
+                    log.info(e.getMessage() + " errored:" + e.getErrorCode());
+                }
+                finally {
+                    try {
+                        stm.close();
+                        con.close();
+                    } catch (SQLException e) {
+                        // TODO Auto-generated catch block
+                        log.info(e.getMessage() + " errored:" + e.getErrorCode());
+                    }
+                }
+                
+                log.info("Got SH index ShIndex:" + ShIndex + ", DeltaShIndex:" + DeltaShIndex + ", DeltaShIndexPct:" + DeltaShIndexPct + ", ShDelAmt:" + ShDelAmt + ", shDelMny:" + shDelMny);
+            }
+            br.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    	
+    	return true;
+    }
+    
     private boolean saveAvgPriceToDb(String id, String for_dte) {
     	
     	Connection con = DBManager.getConnection();
