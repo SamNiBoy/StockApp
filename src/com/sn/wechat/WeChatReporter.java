@@ -499,7 +499,7 @@ public class WeChatReporter extends BaseWCReporter{
                             rs.close();
                             stm.close();
                             stm = con.createStatement();
-                            sql = "insert into usrStk values ('" + frmUsr + "','" + stockID + "',1,0,'" + frmUsr + "','" + frmUsr +"','User manual suggested', 0,sysdate(), sysdate())";
+                            sql = "insert into usrStk values ('" + frmUsr + "','" + stockID + "',1,0,0'" + frmUsr + "','" + frmUsr +"','User manual suggested', 0,sysdate(), sysdate())";
                             log.info(sql);
                             stm.execute(sql);
                             msg = "成功添加关注:" + stockID;

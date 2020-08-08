@@ -88,22 +88,17 @@ public class BalanceSellPointSelector implements ISellPointSelector {
             return false;
         }
         else {
-            boolean cleanup_stock_inhand = SellModeWatchDog.isStockInStopTradeMode(stk);
-            if (cleanup_stock_inhand)
-            {
-                log.info("Stock:" + stk.getID() + " switched to stop trade mode(not good for trade), sell up stock in hand, return true");
-                stk.setTradedBySelector(this.selector_name);
-                stk.setTradedBySelectorComment("Stock:" + stk.getID() + " is in stop trade mode");
-                return true;
-            }
-            else {
+//            boolean cleanup_stock_inhand = SellModeWatchDog.isStockInStopTradeMode(stk);
+//            if (cleanup_stock_inhand)
+//            {
+//                log.info("Stock:" + stk.getID() + " switched to stop trade mode(not good for trade), sell up stock in hand, return true");
+//                stk.setTradedBySelector(this.selector_name);
+//                stk.setTradedBySelectorComment("Stock:" + stk.getID() + " is in stop trade mode");
+//                return true;
+//            }
+             {
                 Timestamp t1 = stk.getDl_dt();
                 		
-//                if (t1.getDay() != 5)
-//                {
-//                    log.info("only clear stock on friday, today is " + t1.getDay());
-//                    return false;
-//                }
                 long hour = t1.getHours();
                 long minutes = t1.getMinutes();
                 

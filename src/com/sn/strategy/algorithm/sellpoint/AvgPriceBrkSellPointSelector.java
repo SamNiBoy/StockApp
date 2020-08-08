@@ -93,16 +93,38 @@ public class AvgPriceBrkSellPointSelector implements ISellPointSelector {
             return false;
         }
         
-        double threshPct = 0.01;
-        boolean con1 = getAvgPriceFromSina(stk, ac, 0) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
+        boolean snf = SellModeWatchDog.isStockInSellNowMode(stk);
         
-        if (con1)
-        {
+        if (snf) {
 		    stk.setTradedBySelector(this.selector_name);
-		    stk.setTradedBySelectorComment("yt_cls_pri lower than 5 days avgpri, sell!");
+		    stk.setTradedBySelectorComment("stock is in sell now mode, sell!");
 		    return true;
         }
-		
+        
+        double threshPct = 0.01;
+        boolean con1 = getAvgPriceFromSina(stk, ac, 0);
+        boolean con2 = ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
+//        boolean con3 = avgpri5.get() < avgpri10.get();
+//        boolean con4 = (td_cls_pri.get() - td_open_pri.get()) / td_open_pri.get() <= - 0.035;
+        
+        if (con1) {
+            if (con2)
+            {
+    		    stk.setTradedBySelector(this.selector_name);
+    		    stk.setTradedBySelectorComment("yt_cls_pri lower than 5 days avgpri, sell!");
+    		    return true;
+            }
+//            else if (con3) {
+//    		    stk.setTradedBySelector(this.selector_name);
+//    		    stk.setTradedBySelectorComment("5 days avgpri lower than 10 days avg pri, sell!");
+//    		    return true;
+//            }
+//            else if (con4) {
+//    		    stk.setTradedBySelector(this.selector_name);
+//    		    stk.setTradedBySelectorComment("at least 5 pct lost, sell!");
+//    		    return true;
+//            }
+        }
 		return false;
 	}
 	

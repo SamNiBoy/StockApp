@@ -247,6 +247,39 @@ public class SellModeWatchDog implements IWork {
 		log.info("Stock " + s.getName() + "'s sell mode is:" + is_in_sell_mode);
 		return is_in_sell_mode;
 	}
+	
+	public static boolean isStockInSellNowMode(Stock2 s) {
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		boolean sell_now_flg = false;
+		try {
+			sql = "select sell_now_flg from usrStk where id = '" + s.getID() + "'";
+			log.info(sql);
+			stm = con.createStatement();
+			ResultSet rs = stm.executeQuery(sql);
+			if (rs.next()) {
+				sell_now_flg = rs.getInt("sell_now_flg") == 1;
+			}
+			rs.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.info("stock " + s.getName() + " is not currently in sell_now_flg mode!");
+		}
+		finally {
+		    try {
+		    	//log.info("Closing statement and connection!");
+				stm.close();
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+                log.error(e.getMessage() + " with error:" + e.getErrorCode());
+			}
+		}
+		log.info("Stock " + s.getName() + "'s sell_now_flg mode is:" + sell_now_flg);
+		return sell_now_flg;
+	}
 
 	private void setStockStopTradeMode(Stock2 s, boolean to_stop_trade_mode_flg) {
 		String sql = "";

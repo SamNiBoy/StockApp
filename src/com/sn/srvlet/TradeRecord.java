@@ -388,10 +388,10 @@ public class TradeRecord{
 				int hasusrstkflg = rs.getInt("has_usrstk_flg");
 				
 				if (hasusrstkflg == 1) {
-			        sql = "update usrstk set suggested_by = 'SYSTEM_GRANTED_TRADER', stop_trade_mode_flg = 0, mod_dt = sysdate() where id = '" + stkid + "'";
+			        sql = "update usrstk set suggested_by = 'SYSTEM_GRANTED_TRADER', stop_trade_mode_flg = 0, sell_now_flg = 0, mod_dt = sysdate() where id = '" + stkid + "'";
 			    }
 			    else {
-			    	sql = "insert into usrStk values ('osCWfs-ZVQZfrjRK0ml-eEpzeop0','" + stkid + "',1,0,'SYSTEM_GRANTED_TRADER','Manual','User manual suggested', 0,sysdate(), sysdate())";
+			    	sql = "insert into usrStk values ('osCWfs-ZVQZfrjRK0ml-eEpzeop0','" + stkid + "',1,0,0,'SYSTEM_GRANTED_TRADER','Manual','User manual suggested', 0,sysdate(), sysdate())";
 			    }
 				
 				rs.close();

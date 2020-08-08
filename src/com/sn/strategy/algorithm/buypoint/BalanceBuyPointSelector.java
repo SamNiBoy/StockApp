@@ -82,16 +82,16 @@ public class BalanceBuyPointSelector implements IBuyPointSelector {
             return false;
 	    }
 	    else {
-	        boolean cleanup_stock_inhand = SellModeWatchDog.isStockInStopTradeMode(stk);
-            
-	        if (cleanup_stock_inhand)
-	        {
-     	        log.info("Stock:" + stk.getID() + " switched to sell_mode(not good for trade), buy back stock in hand, return true");
-                stk.setTradedBySelector(this.selector_name);
-                stk.setTradedBySelectorComment("Stock:" + stk.getID() + " is in stop trade mode");
-                return true;
-	        }
-	        else {
+//	        boolean cleanup_stock_inhand = SellModeWatchDog.isStockInStopTradeMode(stk);
+//            
+//	        if (cleanup_stock_inhand)
+//	        {
+//     	        log.info("Stock:" + stk.getID() + " switched to sell_mode(not good for trade), buy back stock in hand, return true");
+//                stk.setTradedBySelector(this.selector_name);
+//                stk.setTradedBySelectorComment("Stock:" + stk.getID() + " is in stop trade mode");
+//                return true;
+//	        }
+	         {
 	            Timestamp t1 = stk.getDl_dt();
                 
                 long hour = t1.getHours();

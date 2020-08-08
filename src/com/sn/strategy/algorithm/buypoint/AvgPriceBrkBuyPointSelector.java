@@ -84,9 +84,22 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
             return false;
         }
         
+        boolean snf = SellModeWatchDog.isStockInSellNowMode(stk);
+        
+        if (snf) {
+        	log.info("stock:" + stk.getID() + " is in sell now mode, can not buy!");
+		    return false;
+        }
+        
         double threshPct = 0.01;
         
-        boolean con1 = getAvgPriceFromSina(stk, ac, 0) && ((td_cls_pri.get() - avgpri5.get()) / td_cls_pri.get() > threshPct) && avgpri5.get() > avgpri10.get() && avgpri10.get() > avgpri30.get();
+        boolean con1_0 = getAvgPriceFromSina(stk, ac, 0) && ((td_cls_pri.get() - avgpri5.get()) / td_cls_pri.get() > threshPct);
+        boolean con1_1 = avgpri5.get() > avgpri10.get() && avgpri10.get() > avgpri30.get();
+        boolean con1_2 = td_cls_pri.get() > td_open_pri.get();
+        boolean con1_3 = avgpri5.get() <= td_high.get() && avgpri5.get() >= td_low.get();
+        
+        boolean con1 = con1_0 && con1_1 && con1_2 && con1_3;
+        
         boolean con2 = getAvgPriceFromSina(stk, ac, 1) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
         boolean con3 = getAvgPriceFromSina(stk, ac, 2) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
         boolean con4 = getAvgPriceFromSina(stk, ac, 3) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
@@ -150,7 +163,10 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
                 avgpri5.set(rs.getDouble("avgpri1"));
                 avgpri10.set(rs.getDouble("avgpri2"));
                 avgpri30.set(rs.getDouble("avgpri3"));
+                td_open_pri.set(rs.getDouble("open"));
                 td_cls_pri.set(rs.getDouble("close"));
+                td_high.set(rs.getDouble("high"));
+                td_low.set(rs.getDouble("low"));
                 gotDataSuccess = true;
     		}
     		
