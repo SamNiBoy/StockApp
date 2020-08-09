@@ -115,7 +115,7 @@ public class AvgPriceBrkSellPointSelector implements ISellPointSelector {
             boolean con3 = getAvgPriceFromSina(stk, ac, 1);
             double td_cls_pri2 = td_cls_pri.get();
             
-            boolean con4 = con3 && (td_cls_pri2 - td_cls_pri1) / td_cls_pri1 <= - 0.08;
+            boolean con4 = con3 && (td_cls_pri2 - td_cls_pri1) / td_cls_pri1 <= -0.08;
 //            boolean con5 = (td_cls_pri.get() - sbs.price) / sbs.price <= - 0.1;
             
             if (con1) {
@@ -180,7 +180,8 @@ public class AvgPriceBrkSellPointSelector implements ISellPointSelector {
     		Statement stm = con.createStatement();
     		ResultSet rs = null;
     		
-    	    String sql = "select * from stkAvgPri where id = '" + s.getID() + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10) + "' order by add_dt desc";
+    	    String sql = "select * from stkAvgPri where id = '" + s.getID() + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10)
+    	    		+ "' order by add_dt desc";
     		log.info(sql);
     		
     		stm = con.createStatement();
@@ -190,16 +191,17 @@ public class AvgPriceBrkSellPointSelector implements ISellPointSelector {
     		
     		while(cnt > 0) {
     			rs.next();
+    			cnt--;
     		}
     		
     		if (rs.next()) {
                 avgpri5.set(rs.getDouble("avgpri1"));
                 avgpri10.set(rs.getDouble("avgpri2"));
                 avgpri30.set(rs.getDouble("avgpri3"));
-        		td_open_pri.set(rs.getDouble("open"));
-        		td_high.set(rs.getDouble("high"));
-        		td_low.set(rs.getDouble("low"));
+                td_open_pri.set(rs.getDouble("open"));
                 td_cls_pri.set(rs.getDouble("close"));
+                td_high.set(rs.getDouble("high"));
+                td_low.set(rs.getDouble("low"));
                 gotDataSuccess = true;
     		}
     		
