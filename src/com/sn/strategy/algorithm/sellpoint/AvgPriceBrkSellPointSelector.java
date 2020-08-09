@@ -115,7 +115,7 @@ public class AvgPriceBrkSellPointSelector implements ISellPointSelector {
             boolean con3 = getAvgPriceFromSina(stk, ac, 1);
             double td_cls_pri2 = td_cls_pri.get();
             
-            boolean con4 = con3 && (td_cls_pri2 - td_cls_pri1) / td_cls_pri1 <= -0.08;
+            boolean con4 = con3 && (td_cls_pri1 - td_cls_pri2) / td_cls_pri1 <= -0.08;
 //            boolean con5 = (td_cls_pri.get() - sbs.price) / sbs.price <= - 0.1;
             
             if (con1) {
