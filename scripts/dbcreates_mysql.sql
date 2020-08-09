@@ -49,6 +49,8 @@ insert into param values('ALL_STOCK2_QUEUE_SIZE', 'TRADING',60,null , '', '', 'D
 
 insert into param values('VOLUME_PLUS_PCT', 'TRADING',null,0.5, '', '', 'Define the last delta trading volume is this above the pct of delta volumes in the queue then it means volume plused.', sysdate(),sysdate());
 insert into param values('BUY_SELL_MAX_DIFF_CNT', 'TRADING', 1,null, '', '', 'Max extra times between buy and sell for same stock, value 2 means allow one additional same direction trade.', sysdate(),sysdate());
+insert into param values('MAX_BUY_TIMES_TOTAL_LIMIT', 'TRADING', 18,null, '', '', 'How many buy allowed in total after subtract sell?', sysdate(),sysdate());
+insert into param values('MIN_BUY_CNT_ASSURE', 'TRADING', 3, null, '', '', 'How many buy chances should remain?, if lower than this number then sell worse stock to make space.', sysdate(),sysdate());
 insert into param values('MAX_MINUTES_ALLOWED_TO_KEEP_BALANCE', 'TRADING', 60,null, '', '', 'How many minutes in maximum we need to buy/sell stock back for keep balance.', sysdate(),sysdate());
 insert into param values('STOP_BREAK_BALANCE_IF_CURPRI_REACHED_PCT', 'TRADING',null, 0.06, '', '', 'If delta price go above this percentage, stop trading for breaking balance.', sysdate(),sysdate());
 insert into param values('BUY_BASE_TRADE_THRESH', 'TRADING',null, 0.05, '', '', 'QtyBuyPointSelector: Stock min/max price must be bigger than this threshold value for trading.', sysdate(),sysdate());
@@ -587,10 +589,11 @@ crt_by varchar(10) not null
 
 create table if not exists arc_SellBuyRecord(
 stkId varchar(6 ) not null primary key,
-price int not null,
+price decimal(8, 2) not null,
 qty int not null,
 buy_flg int not null,
-dl_dt datetime not null
+dl_dt datetime not null,
+crt_by varchar(10) not null
 );
 
 create table if not exists SimResult(

@@ -185,3 +185,14 @@ order by b1_num / s1_num desc,
   
   // create data for simulation.
   insert into stkdat2_sim select * from stkdat2 where dl_dt like '% 09:30%';
+  
+  //back transaction tables
+  
+  insert into arc_cashacnt select * from cashacnt;
+  select * from arc_cashacnt;
+  insert into arc_tradedtl select * from tradedtl;
+  select * from arc_tradedtl;
+  insert into arc_tradehdr select * from tradehdr;
+  select * from arc_tradehdr;
+  insert into arc_sellbuyrecord select * from sellbuyrecord;
+  select * from arc_sellbuyrecord;

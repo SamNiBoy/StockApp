@@ -570,6 +570,11 @@ public class TradeStrategyImp implements ITradeStrategy {
 		    	log.info("Buy limit for a day is: " + max_buy_per_days + ", can not buy today!");
 		    	return false;
 		    }
+		    
+		    if (isReachedMaxBuyCnt()) {
+		    	log.info("Total Buy limit acount reached, can not buy more.");
+		    	return false;
+		    }
 		}
 
 		LinkedList<StockBuySellEntry> rcds = tradeRecord.get(s.getID());
@@ -908,6 +913,162 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return shouldSkipCheck;
 	}
 	
+	public static boolean isReachedMaxBuyCnt() {
+		LinkedList<StockBuySellEntry> tmp;
+		
+		int totalBuyCnt = 0;
+		int totalSellCnt = 0;
+		for (String id : tradeRecord.keySet()) {
+			tmp = tradeRecord.get(id);
+	    	for (StockBuySellEntry sb : tmp) {
+	    		String sb_dte = sb.dl_dt.toString().substring(0, 10);
+	    		log.info("Stock:" + sb.id + " is buy:" + sb.is_buy_point + ", trade dte:" + sb_dte);
+	    		if (sb.is_buy_point) {
+	    			totalBuyCnt++;
+	    		}
+	    		else {
+	    			totalSellCnt++;
+	    		}
+	    	}
+		}
+		int total_buy_count_limit = ParamManager.getIntParam("MAX_BUY_TIMES_TOTAL_LIMIT", "TRADING", null);
+		
+		log.info("totalBuyCnt:" + totalBuyCnt + ", totalSellCnt:" + totalSellCnt + ", net Buy Cnt:" + (totalBuyCnt - totalSellCnt) + ", MAX_BUY_TIMES_TOTAL_LIMIT:" + total_buy_count_limit);
+		
+		if ((totalBuyCnt - totalSellCnt) >= total_buy_count_limit) {
+			log.info("total_buy_count_limit reached, return true");
+			return true;
+		}
+		return false;
+	}
+	
+	public static boolean needMakeSpaceForBuy() {
+		LinkedList<StockBuySellEntry> tmp;
+		
+		int totalBuyCnt = 0;
+		int totalSellCnt = 0;
+		for (String id : tradeRecord.keySet()) {
+			tmp = tradeRecord.get(id);
+	    	for (StockBuySellEntry sb : tmp) {
+	    		String sb_dte = sb.dl_dt.toString().substring(0, 10);
+	    		log.info("Stock:" + sb.id + " is buy:" + sb.is_buy_point + ", trade dte:" + sb_dte);
+	    		if (sb.is_buy_point) {
+	    			totalBuyCnt++;
+	    		}
+	    		else {
+	    			totalSellCnt++;
+	    		}
+	    	}
+		}
+		int total_buy_count_limit = ParamManager.getIntParam("MAX_BUY_TIMES_TOTAL_LIMIT", "TRADING", null);
+		int buy_space_count = ParamManager.getIntParam("MIN_BUY_CNT_ASSURE", "TRADING", null);
+		
+		log.info("totalBuyCnt:" + totalBuyCnt + ", totalSellCnt:" + totalSellCnt + ", net Buy Cnt:" + (totalBuyCnt - totalSellCnt) + ", MAX_BUY_TIMES_TOTAL_LIMIT:" + total_buy_count_limit + ", MIN_BUY_CNT_ASSURE:" + buy_space_count);
+		
+		if (total_buy_count_limit - (totalBuyCnt - totalSellCnt) < buy_space_count) {
+			log.info("buy_space_count needed, return true");
+			return true;
+		}
+		return false;
+	}
+	
+	public static boolean isStockLostMost(Stock2 s, ICashAccount ac) {
+		log.info("check if stock:" + s.getID() + " has lost most.");
+		
+		boolean result = false;
+		try {
+			int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
+			int tradeLocalwithSim = ParamManager.getIntParam("TRADING_AT_LOCAL_WITH_SIM", "TRADING", null);
+			
+	         String acntId = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null);
+	            
+	         if (!sim_mode)
+	         {
+	             if (tradeLocal == 0) {
+	                 acntId = tradex_acnt.getActId();
+	             }
+	             else if (tradeLocalwithSim == 0) {
+	             	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", s.getID()) + s.getID();
+	             }
+	         }
+	        
+	        String stkAcntId = acntId + s.getID();
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+
+			String sql = "select * from cashacnt where pft_mny < 0 and exists (select 'x' from tradehdr h where h.acntId = cashacnt.acntId and h.in_hand_qty > 0) and acntId like '" + acntId + "%' order by pft_mny ";
+			log.info(sql);
+			ResultSet rs = stm.executeQuery(sql);
+
+			if (rs.next()) {
+				String lostAcntId = rs.getString("acntId");
+				double pft_mny = rs.getDouble("pft_mny");
+			    log.info(" got most lost acount:" + lostAcntId + " with pft_mny:" + pft_mny + ", stock AcntID:" + stkAcntId);
+			    if (stkAcntId.equals(lostAcntId)) {
+			    	log.info("acount are same, return true.");
+			    	result = true;
+			    }
+			} else {
+				log.info("No acount lost mony found, return false.");
+				result = false;
+			}
+			rs.close();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	public static boolean isStockWinMost(Stock2 s, ICashAccount ac) {
+		log.info("check if stock:" + s.getID() + " has win most.");
+		
+		boolean result = false;
+		try {
+			int tradeLocal = ParamManager.getIntParam("TRADING_AT_LOCAL", "TRADING", null);
+			int tradeLocalwithSim = ParamManager.getIntParam("TRADING_AT_LOCAL_WITH_SIM", "TRADING", null);
+			
+	         String acntId = ParamManager.getStr1Param("ACNT_SIM_PREFIX", "ACCOUNT", null);
+	            
+	         if (!sim_mode)
+	         {
+	             if (tradeLocal == 0) {
+	                 acntId = tradex_acnt.getActId();
+	             }
+	             else if (tradeLocalwithSim == 0) {
+	             	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", s.getID()) + s.getID();
+	             }
+	         }
+	        
+	        String stkAcntId = acntId + s.getID();
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+
+			String sql = "select * from cashacnt where pft_mny > 0 and exists (select 'x' from tradehdr h where h.acntId = cashacnt.acntId and h.in_hand_qty > 0) and acntId like '" + acntId + "%' order by pft_mny desc ";
+			log.info(sql);
+			ResultSet rs = stm.executeQuery(sql);
+
+			if (rs.next()) {
+				String lostAcntId = rs.getString("acntId");
+				double pft_mny = rs.getDouble("pft_mny");
+			    log.info(" got most win acount:" + lostAcntId + " with pft_mny:" + pft_mny + ", stock AcntID:" + stkAcntId);
+			    if (stkAcntId.equals(lostAcntId)) {
+			    	log.info("acount are same, return true.");
+			    	result = true;
+			    }
+			} else {
+				log.info("No acount win most found, return false.");
+				result = false;
+			}
+			rs.close();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
 
 	private static boolean isInSellMode(Stock2 s) {
 

@@ -25,6 +25,7 @@ import com.sn.strategy.algorithm.ISellPointSelector;
 import com.sn.strategy.algorithm.buypoint.DefaultBuyPointSelector;
 import com.sn.strategy.algorithm.param.ParamManager;
 import com.sn.task.sellmode.SellModeWatchDog;
+import com.sn.task.suggest.selector.StddevStockSelector;
 import com.sn.stock.Stock2;
 import com.sn.stock.StockBuySellEntry;
 import com.sn.stock.StockMarket;
@@ -101,35 +102,49 @@ public class AvgPriceBrkSellPointSelector implements ISellPointSelector {
 		    return true;
         }
         
-        double threshPct = 0.1;
-        boolean con1 = getAvgPriceFromSina(stk, ac, 0);
-        boolean con2 = ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
-//        boolean con3 = avgpri5.get() < avgpri10.get();
-        boolean con4 = (td_cls_pri.get() - td_open_pri.get()) / td_open_pri.get() <= - 0.08;
-        boolean con5 = (td_cls_pri.get() - sbs.price) / sbs.price <= - 0.05;
-        
-        if (con1) {
-            if (con2)
-            {
-    		    stk.setTradedBySelector(this.selector_name);
-    		    stk.setTradedBySelectorComment("yt_cls_pri 10 pct lower than 5 days avgpri, sell!");
-    		    return true;
+        //below if else are stop win vs stop lost logic:
+       boolean stockWinMost = TradeStrategyImp.isStockWinMost(stk, ac);
+       if (stockWinMost) {
+       	    log.info("think about below criteria for win most stock " + stk.getID());
+            double threshPct = 0.1;
+            boolean con1 = getAvgPriceFromSina(stk, ac, 0);
+            boolean con2 = ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
+            
+            double td_cls_pri1 = td_cls_pri.get();
+            
+            boolean con3 = getAvgPriceFromSina(stk, ac, 1);
+            double td_cls_pri2 = td_cls_pri.get();
+            
+            boolean con4 = con3 && (td_cls_pri2 - td_cls_pri1) / td_cls_pri1 <= - 0.08;
+//            boolean con5 = (td_cls_pri.get() - sbs.price) / sbs.price <= - 0.1;
+            
+            if (con1) {
+                if (con2)
+                {
+    	    	    stk.setTradedBySelector(this.selector_name);
+    	    	    stk.setTradedBySelectorComment("yt_cls_pri 10 pct lower than 5 days avgpri, sell!");
+    	    	    return true;
+                }
+                else if (con4) {
+    	    	    stk.setTradedBySelector(this.selector_name);
+    	    	    stk.setTradedBySelectorComment("close price at least 8 pct drop, sell!");
+    	    	    return true;
+                }
+//                if (con5) {
+//  	                stk.setTradedBySelector(this.selector_name);
+//  	                stk.setTradedBySelectorComment("cut 10% lost, sell!");
+//  	                return true;
+//                }
             }
-//            else if (con3) {
-//    		    stk.setTradedBySelector(this.selector_name);
-//    		    stk.setTradedBySelectorComment("5 days avgpri lower than 10 days avg pri, sell!");
-//    		    return true;
-//            }
-            else if (con4) {
-    		    stk.setTradedBySelector(this.selector_name);
-    		    stk.setTradedBySelectorComment("at least 8 pct drop, sell!");
-    		    return true;
-            }
-          else if (con5) {
-  		    stk.setTradedBySelector(this.selector_name);
-  		    stk.setTradedBySelectorComment("cut 5% lost, sell!");
-  		    return true;
-          }
+        }
+        else if (TradeStrategyImp.needMakeSpaceForBuy()){
+        	log.info("Total buy limit reached, check if stock:" + stk.getID() + " is the most lost stock for which we should sell.");
+        	if (TradeStrategyImp.isStockLostMost(stk, ac)) {
+        		log.info("Stock:" + stk.getID() + " is the most lost stock, sell it.");
+	    	    stk.setTradedBySelector(this.selector_name);
+	    	    stk.setTradedBySelectorComment("Most lost stock, sell!");
+	    	    return true;
+        	}
         }
 		return false;
 	}
