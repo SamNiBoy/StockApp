@@ -92,7 +92,6 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
         }
         
         double threshPct = 0.01;
-        double shakePctLimit = 0.07;
         
         boolean con1_0 = getAvgPriceFromSina(stk, ac, 0) && ((td_cls_pri.get() - avgpri5.get()) / td_cls_pri.get() > threshPct);
         boolean con1_1 = avgpri5.get() > avgpri10.get() && avgpri10.get() > avgpri30.get();
@@ -112,7 +111,6 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
         	return false;
         }
         
-        double shkpct2 = (td_high.get() - td_low.get()) / td_cls_pri.get();
         boolean con3 = getAvgPriceFromSina(stk, ac, 2) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
         
         if (!con3) {
@@ -120,7 +118,6 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
         	return false;
         }
         
-        double shkpct3 = (td_high.get() - td_low.get()) / td_cls_pri.get();
         boolean con4 = getAvgPriceFromSina(stk, ac, 3) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
         
         if (!con4) {
@@ -128,16 +125,7 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
         	return false;
         }
         
-        double shkpct4 = (td_high.get() - td_low.get()) / td_cls_pri.get();
-        
-        boolean con5 = (shkpct2 + shkpct3 + shkpct4) / 3.0 < shakePctLimit;
-        
-        if (!con5) {
-        	log.info("stock:" + stk.getID() + " con5 false, shakPct:" + (shkpct2 + shkpct3 + shkpct4) / 3.0);
-        	return false;
-        }
-        
-        if (con1 && con2 && con3 && con4 && con5)
+        if (con1 && con2 && con3 && con4)
         {
 		    stk.setTradedBySelector(this.selector_name);
 		    stk.setTradedBySelectorComment("past 3 days lower than 5 days avipri, now bigger than 5 days avgpri, buy!");
