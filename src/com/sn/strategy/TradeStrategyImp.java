@@ -1206,6 +1206,8 @@ public class TradeStrategyImp implements ITradeStrategy {
             
             updateLstTradeRecordForStock(stk);
             
+            processCreateSellNowStock(s, sellableAmt);
+            
             /*
              * Here once after we trade a stock, clear it's historic memory data.
              * This is important as it make a big difference for calculating some
@@ -1226,11 +1228,126 @@ public class TradeStrategyImp implements ITradeStrategy {
     
     }
 	
+	private boolean processCreateSellNowStock(Stock2 s, int sellQty)
+	{
+		String sql;
+		boolean createdsellnowrecord = false;
+		
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+
+			// check if we need to create sellnowstock record.
+			sql = "select 'x' from usrStk " + " where id ='" + s.getID()
+					+ "' and save_stock_flg = 1 and sell_now_flg = 1";
+			log.info(sql);
+			ResultSet rs = stm.executeQuery(sql);
+
+			if (rs.next()) {
+			    log.info("stock:" + s.getID() + " in sell now mode and save stock is true.");
+			    sql = "insert into sellnowstock values ('" + s.getID() + "'," + s.getCur_pri() + ", " + sellQty + ", sysdate())";
+			    
+			    Statement stm2 = con.createStatement();
+			    stm2.execute(sql);
+			    stm2.close();
+			    
+			    createdsellnowrecord = true;
+			} else {
+				log.info("Looks stock:" + s.getID() + " is not in sell now mode or not save stock flag, skip create sellnowstock.");
+			}
+			rs.close();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return createdsellnowrecord;
+	}
+	
+	private boolean processRemoveSellNowStock(Stock2 s)
+	{
+		String sql;
+		boolean removedsellnowrecord = false;
+		
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+
+			sql = "delete from sellnowstock where stkid ='" + s.getID() + "'";
+			log.info(sql);
+			stm.execute(sql);
+
+			removedsellnowrecord = true;
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return removedsellnowrecord;
+	}
+	
+	public static boolean checkBuyBackTempSoldStock(Stock2 s) {
+		String sql;
+		boolean hassellnowrecord = false;
+		
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+
+			// check if sell_now_flg is removed.
+			sql = "select 'x' from usrStk " + " where id ='" + s.getID()
+					+ "' and sell_now_flg = 0 and exists (select 'x' from sellnowstock s where s.stkid = usrStk.id)";
+			log.info(sql);
+			ResultSet rs = stm.executeQuery(sql);
+
+			if (rs.next()) {
+			    log.info("stock:" + s.getID() + " has sellnowstock record, should buy it back.");
+			    hassellnowrecord = true;
+			} else {
+				log.info("Looks stock:" + s.getID() + " has no record in sellnowstock.");
+			}
+			rs.close();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return hassellnowrecord;
+	}
+	
+	public static boolean checkOtherBuyBackTempSoldStock() {
+		String sql;
+		boolean hassellnowrecord = false;
+		
+		try {
+			Connection con = DBManager.getConnection();
+			Statement stm = con.createStatement();
+
+			sql = "select 'x' from sellnowstock s, usrstk u where s.stkid = u.id and u.sell_now_flg = 0";
+			log.info(sql);
+			ResultSet rs = stm.executeQuery(sql);
+
+			if (rs.next()) {
+			    log.info("stock has sellnowstock record.");
+			    hassellnowrecord = true;
+			} else {
+				log.info("no record in sellnowstock.");
+			}
+			rs.close();
+			stm.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return hassellnowrecord;
+	}
+	
 	private boolean createBuyTradeRecord(Stock2 s, String qtyToTrade, ICashAccount ac, TradexBuySellResult tbsr) {
         
 		int buyMnt = Integer.valueOf(qtyToTrade);
 		double occupiedMny = buyMnt * s.getCur_pri();
         double buyPrice = s.getCur_pri();
+        boolean hasSellNowStock = false;
         
 		if (!sim_mode && tbsr != null) {
 		   buyMnt = tbsr.getTrade_quantity();
@@ -1238,23 +1355,45 @@ public class TradeStrategyImp implements ITradeStrategy {
            buyPrice = tbsr.getTrade_price();
 		}
 		
-        log.info("trying to buy amount:" + qtyToTrade + " with using Mny:" + occupiedMny);
-        
-        log.info("now start to bug stock " + s.getName()
-                + " price:" + buyPrice
-                + " with money: " + ac.getMaxMnyForTrade()
-                + " buy mount:" + buyMnt);
-
-        Connection con = DBManager.getConnection();
-        String sql = "select case when max(d.seqnum) is null then -1 else max(d.seqnum) end maxseq from TradeHdr h " +
-                "       join TradeDtl d " +
-                "         on h.stkId = d.stkId " +
-                "        and h.acntId = d.acntId " +
-                "      where h.stkId = '" + s.getID()+ "'" +
-                "        and h.acntId = '" + ac.getActId() + "'";
-        int seqnum = 0;
-        double commi_rate  = ParamManager.getFloatParam("COMMISSION_RATE", "VENDOR", null);
+		Connection con = DBManager.getConnection();
+		String sql = "";
         try {
+        	
+        	hasSellNowStock = checkBuyBackTempSoldStock(s);
+		    if (hasSellNowStock) {
+		    	
+		    	log.info("as we buy back sellnowrecord, get qty to sell from sellnowstock table.");
+		    	
+		    	sql = "select qty from sellnowstock where stkid = '" + s.getID() + "'";
+		    	
+		    	Statement stm0 = con.createStatement();
+		    	ResultSet rs0 = stm0.executeQuery(sql);
+		    	
+		    	if (rs0.next()) {
+		    		buyMnt = rs0.getInt("qty");
+		    		log.info("got buyMnt:" + buyMnt + " from sellnowstock.");
+		    	}
+		    	rs0.close();
+		    	stm0.close();
+		    }
+		    
+            log.info("trying to buy amount:" + buyMnt + " with using Mny:" + occupiedMny);
+            
+            log.info("now start to bug stock " + s.getName()
+                    + " price:" + buyPrice
+                    + " with money: " + ac.getMaxMnyForTrade()
+                    + " buy mount:" + buyMnt);
+            
+            
+            sql = "select case when max(d.seqnum) is null then -1 else max(d.seqnum) end maxseq from TradeHdr h " +
+                    "       join TradeDtl d " +
+                    "         on h.stkId = d.stkId " +
+                    "        and h.acntId = d.acntId " +
+                    "      where h.stkId = '" + s.getID()+ "'" +
+                    "        and h.acntId = '" + ac.getActId() + "'";
+            int seqnum = 0;
+            double commi_rate  = ParamManager.getFloatParam("COMMISSION_RATE", "VENDOR", null);
+
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery(sql);
             
@@ -1326,6 +1465,9 @@ public class TradeStrategyImp implements ITradeStrategy {
             
             updateLstTradeRecordForStock(stk);
             
+            if (hasSellNowStock) {
+            	processRemoveSellNowStock(s);
+            }
             
             /*
              * Here once after we trade a stock, clear it's historic memory data.

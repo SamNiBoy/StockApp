@@ -192,6 +192,7 @@ order by b1_num / s1_num desc,
   delete from arc_tradedtl;
   delete from arc_tradehdr;
   delete from arc_sellbuyrecord;
+  delete from arc_SellNowStock;
   
   
   delete from cashacnt;
@@ -203,6 +204,7 @@ order by b1_num / s1_num desc,
   insert into arc_tradedtl select * from tradedtl;
   insert into arc_tradehdr select * from tradehdr;
   insert into arc_sellbuyrecord select * from sellbuyrecord;
+  insert into arc_SellNowStock select * from SellNowStock;
   
   
   insert into cashacnt select * from arc_cashacnt where acntId in ('GF600697','GF002236');

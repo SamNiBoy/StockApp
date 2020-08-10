@@ -46,6 +46,9 @@ public class GetStockAvgPri implements Job {
     double td_cls_pri = 0.0;
     double td_high = 0.0;
     double td_low = 0.0;
+    
+    boolean run_for_first_day = true;
+    
     /**
      * @param args
      * @throws JobExecutionException 
@@ -67,10 +70,12 @@ public class GetStockAvgPri implements Job {
     	String stockArea = "";
     	Connection con = null;
     	
+    	
+    	
     	try {
     		con = DBManager.getConnection();
     		Statement stm = con.createStatement();
-    		String sql = "select id, area from stk order by id desc";
+    		String sql = "select id, area from stk where not exists (select 'x' from stkAvgPri a where a.id = stk.id and a.add_dt = (select left(max(dl_dt), 10) from stkdat2 s where s.id = '000001')) order by id";
     		
     		log.info(sql);
     		
@@ -201,6 +206,9 @@ public class GetStockAvgPri implements Job {
                         {
         	            	saveAvgPriceToDb(stockID, lst_dte);
                         }
+                        
+                        if (run_for_first_day)
+                        	break;
                     }
                     genSimDataForStock(stockID);
                     Thread.sleep(2000);
@@ -237,7 +245,7 @@ public class GetStockAvgPri implements Job {
     	boolean genDataSuccess = false;
     	try {
     		
-    		String sql = "select * from stkAvgPri where id = '" + stkID + "' order by add_dt";
+    		String sql = "select * from stkAvgPri where id = '" + stkID + "' order by add_dt desc";
     		log.info(sql);
     		
     		Statement stm = con.createStatement();
@@ -269,9 +277,10 @@ public class GetStockAvgPri implements Job {
     			
     			if (skip_flg) {
     				log.info("stock:" + stkID + " data for date:" + add_dt + " already available, skip creation.");
-    				continue;
     			}
-    		    sql = "insert into stkdat2_sim (ft_id,"
+    			else
+    			{
+    		        sql = "insert into stkdat2_sim (ft_id,"
     		            + " id,"
     		            + " td_opn_pri,"
     		            + " yt_cls_pri,"
@@ -337,11 +346,13 @@ public class GetStockAvgPri implements Job {
     		            + "str_to_date('" + add_dt +" 09:30:00" + "', '%Y-%m-%d %H:%i:%s') from stkdat2_sim";
     		    		log.info(sql);
     		    
-    		    Statement stm1 = con.createStatement();
-    		    stm1.execute(sql);
-    		    stm1.close();
-    		    
-    		    genDataSuccess = true;
+    		        Statement stm1 = con.createStatement();
+    		        stm1.execute(sql);
+    		        stm1.close();
+    		        genDataSuccess = true;
+    			}
+                if (run_for_first_day)
+                	break;
     		}
     		
     		rs.close();

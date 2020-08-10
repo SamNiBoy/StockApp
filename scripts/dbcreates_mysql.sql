@@ -168,6 +168,7 @@ id varchar(6 ) not null,
 gz_flg int not null,
 stop_trade_mode_flg int not null,
 sell_now_flg int not null,
+save_stock_flg int not null,
 suggested_by varchar(100 ) not null,
 suggested_by_selector varchar(100 ) not null,
 suggested_comment varchar(500 ) not null,
@@ -594,6 +595,20 @@ qty int not null,
 buy_flg int not null,
 dl_dt datetime not null,
 crt_by varchar(10) not null
+);
+
+create table if not exists SellNowStock(
+stkId varchar(6 ) not null primary key,
+price decimal(8, 2) not null,
+qty int not null,
+dl_dt datetime not null
+);
+
+create table if not exists arc_SellNowStock(
+stkId varchar(6 ) not null primary key,
+price decimal(8, 2) not null,
+qty int not null,
+dl_dt datetime not null
 );
 
 create table if not exists SimResult(

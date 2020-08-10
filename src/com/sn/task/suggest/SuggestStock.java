@@ -349,7 +349,7 @@ public class SuggestStock implements Job {
 								+ "' and id = '" + s.getID() + "'";
 					}
 				} else {
-					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,0'" + system_role_for_suggest + "','" + s.getSuggestedBy() + "','" + s.getSuggestedComment() + "'," + s.getSuggestedScore() + ", sysdate(), sysdate())";
+					sql = "insert into usrStk values ('" + openID + "','" + s.getID() + "',1,0,0,1,'" + system_role_for_suggest + "','" + s.getSuggestedBy() + "','" + s.getSuggestedComment() + "'," + s.getSuggestedScore() + ", sysdate(), sysdate())";
 				}
 				rs2.close();
 				stm2.close();

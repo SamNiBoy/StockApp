@@ -63,6 +63,7 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
         long hour = t1.getHours();
         long minutes = t1.getMinutes();
         
+        SellModeWatchDog.processInHandStockModeSetup(stk.getDl_dt().toString().substring(0, 10));
 //        int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING", stk.getID());
 //        int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING", stk.getID());
 //        
@@ -89,6 +90,16 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
         if (snf) {
         	log.info("stock:" + stk.getID() + " is in sell now mode, can not buy!");
 		    return false;
+        }
+        
+        if (TradeStrategyImp.checkBuyBackTempSoldStock(stk)) {
+		    stk.setTradedBySelector(this.selector_name);
+		    stk.setTradedBySelectorComment("buy back stock from sellnowstock table.");
+		    return true;
+        }
+        else if (TradeStrategyImp.checkOtherBuyBackTempSoldStock()) {
+        	log.info("has other sellnowrecord pending for buy back, skip buy.");
+        	return false;
         }
         
         double threshPct = 0.01;

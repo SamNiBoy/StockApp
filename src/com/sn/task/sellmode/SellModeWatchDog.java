@@ -49,6 +49,8 @@ public class SellModeWatchDog implements IWork {
 	static List<Stock2> stocksUnSellModeWaitForMail = new LinkedList<Stock2>();
 	
 	static SellModeStockObserverable rso = new SellModeStockObserverable();
+	
+	static String process_dte = "";
 
 	static Logger log = Logger.getLogger(SellModeWatchDog.class);
 
@@ -82,7 +84,35 @@ public class SellModeWatchDog implements IWork {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		SellModeWatchDog.start();
+		//SellModeWatchDog.start();
+		String sql = "";
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		boolean sell_now_flg = false;
+		try {
+			sql = "select distinct add_dt from stkavgpri order by add_dt";
+			log.info(sql);
+			stm = con.createStatement();
+			ResultSet rs = stm.executeQuery(sql);
+			while (rs.next()) {
+				processInHandStockModeSetup(rs.getString("add_dt"));
+			}
+			rs.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+		    try {
+		    	//log.info("Closing statement and connection!");
+				stm.close();
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+                log.error(e.getMessage() + " with error:" + e.getErrorCode());
+			}
+		}
+		
 	}
 
 	public SellModeWatchDog(long id, long dbn) {
@@ -279,6 +309,113 @@ public class SellModeWatchDog implements IWork {
 		}
 		log.info("Stock " + s.getName() + "'s sell_now_flg mode is:" + sell_now_flg);
 		return sell_now_flg;
+	}
+	
+	public static boolean processInHandStockModeSetup(String on_dte) {
+		
+		log.info("Now check sell mode flag process begin.");
+		synchronized (process_dte) {
+			if (on_dte.equals(process_dte)) {
+				log.info("sell now mode process check for date:" + on_dte + " already done, skip.");
+				return true;
+			}
+			else {
+				process_dte = on_dte;
+			}
+		}
+		double putSellNowModeIfPctStockLost = 0.5;
+		Connection con = DBManager.getConnection();
+		Statement stm = null;
+		
+		int totalCnt = 0;
+		int lostCnt = 0;
+		int winCnt = 0;
+		String stkLst = "";
+		try {
+			String sql = "select stkId from tradehdr order by stkId ";
+			//log.info(sql);
+			stm = con.createStatement();
+			ResultSet rs = stm.executeQuery(sql);
+			
+			while (rs.next()) {
+				
+				totalCnt++;
+				
+				String stkid = rs.getString("stkId");
+				
+				sql = "select * from stkavgpri s where s.id = '" + stkid + "' and add_dt < '" + on_dte + "' order by add_dt desc";
+				//log.info(sql);
+				
+				Statement stm2 = con.createStatement();
+				ResultSet rs2 = stm2.executeQuery(sql);
+				
+				if (rs2.next()) {
+					double td_close1 = rs2.getDouble("close");
+					if (rs2.next()) {
+						double td_close2 = rs2.getDouble("close");
+						if ((td_close1 - td_close2) / td_close1 < -0.01) {
+							lostCnt++;
+							if (stkLst.length() > 0) {
+								stkLst += ",";
+							}
+							stkLst += "'" + rs2.getString("id") + "'";
+							//log.info("Stock:" + stkid + " got close price lost, now lostCnt:" + lostCnt);
+						}
+						else if ((td_close1 - td_close2) / td_close1 > 0.01) {
+							winCnt++;
+						}
+					}
+				}
+				rs2.close();
+				stm2.close();
+			}
+			rs.close();
+			
+			if (totalCnt <= 0) {
+				log.info("No dealed stock, skip sell mode flag process.");
+				return false;
+			}
+			
+			int total_buy_count_limit = ParamManager.getIntParam("MAX_BUY_TIMES_TOTAL_LIMIT", "TRADING", null);
+			log.info("on_dte:" + on_dte + " check if put all stock in sell now mode by looking at lost pct: " + (lostCnt * 1.0 / totalCnt) + ", lostCnt:" + lostCnt + ", totalCnt:" + totalCnt + ", if reach buy limit:" + total_buy_count_limit);
+			log.info("on_dte:" + on_dte + " check if put all stock in sell now mode by looking at win pct: " + (winCnt * 1.0 / totalCnt) + ", winCnt:" + winCnt + ", totalCnt:" + totalCnt + ", if reach buy limit:" + total_buy_count_limit);
+			
+			if (totalCnt >= total_buy_count_limit && lostCnt * 1.0 / totalCnt >= putSellNowModeIfPctStockLost) {
+				sql = "update usrstk set sell_now_flg = 1, suggested_comment = 'SYSTEM_PUT_TO_SELL' where sell_now_flg = 0 " +
+			           " and id in (select right(acntId, 6) from cashacnt where pft_mny < 0) "; //here, we only care stock in lost, this is for scenario after we buy a lot of stock and then big drop.
+			          //" and id in (" + stkLst + ")";
+				log.info(sql);
+				Statement stm3 = con.createStatement();
+				stm3.execute(sql);
+				stm3.close();
+				log.info("success put all stock into sell now mode.");
+				return true;
+			}
+			else {
+				sql = "update usrstk set sell_now_flg = 0 where sell_now_flg = 1 and suggested_comment = 'SYSTEM_PUT_TO_SELL'";
+				log.info(sql);
+				Statement stm3 = con.createStatement();
+				stm3.execute(sql);
+				stm3.close();
+				log.info("success remmoved all stock from sell now mode.");
+				return true;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+		    try {
+		    	//log.info("Closing statement and connection!");
+				stm.close();
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+                log.error(e.getMessage() + " with error:" + e.getErrorCode());
+			}
+		}
+		return false;
 	}
 
 	private void setStockStopTradeMode(Stock2 s, boolean to_stop_trade_mode_flg) {
