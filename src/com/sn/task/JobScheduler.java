@@ -107,14 +107,14 @@ public class JobScheduler {
     	}
     	
     	String houseKeepingBeforeMarketOpen = "0 20 9 ? * MON-FRI";
-        String marketRunningTime = "0 0/1 9-15 ? * MON-FRI";
-        String gzStockFetcherRunningTime = "0 29 9 ? * MON-FRI";
+        String marketRunningTime = "0 0/30 9-15 ? * MON-FRI";
+        String gzStockFetcherRunningTime = "0 30 9 ? * MON-FRI";
         //String stockParamTrainningTime = "0 35 11 ? * MON-FRI";
         //String stockParamTrainningTime = "0 50 16 ? * MON-SUN";
         //String stockSuggestTime = "0 0 12,16 ? * MON-FRI";
         String stockSuggestTime = "0 0 16 ? * SUN-SUN";
         //String stockSimTime = "0 30 15 ? * MON-FIR";
-        String stockSimTime = "0 1 23 ? * MON-SUN";
+        String stockSimTime = "0 14 13 ? * MON-SUN";
         String stockSimResCollectorTime = "*/10 * * ? * MON-SUN";
         String getStockAvgPriTime = "0 30 16 ? * MON-FRI";
         

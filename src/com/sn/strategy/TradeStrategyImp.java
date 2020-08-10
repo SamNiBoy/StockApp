@@ -1021,7 +1021,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return result;
 	}
 	
-	public static boolean isStockWinMost(Stock2 s, ICashAccount ac) {
+	public static boolean isStockWinTopMost(Stock2 s, ICashAccount ac, int TopN) {
 		log.info("check if stock:" + s.getID() + " has win most.");
 		
 		boolean result = false;
@@ -1049,17 +1049,23 @@ public class TradeStrategyImp implements ITradeStrategy {
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
-			if (rs.next()) {
-				String lostAcntId = rs.getString("acntId");
-				double pft_mny = rs.getDouble("pft_mny");
-			    log.info(" got most win acount:" + lostAcntId + " with pft_mny:" + pft_mny + ", stock AcntID:" + stkAcntId);
-			    if (stkAcntId.equals(lostAcntId)) {
-			    	log.info("acount are same, return true.");
-			    	result = true;
+			while(TopN > 0)
+			{
+				TopN--;
+			    if (rs.next()) {
+			    	String winAcntId = rs.getString("acntId");
+			    	double pft_mny = rs.getDouble("pft_mny");
+			        log.info(" got most win acount:" + winAcntId + " with pft_mny:" + pft_mny + ", stock AcntID:" + stkAcntId);
+			        if (stkAcntId.equals(winAcntId)) {
+			        	log.info("acount are same, return true.");
+			        	result = true;
+			        	break;
+			        }
+			    } else {
+			    	log.info("No acount win most found, return false.");
+			    	result = false;
+			    	break;
 			    }
-			} else {
-				log.info("No acount win most found, return false.");
-				result = false;
 			}
 			rs.close();
 			stm.close();

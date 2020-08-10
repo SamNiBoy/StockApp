@@ -145,10 +145,10 @@ public class TradeStrategyGenerator {
         
         
         buyPoints.add(bs0);
-        buyPoints.add(bbs);
+        //buyPoints.add(bbs);
         
         sellPoints.add(ses0);
-        sellPoints.add(bes);
+        //sellPoints.add(bes);
         
         ITradeStrategy bts = new TradeStrategyImp(buyPoints, sellPoints , null, "QtyTradeStrategy", sim_mode);
         

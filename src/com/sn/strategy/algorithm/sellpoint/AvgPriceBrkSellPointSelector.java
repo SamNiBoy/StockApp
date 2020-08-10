@@ -103,7 +103,7 @@ public class AvgPriceBrkSellPointSelector implements ISellPointSelector {
         }
         
         //below if else are stop win vs stop lost logic:
-       boolean stockWinMost = TradeStrategyImp.isStockWinMost(stk, ac);
+       boolean stockWinMost = TradeStrategyImp.isStockWinTopMost(stk, ac, 3);
        if (stockWinMost) {
        	    log.info("think about below criteria for win most stock " + stk.getID());
             double threshPct = 0.1;

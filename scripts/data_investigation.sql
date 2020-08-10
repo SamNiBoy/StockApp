@@ -188,11 +188,40 @@ order by b1_num / s1_num desc,
   
   //back transaction tables
   
+  delete from arc_cashacnt;
+  delete from arc_tradedtl;
+  delete from arc_tradehdr;
+  delete from arc_sellbuyrecord;
+  
+  
+  delete from cashacnt;
+  delete from tradedtl;
+  delete from tradehdr;
+  delete from sellbuyrecord;
+  
   insert into arc_cashacnt select * from cashacnt;
-  select * from arc_cashacnt;
   insert into arc_tradedtl select * from tradedtl;
-  select * from arc_tradedtl;
   insert into arc_tradehdr select * from tradehdr;
-  select * from arc_tradehdr;
   insert into arc_sellbuyrecord select * from sellbuyrecord;
-  select * from arc_sellbuyrecord;
+  
+  
+  insert into cashacnt select * from arc_cashacnt where acntId in ('GF600697','GF002236');
+  insert into tradedtl select * from arc_tradedtl where acntId in ('GF600697','GF002236');
+  insert into tradehdr select * from arc_tradehdr where acntId in ('GF600697','GF002236');
+  insert into sellbuyrecord select * from arc_sellbuyrecord where stkId in ('600697','002236');
+  
+  
+  //convert sim data into real data and remove today transaction data.
+  update cashacnt set acntId = concat('GF' , right(acntid, 6));
+  update tradehdr set acntId = concat('GF' , right(acntid, 6));
+  update tradedtl set acntId = concat('GF' , right(acntid, 6));
+  update sellbuyrecord set crt_by = 'REAL';
+  
+  update usrstk set suggested_by = 'SYSTEM_GRANTED_TRADER';
+  
+  //manual create buy records:
+  insert into cashacnt values ('GF000408',50000,0,0,0,3000,0.8, '2020-08-10 09:30:00');
+  insert into tradehdr values ('GF000408','000408',300*8.657,300,8.657,300*8.657,0.0014,0,'2020-08-10 09:30:00');
+  insert into tradedtl values ('GF000408','000408',0,8.657,300,'2020-08-10 09:30:00',1,null,'AvgPriceBrkBuyPointSelector','past 3 days lower than 5 days avipri, now bigger than 5 days avgpri, buy!','QtyTradeStrategy');
+  insert into sellbuyrecord values ('000408',8.657,300,1, '2020-08-10 09:30:00','REAL');
+

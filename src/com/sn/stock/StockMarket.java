@@ -348,11 +348,12 @@ public class StockMarket{
     }
 
     public static String GZ_STOCK_SELECT = "select distinct s.id, s.name, s.area "
-    		                             + "from stk s, usrStk u "
-    		                             + "where s.id = u.id "
-    		                             + "  and u.gz_flg = 1 "
-                                         //+ "  and u.suggested_by <> '" + ParamManager.getStr1Param("SYSTEM_ROLE_FOR_SUGGEST_AND_GRANT", "TRADING", null) + "' "
-    		                             + "order by s.id";
+    		                             + "from stk s join usrStk u "
+    		                             + "  on s.id = u.id "
+    		                             + " left join cashacnt c "
+    		                             + "  on s.id = right(c.acntId, 6) "
+    		                             + " where u.gz_flg = 1 "
+    		                             + "order by case when c.acntId is null then 2 when pft_mny >= 0 then 1 else 0 end, s.id";
     public static String GZ_STOCK_CNT_SELECT = "select count(distinct s.id) TotalCnt "
     		                             + "from stk s, usrStk u "
     		                             + "where s.id = u.id "
