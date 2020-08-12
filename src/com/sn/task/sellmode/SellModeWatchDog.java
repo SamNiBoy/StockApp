@@ -381,8 +381,8 @@ public class SellModeWatchDog implements IWork {
 			log.info("on_dte:" + on_dte + " check if put all stock in sell now mode by looking at win pct: " + (winCnt * 1.0 / totalCnt) + ", winCnt:" + winCnt + ", totalCnt:" + totalCnt + ", if reach buy limit:" + total_buy_count_limit);
 			
 			if (totalCnt >= total_buy_count_limit && lostCnt * 1.0 / totalCnt >= putSellNowModeIfPctStockLost) {
-				sql = "update usrstk set sell_now_flg = 1, suggested_comment = 'SYSTEM_PUT_TO_SELL' where sell_now_flg = 0 " +
-			           " and id in (select right(acntId, 6) from cashacnt where pft_mny < 0) "; //here, we only care stock in lost, this is for scenario after we buy a lot of stock and then big drop.
+				sql = "update usrstk set sell_now_flg = 1, suggested_comment = 'SYSTEM_PUT_TO_SELL' where sell_now_flg = 0 ";
+			          // " and id in (select right(acntId, 6) from cashacnt where pft_mny < 0) "; //here, we only care stock in lost, this is for scenario after we buy a lot of stock and then big drop.
 			          //" and id in (" + stkLst + ")";
 				log.info(sql);
 				Statement stm3 = con.createStatement();

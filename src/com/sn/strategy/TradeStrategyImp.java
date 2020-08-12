@@ -996,7 +996,9 @@ public class TradeStrategyImp implements ITradeStrategy {
 			Connection con = DBManager.getConnection();
 			Statement stm = con.createStatement();
 
-			String sql = "select * from cashacnt where pft_mny < 0 and exists (select 'x' from tradehdr h where h.acntId = cashacnt.acntId and h.in_hand_qty > 0) and acntId like '" + acntId + "%' order by pft_mny ";
+			//we put the stock in front if it has less earning money.
+			String sql = "select * from cashacnt where pft_mny < -50 and exists (select 'x' from tradehdr h where h.acntId = cashacnt.acntId and h.in_hand_qty > 0) and acntId like '" + acntId +
+					"%' order by pft_mny";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
 
@@ -1014,6 +1016,65 @@ public class TradeStrategyImp implements ITradeStrategy {
 			}
 			rs.close();
 			stm.close();
+			
+			//second part, find the stock drop most yesterday.
+//			if (result == false) {
+//				sql = "select right(acntId, 6) stkid from cashacnt where exists (select 'x' from tradehdr h where h.acntId = cashacnt.acntId and h.in_hand_qty > 0) and acntId like '" + acntId +
+//						"%' order by pft_mny";
+//				
+//				stm = con.createStatement();
+//				rs = stm.executeQuery(sql);
+//				
+//				String stkid = "";
+//				String targetStock = "";
+//				double minDropPct = 100;
+//				String on_dte = "";
+//				
+//				double close1 = 0;
+//				double close2 = 0;
+//				
+//				while(rs.next()) {
+//					stkid = rs.getString("stkid");
+//					
+//					sql = "select close, add_dt from stkavgpri s where s.id = '" + stkid + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10) + "' order by add_dt desc ";
+//					Statement stm2 = con.createStatement();
+//					ResultSet rs2 = stm2.executeQuery(sql);
+//					
+//					if (rs2.next()) {
+//						close1 = rs2.getDouble("close");
+//						on_dte = rs2.getString("add_dt");
+//					}
+//					else {
+//						continue;
+//					}
+//					
+//					if (rs2.next()) {
+//						close2 = rs2.getDouble("close");
+//					}
+//					else {
+//						continue;
+//					}
+//					
+//					rs2.close();
+//					stm2.close();
+//					
+//					double dropPct = (close1 - close2) / close2;
+//					
+//					log.info("got stock:" + stkid + ", with dropPct:" + dropPct + " vs stock:" + s.getID());
+//					if (stkid.equals(s.getID()) && dropPct < -0.05 && dropPct < minDropPct) {
+//						minDropPct = dropPct;
+//						targetStock = stkid;
+//						result = true;
+//					}
+//				}
+//				
+//				rs.close();
+//				stm.close();
+//				
+//				if (result) {
+//				    log.info("found target stock:" + targetStock + ", on date:" + on_dte + " with minDropPct:" + minDropPct);
+//				}
+//			}
 			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1930,7 +1991,7 @@ public class TradeStrategyImp implements ITradeStrategy {
         	synchronized (cash_account_map)
         	{
                 ICashAccount acnt = cash_account_map.get(AcntForStk);
-                if (acnt == null && crtIfNotExists) {
+                if (acnt == null) {
                 	log.info("No cashAccount for stock:" + stk + " in memory, load from db.");
                     acnt = CashAcntManger.loadAcnt(AcntForStk);
                     
@@ -1938,7 +1999,7 @@ public class TradeStrategyImp implements ITradeStrategy {
                     double def_max_mny_per_trade = ParamManager.getFloatParam("DFT_MAX_MNY_PER_TRADE", "ACCOUNT", stk);
                     double def_max_use_pct = ParamManager.getFloatParam("DFT_MAX_USE_PCT", "ACCOUNT", stk);
                     
-                    if (acnt == null) {
+                    if (acnt == null && crtIfNotExists) {
                     	log.info("No cashAccount for stock:" + stk + " from db, create default virtual account.");
                         CashAcntManger
                         .crtAcnt(AcntForStk, def_init_mnt, 0.0, 0.0,0.0,def_max_mny_per_trade, def_max_use_pct);

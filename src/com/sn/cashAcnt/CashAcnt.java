@@ -613,7 +613,7 @@ public class CashAcnt implements ICashAccount {
 		Connection con = DBManager.getConnection();
 		try {
 			
-			String sql = "select 'x' from tradehdr where acntId = '" + actId + "'";
+			String sql = "select 'x' from tradehdr where in_hand_qty > 0 and acntId = '" + actId + "'";
 			
 			Statement stm = con.createStatement();
 			

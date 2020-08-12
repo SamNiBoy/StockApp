@@ -19,6 +19,7 @@ import com.sn.task.IStockSelector;
 import com.sn.strategy.algorithm.buypoint.AvgPriceBrkBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.BalanceBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.BottomHammerBuyPointSelector;
+import com.sn.strategy.algorithm.buypoint.CloseToGapBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.DaBanBalanceBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.DaBanBuyPointSelector;
 import com.sn.strategy.algorithm.buypoint.DefaultBuyPointSelector;
@@ -32,6 +33,7 @@ import com.sn.strategy.algorithm.buypoint.VOLBuyPointSelector;
 import com.sn.strategy.algorithm.sellpoint.AvgPriceBrkSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.BalanceSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.BottomHammerSellPointSelector;
+import com.sn.strategy.algorithm.sellpoint.CloseToGapSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.DaBanBalanceSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.DaBanSellPointSelector;
 import com.sn.strategy.algorithm.sellpoint.DefaultSellPointSelector;
@@ -127,9 +129,10 @@ public class TradeStrategyGenerator {
 //        IBuyPointSelector bs0 = new QtyBuyPointSelector(sim_mode);
 //        ISellPointSelector ses0 = new QtySellPointSelector(sim_mode);
         
-        IBuyPointSelector bs0 = new AvgPriceBrkBuyPointSelector(sim_mode);
-        ISellPointSelector ses0 = new AvgPriceBrkSellPointSelector(sim_mode);
-        
+//        IBuyPointSelector bs0 = new AvgPriceBrkBuyPointSelector(sim_mode);
+//        ISellPointSelector ses0 = new AvgPriceBrkSellPointSelector(sim_mode);
+      IBuyPointSelector bs0 = new CloseToGapBuyPointSelector(sim_mode);
+      ISellPointSelector ses0 = new CloseToGapSellPointSelector(sim_mode);
         
 //        IBuyPointSelector bs = new MacdBuyPointSelector();
 //        ISellPointSelector ses = new MacdSellPointSelector();

@@ -648,3 +648,6 @@ create index arc_stkdat2_idx3 on arc_stkDat2 (id, ft_id, cur_pri, yt_cls_pri,dl_
 create index stkdff_id_dldt_idx on stkDDF (id, dl_dt);
 /* Need below index to improve performance of curpri_df2_vw*/
 create index ft_idd_idx on stkDat (id, ft_id, cur_pri);
+
+//want system buy, insert below record.
+insert into sellnowstock values('000564', 4.1, 700, sysdate());

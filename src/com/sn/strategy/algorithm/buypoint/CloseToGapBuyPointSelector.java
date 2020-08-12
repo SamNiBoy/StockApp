@@ -31,12 +31,12 @@ import com.sn.trader.StockTrader;
 import com.sn.util.StockDataProcess;
 import com.sn.util.VOLPRICEHISTRO;
 
-public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
+public class CloseToGapBuyPointSelector implements IBuyPointSelector {
 
-	static Logger log = Logger.getLogger(AvgPriceBrkBuyPointSelector.class);
+	static Logger log = Logger.getLogger(CloseToGapBuyPointSelector.class);
 	
     private boolean sim_mode;
-    private String selector_name = "AvgPriceBrkBuyPointSelector";
+    private String selector_name = "CloseToGapBuyPointSelector";
     private String selector_comment = "";
     
     private ThreadLocal<Double> avgpri5 = new ThreadLocal<Double>();
@@ -47,7 +47,7 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
     private ThreadLocal<Double> td_high = new ThreadLocal<Double>();
     private ThreadLocal<Double> td_low = new ThreadLocal<Double>();
     
-    public AvgPriceBrkBuyPointSelector(boolean sm)
+    public CloseToGapBuyPointSelector(boolean sm)
     {
         sim_mode = sm;
     }
@@ -62,20 +62,6 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
         
         long hour = t1.getHours();
         long minutes = t1.getMinutes();
-        
-//        SellModeWatchDog.processInHandStockModeSetup(stk.getDl_dt().toString().substring(0, 10));
-//        int hour_for_balance = ParamManager.getIntParam("HOUR_TO_KEEP_BALANCE", "TRADING", stk.getID());
-//        int mins_for_balance = ParamManager.getIntParam("MINUTE_TO_KEEP_BALANCE", "TRADING", stk.getID());
-//        
-//        if ((hour * 100 + minutes) >= (hour_for_balance * 100 + mins_for_balance))
-//        {
-//            if (sbs == null || (sbs != null && sbs.is_buy_point))
-//            {
-//                log.info("Hour:" + hour + ", Minute:" + minutes);
-//                log.info("Close to market shutdown time, no need to break balance");
-//                return false;
-//            }
-//        }
         
         boolean csd = SellModeWatchDog.isStockInStopTradeMode(stk);
         
@@ -102,51 +88,158 @@ public class AvgPriceBrkBuyPointSelector implements IBuyPointSelector {
         	return false;
         }
         
-        double threshPct = 0.01;
+        boolean con0 = getAvgPriceFromSina(stk, ac, 0);
         
-        boolean con1_0 = getAvgPriceFromSina(stk, ac, 0) && ((td_cls_pri.get() - avgpri5.get()) / td_cls_pri.get() > threshPct);
-        boolean con1_1 = avgpri5.get() > avgpri10.get() && avgpri10.get() > avgpri30.get();
-        boolean con1_2 = td_cls_pri.get() > td_open_pri.get();
-        boolean con1_3 = avgpri5.get() <= td_high.get() && avgpri5.get() >= td_low.get();
-        //boolean con1_4 = avgpri10.get() <= td_high.get() && avgpri10.get() >= td_low.get();
-        
-        boolean con1 = con1_0 && con1_1 && con1_2 && con1_3;
-        
-        if (!con1) {
-        	log.info("stock:" + stk.getID() + " con1 false.");
-        	return false;
-        }
-        boolean con2 = getAvgPriceFromSina(stk, ac, 1) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
-        
-        if (!con2) {
-        	log.info("stock:" + stk.getID() + " con2 false.");
+        if (!(con0 && avgpri10.get() > avgpri30.get())) {
+        	log.info("avg price is not good, skip buy.");
         	return false;
         }
         
-        boolean con3 = getAvgPriceFromSina(stk, ac, 2) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
+        boolean con1 = checkCloseToLatestGap(stk);
         
-        if (!con3) {
-        	log.info("stock:" + stk.getID() + " con3 false.");
-        	return false;
-        }
-        
-        boolean con4 = getAvgPriceFromSina(stk, ac, 3) && ((avgpri5.get() - td_cls_pri.get()) / td_cls_pri.get() > threshPct);
-        
-        if (!con4) {
-        	log.info("stock:" + stk.getID() + " con4 false.");
-        	return false;
-        }
-        
-        if (con1 && con2 && con3 && con4)
+        if (con1)
         {
 		    stk.setTradedBySelector(this.selector_name);
-		    stk.setTradedBySelectorComment("past 3 days lower than 5 days avipri, now bigger than 5 days avgpri, buy!");
+		    stk.setTradedBySelectorComment("Price close to latest gap, buy");
 		    return true;
         }
 
 		return false;
 	}
 	
+    private boolean checkCloseToLatestGap(Stock2 s) {
+    	
+    	boolean gotDataSuccess = false;
+    	
+    	try {
+    		
+    		if (!checkCloseToLatestGapDB(s))
+    		{
+    			gotDataSuccess = false;
+    		}
+    		else {
+    			gotDataSuccess = true;
+    		}
+    	}
+    	catch (Exception e) {
+    		log.error(e.getMessage(), e);
+    	}
+        return gotDataSuccess;
+    }
+    
+    private boolean checkCloseToLatestGapDB(Stock2 s) {
+    	
+    	Connection con = DBManager.getConnection();
+    	
+    	boolean gotDataSuccess = false;
+    	double previous_high = -1;
+    	double current_low = -1;
+    	double close1 = 0;
+    	double open1 = 0;
+    	
+    	double close2 = 0;
+    	String on_dte = "";
+    	
+    	boolean onlyLookGapYesterday = true;
+    	
+    	try {
+    		
+    		Statement stm = con.createStatement();
+    		ResultSet rs = null;
+    		
+    	    String sql = "select * from stkAvgPri where id = '" + s.getID() + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10)
+    	    		+ "' order by add_dt desc";
+    		log.info(sql);
+    		
+    		stm = con.createStatement();
+    		rs = stm.executeQuery(sql);
+    		
+    		int cnt = (onlyLookGapYesterday ? 2 : 100000);
+    		
+    		while (rs.next() && cnt > 0) {
+    			
+    			cnt--;
+    			
+    			if (current_low == -1) {
+    				current_low = rs.getDouble("low");
+    				close1 = rs.getDouble("close");
+    				open1 = rs.getDouble("open");
+    				continue;
+    			}
+    			else {
+    				previous_high = rs.getDouble("high");
+    				close2 = rs.getDouble("close");
+    				on_dte = rs.getString("add_dt");
+    			}
+    			
+    			//not only gap, but also with raise K.
+    			if ((current_low - previous_high) > 0 && close1 > open1 && (close1 - close2) / close2 < 0.03) {
+    				gotDataSuccess = true;
+    				break;
+    			}
+    			else {
+    				current_low = rs.getDouble("low");
+    			}
+    		}
+    		
+    		rs.close();
+    		stm.close();
+    		
+    		if (gotDataSuccess)
+    		{
+    			log.info("found gap price success, previous_high:" + previous_high + ", current_low:" + current_low + "close1:" +close1 + ", open1:" + open1 + " on date:" + on_dte);
+    			
+    			sql = "select 'x' from stkAvgPri where id = '" + s.getID() + "' and add_dt > '" + on_dte + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10) + "' and close <= " + previous_high;
+    			
+    			log.info(sql);
+    			
+    			stm = con.createStatement();
+    			rs = stm.executeQuery(sql);
+    			
+    			//no date with low price lower than previous_high.
+    			if (!rs.next()) {
+    				gotDataSuccess = true;
+    				
+    				double cur_pri = s.getCur_pri();
+    				double pct = (cur_pri - current_low) / current_low;
+    				log.info("validated the gap is a valid gap, now check cur_pri close to it, cur_pri:" + cur_pri + " vs previous_high:" + previous_high + " with pct:" + pct);
+    				
+    				if (cur_pri >= current_low && pct < 0.01) {
+    					log.info("great, passed all test!");
+    					gotDataSuccess = true;
+    				}
+    				else {
+    					log.info("did not pass all test.");
+    					gotDataSuccess = false;
+    				}
+    			}
+    			else {
+    				log.info("not a vaid gap.");
+    				gotDataSuccess = false;
+    			}
+    			
+    			rs.close();
+    			stm.close();
+    		}
+    		else {
+    			log.info("Did not find any gap price for stock:" + s.getID());
+    		}
+    		
+    	}
+    	catch (Exception e) {
+    		log.error(e.getMessage(), e);
+    	}
+    	finally {
+    		try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
+    	}
+    	return gotDataSuccess;
+    }
+    
     private boolean getAvgPriceFromSina(Stock2 s, ICashAccount ac, int shftDays) {
     	
     	boolean gotDataSuccess = false;

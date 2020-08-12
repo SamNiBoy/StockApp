@@ -70,8 +70,6 @@ public class GetStockAvgPri implements Job {
     	String stockArea = "";
     	Connection con = null;
     	
-    	
-    	
     	try {
     		con = DBManager.getConnection();
     		Statement stm = con.createStatement();

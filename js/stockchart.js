@@ -482,6 +482,8 @@ function drawIndexCharts() {
 
 function drawSimResultChart(xdata, y1data, y2data, y3data)
 {
+	if (refresh_flg == false)
+		return;
    var SimResult_opt = {
         title : {
         text: '收益曲线',
