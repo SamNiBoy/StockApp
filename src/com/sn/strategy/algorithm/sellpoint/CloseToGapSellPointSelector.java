@@ -117,6 +117,11 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
     	    	    stk.setTradedBySelectorComment("close price at least 5.5 pct drop, sell!");
     	    	    return true;
                 }
+                else if (checkClosePriceLostForTwoDays(stk)) {
+    	    	    stk.setTradedBySelector(this.selector_name);
+    	    	    stk.setTradedBySelectorComment("Lost 2 days, sell!");
+    	    	    return true;
+                }
             }
         }
         if (checkPriceBrkLatestGapDB(stk)) {
@@ -199,6 +204,69 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
                 gotDataSuccess = true;
     		}
     		
+    		rs.close();
+    		stm.close();
+    	}
+    	catch (Exception e) {
+    		log.error(e.getMessage(), e);
+    	}
+    	finally {
+    		try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
+    	}
+    	return gotDataSuccess;
+    }
+    
+private boolean checkClosePriceLostForTwoDays(Stock2 s) {
+    	
+    	Connection con = DBManager.getConnection();
+    	
+    	boolean gotDataSuccess = false;
+    	double close1 = 0;
+    	double close2 = 0;
+    	double close3 = 0;
+    	String on_dte = "";
+    	
+
+    	try {
+    		
+    		Statement stm = con.createStatement();
+    		ResultSet rs = null;
+    		
+    	    String sql = "select * from stkAvgPri where id = '" + s.getID() + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10)
+    	    		+ "' order by add_dt desc";
+    		log.info(sql);
+    		
+    		stm = con.createStatement();
+    		rs = stm.executeQuery(sql);
+    		
+    		if (rs.next()) {
+    			
+    			close1 = rs.getDouble("close");
+    			on_dte = rs.getString("add_dt");
+    			
+    		    if (rs.next()) {
+    		    	
+    		    	close2 = rs.getDouble("close");
+    		        if (rs.next()) {
+    		        	
+    		        	close3 = rs.getDouble("close");
+    		            log.info("stock:" + s.getID() + " 3 days close price, close1:" + close1 + ", close2:" + close2 + ", close3:" + close3 + ", on_dte:" + on_dte);
+    		            
+    		            if (close1 > 0 && close2 > 0 && close3 > 0) {
+    		            	
+    		            	if (close1 <= close3 && close2 <= close3) {
+    		            		log.info("got close price lost 2 days for stock:" + s.getID());
+    		            		gotDataSuccess = true;
+    		            	}
+    		            }
+    		        }
+    		    }
+    		}
     		rs.close();
     		stm.close();
     	}
