@@ -92,15 +92,15 @@ public class CloseToGapBuyPointSelector implements IBuyPointSelector {
         	return false;
         }
         
-        boolean c1 = getAvgPriceFromSina(stk, ac, 0);
+        boolean con0 = getAvgPriceFromSina(stk, ac, 0);
         
         double avgpri1 = avgpri30.get();
         
-        boolean c2 = getAvgPriceFromSina(stk, ac, 1);
+//        boolean c2 = getAvgPriceFromSina(stk, ac, 1);
+//        
+//        double avgpri2 = avgpri30.get();
         
-        double avgpri2 = avgpri30.get();
-        
-        if (!(c1 && c2 && avgpri2 < avgpri1)) {
+        if (!(con0 && avgpri10.get() > avgpri30.get())) {
         	log.info("avg price is not good, skip buy.");
         	return false;
         }

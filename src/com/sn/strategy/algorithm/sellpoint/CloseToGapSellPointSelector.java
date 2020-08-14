@@ -102,13 +102,8 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
             
             boolean con3 = getAvgPriceFromSina(stk, ac, 1);
             double td_cls_pri2 = td_cls_pri.get();
-//            
-//            boolean con4 = getAvgPriceFromSina(stk, ac, 2);
-//            double td_cls_pri3 = td_cls_pri.get();
-//            
+
             boolean con6 = con3 && (td_cls_pri1 - td_cls_pri2) / td_cls_pri1 <= -0.055;
-//            
-//            boolean con7 = con3 && con4 && td_cls_pri3 < td_cls_pri2 && td_cls_pri2 < td_cls_pri1 && td_cls_pri1 < stk.getCur_pri();
             
             if (con1) {
                 if (con2)
@@ -122,12 +117,23 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
     	    	    stk.setTradedBySelectorComment("close price at least 5.5 pct drop, sell!");
     	    	    return true;
                 }
-//                else if (con7) {
-//    	    	    stk.setTradedBySelector(this.selector_name);
-//    	    	    stk.setTradedBySelectorComment("Win 3 days, sell!");
-//    	    	    return true;
-//                }
-                else if (checkClosePriceLostForTwoDays(stk)) {
+                
+                //we do sell if raise 3 days only when there was big drop before bought and bought more than 3 days.
+                if (stockBoughtMoreThanDays(stk, sbs, 3) && stockHadBigDropBefore(stk, sbs)) {
+                	
+                    boolean con4 = getAvgPriceFromSina(stk, ac, 2);
+                    double td_cls_pri3 = td_cls_pri.get();
+                    
+                    boolean con7 = con3 && con4 && td_cls_pri3 < td_cls_pri2 && td_cls_pri2 < td_cls_pri1 && td_cls_pri1 < stk.getCur_pri();
+                    
+                    if (con7) {
+    	    	        stk.setTradedBySelector(this.selector_name);
+    	    	        stk.setTradedBySelectorComment("Win 3 days, sell!");
+    	    	        return true;
+                    }
+                }
+                
+                if (checkClosePriceLostForTwoDays(stk)) {
     	    	    stk.setTradedBySelector(this.selector_name);
     	    	    stk.setTradedBySelectorComment("Lost 2 days, sell!");
     	    	    return true;
@@ -164,6 +170,110 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
         	}
         }
 		return false;
+	}
+	
+	private boolean stockHadBigDropBefore(Stock2 s, StockBuySellEntry sbs) {
+		
+		Connection con = DBManager.getConnection();
+		
+		boolean bigDrop = false;
+		int daysToChk = 7;
+    	try {
+    		Statement stm = con.createStatement();
+    		ResultSet rs = null;
+    		
+    	    String sql = "select (close - open) / open dropPct, add_dt from stkAvgPri where id = '" + s.getID() + "' and add_dt < '" + sbs.dl_dt.toString().substring(0, 10)
+    	    		+ "' order by add_dt desc";
+    		log.info(sql);
+    		
+    		stm = con.createStatement();
+    		rs = stm.executeQuery(sql);
+    		
+    		int lostCnt = 0;
+    		while (rs.next() && daysToChk > 0) {
+    			
+    			daysToChk--;
+    			
+    			double dropPct = rs.getDouble("dropPct");
+    			String on_dte = rs.getString("add_dt");
+    			
+    			log.info("check stock:" + s.getID() + " dropPct:" + dropPct + " for date:" + on_dte);
+    			
+    			if (dropPct <= -0.05) {
+    				log.info("more than 5 pct drop, big drop.");
+    				bigDrop = true;
+    				break;
+    			}
+    			else if (dropPct <= -0.001){
+    				lostCnt++;
+    			}
+    		}
+    		
+    		if (lostCnt >= 3) {
+    			log.info("in brevious 7 days, lost at lest 3 times, big drop.");
+    			bigDrop = true;
+    		}
+    		
+    		rs.close();
+    		stm.close();
+    		
+    		log.info("stock:" + s.getID() + " price:" + s.getCur_pri() + " had big drop? " + bigDrop);
+    		
+    		return bigDrop;
+    	}
+    	catch (Exception e) {
+    		log.error(e.getMessage(), e);
+    	}
+    	finally {
+    		try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
+    	}
+    	return bigDrop;
+	}
+	
+	private boolean stockBoughtMoreThanDays(Stock2 s, StockBuySellEntry sbs, int daysToChk) {
+		
+		Connection con = DBManager.getConnection();
+    	try {
+    		
+    		int dayCnt = 0;
+    		Statement stm = con.createStatement();
+    		ResultSet rs = null;
+    		
+    	    String sql = "select count(*) dayCnt from stkAvgPri where id = '" + s.getID() + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10)
+    	    		+ "' and add_dt >= '" + sbs.dl_dt.toString().substring(0, 10) + "' ";
+    		log.info(sql);
+    		
+    		stm = con.createStatement();
+    		rs = stm.executeQuery(sql);
+    		
+    		if (rs.next()) {
+    			dayCnt = rs.getInt("dayCnt");
+    		}
+    		
+    		rs.close();
+    		stm.close();
+    		
+    		log.info("stock:" + s.getID() + " bought with " + dayCnt + " days.");
+    		
+    		return dayCnt >= daysToChk;
+    	}
+    	catch (Exception e) {
+    		log.error(e.getMessage(), e);
+    	}
+    	finally {
+    		try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
+    	}
+    	return false;
 	}
 	
     private boolean getAvgPriceFromSina(Stock2 s, ICashAccount ac, int shftDays) {
