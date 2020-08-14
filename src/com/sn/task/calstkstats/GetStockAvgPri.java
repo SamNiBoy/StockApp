@@ -73,7 +73,7 @@ public class GetStockAvgPri implements Job {
     	try {
     		con = DBManager.getConnection();
     		Statement stm = con.createStatement();
-    		String sql = "select id, area from stk where not exists (select 'x' from stkAvgPri a where a.id = stk.id and a.add_dt = (select left(max(dl_dt), 10) from stkdat2 s where s.id = '000001')) order by id";
+    		String sql = "select id, area from stk where not exists (select 'x' from stkAvgPri a where a.id = stk.id and a.add_dt = sysdate()) order by id";
     		
     		log.info(sql);
     		
@@ -209,7 +209,7 @@ public class GetStockAvgPri implements Job {
                         	break;
                     }
                     genSimDataForStock(stockID);
-                    Thread.sleep(2000);
+                    Thread.sleep(2500);
                 }
     		}
     		rs.close();

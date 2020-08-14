@@ -102,8 +102,13 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
             
             boolean con3 = getAvgPriceFromSina(stk, ac, 1);
             double td_cls_pri2 = td_cls_pri.get();
-            
-            boolean con4 = con3 && (td_cls_pri1 - td_cls_pri2) / td_cls_pri1 <= -0.055;
+//            
+//            boolean con4 = getAvgPriceFromSina(stk, ac, 2);
+//            double td_cls_pri3 = td_cls_pri.get();
+//            
+            boolean con6 = con3 && (td_cls_pri1 - td_cls_pri2) / td_cls_pri1 <= -0.055;
+//            
+//            boolean con7 = con3 && con4 && td_cls_pri3 < td_cls_pri2 && td_cls_pri2 < td_cls_pri1 && td_cls_pri1 < stk.getCur_pri();
             
             if (con1) {
                 if (con2)
@@ -112,11 +117,16 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
     	    	    stk.setTradedBySelectorComment("yt_cls_pri 10 pct lower than 5 days avgpri, sell!");
     	    	    return true;
                 }
-                else if (con4) {
+                else if (con6) {
     	    	    stk.setTradedBySelector(this.selector_name);
     	    	    stk.setTradedBySelectorComment("close price at least 5.5 pct drop, sell!");
     	    	    return true;
                 }
+//                else if (con7) {
+//    	    	    stk.setTradedBySelector(this.selector_name);
+//    	    	    stk.setTradedBySelectorComment("Win 3 days, sell!");
+//    	    	    return true;
+//                }
                 else if (checkClosePriceLostForTwoDays(stk)) {
     	    	    stk.setTradedBySelector(this.selector_name);
     	    	    stk.setTradedBySelectorComment("Lost 2 days, sell!");
@@ -130,6 +140,14 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
    	       stk.setTradedBySelectorComment("Previous gap broken, sell!");
    	       return true;
        }
+       
+//       double lostPct = (stk.getCur_pri() - sbs.price) / sbs.price;
+//       if (lostPct < -0.03) {
+//		   log.info("Stock:" + stk.getID() + " has broken bottom price 3 pct, sell it.");
+//	       stk.setTradedBySelector(this.selector_name);
+//	       stk.setTradedBySelectorComment("bottom buy price broken, sell!");
+//	       return true;
+//       }
 //       else if (checkPriceDownGap(stk)) {
 //   		   log.info("Stock:" + stk.getID() + " found down price gap, sell it.");
 //   	       stk.setTradedBySelector(this.selector_name);
