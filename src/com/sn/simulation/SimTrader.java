@@ -171,15 +171,12 @@ public class SimTrader implements Job{
     		
         	while (rs.next()) {
         		
-        		preDate = rs.getString("dte");
+        		if (preDate.length() <= 0) {
+        		    preDate = rs.getString("dte");
+        		    continue;
+        		}
         		
-        		if (rs.next()) {
-        			tradeDate = rs.getString("dte");
-        		}
-        		else {
-        			log.info("at least 2 days range for running simulation.");
-        			break;
-        		}
+        		tradeDate = rs.getString("dte");
         		
         		log.info("Suggest stock on date:" + preDate + " and sim trading on date:" + tradeDate);
         		if (!disable_suggest_stock)
@@ -191,10 +188,14 @@ public class SimTrader implements Job{
 //        			ParamManager.refreshAllParams();
         		}
         		
-        		if (!loadStocksForSim(simOnGzStk))
+        		if (!loadStocksForSim(simOnGzStk)) {
+        			preDate = tradeDate;
         			continue;
+        		}
         		
         		runSim(strategy, preDate, tradeDate);
+        		
+        		preDate = tradeDate;
         	}
         	
     		rs.close();

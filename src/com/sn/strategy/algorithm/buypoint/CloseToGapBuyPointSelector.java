@@ -153,6 +153,7 @@ public class CloseToGapBuyPointSelector implements IBuyPointSelector {
     	boolean gotDataSuccess = false;
     	double previous_high = -1;
     	double current_low = -1;
+    	double current_high = -1;
     	double close1 = 0;
     	double open1 = 0;
     	
@@ -185,6 +186,7 @@ public class CloseToGapBuyPointSelector implements IBuyPointSelector {
     			
     			if (current_low == -1) {
     				current_low = rs.getDouble("low");
+    				current_high = rs.getDouble("high");
     				close1 = rs.getDouble("close");
     				open1 = rs.getDouble("open");
     				continue;
@@ -196,7 +198,7 @@ public class CloseToGapBuyPointSelector implements IBuyPointSelector {
     			}
     			
     			//not only gap, but also with raise K.
-    			if ((current_low - previous_high) > 0 && close1 > open1 && (close1 - close2) / close2 < 0.03) {
+    			if ((current_low - previous_high) > 0 && close1 >= open1 && (close1 - close2) / close2 < 0.03) {
     				gotDataSuccess = true;
     				break;
     			}
@@ -340,9 +342,9 @@ public class CloseToGapBuyPointSelector implements IBuyPointSelector {
     			if (!rs.next()) {
     				gotDataSuccess = true;
     				
-    				log.info("great, validated the gap is a valid gap, now check cur_pri close to it vs previous_high:" + previous_high);
+    				log.info("great, validated the gap is a valid gap, now check cur_pri close to it vs current_low:" + current_low);
     				
-    				targetPrice = previous_high;
+    				targetPrice = current_low;
     			}
     			else {
     				log.info("not a vaid gap.");
