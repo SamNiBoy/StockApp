@@ -105,7 +105,14 @@ public class CloseToGapBuyPointSelector implements IBuyPointSelector {
         	return false;
         }
         
-        boolean con1 = checkBottomPriceReached(stk, 7, 2);
+        double btmPrice = BottomPriceReached(stk, 7, 2);
+
+        boolean con1 = false;
+        
+        if (btmPrice > 0) {
+        	con1 = isTherePreviousGapCloseToLowestPrice(stk, btmPrice, 0.03);
+        }
+        
         if (con1)
         {
 		    stk.setTradedBySelector(this.selector_name);
@@ -113,8 +120,7 @@ public class CloseToGapBuyPointSelector implements IBuyPointSelector {
 		    return true;
         }
         
-        boolean con3 = checkCloseToLatestGap(stk);
-        if (con3)
+        if (btmPrice < 0 && checkCloseToLatestGap(stk))
         {
 		    stk.setTradedBySelector(this.selector_name);
 		    stk.setTradedBySelectorComment("A price gap found, buy");
@@ -372,11 +378,10 @@ public class CloseToGapBuyPointSelector implements IBuyPointSelector {
     	return targetPrice;
     
     }
-    private boolean checkBottomPriceReached(Stock2 s, int numDays, int numSamePri) {
+    private double BottomPriceReached(Stock2 s, int numDays, int numSamePri) {
     	
     	Connection con = DBManager.getConnection();
     	
-    	boolean gotDataSuccess = false;
     	double preLowPri = -1;
     	double curLowPri = -1;
     	double open = 0;
@@ -475,29 +480,16 @@ public class CloseToGapBuyPointSelector implements IBuyPointSelector {
     		
     		if (cnt == numDays && !stopProcess)
     		{
-    			
-    			double pregap = getPreviousGapTopPrice(s);
-    			
-    			if (pregap > 0 && preLowPri >= pregap && (preLowPri - pregap) / pregap <= 0.03)
-    			{
-    				gotDataSuccess = true;
+    			double curPri = s.getCur_pri();
+    			if ((curPri - preLowPri) / preLowPri > 0.08) {
+    				log.info("stock:" + s.getID() + " yesterday close price reached lowest price:" + preLowPri + " however cur price is 8% higher than it, skip buy.");
+    				preLowPri = -1;
     			}
-//    			double shakepct = (max - min) / min;
-//    			
-//    			if (shakepct < 0.2 || (close - min) / min > 0.3 * shakepct || (other_close - min) / min < 0.7 * shakepct) {
-//    			    log.info("shakepct:" + shakepct + " is less than 20%, min:" + min + ", max:" + max + " or close is not in 30% bottom shaking range:" + (close - min) / min +
-//    			    		" or last close pricce is not on top 70% of shaking range.");
-//    			    gotDataSuccess = false;
-//    			}
-//    			else {
-//    			    log.info("stock:" + s.getID() + " on date:" + on_dte + " passed bottom shape check!");
-//    			    gotDataSuccess = true;
-//    			}
+    			log.info("stock:" + s.getID() + " reached lowest price:" + preLowPri);
     		}
     		else {
-    			gotDataSuccess = false;
+    			preLowPri = -1;
     		}
-    		
     	}
     	catch (Exception e) {
     		log.error(e.getMessage(), e);
@@ -510,7 +502,18 @@ public class CloseToGapBuyPointSelector implements IBuyPointSelector {
 				log.error(e.getMessage(), e);
 			}
     	}
-    	return gotDataSuccess;
+    	return preLowPri;
+    }
+    
+    private boolean isTherePreviousGapCloseToLowestPrice(Stock2 s, double lowPrice, double pctClose) {
+		double pregap = getPreviousGapTopPrice(s);
+		
+		if (pregap > 0 && lowPrice >= pregap && (lowPrice - pregap) / pregap <= pctClose)
+		{
+			log.info("stock:" + s.getID() + " has reached lower price:" + lowPrice + " which is " + pctClose + " close to previous gap price:" + pregap);
+			return true;
+		}
+		return false;
     }
     
     private boolean getAvgPriceFromSina(Stock2 s, ICashAccount ac, int shftDays) {

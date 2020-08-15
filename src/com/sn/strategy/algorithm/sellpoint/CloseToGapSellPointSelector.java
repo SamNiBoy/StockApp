@@ -119,7 +119,7 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
                 }
                 
                 //we do sell if raise 3 days only when there was big drop before bought and bought more than 3 days.
-                if (stockBoughtMoreThanDays(stk, sbs, 3) && stockHadBigDropBefore(stk, sbs)) {
+                if (stockBoughtMoreThanDays(stk, sbs, 3) && stockHadBigDropOrIncBefore(stk, sbs)) {
                 	
                     boolean con4 = getAvgPriceFromSina(stk, ac, 2);
                     double td_cls_pri3 = td_cls_pri.get();
@@ -133,20 +133,20 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
                     }
                 }
                 
-                if (checkClosePriceLostForTwoDays(stk)) {
+                if (checkClosePriceLostDays(stk, 2)) {
     	    	    stk.setTradedBySelector(this.selector_name);
     	    	    stk.setTradedBySelectorComment("Lost 2 days, sell!");
     	    	    return true;
                 }
             }
         }
-        if (checkPriceBrkLatestGapDB(stk)) {
+        if (checkPriceBrkLatestGapDB(stk) && !reachedBottomLine(stk, sbs, 5, 2)) {
    		   log.info("Stock:" + stk.getID() + " has broken previous price gap, sell it.");
    	       stk.setTradedBySelector(this.selector_name);
    	       stk.setTradedBySelectorComment("Previous gap broken, sell!");
    	       return true;
        }
-       
+        
 //       double lostPct = (stk.getCur_pri() - sbs.price) / sbs.price;
 //       if (lostPct < -0.03) {
 //		   log.info("Stock:" + stk.getID() + " has broken bottom price 3 pct, sell it.");
@@ -172,17 +172,17 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
 		return false;
 	}
 	
-	private boolean stockHadBigDropBefore(Stock2 s, StockBuySellEntry sbs) {
+	private boolean stockHadBigDropOrIncBefore(Stock2 s, StockBuySellEntry sbs) {
 		
 		Connection con = DBManager.getConnection();
 		
-		boolean bigDrop = false;
+		boolean bigRisk = false;
 		int daysToChk = 7;
     	try {
     		Statement stm = con.createStatement();
     		ResultSet rs = null;
     		
-    	    String sql = "select (close - open) / open dropPct, add_dt from stkAvgPri where id = '" + s.getID() + "' and add_dt < '" + sbs.dl_dt.toString().substring(0, 10)
+    	    String sql = "select close, add_dt from stkAvgPri where id = '" + s.getID() + "' and add_dt < '" + sbs.dl_dt.toString().substring(0, 10)
     	    		+ "' order by add_dt desc";
     		log.info(sql);
     		
@@ -190,36 +190,53 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
     		rs = stm.executeQuery(sql);
     		
     		int lostCnt = 0;
+    		int conWinCnt = 0;
+    		
+    		double pre_close = -1;
     		while (rs.next() && daysToChk > 0) {
     			
     			daysToChk--;
     			
-    			double dropPct = rs.getDouble("dropPct");
+    			double curClose = rs.getDouble("close");
     			String on_dte = rs.getString("add_dt");
     			
-    			log.info("check stock:" + s.getID() + " dropPct:" + dropPct + " for date:" + on_dte);
+    			if (pre_close == -1) {
+    				pre_close = curClose;
+    				continue;
+    			}
     			
-    			if (dropPct <= -0.05) {
+    			double pct = (pre_close - curClose) / pre_close;
+    			
+    			log.info("check stock:" + s.getID() + " pre_close:" + pre_close + ", cur close:" + curClose + " for date:" + on_dte + " with pct:" + pct);
+    			
+    			if (pct <= -0.05) {
     				log.info("more than 5 pct drop, big drop.");
-    				bigDrop = true;
+    				bigRisk = true;
     				break;
     			}
-    			else if (dropPct <= -0.001){
+    			else if (pct <= -0.01){
+    				conWinCnt = 0;
     				lostCnt++;
     			}
+    			else if (pct > 0.01) {
+    				lostCnt = 0;
+    				conWinCnt++;
+    			}
+    			
+    			pre_close = curClose;
     		}
     		
-    		if (lostCnt >= 3) {
-    			log.info("in brevious 7 days, lost at lest 3 times, big drop.");
-    			bigDrop = true;
+    		if (lostCnt >= 3 || conWinCnt >= 3) {
+    			log.info("in brevious 7 days, continue lost or win at lest 3 times.");
+    			bigRisk = true;
     		}
     		
     		rs.close();
     		stm.close();
     		
-    		log.info("stock:" + s.getID() + " price:" + s.getCur_pri() + " had big drop? " + bigDrop);
+    		log.info("stock:" + s.getID() + " price:" + s.getCur_pri() + " had big risk? " + bigRisk);
     		
-    		return bigDrop;
+    		return bigRisk;
     	}
     	catch (Exception e) {
     		log.error(e.getMessage(), e);
@@ -232,7 +249,7 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
 				log.error(e.getMessage(), e);
 			}
     	}
-    	return bigDrop;
+    	return bigRisk;
 	}
 	
 	private boolean stockBoughtMoreThanDays(Stock2 s, StockBuySellEntry sbs, int daysToChk) {
@@ -349,16 +366,14 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
     	return gotDataSuccess;
     }
     
-private boolean checkClosePriceLostForTwoDays(Stock2 s) {
+private boolean checkClosePriceLostDays(Stock2 s, int daysChk) {
     	
     	Connection con = DBManager.getConnection();
     	
     	boolean gotDataSuccess = false;
-    	double close1 = 0;
-    	double close2 = 0;
-    	double close3 = 0;
+    	double highest = 0;
+    	double close = 0;
     	String on_dte = "";
-    	
 
     	try {
     		
@@ -372,28 +387,32 @@ private boolean checkClosePriceLostForTwoDays(Stock2 s) {
     		stm = con.createStatement();
     		rs = stm.executeQuery(sql);
     		
-    		if (rs.next()) {
+    		int cnt = 0;
+    		int loopLimit = daysChk + 1;
+    		while (rs.next()) {
     			
-    			close1 = rs.getDouble("close");
-    			on_dte = rs.getString("add_dt");
+    			cnt++;
     			
-    		    if (rs.next()) {
-    		    	
-    		    	close2 = rs.getDouble("close");
-    		        if (rs.next()) {
-    		        	
-    		        	close3 = rs.getDouble("close");
-    		            log.info("stock:" + s.getID() + " 3 days close price, close1:" + close1 + ", close2:" + close2 + ", close3:" + close3 + ", on_dte:" + on_dte);
-    		            
-    		            if (close1 > 0 && close2 > 0 && close3 > 0) {
-    		            	
-    		            	if (close1 <= close3 && close2 <= close3) {
-    		            		log.info("got close price lost 2 days for stock:" + s.getID());
-    		            		gotDataSuccess = true;
-    		            	}
-    		            }
-    		        }
-    		    }
+    			if (highest == 0) {
+    				highest = rs.getDouble("close");
+        			on_dte = rs.getString("add_dt");
+        			continue;
+    			}
+    			else {
+    				close = rs.getDouble("close");
+    			}
+    			
+    			if (highest < close && cnt < loopLimit) {
+    				highest = close;
+    			}
+    			
+    			log.info("stock:" + s.getID() + " daysChk:" + daysChk + " on date:" + on_dte + ", highest:" + highest + ", last close:" + close);
+    			
+    			if (cnt == loopLimit && highest < close) {
+    				log.info("stock:" + s.getID() + " daysChk:" + daysChk + " lost check success, on date:" + on_dte);
+    				gotDataSuccess = true;
+    				break;
+    			}
     		}
     		rs.close();
     		stm.close();
@@ -420,7 +439,7 @@ private boolean checkClosePriceLostForTwoDays(Stock2 s) {
     	double previous_high = -1;
     	double current_low = -1;
     	String on_dte = "";
-    	
+    	double yt_cls_pri = 0;
 
     	try {
     		
@@ -438,6 +457,7 @@ private boolean checkClosePriceLostForTwoDays(Stock2 s) {
     			
     			if (current_low == -1) {
     				current_low = rs.getDouble("low");
+    				yt_cls_pri = rs.getDouble("close");
     				continue;
     			}
     			else {
@@ -457,33 +477,39 @@ private boolean checkClosePriceLostForTwoDays(Stock2 s) {
     		rs.close();
     		stm.close();
     		
-    		double open_pri = s.getOpen_pri();
-    		if (gotDataSuccess && previous_high >= open_pri) {
-    			log.info("open_pri broken the gap already, open_pri:" + open_pri + " < previous_high:" + previous_high);
-    			gotDataSuccess = true;
-    		}
-    		else if (gotDataSuccess)
+//    		double open_pri = s.getOpen_pri();
+//    		if (gotDataSuccess && previous_high >= open_pri) {
+//    			log.info("open_pri broken the gap already, open_pri:" + open_pri + " < previous_high:" + previous_high);
+//    			gotDataSuccess = true;
+//    		}
+    		if (gotDataSuccess)
     		{
     			log.info("found gap price success, previous_high:" + previous_high + ", current_low:" + current_low + " on date:" + on_dte);
     			
-    			sql = "select 'x' from stkAvgPri where id = '" + s.getID() + "' and add_dt > '" + on_dte + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10) + "' and close <= " + previous_high;
-    			
-    			log.info(sql);
-    			
-    			stm = con.createStatement();
-    			rs = stm.executeQuery(sql);
-    			
-    			//low price lower than previous_high, breaking true.
-    			if (rs.next()) {
-    				gotDataSuccess = true;
+    			if (yt_cls_pri < previous_high) {
+    			    sql = "select 'x' from stkAvgPri where id = '" + s.getID() + "' and add_dt > '" + on_dte + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10) + "' and close <= " + previous_high;
+    			    
+    			    log.info(sql);
+    			    
+    			    stm = con.createStatement();
+    			    rs = stm.executeQuery(sql);
+    			    
+    			    //low price lower than previous_high, breaking true.
+    			    if (rs.next()) {
+    			    	gotDataSuccess = true;
+    			    }
+    			    else {
+    			    	log.info("sell check, still a vaid gap.");
+    			    	gotDataSuccess = false;
+    			    }
+    			    
+    			    rs.close();
+    			    stm.close();
     			}
     			else {
-    				log.info("sell check, still a vaid gap.");
+    				log.info("stock:" + s.getID() + " on date:" + on_dte + " yt_cls_pri:" + yt_cls_pri + " is not lower than previous_high:" + previous_high + " do not consider gap broken.");
     				gotDataSuccess = false;
     			}
-    			
-    			rs.close();
-    			stm.close();
     		}
     		else {
     			log.info("Did not find any gap price for stock:" + s.getID());
@@ -502,6 +528,88 @@ private boolean checkClosePriceLostForTwoDays(Stock2 s) {
 			}
     	}
     	return gotDataSuccess;
+    }
+    
+    private boolean reachedBottomLine(Stock2 s, StockBuySellEntry sbs, int chkDayNum, int cfmNum) {
+    	
+    	Connection con = DBManager.getConnection();
+    	
+    	boolean passChk = false;
+    	double previous_low = -1;
+    	double current_low = -1;
+    	String on_dte = "";
+    	
+    	int dayNum = chkDayNum;
+
+    	try {
+    		
+    		Statement stm = con.createStatement();
+    		ResultSet rs = null;
+    		
+    	    String sql = "select * from stkAvgPri where id = '" + s.getID() + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10)
+    	    		+ "' order by add_dt desc";
+    		log.info(sql);
+    		
+    		stm = con.createStatement();
+    		rs = stm.executeQuery(sql);
+    		
+    		int alignedCnt = 0;
+    		double lowestPri = 100000;
+    		
+    		while (rs.next() && dayNum > 0) {
+    			
+    			dayNum--;
+    			
+    			if (current_low == -1) {
+    				current_low = rs.getDouble("low");
+    				on_dte = rs.getString("add_dt");
+    				lowestPri = current_low;
+    				alignedCnt = 1;
+    				continue;
+    			}
+    			else {
+    				previous_low = rs.getDouble("low");
+    			}
+    			
+    			log.info("previous_low:" + previous_low + ", lowestPri:" + lowestPri + " check for stock:" + s.getID() + ", on_dte:" + on_dte);
+    			if ((previous_low - lowestPri) / lowestPri < -0.005) {
+    				lowestPri = previous_low;
+    				alignedCnt = 1;
+    			}
+    			else if (Math.abs(previous_low - lowestPri) / lowestPri < 0.005) {
+    				alignedCnt++;
+    			}
+    		}
+    		
+    		if ((current_low - lowestPri) / lowestPri > 0.03) {
+    			log.info(" last day low price is 3 pct away from bottom line, skip alignment check.");
+    			alignedCnt = 0;
+    		}
+    		else if ((sbs.price - lowestPri) / lowestPri > 0.05) {
+    			log.info("bought price is 5 pct away from bottom line, skip alignment check.");
+    			alignedCnt = 0;
+    		}
+    		
+    		log.info("In past " + chkDayNum + " days, has " + alignedCnt + " times aligned for date:" + on_dte);
+    		if (dayNum == 0 && alignedCnt >= cfmNum) {
+    			passChk = true;
+    		}
+    		
+    		rs.close();
+    		stm.close();
+    	}
+    	catch (Exception e) {
+    		log.error(e.getMessage(), e);
+    	}
+    	finally {
+    		try {
+				con.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
+    	}
+    	return passChk;
     }
     
     private boolean checkPriceDownGap(Stock2 s) {
