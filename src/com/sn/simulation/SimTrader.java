@@ -145,18 +145,14 @@ public class SimTrader implements Job{
     	String tradeDate = "";
     	String preDate = "";
     	try {
-        	int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
+        	String start_dte = ParamManager.getStr1Param("SIM_DAYS", "SIMULATION", null);
+        	String end_dte = ParamManager.getStr2Param("SIM_DAYS", "SIMULATION", null);
         	simOnGzStk = (ParamManager.getIntParam("SIM_ON_GZ_STOCK_ONLY", "SIMULATION", null) == 1);
     		Statement stm = null;
     		ResultSet rs = null;
     		String sql = "";
     		boolean disable_suggest_stock = (ParamManager.getIntParam("RESUGGEST_STOCK_BEFORE_SIM", "SIMULATION", null) == 0);
-    		boolean no_enough_date = false;
     		
-            //ITradeStrategy s1 = TradeStrategyGenerator.generatorStrategy1(true);
-            
-            //slst.add(s1);
-        	
             resetTest(true);
             StockMarket.clearSimData();
             StockMarket.startSim();
@@ -166,48 +162,23 @@ public class SimTrader implements Job{
     		
     		strategy.resetStrategyStatus();
             
-        	for (int i=0; i<sim_days; i++) {
-        		
-        		int shift_days = (sim_days - i);
-        		
-        		no_enough_date = false;
-        		
-        		sql =  "select left(dl_dt, 10) dte from stkdat2_sim where id = '000001' group by left(dl_dt, 10) order by dte desc";
-        		    
-        		log.info(sql);
+    		sql =  "select left(dl_dt, 10) dte from stkdat2_sim where id = '000001' and left(dl_dt, 10) >= '" + start_dte + "' and left(dl_dt, 10) <= '" + end_dte + "' group by left(dl_dt, 10) order by dte";
+		    
+    		log.info(sql);
 
-        		stm = con.createStatement();
-        		rs = stm.executeQuery(sql);
+    		stm = con.createStatement();
+    		rs = stm.executeQuery(sql);
+    		
+        	while (rs.next()) {
         		
-        		int cnt = shift_days;
+        		preDate = rs.getString("dte");
         		
-        		while(cnt > 1) {
-        			if (!rs.next()) {
-        				no_enough_date = true;
-        				break;
-        			}
-        			cnt--;
-        		}
-        		
-        		if (no_enough_date || !rs.next()) {
-        			no_enough_date = true;
-        		}
-        		else {
+        		if (rs.next()) {
         			tradeDate = rs.getString("dte");
         		}
-        		
-        		if (no_enough_date || !rs.next()) {
-        			no_enough_date = true;
-        		}
         		else {
-        			preDate = rs.getString("dte");
-        		}
-        		
-        		rs.close();
-        		stm.close();
-        		
-        		if (no_enough_date) {
-        			continue;
+        			log.info("at least 2 days range for running simulation.");
+        			break;
         		}
         		
         		log.info("Suggest stock on date:" + preDate + " and sim trading on date:" + tradeDate);
@@ -223,30 +194,11 @@ public class SimTrader implements Job{
         		if (!loadStocksForSim(simOnGzStk))
         			continue;
         		
-        		rs.close();
-        		stm.close();
-        		
-        		stm = con.createStatement();
-        		
-        		sql = "update param set intval = " + shift_days + " where name = 'SIM_SHIFT_DAYS'";
-        		log.info(sql);
-        		stm.execute(sql);
-        		stm.close();
-        		
-//        		stm = con.createStatement();
-        		
-//        		sql = "update param set str2 = str1, str1 = concat(str1, '" + tradeDate + "_') where name = 'ACNT_SIM_PREFIX'";
-//        		log.info(sql);
-//        		stm.execute(sql);
-//        		stm.close();
-        		runSim(strategy);
-        		
-//        		stm = con.createStatement();
-//        		sql = "update param set str1 = str2, str2 = null where name = 'ACNT_SIM_PREFIX'";
-//        		log.info(sql);
-//        		stm.execute(sql);
-//        		stm.close();
+        		runSim(strategy, preDate, tradeDate);
         	}
+        	
+    		rs.close();
+    		stm.close();
     		
 //        	simOnGzStk = false;
 //        	log.info("Start to run SimTrader on all stocks...");
@@ -338,7 +290,7 @@ public class SimTrader implements Job{
         return total_stock_cnt > 0;
     }
 	
-    public void runSim(ITradeStrategy strategy)
+    public void runSim(ITradeStrategy strategy, String start_dte, String end_dte)
     {
         //log.info("Before start simuation, waiting for GA Algorithm task finished."); 	
         //synchronized(Algorithm.class) {
@@ -395,7 +347,7 @@ public class SimTrader implements Job{
                             SimWorker sw;
                             
                             try {
-                                sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch, strategy);
+                                sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch, strategy, start_dte, end_dte);
                                 
                                 sw.addStksToWorker(batch_stks);
                                 
@@ -440,7 +392,7 @@ public class SimTrader implements Job{
                         log.info("Last have " + rowid + " stocks to sim, start a worker for batcnt:" + batcnt);
                         SimWorker sw;
                         try {
-                            sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch, strategy);
+                            sw = new SimWorker(0, 0, "SimWorker" + batcnt + "/" + total_batch, strategy, start_dte, end_dte);
                             
                             sw.addStksToWorker(batch_stks);
                             

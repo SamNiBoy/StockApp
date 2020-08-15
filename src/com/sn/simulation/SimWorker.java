@@ -61,6 +61,9 @@ public class SimWorker implements IWork {
     
     private String workName = "SimWorker";
     
+    private String startDte = "";
+    private String endDte = "";
+    
     private CountDownLatch threadsCountDown = null;
     
     static volatile boolean marketDegree_refreshed = false;
@@ -90,7 +93,7 @@ public class SimWorker implements IWork {
      */
     public static void main(String[] args) throws Exception {
 
-        SimWorker sw = new SimWorker(0, 0, "testSimWorker", TradeStrategyGenerator.generatorStrategy(true));
+        SimWorker sw = new SimWorker(0, 0, "testSimWorker", TradeStrategyGenerator.generatorStrategy(true), "2020-08-01", "2020-08-14");
         sw.stkToSim.add("300265");
         sw.startSim();
     }
@@ -98,73 +101,15 @@ public class SimWorker implements IWork {
     public void startSim() throws Exception {
         // SimStockDriver.addStkToSim("000727");
     	ssd = new SimStockDriver();
-    	String start_dt = "";
-    	String end_dt = "";
-    	Connection con = null;
-    	Statement stm = null;
-    	ResultSet rs = null;
-    	String sql = "";
-    	boolean no_enough_date = false;
+    	
+    	log.info("run simulation with start_dt:" + startDte + " end_dt:" + endDte);
         
-    	//int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
-    	int sim_shift_days = ParamManager.getIntParam("SIM_SHIFT_DAYS", "SIMULATION", null);
-    	
-    	try {
-    		con = DBManager.getConnection();
-    		sql =  "select left(dl_dt, 10) dte from stkdat2_sim where id = '000001' group by left(dl_dt, 10) order by dte desc";
-		    
-    		log.info(sql);
-
-    		stm = con.createStatement();
-    		rs = stm.executeQuery(sql);
-    		
-    		int cnt = sim_shift_days;
-    		
-    		while(cnt > 1) {
-    			if(!rs.next()) {
-    				no_enough_date = true;
-    				break;
-    			}
-    			cnt--;
-    		}
-    		
-    		if (no_enough_date || !rs.next()) {
-    			no_enough_date = true;
-    		}
-    		else {
-    		    end_dt = rs.getString("dte");
-    		}
-    		
-    		if (no_enough_date || !rs.next()) {
-    			no_enough_date = true;
-    		}
-    		else {
-    		    start_dt = rs.getString("dte");
-    		}
-    		
-    		rs.close();
-    		
-    		if (no_enough_date) {
-    			log.info("No enough dates for simulation.");
-    			return;
-    		}
-            
-    		/*start_dt = "2020-03-29";
-    		end_dt = "2020-03-30";*/
-            
-    		log.info("got start_dt:" + start_dt + " end_dt:" + end_dt);
-    	}
-    	finally {
-    		stm.close();
-    		con.close();
-    	}
-    	
         ssd.removeStkToSim();
         for (String stk : stkToSim) {
             ssd.addStkToSim(stk);
         }
         //ssd.setStartEndSimDt("2016-03-02", "2016-04-02");
-        ssd.setStartEndSimDt(start_dt, end_dt);
+        ssd.setStartEndSimDt(startDte, endDte);
         
         ssd.loadStocks();
 
@@ -210,11 +155,13 @@ public class SimWorker implements IWork {
         log.info("Now end simulate trading.");
     }
 
-    public SimWorker(long id, long dbn, String wn, ITradeStrategy stg) throws Exception {
+    public SimWorker(long id, long dbn, String wn, ITradeStrategy stg, String start_dte, String end_dte) throws Exception {
         initDelay = id;
         delayBeforNxtStart = dbn;
         workName = wn;
         strategy = stg;
+        startDte = start_dte;
+        endDte = end_dte;
     }
 
     public void run() {

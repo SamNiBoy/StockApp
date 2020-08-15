@@ -54,21 +54,24 @@ public class CalStkTopnVOL implements Job {
         log.info("Running CalStkTopnVOL task begin");
         Connection con = DBManager.getConnection();
         
-        int sim_days = ParamManager.getIntParam("SIM_DAYS", "SIMULATION", null);
+        String startDte = ParamManager.getStr1Param("SIM_DAYS", "SIMULATION", null);
+        String endDte = ParamManager.getStr2Param("SIM_DAYS", "SIMULATION", null);
         int sim_gz_stock = ParamManager.getIntParam("SIM_ON_GZ_STOCK_ONLY", "SIMULATION", null);
         int topN = 5;
         
         try {
         	Statement stm = null;
         	stm = con.createStatement();
-        	String sql = "select distinct left(dl_dt, 10) lst_dte from stkdat2 where id = '000001' order by lst_dte desc";
+        	String sql = "select distinct left(dl_dt, 10) lst_dte from stkdat2 where id = '000001' and left(dl_dt, 10) >='" + startDte + "' and left(dl_dt, 10) <= '" + endDte + "' order by lst_dte desc";
         	
         	ResultSet rs = stm.executeQuery(sql);
         	
-        	int day_cnt = 0;
         	boolean has_day_ran = false;
-        	while(day_cnt < sim_days && rs.next()) {
+        	int day_cnt = 0;
+        	while(rs.next()) {
+        		
         		day_cnt++;
+        		
         		String on_dte = rs.getString("lst_dte");
         		
         		sql = "select id from stk";

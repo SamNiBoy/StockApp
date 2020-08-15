@@ -19,8 +19,7 @@ insert into param values('ACNT_GF_PREFIX', 'ACCOUNT',null,null , 'GF', '', 'Acco
 
 insert into param values('COMMISSION_RATE', 'VENDOR',null, 0.0014, '', '', 'Commissioin rate, as part of cost.', sysdate(),sysdate());
 
-insert into param values('SIM_DAYS', 'SIMULATION', 5,null, '', '', 'How many days data for simulation.', sysdate(),sysdate());
-insert into param values('SIM_SHIFT_DAYS', 'SIMULATION', 1,null, '', '', 'How many days shift data for simulation, 1 means simulating on last - 1 day.', sysdate(),sysdate());
+insert into param values('SIM_DAYS', 'SIMULATION', null,null, '2020-08-01', '2020-08-14', 'From which day(not included) to which day run simulation.', sysdate(),sysdate());
 insert into param values('SIM_THREADS_COUNT', 'SIMULATION', 2,null, '', '', 'How many thread in parallel to run the simulation.', sysdate(),sysdate());
 insert into param values('SIM_STOCK_COUNT_FOR_EACH_THREAD', 'SIMULATION', 10,null, '', '', 'How many stocks to be run simulation per thread at one time.', sysdate(),sysdate());
 insert into param values('SIM_ON_GZ_STOCK_ONLY', 'SIMULATION', 1,null, '', '', 'Simulation only for gzed stocks.', sysdate(),sysdate());
