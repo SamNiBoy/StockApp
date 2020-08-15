@@ -481,8 +481,8 @@ public class CloseToGapBuyPointSelector implements IBuyPointSelector {
     		if (cnt == numDays && !stopProcess)
     		{
     			double curPri = s.getCur_pri();
-    			if ((curPri - preLowPri) / preLowPri > 0.08) {
-    				log.info("stock:" + s.getID() + " yesterday close price reached lowest price:" + preLowPri + " however cur price is 8% higher than it, skip buy.");
+    			if ((curPri - preLowPri) / preLowPri > 0.05) {
+    				log.info("stock:" + s.getID() + " yesterday close price reached lowest price:" + preLowPri + " however cur price is 5% higher than it, skip buy.");
     				preLowPri = -1;
     			}
     			log.info("stock:" + s.getID() + " reached lowest price:" + preLowPri);

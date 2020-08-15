@@ -140,6 +140,8 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
                 }
             }
         }
+       
+       //if yt_close_price close the gap, and it is not reaching a bottom support line.
         if (checkPriceBrkLatestGapDB(stk) && !reachedBottomLine(stk, sbs, 5, 2)) {
    		   log.info("Stock:" + stk.getID() + " has broken previous price gap, sell it.");
    	       stk.setTradedBySelector(this.selector_name);
@@ -222,12 +224,19 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
     				lostCnt = 0;
     				conWinCnt++;
     			}
+    			else {
+    				lostCnt = 0;
+    				conWinCnt = 0;
+    			}
+    			
+    			if (lostCnt >= 3 || conWinCnt >= 3)
+    				break;
     			
     			pre_close = curClose;
     		}
     		
     		if (lostCnt >= 3 || conWinCnt >= 3) {
-    			log.info("in brevious 7 days, continue lost or win at lest 3 times.");
+    			log.info("in previous 7 days, continue lost or win at lest 3 times.");
     			bigRisk = true;
     		}
     		
@@ -440,6 +449,7 @@ private boolean checkClosePriceLostDays(Stock2 s, int daysChk) {
     	double current_low = -1;
     	String on_dte = "";
     	double yt_cls_pri = 0;
+    	double yt_open_pri = 0;
 
     	try {
     		
@@ -458,6 +468,7 @@ private boolean checkClosePriceLostDays(Stock2 s, int daysChk) {
     			if (current_low == -1) {
     				current_low = rs.getDouble("low");
     				yt_cls_pri = rs.getDouble("close");
+    				yt_open_pri = rs.getDouble("open");
     				continue;
     			}
     			else {
@@ -537,6 +548,7 @@ private boolean checkClosePriceLostDays(Stock2 s, int daysChk) {
     	boolean passChk = false;
     	double previous_low = -1;
     	double current_low = -1;
+    	double current_close = -1;
     	String on_dte = "";
     	
     	int dayNum = chkDayNum;
@@ -562,6 +574,7 @@ private boolean checkClosePriceLostDays(Stock2 s, int daysChk) {
     			
     			if (current_low == -1) {
     				current_low = rs.getDouble("low");
+    				current_close = rs.getDouble("close");
     				on_dte = rs.getString("add_dt");
     				lowestPri = current_low;
     				alignedCnt = 1;
@@ -581,12 +594,8 @@ private boolean checkClosePriceLostDays(Stock2 s, int daysChk) {
     			}
     		}
     		
-    		if ((current_low - lowestPri) / lowestPri > 0.03) {
-    			log.info(" last day low price is 3 pct away from bottom line, skip alignment check.");
-    			alignedCnt = 0;
-    		}
-    		else if ((sbs.price - lowestPri) / lowestPri > 0.05) {
-    			log.info("bought price is 5 pct away from bottom line, skip alignment check.");
+    		if ((current_close - lowestPri) / lowestPri > 0.03) {
+    			log.info(" last day close price is 3 pct away from bottom line, skip alignment check.");
     			alignedCnt = 0;
     		}
     		

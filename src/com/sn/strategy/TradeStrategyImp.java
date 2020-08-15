@@ -997,7 +997,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 			Statement stm = con.createStatement();
 
 			//we put the stock in front if it has less earning money.
-			String sql = "select * from cashacnt where pft_mny < -50 and exists (select 'x' from tradehdr h where h.acntId = cashacnt.acntId and h.in_hand_qty > 0) and acntId like '" + acntId +
+			String sql = "select * from cashacnt where pft_mny < -100 and exists (select 'x' from tradehdr h where h.acntId = cashacnt.acntId and h.in_hand_qty > 0) and acntId like '" + acntId +
 					"%' order by pft_mny";
 			log.info(sql);
 			ResultSet rs = stm.executeQuery(sql);
