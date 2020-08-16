@@ -450,6 +450,7 @@ private boolean checkClosePriceLostDays(Stock2 s, int daysChk) {
     	String on_dte = "";
     	double yt_cls_pri = 0;
     	double yt_open_pri = 0;
+    	double yt_cls_pri2 = 0;
 
     	try {
     		
@@ -463,17 +464,23 @@ private boolean checkClosePriceLostDays(Stock2 s, int daysChk) {
     		stm = con.createStatement();
     		rs = stm.executeQuery(sql);
     		
+    		boolean readyForPreClsPri = false;
     		while (rs.next()) {
     			
     			if (current_low == -1) {
     				current_low = rs.getDouble("low");
     				yt_cls_pri = rs.getDouble("close");
     				yt_open_pri = rs.getDouble("open");
+    				readyForPreClsPri = true;
     				continue;
     			}
     			else {
     				previous_high = rs.getDouble("high");
     				on_dte = rs.getString("add_dt");
+    				if (readyForPreClsPri) {
+    					yt_cls_pri2 = rs.getDouble("close");
+    					readyForPreClsPri = false;
+    				}
     			}
     			
     			if (current_low > previous_high) {
@@ -497,7 +504,7 @@ private boolean checkClosePriceLostDays(Stock2 s, int daysChk) {
     		{
     			log.info("found gap price success, previous_high:" + previous_high + ", current_low:" + current_low + " on date:" + on_dte);
     			
-    			if (yt_cls_pri < previous_high) {
+    			if (yt_cls_pri < previous_high && (yt_cls_pri - yt_cls_pri2) / yt_cls_pri2 <= -0.02) {
     			    sql = "select 'x' from stkAvgPri where id = '" + s.getID() + "' and add_dt > '" + on_dte + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10) + "' and close <= " + previous_high;
     			    
     			    log.info(sql);

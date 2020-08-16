@@ -114,7 +114,7 @@ public class JobScheduler {
         //String stockSuggestTime = "0 0 12,16 ? * MON-FRI";
         String stockSuggestTime = "0 0 16 ? * SUN-SUN";
         //String stockSimTime = "0 30 15 ? * MON-FIR";
-        String stockSimTime = "0 46 22 ? * MON-SUN";
+        String stockSimTime = "0 14 11 ? * MON-SUN";
         String stockSimResCollectorTime = "*/10 * * ? * MON-SUN";
         String getStockAvgPriTime = "0 0 18 ? * MON-FRI";
         
