@@ -103,7 +103,9 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
             boolean con3 = getAvgPriceFromSina(stk, ac, 1);
             double td_cls_pri2 = td_cls_pri.get();
 
-            boolean con6 = con3 && (td_cls_pri1 - td_cls_pri2) / td_cls_pri1 <= -0.055;
+            boolean con6 = con1 && con3 && (td_cls_pri1 - td_cls_pri2) / td_cls_pri2 <= -0.055;
+            
+            boolean con7 = con1 && con3 && (stk.getOpen_pri() - td_cls_pri1) / td_cls_pri1 <= -0.055;
             
             if (con1) {
                 if (con2)
@@ -117,6 +119,11 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
     	    	    stk.setTradedBySelectorComment("close price at least 5.5 pct drop, sell!");
     	    	    return true;
                 }
+                else if (con7) {
+    	    	    stk.setTradedBySelector(this.selector_name);
+    	    	    stk.setTradedBySelectorComment("open price at least 5.5 pct drop, sell!");
+    	    	    return true;
+                }
                 
                 //we do sell if raise 3 days only when there was big drop before bought and bought more than 3 days.
                 if (stockBoughtMoreThanDays(stk, sbs, 3) && stockHadBigDropOrIncBefore(stk, sbs)) {
@@ -124,16 +131,16 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
                     boolean con4 = getAvgPriceFromSina(stk, ac, 2);
                     double td_cls_pri3 = td_cls_pri.get();
                     
-                    boolean con7 = con3 && con4 && td_cls_pri3 < td_cls_pri2 && td_cls_pri2 < td_cls_pri1 && td_cls_pri1 < stk.getCur_pri();
+                    boolean con8 = con3 && con4 && td_cls_pri3 < td_cls_pri2 && td_cls_pri2 < td_cls_pri1 && td_cls_pri1 < stk.getCur_pri();
                     
-                    if (con7) {
+                    if (con8) {
     	    	        stk.setTradedBySelector(this.selector_name);
     	    	        stk.setTradedBySelectorComment("Win 3 days, sell!");
     	    	        return true;
                     }
                 }
                 
-                if (checkClosePriceLostDays(stk, 2)) {
+                if (checkClosePriceLostDays(stk, sbs, 2)) {
     	    	    stk.setTradedBySelector(this.selector_name);
     	    	    stk.setTradedBySelectorComment("Lost 2 days, sell!");
     	    	    return true;
@@ -375,7 +382,7 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
     	return gotDataSuccess;
     }
     
-private boolean checkClosePriceLostDays(Stock2 s, int daysChk) {
+private boolean checkClosePriceLostDays(Stock2 s, StockBuySellEntry sbs, int daysChk) {
     	
     	Connection con = DBManager.getConnection();
     	
@@ -390,7 +397,7 @@ private boolean checkClosePriceLostDays(Stock2 s, int daysChk) {
     		ResultSet rs = null;
     		
     	    String sql = "select * from stkAvgPri where id = '" + s.getID() + "' and add_dt < '" + s.getDl_dt().toString().substring(0, 10)
-    	    		+ "' order by add_dt desc";
+    	    		+ "' and add_dt >= '" + sbs.dl_dt.toString().substring(0,  10) + "' order by add_dt desc";
     		log.info(sql);
     		
     		stm = con.createStatement();

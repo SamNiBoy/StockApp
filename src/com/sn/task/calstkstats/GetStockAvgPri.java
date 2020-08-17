@@ -73,7 +73,7 @@ public class GetStockAvgPri implements Job {
     	try {
     		con = DBManager.getConnection();
     		Statement stm = con.createStatement();
-    		String sql = "select id, area from stk where not exists (select 'x' from stkAvgPri a where a.id = stk.id and a.add_dt = sysdate()) order by id";
+    		String sql = "select id, area from stk where not exists (select 'x' from stkAvgPri a where a.id = stk.id and left(a.add_dt, 10) = left(sysdate(), 10)) order by id";
     		
     		log.info(sql);
     		
