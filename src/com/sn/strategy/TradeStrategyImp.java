@@ -942,7 +942,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 		return false;
 	}
 	
-	public static boolean needMakeSpaceForBuy() {
+	public static boolean needMakeSpaceForBuy(Stock2 s) {
 		LinkedList<StockBuySellEntry> tmp;
 		
 		int totalBuyCnt = 0;
@@ -951,9 +951,15 @@ public class TradeStrategyImp implements ITradeStrategy {
 			tmp = tradeRecord.get(id);
 	    	for (StockBuySellEntry sb : tmp) {
 	    		String sb_dte = sb.dl_dt.toString().substring(0, 10);
-	    		log.info("Stock:" + sb.id + " is buy:" + sb.is_buy_point + ", trade dte:" + sb_dte);
+	    		String stk_dte = s.getDl_dt().toString().substring(0, 10);
+	    		log.info("Stock:" + sb.id + " is buy:" + sb.is_buy_point + ", trade dte:" + sb_dte + ", on dte:" + stk_dte);
 	    		if (sb.is_buy_point) {
-	    			totalBuyCnt++;
+	    			if (!sb_dte.equals(stk_dte)) {
+	    			    totalBuyCnt++;
+	    			}
+	    			else {
+	    				log.info("skip buy counting as dates are same for stock:" + s.getID());
+	    			}
 	    		}
 	    		else {
 	    			totalSellCnt++;
@@ -988,7 +994,7 @@ public class TradeStrategyImp implements ITradeStrategy {
 	                 acntId = tradex_acnt.getActId();
 	             }
 	             else if (tradeLocalwithSim == 0) {
-	             	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", s.getID()) + s.getID();
+	             	acntId = ParamManager.getStr1Param("ACNT_GF_PREFIX", "ACCOUNT", null);
 	             }
 	         }
 	        

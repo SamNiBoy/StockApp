@@ -169,7 +169,7 @@ public class CloseToGapSellPointSelector implements ISellPointSelector {
 //   	       stk.setTradedBySelectorComment("Down price gap, sell!");
 //   	       return true;
 //       }
-        if (TradeStrategyImp.needMakeSpaceForBuy()){
+        if (TradeStrategyImp.needMakeSpaceForBuy(stk)){
         	log.info("Total buy limit reached, check if stock:" + stk.getID() + " is the most lost stock for which we should sell.");
         	if (TradeStrategyImp.isStockLostMost(stk, ac)) {
         		log.info("Stock:" + stk.getID() + " is the most lost stock, sell it.");

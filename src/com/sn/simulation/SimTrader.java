@@ -249,7 +249,7 @@ public class SimTrader implements Job{
         else {
             //We randomly select 5% data for simulation.
                 sql = "select * from stk " +
-                      " where floor(1+rand()*100) <= 100 and id not like '300%' " +
+                      " where floor(1+rand()*100) <= 100  " +
                       "                order by id";
         }
         

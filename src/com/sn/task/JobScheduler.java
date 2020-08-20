@@ -114,9 +114,9 @@ public class JobScheduler {
         //String stockSuggestTime = "0 0 12,16 ? * MON-FRI";
         String stockSuggestTime = "0 0 16 ? * SUN-SUN";
         //String stockSimTime = "0 30 15 ? * MON-FIR";
-        String stockSimTime = "0 44 8 ? * MON-SUN";
+        String stockSimTime = "0 26 18 ? * MON-SUN";
         String stockSimResCollectorTime = "*/10 * * ? * SUN-SUN";
-        String getStockAvgPriTime = "0 46 21 ? * MON-FRI";
+        String getStockAvgPriTime = "0 15 15 ? * MON-FRI";
         
         Date ft;
        // JobDetail job_StockParamSearch = newJob(StockParamSearch.class).withIdentity("StockParamSearch", "StockApp").build();
